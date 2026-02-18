@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Химичка — Оптовое предложение</title>
+<style>
+@font-face {
+  font-family: 'Mazzard';
+  src: url('MazzardH-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Mazzard';
+  src: url('MazzardH-Bold.woff') format('woff');
+  font-weight: 700 900;
+  font-style: normal;
+}
+</style>
+<style>
+  :root {
+    --purple: #9B4DFF;
+    --purple-dark: #7A35D8;
+    --purple-light: #D966FF;
+    --navy: #0D0D1F;
+    --white: #F5F0FF;
+    --glass: rgba(255,255,255,0.06);
+    --border: rgba(155,77,255,0.22);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Mazzard', sans-serif;
+    background: var(--navy);
+    color: var(--white);
+    overflow-x: hidden;
+  }
+
+  /* BUBBLES */
+  .bg-bubbles { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+  .bubble {
+    position:absolute; border-radius:50%;
+    background: radial-gradient(circle at 30% 30%, rgba(155,77,255,0.18), transparent 70%);
+    animation: float linear infinite;
+  }
+  .bubble:nth-child(1){width:400px;height:400px;left:-100px;top:10%;animation-duration:22s;}
+  .bubble:nth-child(2){width:250px;height:250px;right:5%;top:30%;animation-duration:17s;animation-delay:-5s;background:radial-gradient(circle at 30% 30%, rgba(217,102,255,0.12), transparent 70%);}
+  .bubble:nth-child(3){width:350px;height:350px;left:40%;bottom:-100px;animation-duration:25s;animation-delay:-10s;}
+  .bubble:nth-child(4){width:180px;height:180px;right:20%;top:5%;animation-duration:14s;animation-delay:-3s;background:radial-gradient(circle at 30% 30%, rgba(155,77,255,0.1), transparent 70%);}
+  @keyframes float{0%{transform:translateY(0) scale(1);}50%{transform:translateY(-40px) scale(1.05);}100%{transform:translateY(0) scale(1);}}
+
+  /* LAYOUT */
+  section { position:relative; z-index:1; }
+  .container { max-width:1100px; margin:0 auto; padding:0 40px; }
+
+  /* HERO */
+  .hero {
+    min-height:100vh;
+    display:flex; flex-direction:column; justify-content:center;
+    padding:80px 0 60px;
+    position:relative; overflow:hidden;
+  }
+  .hero::before {
+    content:''; position:absolute; inset:0;
+    background: radial-gradient(ellipse 80% 60% at 60% 50%, rgba(155,77,255,0.12) 0%, transparent 70%);
+  }
+  .hero .container { display:flex; flex-direction:column; align-items:flex-start; }
+
+  .hero-badge {
+    display:inline-flex; align-items:center; gap:8px;
+    background:rgba(155,77,255,0.12); border:1px solid var(--border);
+    border-radius:100px; padding:6px 16px;
+    font-size:12px; font-weight:600; letter-spacing:0.1em;
+    color:var(--purple); text-transform:uppercase;
+    margin-bottom:28px;
+  }
+  .hero-badge span { width:6px;height:6px;background:var(--purple);border-radius:50%;animation:pulse 1.5s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+  .hero h1 {
+    font-family:'Mazzard', sans-serif;
+    font-size:clamp(48px, 7.5vw, 96px);
+    font-weight:900;
+    line-height:0.95;
+    letter-spacing:-0.03em;
+    margin-bottom:24px;
+  }
+  .hero h1 .w1 { color:var(--white); }
+  .hero h1 .w2 { color:var(--purple-light); }
+  .hero h1 .dim-line { color:rgba(245,240,255,0.35); display:block; }
+
+  .hero-sub {
+    font-size:17px; color:rgba(245,240,255,0.55);
+    max-width:520px; line-height:1.65;
+    margin-bottom:48px;
+  }
+
+  .hero-stats {
+    display:flex; gap:48px; flex-wrap:wrap;
+    margin-bottom:56px;
+  }
+  .stat { display:flex; flex-direction:column; }
+  .stat-num {
+    font-family:'Mazzard',sans-serif;
+    font-size:38px; font-weight:900;
+    color:var(--purple);
+    line-height:1;
+  }
+  .stat-label {
+    font-size:11px; color:rgba(245,240,255,0.45);
+    margin-top:5px; text-transform:uppercase; letter-spacing:0.06em;
+  }
+
+  .hero-cta { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+
+  .btn-primary {
+    background:var(--purple); color:#fff;
+    border:none; border-radius:12px;
+    padding:15px 28px;
+    font-family:'Mazzard',sans-serif; font-size:14px; font-weight:600;
+    cursor:pointer; transition:all .2s;
+    text-decoration:none; display:inline-flex; align-items:center; gap:8px;
+  }
+  .btn-primary:hover { background:var(--purple-light); transform:translateY(-2px); }
+
+  .btn-outline {
+    background:transparent; color:var(--white);
+    border:1px solid var(--border); border-radius:12px;
+    padding:15px 28px;
+    font-family:'Mazzard',sans-serif; font-size:14px; font-weight:500;
+    cursor:pointer; transition:all .2s;
+    text-decoration:none; display:inline-flex; align-items:center; gap:8px;
+  }
+  .btn-outline:hover { border-color:var(--purple); background:rgba(155,77,255,0.1); transform:translateY(-2px); }
+
+  /* MOLECULE */
+  .molecule {
+    position:absolute; right:-40px; top:50%; transform:translateY(-50%);
+    width:480px; height:480px; opacity:0.1;
+  }
+
+  /* DIVIDER */
+  .divider { height:1px; background:var(--border); margin:0 40px; }
+
+  /* SECTION HEADER */
+  .section-label {
+    font-size:11px; font-weight:700; letter-spacing:0.15em;
+    color:var(--purple); text-transform:uppercase; margin-bottom:12px;
+  }
+  .section-title {
+    font-family:'Mazzard',sans-serif;
+    font-size:clamp(28px,4vw,48px); font-weight:900;
+    line-height:1.1; letter-spacing:-0.02em;
+  }
+  .section-title .dim { color:rgba(245,240,255,0.3); }
+
+  /* PRODUCTS */
+  .products-section { padding:100px 0; }
+  .products-grid {
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr));
+    gap:20px; margin-top:60px;
+  }
+  .product-card {
+    background:var(--glass); border:1px solid var(--border);
+    border-radius:24px; padding:32px; position:relative; overflow:hidden;
+    transition:transform .25s, border-color .25s;
+  }
+  .product-card:hover { transform:translateY(-6px); border-color:var(--purple); }
+  .product-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg, var(--purple), var(--purple-light));
+  }
+  .product-icon { font-size:40px; margin-bottom:20px; display:block; }
+  .product-name {
+    font-family:'Mazzard',sans-serif;
+    font-size:20px; font-weight:800; margin-bottom:8px;
+  }
+  .product-desc { font-size:14px; color:rgba(245,240,255,0.5); line-height:1.6; margin-bottom:20px; }
+  .product-feature {
+    display:flex; align-items:center; gap:8px;
+    font-size:13px; color:rgba(245,240,255,0.65); margin-bottom:8px;
+  }
+  .product-feature::before { content:'✦'; color:var(--purple); font-size:10px; flex-shrink:0; }
+  .product-price-block {
+    margin-top:24px; padding-top:24px; border-top:1px solid var(--border);
+  }
+  .price-retail { font-size:12px; color:rgba(245,240,255,0.35); text-transform:uppercase; letter-spacing:0.05em; }
+  .price-value { font-family:'Mazzard',sans-serif; font-size:24px; font-weight:900; }
+  .price-wholesale { font-size:12px; color:var(--purple); margin-top:4px; }
+
+  /* WHY */
+  .why-section { padding:100px 0; background:rgba(0,0,0,0.15); }
+  .why-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:60px; }
+  .why-card {
+    background:var(--glass); border:1px solid var(--border);
+    border-radius:20px; padding:28px;
+    display:flex; gap:20px; align-items:flex-start;
+    transition:border-color .2s;
+  }
+  .why-card:hover { border-color:rgba(155,77,255,0.45); }
+  .why-icon {
+    width:48px; height:48px; border-radius:12px;
+    background:rgba(155,77,255,0.12);
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px; flex-shrink:0;
+  }
+  .why-title { font-family:'Mazzard',sans-serif; font-weight:700; font-size:15px; margin-bottom:6px; }
+  .why-text { font-size:13px; color:rgba(245,240,255,0.5); line-height:1.6; }
+
+  /* SAFETY */
+  .safety-section { padding:80px 0; }
+  .safety-banner {
+    background:linear-gradient(135deg, rgba(155,77,255,0.1) 0%, rgba(217,102,255,0.05) 100%);
+    border:1px solid var(--border); border-radius:28px; padding:56px 60px;
+    display:flex; gap:60px; align-items:center; flex-wrap:wrap;
+  }
+  .safety-left,.safety-right { flex:1; min-width:240px; }
+  .safety-icon { font-size:56px; margin-bottom:20px; }
+  .safety-title { font-family:'Mazzard',sans-serif; font-size:28px; font-weight:900; margin-bottom:12px; }
+  .safety-text { font-size:15px; color:rgba(245,240,255,0.6); line-height:1.7; }
+  .cert-list { list-style:none; }
+  .cert-item {
+    display:flex; align-items:center; gap:12px;
+    padding:14px 0; border-bottom:1px solid var(--border); font-size:14px;
+  }
+  .cert-item:last-child { border-bottom:none; }
+  .cert-check {
+    width:24px; height:24px; border-radius:50%;
+    background:rgba(155,77,255,0.15); border:1px solid var(--purple);
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; color:var(--purple); flex-shrink:0;
+  }
+
+  /* WHOLESALE */
+  .wholesale-section { padding:100px 0; }
+  .wholesale-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:16px; margin-top:60px; }
+  .condition-card {
+    background:var(--glass); border:1px solid var(--border);
+    border-radius:20px; padding:28px; text-align:center; transition:all .2s;
+  }
+  .condition-card:hover { border-color:var(--purple); background:rgba(155,77,255,0.07); }
+  .condition-icon { font-size:32px; margin-bottom:16px; display:block; }
+  .condition-title { font-family:'Mazzard',sans-serif; font-weight:700; font-size:15px; margin-bottom:8px; }
+  .condition-text { font-size:13px; color:rgba(245,240,255,0.5); line-height:1.5; }
+
+  /* PRICING */
+  .pricing-section { padding:60px 0 100px; }
+  .pricing-banner {
+    background:linear-gradient(135deg, rgba(217,102,255,0.07), rgba(155,77,255,0.05));
+    border:1px solid rgba(217,102,255,0.2); border-radius:28px; padding:48px;
+  }
+  .pricing-header { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:20px; margin-bottom:40px; }
+  .discount-badge {
+    background:var(--purple-light); color:#fff;
+    border-radius:12px; padding:12px 24px;
+    font-family:'Mazzard',sans-serif; font-size:22px; font-weight:900; white-space:nowrap;
+  }
+  .pricing-table { width:100%; border-collapse:collapse; }
+  .pricing-table th {
+    text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.1em;
+    color:rgba(245,240,255,0.35); padding:0 0 16px; font-weight:600; border-bottom:1px solid var(--border);
+  }
+  .pricing-table td { padding:18px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:15px; }
+  .pricing-table tr:last-child td { border-bottom:none; }
+  .td-product { font-weight:600; }
+  .td-retail { color:rgba(245,240,255,0.4); font-size:14px; }
+  .td-wholesale { color:var(--purple-light); font-weight:800; font-family:'Mazzard',sans-serif; font-size:16px; }
+  .td-note { font-size:13px; color:rgba(245,240,255,0.35); }
+
+  /* CTA */
+  .cta-section { padding:100px 0; }
+  .cta-box {
+    background: radial-gradient(ellipse 100% 100% at 50% 0%, rgba(155,77,255,0.18) 0%, transparent 70%), var(--glass);
+    border:1px solid var(--border); border-radius:32px; padding:72px;
+    text-align:center; position:relative; overflow:hidden;
+  }
+  .cta-box::before {
+    content:''; position:absolute; top:-1px; left:20%; right:20%; height:2px;
+    background:linear-gradient(90deg, transparent, var(--purple), var(--purple-light), var(--purple), transparent);
+  }
+  .cta-title {
+    font-family:'Mazzard',sans-serif;
+    font-size:clamp(28px,4vw,52px); font-weight:900;
+    margin-bottom:16px; letter-spacing:-0.02em;
+  }
+  .cta-sub { font-size:16px; color:rgba(245,240,255,0.45); margin-bottom:48px; }
+
+  .contact-cards { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:40px; }
+  .contact-card {
+    background:rgba(255,255,255,0.05); border:1px solid var(--border);
+    border-radius:16px; padding:20px 28px;
+    display:flex; align-items:center; gap:14px;
+    text-decoration:none; color:inherit; transition:all .2s;
+  }
+  .contact-card:hover { border-color:var(--purple); background:rgba(155,77,255,0.1); }
+  .contact-card-icon { font-size:24px; }
+  .contact-card-label { font-size:11px; color:rgba(245,240,255,0.35); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:3px; }
+  .contact-card-value { font-weight:600; font-size:14px; }
+
+  .producer-note { font-size:13px; color:rgba(245,240,255,0.25); }
+
+  /* FOOTER */
+  footer {
+    border-top:1px solid var(--border); padding:32px 0;
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:16px;
+    font-size:13px; color:rgba(245,240,255,0.25);
+    position:relative; z-index:1;
+  }
+  .footer-logo { font-family:'Mazzard',sans-serif; font-weight:900; font-size:18px; color:var(--purple); }
+
+  /* ANIMATIONS */
+  .fade-in { opacity:0; transform:translateY(28px); transition:opacity .7s ease, transform .7s ease; }
+  .fade-in.visible { opacity:1; transform:translateY(0); }
+
+  @media(max-width:768px){
+    .hero h1 { font-size:48px; }
+    .safety-banner { flex-direction:column; padding:32px; }
+    .cta-box { padding:40px 24px; }
+    .molecule { display:none; }
+    .container { padding:0 20px; }
+    .why-grid { grid-template-columns:1fr; }
+    .hero-stats { gap:28px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-bubbles">
+  <div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container" style="position:relative;z-index:2;">
+    <div class="hero-badge">
+      <span></span> Оптовое предложение · 2025
+    </div>
+    <h1>
+      <span class="w1">Хими</span><span class="w2">чка</span><br>
+      <span class="dim-line">для ритейла</span>
+    </h1>
+    <p class="hero-sub">
+      Российский производитель образовательных наборов для опытов. Современный продукт, высокий профиль безопасности, все сертификаты.
+    </p>
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-num">18 000+</span>
+        <span class="stat-label">покупателей по России</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">160+</span>
+        <span class="stat-label">реакций в наборе</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">до 50%</span>
+        <span class="stat-label">оптовая скидка</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">2023</span>
+        <span class="stat-label">на рынке с</span>
+      </div>
+    </div>
+    <div class="hero-cta">
+      <a href="tel:+79818523754" class="btn-primary">📞 Позвонить</a>
+      <a href="https://t.me/ximi4ka_support" target="_blank" class="btn-primary" style="background:rgba(155,77,255,0.25);border:1px solid var(--border);">✈️ Telegram</a>
+      <a href="mailto:kseniya.bezdenezhnyh@yandex.ru" class="btn-outline">✉️ Написать письмо</a>
+    </div>
+  </div>
+
+  <svg class="molecule" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="white" stroke-width="1.5">
+    <circle cx="200" cy="200" r="40"/>
+    <circle cx="320" cy="120" r="28"/>
+    <circle cx="80" cy="120" r="28"/>
+    <circle cx="80" cy="280" r="28"/>
+    <circle cx="320" cy="280" r="28"/>
+    <circle cx="200" cy="60" r="22"/>
+    <circle cx="200" cy="340" r="22"/>
+    <line x1="200" y1="160" x2="200" y2="82"/>
+    <line x1="200" y1="240" x2="200" y2="318"/>
+    <line x1="232" y1="180" x2="295" y2="140"/>
+    <line x1="168" y1="180" x2="105" y2="140"/>
+    <line x1="232" y1="220" x2="295" y2="260"/>
+    <line x1="168" y1="220" x2="105" y2="260"/>
+    <circle cx="200" cy="200" r="80" stroke-dasharray="8 6" opacity="0.3"/>
+  </svg>
+</section>
+
+<div class="divider"></div>
+
+<!-- PRODUCTS -->
+<section class="products-section">
+  <div class="container">
+    <div class="fade-in">
+      <p class="section-label">Наша линейка</p>
+      <h2 class="section-title">Три набора —<br><span class="dim">один производитель</span></h2>
+    </div>
+    <div class="products-grid">
+      <div class="product-card fade-in">
+        <span class="product-icon">🧪</span>
+        <div class="product-name">Химичка 3.0</div>
+        <p class="product-desc">Флагманский набор с полным охватом школьной программы по химии</p>
+        <div class="product-feature">Более 160 различных реакций</div>
+        <div class="product-feature">Подробная методичка с объяснениями</div>
+        <div class="product-feature">Полный комплект лабораторного оборудования</div>
+        <div class="product-feature">Часы увлекательных опытов</div>
+        <div class="product-feature">Красивые эффектные реакции</div>
+        <div class="product-price-block">
+          <div class="price-retail">Рекомендованная розница</div>
+          <div class="price-value">от 3 399 ₽</div>
+          <div class="price-wholesale">Оптовая цена — индивидуально</div>
+        </div>
+      </div>
+      <div class="product-card fade-in">
+        <span class="product-icon">⚡</span>
+        <div class="product-name">Электрохимичка</div>
+        <p class="product-desc">Специализированный набор по ОВР и электролизу — уникальный на рынке формат</p>
+        <div class="product-feature">Окислительно-восстановительные реакции</div>
+        <div class="product-feature">Опыты с электролизом</div>
+        <div class="product-feature">Уникальная ниша — нет аналогов</div>
+        <div class="product-feature">Высокая наглядность</div>
+        <div class="product-feature">Безопасные реактивы в жидком виде</div>
+        <div class="product-price-block">
+          <div class="price-retail">Рекомендованная розница</div>
+          <div class="price-value">от 3 399 ₽</div>
+          <div class="price-wholesale">Оптовая цена — индивидуально</div>
+        </div>
+      </div>
+      <div class="product-card fade-in">
+        <span class="product-icon">⚗️</span>
+        <div class="product-name">Мини-Химичка</div>
+        <p class="product-desc">Оптимальный стартовый набор по привлекательной цене — лучший entry-level</p>
+        <div class="product-feature">Всё самое необходимое для начала</div>
+        <div class="product-feature">Самая доступная цена в линейке</div>
+        <div class="product-feature">Высокая конверсия в покупку</div>
+        <div class="product-feature">Отличный импульсный товар</div>
+        <div class="product-feature">Широкая целевая аудитория</div>
+        <div class="product-price-block">
+          <div class="price-retail">Рекомендованная розница</div>
+          <div class="price-value">от 1 699 ₽</div>
+          <div class="price-wholesale">Оптовая цена — индивидуально</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY -->
+<section class="why-section">
+  <div class="container">
+    <div class="fade-in">
+      <p class="section-label">Преимущества</p>
+      <h2 class="section-title">Почему <span class="dim">выбирают нас</span></h2>
+    </div>
+    <div class="why-grid">
+      <div class="why-card fade-in">
+        <div class="why-icon">🏭</div>
+        <div>
+          <div class="why-title">Собственное производство в Москве</div>
+          <p class="why-text">Мы производители, а не перекупщики. Обученный персонал, строгий контроль качества на каждом этапе. Гибкие условия и прямые переговоры без посредников.</p>
+        </div>
+      </div>
+      <div class="why-card fade-in">
+        <div class="why-icon">🔬</div>
+        <div>
+          <div class="why-title">Реактивы в жидком виде</div>
+          <p class="why-text">Безопасные концентрации, современный формат хранения. Кардинально отличает нас от устаревших наборов с порошковыми реактивами.</p>
+        </div>
+      </div>
+      <div class="why-card fade-in">
+        <div class="why-icon">📦</div>
+        <div>
+          <div class="why-title">Красивая упаковка и высокое качество печати</div>
+          <p class="why-text">Набор выглядит как премиум-продукт. Покупатели отмечают упаковку как одно из главных преимуществ. Выделяется на полке.</p>
+        </div>
+      </div>
+      <div class="why-card fade-in">
+        <div class="why-icon">📋</div>
+        <div>
+          <div class="why-title">Подробная авторская методичка</div>
+          <p class="why-text">Не просто набор реактивов — полноценное пособие с объяснениями. Ребёнок может заниматься самостоятельно часами. Единственный в своём роде практический учебник.</p>
+        </div>
+      </div>
+      <div class="why-card fade-in">
+        <div class="why-icon">🛒</div>
+        <div>
+          <div class="why-title">Готов к ритейлу</div>
+          <p class="why-text">Штрих-код на товаре, электронный документооборот, сертификаты соответствия. Полная готовность к поставке в крупные розничные сети.</p>
+        </div>
+      </div>
+      <div class="why-card fade-in">
+        <div class="why-icon">❤️</div>
+        <div>
+          <div class="why-title">Проверено 18 000+ покупателями</div>
+          <p class="why-text">Реальные отзывы, высокий рейтинг, повторные покупки. На рынке с 2023 года. Растущий органический спрос и узнаваемость бренда.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SAFETY -->
+<section class="safety-section">
+  <div class="container">
+    <div class="safety-banner fade-in">
+      <div class="safety-left">
+        <div class="safety-icon">🛡️</div>
+        <div class="safety-title">Высокий профиль безопасности</div>
+        <p class="safety-text">Реактивы находятся в жидком виде в безопасных концентрациях, что исключает случайное вдыхание пыли и обеспечивает точную дозировку. Современный подход, недоступный у большинства конкурентов.</p>
+      </div>
+      <div class="safety-right">
+        <ul class="cert-list">
+          <li class="cert-item"><div class="cert-check">✓</div>Все необходимые сертификаты имеются</li>
+          <li class="cert-item"><div class="cert-check">✓</div>Безопасные концентрации реактивов</li>
+          <li class="cert-item"><div class="cert-check">✓</div>Жидкий формат — без порошкового риска</li>
+          <li class="cert-item"><div class="cert-check">✓</div>Подходит для детей школьного возраста</li>
+          <li class="cert-item"><div class="cert-check">✓</div>Штрих-коды на всей продукции</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHOLESALE CONDITIONS -->
+<section class="wholesale-section">
+  <div class="container">
+    <div class="fade-in">
+      <p class="section-label">Условия сотрудничества</p>
+      <h2 class="section-title">Всё для <span class="dim">вашего удобства</span></h2>
+    </div>
+    <div class="wholesale-grid">
+      <div class="condition-card fade-in">
+        <span class="condition-icon">💰</span>
+        <div class="condition-title">Скидка до 40–50%</div>
+        <p class="condition-text">От розничной рекомендованной цены, с градацией по объёму</p>
+      </div>
+      <div class="condition-card fade-in">
+        <span class="condition-icon">📊</span>
+        <div class="condition-title">Гибкая ценовая лесенка</div>
+        <p class="condition-text">Оптовые цены с градацией по объёму заказа</p>
+      </div>
+      <div class="condition-card fade-in">
+        <span class="condition-icon">🤝</span>
+        <div class="condition-title">Переговоры по условиям</div>
+        <p class="condition-text">Готовы обсуждать условия поставки индивидуально</p>
+      </div>
+      <div class="condition-card fade-in">
+        <span class="condition-icon">💻</span>
+        <div class="condition-title">ЭДО</div>
+        <p class="condition-text">Электронный документооборот — быстро и без бумаги</p>
+      </div>
+      <div class="condition-card fade-in">
+        <span class="condition-icon">🏷️</span>
+        <div class="condition-title">Штрих-код на товаре</div>
+        <p class="condition-text">Готов к размещению на полке без дополнительной маркировки</p>
+      </div>
+      <div class="condition-card fade-in">
+        <span class="condition-icon">🚚</span>
+        <div class="condition-title">Поставка из Москвы</div>
+        <p class="condition-text">Собственное производство — прямые поставки, без задержек</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section">
+  <div class="container">
+    <div class="pricing-banner fade-in">
+      <div class="pricing-header">
+        <div>
+          <p class="section-label">Прайс-лист</p>
+          <h2 class="section-title" style="font-size:32px;">Рекомендованные цены</h2>
+        </div>
+        <div class="discount-badge">до −50%<br><span style="font-size:13px;font-family:'Mazzard',sans-serif;font-weight:400;">оптовая скидка</span></div>
+      </div>
+      <table class="pricing-table">
+        <thead>
+          <tr>
+            <th>Продукт</th>
+            <th>Розница (РРЦ)</th>
+            <th>Оптовая цена</th>
+            <th>Примечание</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="td-product">🧪 Химичка 3.0</td>
+            <td class="td-retail">от 3 399 ₽</td>
+            <td class="td-wholesale">по запросу</td>
+            <td class="td-note">Флагман линейки</td>
+          </tr>
+          <tr>
+            <td class="td-product">⚡ Электрохимичка</td>
+            <td class="td-retail">от 3 399 ₽</td>
+            <td class="td-wholesale">по запросу</td>
+            <td class="td-note">Уникальный продукт</td>
+          </tr>
+          <tr>
+            <td class="td-product">⚗️ Мини-Химичка</td>
+            <td class="td-retail">от 1 699 ₽</td>
+            <td class="td-wholesale">по запросу</td>
+            <td class="td-note">Entry-level, высокий оборот</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="margin-top:28px;font-size:13px;color:rgba(245,240,255,0.35);">
+        * Точные оптовые цены с градацией по объёму предоставляем при запросе. Условия обсуждаются индивидуально.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-box fade-in">
+      <h2 class="cta-title">Начнём сотрудничество?</h2>
+      <p class="cta-sub">Свяжитесь с нами — подберём условия под ваш формат торговли</p>
+
+      <div class="contact-cards">
+        <a href="tel:+79818523754" class="contact-card">
+          <div class="contact-card-icon">📞</div>
+          <div>
+            <div class="contact-card-label">Телефон / WhatsApp</div>
+            <div class="contact-card-value">+7 981 852-37-54</div>
+          </div>
+        </a>
+        <a href="https://t.me/ximi4ka_support" target="_blank" class="contact-card">
+          <div class="contact-card-icon">✈️</div>
+          <div>
+            <div class="contact-card-label">Telegram</div>
+            <div class="contact-card-value">@ximi4ka_support</div>
+          </div>
+        </a>
+        <a href="mailto:kseniya.bezdenezhnyh@yandex.ru" class="contact-card">
+          <div class="contact-card-icon">✉️</div>
+          <div>
+            <div class="contact-card-label">Электронная почта</div>
+            <div class="contact-card-value">kseniya.bezdenezhnyh@yandex.ru</div>
+          </div>
+        </a>
+      </div>
+
+      <p class="producer-note">ИП Аистова Ксения Михайловна · Производство: Москва · ЭДО · Все сертификаты</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<div class="container">
+  <footer>
+    <div class="footer-logo">Хими<span style="color:var(--purple-light)">чка</span></div>
+    <div>Образовательные наборы для опытов · Российский производитель · с 2023</div>
+    <div>© 2025 ИП Аистова К.М.</div>
+  </footer>
+</div>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
