@@ -1,6 +1,15 @@
 import { apiClient } from './client';
 import { Component } from './components';
 
+export interface KitComponent {
+  id: string;
+  kit_id: string;
+  component_id: string;
+  quantity: number;
+  notes?: string;
+  component: Component;
+}
+
 export interface Kit {
   id: string;
   name: string;
@@ -16,6 +25,7 @@ export interface Kit {
   wholesale_price?: number;
   is_active: boolean;
   notes?: string;
+  components?: KitComponent[];
   created_at: string;
   updated_at: string;
 }
@@ -66,6 +76,24 @@ export const kitsApi = {
 
   calculate: async (id: string) => {
     const response = await apiClient.get<CostCalculation>(`/kits/${id}/calculate`);
+    return response.data;
+  },
+
+  addComponent: async (kitId: string, componentId: string, quantity: number = 1) => {
+    const response = await apiClient.post<KitComponent>(`/kits/${kitId}/components`, {
+      component_id: componentId,
+      quantity
+    });
+    return response.data;
+  },
+
+  updateComponentQuantity: async (kitId: string, componentId: string, quantity: number) => {
+    const response = await apiClient.put(`/kits/${kitId}/components/${componentId}`, { quantity });
+    return response.data;
+  },
+
+  removeComponent: async (kitId: string, componentId: string) => {
+    const response = await apiClient.delete(`/kits/${kitId}/components/${componentId}`);
     return response.data;
   },
 };

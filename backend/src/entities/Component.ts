@@ -5,9 +5,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  OneToMany,
   JoinColumn
 } from 'typeorm';
 import { Counterparty } from './Counterparty';
+import { ComponentPart } from './ComponentPart';
 
 export enum ComponentCategory {
   REAGENT = 'reagent',           // Реактивы
@@ -24,12 +26,25 @@ export class Component {
   @Column({ type: 'varchar', length: 255, comment: 'Название компонента' })
   name: string;
 
+  @Column({ type: 'varchar', length: 100, nullable: true, comment: 'Артикул' })
+  sku: string;
+
   @Column({
-    type: 'enum',
+    type: 'varchar',
+    length: 20,
     enum: ComponentCategory,
     comment: 'Категория компонента'
   })
   category: ComponentCategory;
+
+  @Column({ type: 'varchar', length: 100, nullable: true, comment: 'Размеры (Д×Ш×В)' })
+  dimensions: string;
+
+  @Column({ type: 'text', nullable: true, comment: 'Ссылка на 1688' })
+  link_1688: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true, comment: 'Название фабрики/поставщика' })
+  factory: string;
 
   // Для реактивов
   @Column('decimal', { precision: 12, scale: 2, nullable: true, comment: 'Стоимость закупки партии' })
@@ -84,11 +99,20 @@ export class Component {
   @Column({ nullable: true })
   supplier_id: string;
 
+  @Column({ type: 'text', nullable: true, comment: 'URL изображения компонента' })
+  image_url: string;
+
   @Column({ type: 'text', nullable: true, comment: 'Примечания' })
   notes: string;
 
+  @Column({ type: 'boolean', default: false, comment: 'Сложный компонент (состоит из деталей)' })
+  is_composite: boolean;
+
   @Column({ type: 'boolean', default: true, comment: 'Активен' })
   is_active: boolean;
+
+  @OneToMany(() => ComponentPart, cp => cp.composite)
+  parts: ComponentPart[];
 
   @CreateDateColumn()
   created_at: Date;

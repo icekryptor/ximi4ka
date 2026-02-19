@@ -1,0 +1,10 @@
+{
+  "name": "ximi4ka",
+  "private": true,
+  "description": "XimFinance — система финансового управления",
+  "scripts": {
+    "dev": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev"
+  }
+}

@@ -1,21 +1,28 @@
 import { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, ArrowLeftRight, Users, FolderOpen, BarChart3, Beaker } from 'lucide-react'
+import { LayoutDashboard, ArrowLeftRight, Users, FolderOpen, BarChart3, Beaker, Package } from 'lucide-react'
 
 interface LayoutProps {
   children: ReactNode
 }
 
+type NavItem =
+  | { type: 'link'; name: string; href: string; icon: React.ElementType }
+  | { type: 'group'; label: string }
+
 const Layout = ({ children }: LayoutProps) => {
   const location = useLocation()
 
-  const navigation = [
-    { name: 'Главная', href: '/', icon: LayoutDashboard },
-    { name: 'Себестоимость', href: '/cost-calculation', icon: Beaker },
-    { name: 'Транзакции', href: '/transactions', icon: ArrowLeftRight },
-    { name: 'Контрагенты', href: '/counterparties', icon: Users },
-    { name: 'Категории', href: '/categories', icon: FolderOpen },
-    { name: 'Отчёты', href: '/reports', icon: BarChart3 },
+  const navigation: NavItem[] = [
+    { type: 'link', name: 'Главная', href: '/', icon: LayoutDashboard },
+    { type: 'group', label: 'Экономика' },
+    { type: 'link', name: 'Себестоимость', href: '/cost-calculation', icon: Beaker },
+    { type: 'link', name: 'Компоненты', href: '/components', icon: Package },
+    { type: 'group', label: 'Финансы' },
+    { type: 'link', name: 'Транзакции', href: '/transactions', icon: ArrowLeftRight },
+    { type: 'link', name: 'Контрагенты', href: '/counterparties', icon: Users },
+    { type: 'link', name: 'Категории', href: '/categories', icon: FolderOpen },
+    { type: 'link', name: 'Отчёты', href: '/reports', icon: BarChart3 },
   ]
 
   const isActive = (path: string) => location.pathname === path
@@ -31,22 +38,31 @@ const Layout = ({ children }: LayoutProps) => {
           </div>
         </div>
         
-        <nav className="flex-1 p-4 space-y-1">
-          {navigation.map((item) => {
+        <nav className="flex-1 p-4 space-y-0.5">
+          {navigation.map((item, i) => {
+            if (item.type === 'group') {
+              return (
+                <div key={`group-${i}`} className="pt-4 pb-1 px-3">
+                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    {item.label}
+                  </span>
+                </div>
+              )
+            }
             const Icon = item.icon
             return (
               <Link
                 key={item.name}
                 to={item.href}
                 className={`
-                  flex items-center space-x-3 px-3 py-2 text-sm font-medium transition-colors
+                  flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-colors
                   ${isActive(item.href)
-                    ? 'text-gray-900'
-                    : 'text-gray-500 hover:text-gray-900'
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
                   }
                 `}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className="h-4 w-4" />
                 <span>{item.name}</span>
               </Link>
             )
@@ -55,7 +71,7 @@ const Layout = ({ children }: LayoutProps) => {
 
         <div className="p-4 border-t border-gray-200">
           <p className="text-xs text-gray-400 text-center">
-            © 2024
+            © 2025
           </p>
         </div>
       </aside>

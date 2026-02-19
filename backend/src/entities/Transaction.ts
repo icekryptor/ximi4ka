@@ -21,7 +21,8 @@ export class Transaction {
   id: string;
 
   @Column({
-    type: 'enum',
+    type: 'varchar',
+    length: 20,
     enum: TransactionType,
     comment: 'Тип транзакции: доход или расход'
   })

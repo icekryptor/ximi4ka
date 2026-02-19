@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import path from 'path';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -20,11 +21,14 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Статические файлы — загруженные изображения
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // Routes
 app.use('/api/transactions', transactionRoutes);
@@ -53,18 +57,32 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 });
 
 // Инициализация базы данных и запуск сервера
-AppDataSource.initialize()
-  .then(() => {
-    console.log('✅ База данных подключена');
-    
-    app.listen(PORT, () => {
-      console.log(`🚀 Сервер запущен на порту ${PORT}`);
-      console.log(`📊 Health check: http://localhost:${PORT}/health`);
-    });
-  })
-  .catch((error) => {
-    console.error('❌ Ошибка подключения к базе данных:', error);
-    process.exit(1);
+async function bootstrap() {
+  console.log('Подключение к базе данных...');
+  await AppDataSource.initialize();
+
+  const isSupabase = 'url' in AppDataSource.options;
+  const dbInfo = isSupabase ? 'Supabase/PostgreSQL' : (AppDataSource.options as any).database || 'PostgreSQL';
+  console.log('✅ База данных подключена:', dbInfo);
+
+  // Для Supabase (synchronize: false) — синхронизируем схему без потери данных
+  if (isSupabase && process.env.NODE_ENV === 'development') {
+    console.log('   Синхронизация схемы...');
+    await AppDataSource.synchronize();
+    console.log('   ✅ Схема синхронизирована');
+  }
+
+  console.log('');
+  app.listen(PORT, () => {
+    console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
+    console.log(`   Health: http://localhost:${PORT}/health`);
+    console.log('');
   });
+}
+
+bootstrap().catch((error) => {
+  console.error('❌ Ошибка подключения к базе данных:', error.message || error);
+  process.exit(1);
+});
 
 export default app;

@@ -1,6 +1,7 @@
 import { AppDataSource } from '../config/database';
 import { Component, ComponentCategory } from '../entities/Component';
 import { Kit } from '../entities/Kit';
+import { KitComponent } from '../entities/KitComponent';
 
 async function seedCostData() {
   try {
@@ -9,6 +10,7 @@ async function seedCostData() {
 
     const componentRepository = AppDataSource.getRepository(Component);
     const kitRepository = AppDataSource.getRepository(Kit);
+    const kitComponentRepository = AppDataSource.getRepository(KitComponent);
 
     // Проверяем, есть ли уже данные
     const existingComponents = await componentRepository.count({ where: { category: ComponentCategory.REAGENT } });
@@ -127,8 +129,11 @@ async function seedCostData() {
 
     console.log(`✅ Создано ${labor.length} позиций работы`);
 
-    // Создаем набор "Химичка"
-    const kit = kitRepository.create({
+    // Все компоненты для связки
+    const allComponents = await componentRepository.find();
+
+    // Создаем набор "Химичка" и связываем все компоненты
+    const kitHim = kitRepository.create({
       name: 'Химичка',
       sku: 'CHEM-001',
       description: 'Химический набор для опытов',
@@ -138,16 +143,50 @@ async function seedCostData() {
       print_cost: 324.02,
       labor_cost: 511.10,
       total_cost: 1124.14,
-      retail_price: 0, // Укажите розничную цену
-      wholesale_price: 0, // Укажите оптовую цену
       is_active: true
     });
-
-    await kitRepository.save(kit);
+    const savedHim = await kitRepository.save(kitHim) as Kit;
+    for (const comp of allComponents) {
+      await kitComponentRepository.save(
+        kitComponentRepository.create({ kit_id: savedHim.id, component_id: comp.id, quantity: comp.quantity_per_kit || 1 })
+      );
+    }
     console.log('✅ Создан набор "Химичка"');
 
+    // Создаем набор "Электрохимичка" (пустой, заполняется вручную)
+    const kitElectro = kitRepository.create({
+      name: 'Электрохимичка',
+      sku: 'ECHEM-001',
+      description: 'Электрохимический набор для опытов',
+      batch_size: 1000,
+      reagents_cost: 0,
+      equipment_cost: 0,
+      print_cost: 0,
+      labor_cost: 0,
+      total_cost: 0,
+      is_active: true
+    });
+    await kitRepository.save(kitElectro);
+    console.log('✅ Создан набор "Электрохимичка"');
+
+    // Создаем набор "Мини-Химичка" (пустой, заполняется вручную)
+    const kitMini = kitRepository.create({
+      name: 'Мини-Химичка',
+      sku: 'MCHEM-001',
+      description: 'Мини-набор для опытов',
+      batch_size: 5000,
+      reagents_cost: 0,
+      equipment_cost: 0,
+      print_cost: 0,
+      labor_cost: 0,
+      total_cost: 0,
+      is_active: true
+    });
+    await kitRepository.save(kitMini);
+    console.log('✅ Создан набор "Мини-Химичка"');
+
     console.log('🎉 Импорт данных завершен успешно!');
-    console.log('📊 Итоговая себестоимость: 1124,14 ₽');
+    console.log('📊 Итоговая себестоимость "Химичка": 1124,14 ₽');
     
     await AppDataSource.destroy();
   } catch (error) {

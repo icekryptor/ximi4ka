@@ -16,7 +16,8 @@ export class Category {
   name: string;
 
   @Column({
-    type: 'enum',
+    type: 'varchar',
+    length: 20,
     enum: TransactionType,
     comment: 'Тип транзакции для категории'
   })

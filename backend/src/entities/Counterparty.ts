@@ -21,7 +21,8 @@ export class Counterparty {
   name: string;
 
   @Column({
-    type: 'enum',
+    type: 'varchar',
+    length: 20,
     enum: CounterpartyType,
     default: CounterpartyType.BOTH,
     comment: 'Тип контрагента'

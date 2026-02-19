@@ -1,158 +1,490 @@
-import { useEffect, useState } from 'react'
-import { Plus, Calculator, RefreshCw } from 'lucide-react'
-import { componentsApi, Component } from '../api/components'
+import { useEffect, useRef, useState } from 'react'
+import { Plus, RefreshCw, Pencil, Trash2, ImageIcon, ExternalLink, ChevronRight } from 'lucide-react'
+import { Component, ComponentPart, componentsApi } from '../api/components'
+import { kitsApi, Kit, KitComponent } from '../api/kits'
+import ComponentModal from '../components/ComponentModal'
+import ComponentPicker from '../components/ComponentPicker'
+import KitModal from '../components/KitModal'
 
-const CostCalculation = () => {
-  const [components, setComponents] = useState<Component[]>([])
+const CATEGORY_LABELS: Record<string, string> = {
+  reagent: 'Реактив',
+  equipment: 'Комплектующее',
+  print: 'Печать',
+  labor: 'Работа',
+}
+const CATEGORY_COLORS: Record<string, string> = {
+  reagent: 'bg-blue-100 text-blue-600',
+  equipment: 'bg-gray-100 text-gray-600',
+  print: 'bg-amber-100 text-amber-600',
+  labor: 'bg-green-100 text-green-600',
+}
+const CATEGORY_ORDER = ['reagent', 'equipment', 'print', 'labor']
+
+const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') ?? 'http://localhost:3001'
+
+/** Inline-редактируемое поле количества */
+function QuantityCell({ kc, onSave }: { kc: KitComponent; onSave: (qty: number) => void }) {
+  const [editing, setEditing] = useState(false)
+  const [val, setVal] = useState(String(kc.quantity))
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const commit = () => {
+    const n = parseFloat(val)
+    if (!isNaN(n) && n > 0 && n !== kc.quantity) onSave(n)
+    setEditing(false)
+  }
+
+  if (!editing) {
+    return (
+      <span
+        className="cursor-pointer px-2 py-0.5 rounded hover:bg-gray-100 tabular-nums"
+        title="Нажмите для редактирования"
+        onClick={() => { setVal(String(kc.quantity)); setEditing(true); setTimeout(() => inputRef.current?.select(), 0) }}
+      >
+        {Math.round(Number(kc.quantity))}
+      </span>
+    )
+  }
+
+  return (
+    <input
+      ref={inputRef}
+      className="w-16 text-right border border-blue-400 rounded px-1 py-0.5 text-sm outline-none"
+      type="number"
+      min="0.001"
+      step="any"
+      value={val}
+      onChange={e => setVal(e.target.value)}
+      onBlur={commit}
+      onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') setEditing(false) }}
+    />
+  )
+}
+
+export default function CostCalculation() {
+  const [kits, setKits] = useState<Kit[]>([])
+  const [activeKitId, setActiveKitId] = useState<string | null>(null)
+  const [kitDetails, setKitDetails] = useState<Kit | null>(null)
   const [loading, setLoading] = useState(true)
+  const [kitLoading, setKitLoading] = useState(false)
 
-  useEffect(() => {
-    loadData()
-  }, [])
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [editingComponent, setEditingComponent] = useState<Component | null>(null)
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [kitModalOpen, setKitModalOpen] = useState(false)
 
-  const loadData = async () => {
+  // Раскрытые сложные компоненты: componentId → true
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+  // Кэш деталей: componentId → ComponentPart[]
+  const [partsCache, setPartsCache] = useState<Record<string, ComponentPart[]>>({})
+
+  const toggleExpand = async (componentId: string) => {
+    setExpandedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(componentId)) { next.delete(componentId); return next }
+      next.add(componentId)
+      return next
+    })
+    if (!partsCache[componentId]) {
+      try {
+        const parts = await componentsApi.getParts(componentId)
+        setPartsCache(prev => ({ ...prev, [componentId]: parts }))
+      } catch (e) { console.error(e) }
+    }
+  }
+
+  const loadKits = async () => {
+    setLoading(true)
     try {
-      setLoading(true)
-      const data = await componentsApi.getAll({ active: true })
-      setComponents(data)
-    } catch (error) {
-      console.error('Ошибка загрузки данных:', error)
+      const data = await kitsApi.getAll()
+      const active = data.filter(k => k.is_active)
+      setKits(active)
+      if (!activeKitId && active.length > 0) setActiveKitId(active[0].id)
+    } catch (e) {
+      console.error(e)
     } finally {
       setLoading(false)
     }
   }
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
-      minimumFractionDigits: 2
-    }).format(price)
-  }
-
-  const getCategoryName = (category: string) => {
-    switch (category) {
-      case 'reagent': return 'Реактивы'
-      case 'equipment': return 'Комплектующие'
-      case 'print': return 'Печатная продукция'
-      case 'labor': return 'Работа'
-      default: return category
+  const loadKitDetails = async (id: string) => {
+    setKitLoading(true)
+    try {
+      const data = await kitsApi.getById(id)
+      setKitDetails(data)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setKitLoading(false)
     }
   }
 
-  const reagents = components.filter(c => c.category === 'reagent' && c.is_active)
-  const equipment = components.filter(c => c.category === 'equipment' && c.is_active)
-  const printProducts = components.filter(c => c.category === 'print' && c.is_active)
-  const labor = components.filter(c => c.category === 'labor' && c.is_active)
+  useEffect(() => { loadKits() }, [])
+  useEffect(() => { if (activeKitId) loadKitDetails(activeKitId) }, [activeKitId])
 
-  const reagentsTotal = reagents.reduce((sum, c) => sum + Number(c.price_per_kit), 0)
-  const equipmentTotal = equipment.reduce((sum, c) => sum + Number(c.price_per_kit), 0)
-  const printTotal = printProducts.reduce((sum, c) => sum + Number(c.price_per_kit), 0)
-  const laborTotal = labor.reduce((sum, c) => sum + Number(c.price_per_kit), 0)
+  const handleDelete = async (component: Component) => {
+    if (!activeKitId) return
+    if (!window.confirm(`Удалить «${component.name}» из набора?`)) return
+    try {
+      await kitsApi.removeComponent(activeKitId, component.id)
+      await loadKitDetails(activeKitId)
+    } catch (e) { console.error(e) }
+  }
 
-  const grandTotal = reagentsTotal + equipmentTotal + printTotal + laborTotal
+  const handleQuantityChange = async (kc: KitComponent, qty: number) => {
+    if (!activeKitId) return
+    try {
+      await kitsApi.updateComponentQuantity(activeKitId, kc.component.id, qty)
+      await loadKitDetails(activeKitId)
+    } catch (e) { console.error(e) }
+  }
+
+  const handleEdit = (component: Component) => {
+    setEditingComponent(component)
+    setEditModalOpen(true)
+  }
+
+  const handleEditSaved = () => {
+    setEditModalOpen(false)
+    setEditingComponent(null)
+    if (activeKitId) loadKitDetails(activeKitId)
+  }
+
+  const fmt = (price: number) =>
+    new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', minimumFractionDigits: 2 }).format(price)
+
+  // Количество × цена за единицу — актуальная стоимость на набор
+  const lineTotal = (kc: KitComponent) => kc.quantity * Number(kc.component.unit_price)
+
+  const allItems = kitDetails?.components ?? []
+
+  const totals = CATEGORY_ORDER.reduce((acc, cat) => {
+    acc[cat] = allItems.filter(kc => kc.component.category === cat).reduce((s, kc) => s + lineTotal(kc), 0)
+    return acc
+  }, {} as Record<string, number>)
+  const grandTotal = Object.values(totals).reduce((s, v) => s + v, 0)
 
   if (loading) {
     return (
       <div className="p-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-64 mb-8"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-48" />
+          <div className="h-10 bg-gray-200 rounded w-72" />
+          <div className="h-64 bg-gray-200 rounded" />
         </div>
       </div>
     )
   }
 
-  const ComponentTable = ({ items, title }: { items: Component[], title: string }) => (
-    <div className="mb-8">
-      <h3 className="text-sm font-semibold text-gray-900 mb-3">{title}</h3>
-      <table className="table-minimal">
-        <thead>
-          <tr>
-            <th>Название</th>
-            <th className="text-right">Цена за 1 набор</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item) => (
-            <tr key={item.id}>
-              <td>{item.name}</td>
-              <td className="text-right font-medium">{formatPrice(item.price_per_kit)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-
   return (
     <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
+      {/* Заголовок */}
+      <div className="flex justify-between items-start mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Расчет себестоимости</h1>
-          <p className="text-sm text-gray-500 mt-1">Химичка · Размер партии: 5000 шт</p>
+          <h1 className="text-2xl font-semibold text-gray-900">Себестоимость</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            {kitDetails ? `${kitDetails.name} · Партия: ${kitDetails.batch_size} шт` : 'Выберите набор'}
+          </p>
         </div>
-        <div className="flex space-x-3">
-          <button onClick={loadData} className="btn btn-secondary flex items-center space-x-2">
+        <div className="flex gap-2">
+          <button
+            onClick={() => activeKitId && loadKitDetails(activeKitId)}
+            className="btn btn-secondary flex items-center gap-2"
+          >
             <RefreshCw className="h-4 w-4" />
             <span>Обновить</span>
           </button>
-          <button className="btn btn-primary flex items-center space-x-2">
+          <button
+            onClick={() => setPickerOpen(true)}
+            disabled={!activeKitId}
+            className="btn btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             <Plus className="h-4 w-4" />
             <span>Добавить компонент</span>
           </button>
         </div>
       </div>
 
-      {/* Сводка */}
-      <div className="bg-gray-50 border border-gray-200 p-6 mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Итоговая себестоимость</h2>
-          <div className="flex items-center space-x-2">
-            <Calculator className="h-5 w-5 text-gray-400" />
-            <span className="text-2xl font-bold text-gray-900">{formatPrice(grandTotal)}</span>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-4 gap-6">
-          <div>
-            <div className="text-xs text-gray-500 mb-1">Реактивы</div>
-            <div className="text-lg font-semibold text-gray-900">{formatPrice(reagentsTotal)}</div>
-          </div>
-          <div>
-            <div className="text-xs text-gray-500 mb-1">Комплектующие</div>
-            <div className="text-lg font-semibold text-gray-900">{formatPrice(equipmentTotal)}</div>
-          </div>
-          <div>
-            <div className="text-xs text-gray-500 mb-1">Печать</div>
-            <div className="text-lg font-semibold text-gray-900">{formatPrice(printTotal)}</div>
-          </div>
-          <div>
-            <div className="text-xs text-gray-500 mb-1">Работа</div>
-            <div className="text-lg font-semibold text-gray-900">{formatPrice(laborTotal)}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Детальные таблицы */}
-      <div className="space-y-8">
-        {reagents.length > 0 && <ComponentTable items={reagents} title="Реактивы" />}
-        {equipment.length > 0 && <ComponentTable items={equipment} title="Комплектующие" />}
-        {printProducts.length > 0 && <ComponentTable items={printProducts} title="Печатная продукция" />}
-        {labor.length > 0 && <ComponentTable items={labor} title="Работа" />}
-      </div>
-
-      {components.length === 0 && (
-        <div className="text-center py-16">
-          <Calculator className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 mb-4">Нет данных для расчета</p>
-          <button className="btn btn-primary">
-            Импортировать данные
+      {/* Вкладки китов */}
+      <div className="flex items-center gap-1 border-b border-gray-200 mb-6">
+        {kits.map(kit => (
+          <button
+            key={kit.id}
+            onClick={() => setActiveKitId(kit.id)}
+            className={`px-5 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+              activeKitId === kit.id
+                ? 'border-gray-900 text-gray-900'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            {kit.name}
           </button>
+        ))}
+        <button
+          onClick={() => setKitModalOpen(true)}
+          className="ml-2 px-3 py-2 text-sm text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors flex items-center gap-1 -mb-px"
+          title="Добавить набор"
+        >
+          <Plus className="h-4 w-4" />
+          <span>Набор</span>
+        </button>
+      </div>
+
+      {kitLoading ? (
+        <div className="animate-pulse space-y-3">
+          <div className="h-28 bg-gray-100 rounded" />
+          <div className="h-48 bg-gray-100 rounded" />
         </div>
+      ) : kitDetails ? (
+        <>
+          {/* Итоговая карточка */}
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-semibold text-gray-900">Итоговая себестоимость</h2>
+              <span className="text-2xl font-bold text-gray-900">{fmt(grandTotal)}</span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {CATEGORY_ORDER.map(cat => (
+                <div key={cat}>
+                  <div className="text-xs text-gray-500 mb-0.5">{CATEGORY_LABELS[cat]}</div>
+                  <div className="text-base font-semibold text-gray-900">{fmt(totals[cat])}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Единая таблица компонентов */}
+          {allItems.length > 0 && (
+            <table className="table-minimal mb-8 ml-5">
+              <thead>
+                <tr>
+                  <th className="w-10" />
+                  <th>Название</th>
+                  <th>Артикул / Поставщик</th>
+                  <th className="text-right">Цена за ед.</th>
+                  <th className="text-right">Кол-во</th>
+                  <th className="text-right">Итого</th>
+                  <th className="w-20" />
+                </tr>
+              </thead>
+              <tbody>
+                    {allItems.map(kc => {
+                      const c = kc.component
+                      const isComposite = c.is_composite
+                      const expanded = expandedIds.has(c.id)
+                      const parts = partsCache[c.id] ?? []
+
+                      return (
+                        <>
+                          <tr key={kc.id} className={isComposite ? 'cursor-default' : ''}>
+                            {/* Фото + раскрытие */}
+                            <td className="relative">
+                              {/* Шеврон вынесен левее колонки */}
+                              <button
+                                onClick={() => isComposite && toggleExpand(c.id)}
+                                className={`absolute -left-5 top-1/2 -translate-y-1/2 transition-colors ${
+                                  isComposite
+                                    ? 'text-gray-400 hover:text-gray-700 cursor-pointer'
+                                    : 'text-transparent cursor-default pointer-events-none'
+                                }`}
+                                tabIndex={isComposite ? 0 : -1}
+                                title={isComposite ? (expanded ? 'Скрыть состав' : 'Показать состав') : undefined}
+                              >
+                                <ChevronRight className={`h-4 w-4 transition-transform ${expanded ? 'rotate-90' : ''}`} />
+                              </button>
+
+                              {c.image_url ? (
+                                <img
+                                  src={`${API_BASE}${c.image_url}`}
+                                  alt={c.name}
+                                  className="h-[60px] w-[60px] object-contain rounded"
+                                />
+                              ) : (
+                                <div className="h-[60px] w-[60px] rounded bg-gray-100 flex items-center justify-center">
+                                  <ImageIcon className="h-6 w-6 text-gray-300" />
+                                </div>
+                              )}
+                            </td>
+
+                            {/* Название + бейдж "сложный" */}
+                            <td>
+                              <div className="flex items-center gap-2">
+                                <div>
+                                  <button
+                                    onClick={() => handleEdit(c)}
+                                    className="font-medium text-gray-900 leading-tight hover:text-blue-600 hover:underline text-left transition-colors"
+                                  >
+                                    {c.name}
+                                  </button>
+                                  {(c.dimensions || c.weight_kg) && (
+                                    <div className="text-xs text-gray-400 mt-0.5">
+                                      {[c.dimensions, c.weight_kg ? `${c.weight_kg} кг` : null]
+                                        .filter(Boolean).join(' · ')}
+                                    </div>
+                                  )}
+                                </div>
+                                <span className={`shrink-0 text-xs px-1.5 py-0.5 rounded font-medium ${CATEGORY_COLORS[c.category] ?? 'bg-gray-100 text-gray-500'}`}>
+                                  {CATEGORY_LABELS[c.category]}
+                                </span>
+                                {isComposite && (
+                                  <span className="shrink-0 text-xs px-1.5 py-0.5 rounded bg-violet-100 text-violet-600 font-medium">
+                                    составной
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* Артикул / фабрика / ссылка 1688 */}
+                            <td>
+                              {c.sku && <div className="text-sm text-gray-700">{c.sku}</div>}
+                              {c.factory && <div className="text-xs text-gray-400">{c.factory}</div>}
+                              {c.link_1688 && (
+                                <a
+                                  href={c.link_1688}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-0.5 text-xs text-blue-500 hover:text-blue-700"
+                                >
+                                  <ExternalLink className="h-3 w-3" />1688
+                                </a>
+                              )}
+                            </td>
+
+                            <td className="text-right text-gray-600">{fmt(c.unit_price)}</td>
+
+                            <td className="text-right">
+                              <QuantityCell kc={kc} onSave={qty => handleQuantityChange(kc, qty)} />
+                            </td>
+
+                            <td className="text-right font-medium">{fmt(lineTotal(kc))}</td>
+
+                            <td>
+                              <div className="flex justify-end gap-1">
+                                <button
+                                  onClick={() => handleEdit(c)}
+                                  className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                  title="Редактировать"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(c)}
+                                  className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                  title="Удалить из набора"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+
+                          {/* Раскрытые детали */}
+                          {isComposite && expanded && parts.map((entry, i) => (
+                            <tr key={`${kc.id}-part-${entry.id}`} className="bg-violet-50/40">
+                              <td />
+                              <td className="py-1.5 pl-8">
+                                <div className="flex items-center gap-2">
+                                  {i === parts.length - 1
+                                    ? <span className="text-gray-300 select-none">└</span>
+                                    : <span className="text-gray-300 select-none">├</span>
+                                  }
+                                  {entry.part.image_url ? (
+                                    <img
+                                      src={`${API_BASE}${entry.part.image_url}`}
+                                      alt={entry.part.name}
+                                      className="h-10 w-10 object-contain rounded shrink-0"
+                                    />
+                                  ) : (
+                                    <div className="h-10 w-10 rounded bg-gray-100 flex items-center justify-center shrink-0">
+                                      <ImageIcon className="h-4 w-4 text-gray-300" />
+                                    </div>
+                                  )}
+                                  <button
+                                    onClick={() => handleEdit(entry.part)}
+                                    className="text-sm text-gray-700 hover:text-blue-600 hover:underline text-left transition-colors"
+                                  >
+                                    {entry.part.name}
+                                  </button>
+                                  {entry.part.sku && (
+                                    <span className="text-xs text-gray-400">{entry.part.sku}</span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="py-1.5">
+                                {entry.part.factory && (
+                                  <span className="text-xs text-gray-400">{entry.part.factory}</span>
+                                )}
+                              </td>
+                              <td className="py-1.5 text-right text-xs text-gray-500">
+                                {fmt(entry.part.unit_price)}
+                              </td>
+                              <td className="py-1.5 text-right text-xs text-gray-500 tabular-nums">
+                                {Math.round(Number(entry.quantity))} × {Math.round(Number(kc.quantity))}
+                              </td>
+                              <td className="py-1.5 text-right text-xs text-gray-600 font-medium">
+                                {fmt(Number(entry.part.unit_price) * Number(entry.quantity) * Number(kc.quantity))}
+                              </td>
+                              <td />
+                            </tr>
+                          ))}
+
+                          {/* Загрузка деталей */}
+                          {isComposite && expanded && !partsCache[c.id] && (
+                            <tr className="bg-violet-50/40">
+                              <td colSpan={7} className="py-2 pl-16 text-xs text-gray-400">
+                                Загрузка состава…
+                              </td>
+                            </tr>
+                          )}
+                        </>
+                      )
+                    })}
+              </tbody>
+            </table>
+          )}
+
+          {allItems.length === 0 && (
+            <div className="text-center py-16 border border-dashed border-gray-200 rounded-lg">
+              <p className="text-gray-400 mb-4">В этом наборе пока нет компонентов</p>
+              <button onClick={() => setPickerOpen(true)} className="btn btn-primary">
+                Добавить первый компонент
+              </button>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="text-center py-16 text-gray-400">Выберите набор</div>
+      )}
+
+      {/* Пикер — выбор существующего компонента из каталога */}
+      {pickerOpen && activeKitId && (
+        <ComponentPicker
+          kitId={activeKitId}
+          existingComponents={kitDetails?.components ?? []}
+          onClose={() => setPickerOpen(false)}
+          onAdded={() => { if (activeKitId) loadKitDetails(activeKitId) }}
+        />
+      )}
+
+      {/* Редактирование компонента (не создание) */}
+      {editModalOpen && editingComponent && (
+        <ComponentModal
+          component={editingComponent}
+          onClose={() => { setEditModalOpen(false); setEditingComponent(null) }}
+          onSaved={handleEditSaved}
+        />
+      )}
+
+      {kitModalOpen && (
+        <KitModal
+          onClose={() => setKitModalOpen(false)}
+          onSaved={async (kitId) => {
+            setKitModalOpen(false)
+            await loadKits()
+            setActiveKitId(kitId)
+          }}
+        />
       )}
     </div>
   )
 }
-
-export default CostCalculation

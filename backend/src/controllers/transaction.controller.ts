@@ -62,10 +62,11 @@ export const transactionController = {
   async create(req: Request, res: Response) {
     try {
       const transaction = transactionRepository.create(req.body);
-      const savedTransaction = await transactionRepository.save(transaction);
-      
+      const result = await transactionRepository.insert(transaction);
+      const savedId = result.identifiers[0].id;
+
       const fullTransaction = await transactionRepository.findOne({
-        where: { id: savedTransaction.id },
+        where: { id: savedId },
         relations: ['category', 'counterparty']
       });
 

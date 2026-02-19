@@ -50,23 +50,23 @@ export const kitController = {
       const { components, ...kitData } = req.body;
 
       const kit = kitRepository.create(kitData);
-      const savedKit = await kitRepository.save(kit);
+      const result = await kitRepository.insert(kit);
+      const savedId = result.identifiers[0].id;
 
-      // Добавляем компоненты если они есть
       if (components && Array.isArray(components)) {
         for (const comp of components) {
           const kitComponent = kitComponentRepository.create({
-            kit_id: savedKit.id,
+            kit_id: savedId,
             component_id: comp.component_id,
             quantity: comp.quantity,
             notes: comp.notes
           });
-          await kitComponentRepository.save(kitComponent);
+          await kitComponentRepository.insert(kitComponent);
         }
       }
 
       const fullKit = await kitRepository.findOne({
-        where: { id: savedKit.id },
+        where: { id: savedId },
         relations: ['components', 'components.component']
       });
 
@@ -191,6 +191,85 @@ export const kitController = {
     } catch (error) {
       console.error('Ошибка при расчете себестоимости:', error);
       res.status(500).json({ error: 'Ошибка при расчете себестоимости' });
+    }
+  },
+
+  // Добавить компонент в набор
+  async addComponent(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { component_id, quantity = 1, notes } = req.body;
+
+      const kit = await kitRepository.findOne({ where: { id } });
+      if (!kit) return res.status(404).json({ error: 'Набор не найден' });
+
+      const component = await componentRepository.findOne({ where: { id: component_id } });
+      if (!component) return res.status(404).json({ error: 'Компонент не найден' });
+
+      const existing = await kitComponentRepository.findOne({
+        where: { kit_id: id, component_id }
+      });
+      if (existing) return res.status(409).json({ error: 'Компонент уже добавлен в этот набор' });
+
+      const result = await kitComponentRepository.insert(
+        kitComponentRepository.create({ kit_id: id, component_id, quantity, notes })
+      );
+      const kitComponent = await kitComponentRepository.findOne({
+        where: { id: result.identifiers[0].id },
+        relations: ['component']
+      });
+
+      res.status(201).json(kitComponent);
+    } catch (error) {
+      console.error('Ошибка при добавлении компонента в набор:', error);
+      res.status(500).json({ error: 'Ошибка при добавлении компонента в набор' });
+    }
+  },
+
+  // Обновить количество компонента в наборе
+  async updateComponent(req: Request, res: Response) {
+    try {
+      const { id, componentId } = req.params;
+      const { quantity } = req.body;
+
+      if (quantity === undefined || isNaN(Number(quantity)) || Number(quantity) <= 0) {
+        return res.status(400).json({ error: 'Укажите корректное количество (> 0)' });
+      }
+
+      const kitComponent = await kitComponentRepository.findOne({
+        where: { kit_id: id, component_id: componentId }
+      });
+
+      if (!kitComponent) {
+        return res.status(404).json({ error: 'Компонент не найден в наборе' });
+      }
+
+      await kitComponentRepository.update(kitComponent.id, { quantity: Number(quantity) });
+      res.json({ message: 'Количество обновлено' });
+    } catch (error) {
+      console.error('Ошибка при обновлении компонента набора:', error);
+      res.status(500).json({ error: 'Ошибка при обновлении компонента набора' });
+    }
+  },
+
+  // Удалить компонент из набора
+  async removeComponent(req: Request, res: Response) {
+    try {
+      const { id, componentId } = req.params;
+
+      const result = await kitComponentRepository.delete({
+        kit_id: id,
+        component_id: componentId
+      });
+
+      if (result.affected === 0) {
+        return res.status(404).json({ error: 'Компонент не найден в наборе' });
+      }
+
+      res.json({ message: 'Компонент удалён из набора' });
+    } catch (error) {
+      console.error('Ошибка при удалении компонента из набора:', error);
+      res.status(500).json({ error: 'Ошибка при удалении компонента из набора' });
     }
   }
 };
