@@ -1,0 +1,13 @@
+import { Router } from 'express';
+import { kitController } from '../controllers/kit.controller';
+
+const router = Router();
+
+router.get('/', kitController.getAll);
+router.get('/:id', kitController.getById);
+router.get('/:id/calculate', kitController.calculateCost);
+router.post('/', kitController.create);
+router.put('/:id', kitController.update);
+router.delete('/:id', kitController.delete);
+
+export default router;

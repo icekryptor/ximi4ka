@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    container_name: ximfinance-db
+    environment:
+      POSTGRES_DB: ximfinance
+      POSTGRES_USER: ximfinance_user
+      POSTGRES_PASSWORD: ximfinance_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ximfinance-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ximfinance-backend
+    environment:
+      NODE_ENV: production
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ximfinance
+      DATABASE_USER: ximfinance_user
+      DATABASE_PASSWORD: ximfinance_pass
+      JWT_SECRET: change-this-secret-in-production
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+    networks:
+      - ximfinance-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ximfinance-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - ximfinance-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  ximfinance-network:
+    driver: bridge
