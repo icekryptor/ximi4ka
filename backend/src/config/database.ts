@@ -27,8 +27,9 @@ const dataSourceOptions = databaseUrl
       entities: [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent],
       migrations: ['src/migrations/**/*.ts'],
       subscribers: [],
+      ssl: { rejectUnauthorized: false },
       extra: databaseUrl.includes('pooler.supabase.com')
-        ? { max: 10, idleTimeoutMillis: 10000 }
+        ? { max: 3, idleTimeoutMillis: 5000 }
         : undefined,
     }
   : {
