@@ -80,9 +80,12 @@ async function bootstrap() {
   });
 }
 
-bootstrap().catch((error) => {
-  console.error('❌ Ошибка подключения к базе данных:', error.message || error);
-  process.exit(1);
-});
+// Only start the server when running directly (not in Vercel serverless)
+if (!process.env.VERCEL) {
+  bootstrap().catch((error) => {
+    console.error('❌ Ошибка подключения к базе данных:', error.message || error);
+    process.exit(1);
+  });
+}
 
 export default app;
