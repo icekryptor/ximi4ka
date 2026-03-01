@@ -351,13 +351,21 @@ export default function AssemblyTree({ kitComponents, onOpenComponent }: Props) 
 /* ── Tree builder ── */
 
 async function buildFullTree(kitComponents: KitComponent[]): Promise<TreeNode[]> {
-  return Promise.all(kitComponents.map(kc => buildNode(kc.component, kc.quantity)))
+  // Sequential to avoid Supabase connection pool exhaustion on Vercel serverless
+  const nodes: TreeNode[] = []
+  for (const kc of kitComponents) {
+    nodes.push(await buildNode(kc.component, kc.quantity))
+  }
+  return nodes
 }
 
 async function buildNode(component: Component, quantity: number): Promise<TreeNode> {
   if (!component.is_composite) return { component, quantity }
   let parts: ComponentPart[] = []
   try { parts = await componentsApi.getParts(component.id) } catch (e) { console.error(e) }
-  const children = await Promise.all(parts.map(p => buildNode(p.part, Number(p.quantity))))
+  const children: TreeNode[] = []
+  for (const p of parts) {
+    children.push(await buildNode(p.part, Number(p.quantity)))
+  }
   return { component, quantity, children }
 }

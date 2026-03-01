@@ -107,8 +107,9 @@ export default function CostCalculation() {
       if (!isSolution) {
         setExpandedIds(prev => new Set([...prev, componentId]))
       }
+      // Sequential to avoid exhausting Supabase connection pool on serverless
       for (const p of parts) {
-        if (p.part.is_composite) deepExpand(p.part.id, p.part.name)
+        if (p.part.is_composite) await deepExpand(p.part.id, p.part.name)
       }
     } catch (e) { console.error(e) }
   }
@@ -181,9 +182,12 @@ export default function CostCalculation() {
   useEffect(() => {
     if (!kitDetails?.components) return
     fetchedRef.current.clear()
-    kitDetails.components
-      .filter(kc => kc.component.is_composite)
-      .forEach(kc => deepExpand(kc.component.id, kc.component.name))
+    // Sequential to avoid Supabase pool exhaustion on Vercel serverless
+    ;(async () => {
+      for (const kc of (kitDetails.components ?? []).filter(kc => kc.component.is_composite)) {
+        await deepExpand(kc.component.id, kc.component.name)
+      }
+    })()
   }, [kitDetails])
 
   const { totals, grandTotal } = useMemo(() => {
