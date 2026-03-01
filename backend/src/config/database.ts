@@ -28,9 +28,12 @@ const dataSourceOptions = databaseUrl
       migrations: ['src/migrations/**/*.ts'],
       subscribers: [],
       ssl: { rejectUnauthorized: false },
-      extra: databaseUrl.includes('pooler.supabase.com')
-        ? { max: 3, idleTimeoutMillis: 5000 }
-        : undefined,
+      extra: {
+        // Serverless: minimize connections — one per function instance
+        max: 1,
+        idleTimeoutMillis: 10000,
+        connectionTimeoutMillis: 10000,
+      },
     }
   : {
       type: 'postgres' as const,

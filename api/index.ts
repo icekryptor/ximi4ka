@@ -26,15 +26,24 @@ function ensureConnection(): Promise<void> {
   return initPromise;
 }
 
-// Vercel serverless handler
+// Vercel serverless handler with retry for transient pool exhaustion
 export default async function handler(req: any, res: any) {
-  try {
-    await ensureConnection();
-  } catch (error: any) {
-    return res.status(500).json({
-      error: 'Database connection failed',
-      message: error.message,
-    });
+  const MAX_RETRIES = 2;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      await ensureConnection();
+      return app(req, res);
+    } catch (error: any) {
+      const isPoolExhausted = error.message?.includes('MaxClients');
+      if (isPoolExhausted && attempt < MAX_RETRIES) {
+        // Wait briefly before retry — other connections may free up
+        await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
+        continue;
+      }
+      return res.status(500).json({
+        error: 'Database connection failed',
+        message: error.message,
+      });
+    }
   }
-  return app(req, res);
 }
