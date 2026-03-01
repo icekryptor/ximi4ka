@@ -4,20 +4,26 @@ import { AppDataSource } from '../backend/src/config/database';
 // Import the Express app (does NOT call .listen() on Vercel thanks to VERCEL env check)
 import app from '../backend/src/server';
 
-// Lazy-init: reuse connection across warm serverless invocations
-let initialized = false;
+// Promise-based singleton: all concurrent requests await the SAME initialization promise
+let initPromise: Promise<void> | null = null;
 
-async function ensureConnection() {
-  if (!initialized && !AppDataSource.isInitialized) {
-    try {
-      await AppDataSource.initialize();
-      initialized = true;
-      console.log('✅ Database connected (serverless)');
-    } catch (error: any) {
-      console.error('❌ Database connection failed:', error.message);
-      throw error;
-    }
+function ensureConnection(): Promise<void> {
+  if (AppDataSource.isInitialized) {
+    return Promise.resolve();
   }
+  if (!initPromise) {
+    initPromise = AppDataSource.initialize()
+      .then(() => {
+        console.log('✅ Database connected (serverless)');
+      })
+      .catch((error: any) => {
+        // Reset so next request retries instead of caching the failure
+        initPromise = null;
+        console.error('❌ Database connection failed:', error.message);
+        throw error;
+      });
+  }
+  return initPromise;
 }
 
 // Vercel serverless handler
