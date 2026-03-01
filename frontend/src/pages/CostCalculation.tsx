@@ -5,6 +5,7 @@ import { kitsApi, Kit, KitComponent } from '../api/kits'
 import ComponentModal from '../components/ComponentModal'
 import ComponentPicker from '../components/ComponentPicker'
 import KitModal from '../components/KitModal'
+import AssemblyScheme from '../components/AssemblyScheme'
 
 const CATEGORY_LABELS: Record<string, string> = {
   reagent: 'Реактив',
@@ -20,7 +21,8 @@ const CATEGORY_COLORS: Record<string, string> = {
 }
 const CATEGORY_ORDER = ['reagent', 'equipment', 'print', 'labor']
 
-const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') ?? 'http://localhost:3001'
+const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '')
+  ?? (typeof window !== 'undefined' && window.location.hostname !== 'localhost' ? '' : 'http://localhost:3001')
 
 /** Inline-редактируемое поле количества */
 function QuantityCell({ kc, onSave }: { kc: KitComponent; onSave: (qty: number) => void }) {
@@ -252,6 +254,9 @@ export default function CostCalculation() {
               ))}
             </div>
           </div>
+
+          {/* Схема сборки */}
+          <AssemblyScheme kit={kitDetails} />
 
           {/* Единая таблица компонентов */}
           {allItems.length > 0 && (
