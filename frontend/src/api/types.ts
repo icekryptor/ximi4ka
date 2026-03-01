@@ -5,6 +5,7 @@ export enum TransactionType {
 
 export enum CounterpartyType {
   SUPPLIER = 'supplier',
+  CARRIER  = 'carrier',
   CUSTOMER = 'customer',
   BOTH = 'both'
 }
@@ -29,6 +30,7 @@ export interface Counterparty {
   id: string;
   name: string;
   type: CounterpartyType;
+  country?: string;
   inn?: string;
   address?: string;
   phone?: string;

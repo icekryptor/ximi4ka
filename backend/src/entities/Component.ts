@@ -6,19 +6,23 @@ import {
   UpdateDateColumn,
   ManyToOne,
   OneToMany,
-  JoinColumn
+  JoinColumn,
+  Index,
 } from 'typeorm';
 import { Counterparty } from './Counterparty';
 import { ComponentPart } from './ComponentPart';
 
 export enum ComponentCategory {
   REAGENT = 'reagent',           // Реактивы
+  METAL = 'metal',               // Металлы (кг→г, как реактивы)
   EQUIPMENT = 'equipment',       // Комплектующие
   PRINT = 'print',              // Печатная продукция
   LABOR = 'labor'               // Работа
 }
 
 @Entity('components')
+@Index(['category', 'is_active'])
+@Index(['supplier_id'])
 export class Component {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -43,6 +47,9 @@ export class Component {
   @Column({ type: 'text', nullable: true, comment: 'Ссылка на 1688' })
   link_1688: string;
 
+  @Column({ type: 'text', nullable: true, comment: 'Ссылка на регламент' })
+  regulation_url: string;
+
   @Column({ type: 'varchar', length: 255, nullable: true, comment: 'Название фабрики/поставщика' })
   factory: string;
 
@@ -53,7 +60,7 @@ export class Component {
   @Column('decimal', { precision: 12, scale: 2, nullable: true, comment: 'Масса партии (г)' })
   batch_weight: number;
 
-  @Column('decimal', { precision: 10, scale: 3, nullable: true, comment: 'Количество на 1 набор (г)' })
+  @Column('decimal', { precision: 12, scale: 4, nullable: true, comment: 'Количество на 1 набор (г)' })
   per_kit_amount: number;
 
   @Column('decimal', { precision: 12, scale: 4, nullable: true, comment: 'Цена за 1 г' })
@@ -82,14 +89,24 @@ export class Component {
   @Column('decimal', { precision: 12, scale: 2, nullable: true, comment: 'Стоимость печати' })
   print_cost: number;
 
-  // Общие поля
-  @Column('decimal', { precision: 12, scale: 2, comment: 'Цена за 1 единицу' })
+  // Структура стоимости
+  @Column('decimal', { precision: 12, scale: 2, default: 0, comment: 'Стоимость материалов' })
+  cost_materials: number;
+
+  @Column('decimal', { precision: 12, scale: 2, default: 0, comment: 'Стоимость логистики' })
+  cost_logistics: number;
+
+  @Column('decimal', { precision: 12, scale: 2, default: 0, comment: 'Стоимость работы' })
+  cost_labor: number;
+
+  // Итоговая цена = cost_materials + cost_logistics + cost_labor (хранится для удобства запросов)
+  @Column('decimal', { precision: 12, scale: 2, default: 0, comment: 'Итоговая цена за 1 единицу' })
   unit_price: number;
 
   @Column('decimal', { precision: 10, scale: 3, default: 1, comment: 'Количество в одном наборе' })
   quantity_per_kit: number;
 
-  @Column('decimal', { precision: 12, scale: 2, comment: 'Цена на 1 набор' })
+  @Column('decimal', { precision: 12, scale: 2, default: 0, comment: 'Цена на 1 набор' })
   price_per_kit: number;
 
   @ManyToOne(() => Counterparty, { nullable: true, onDelete: 'SET NULL' })
@@ -98,6 +115,13 @@ export class Component {
 
   @Column({ nullable: true })
   supplier_id: string;
+
+  @ManyToOne(() => Counterparty, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'carrier_id' })
+  carrier: Counterparty;
+
+  @Column({ nullable: true })
+  carrier_id: string;
 
   @Column({ type: 'text', nullable: true, comment: 'URL изображения компонента' })
   image_url: string;

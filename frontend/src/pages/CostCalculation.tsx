@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
-import { Plus, RefreshCw, Pencil, Trash2, ImageIcon, ExternalLink, ChevronRight } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Plus, RefreshCw, Pencil, Trash2, ImageIcon, ExternalLink, ChevronRight, GitBranch, Table2 } from 'lucide-react'
 import { Component, ComponentPart, componentsApi } from '../api/components'
 import { kitsApi, Kit, KitComponent } from '../api/kits'
 import ComponentModal from '../components/ComponentModal'
 import ComponentPicker from '../components/ComponentPicker'
 import KitModal from '../components/KitModal'
-import AssemblyScheme from '../components/AssemblyScheme'
+import AssemblyTree from '../components/AssemblyTree'
 
 const CATEGORY_LABELS: Record<string, string> = {
   reagent: 'Реактив',
@@ -74,11 +74,11 @@ export default function CostCalculation() {
   const [editingComponent, setEditingComponent] = useState<Component | null>(null)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [kitModalOpen, setKitModalOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'table' | 'tree'>('table')
 
-  // Раскрытые сложные компоненты: componentId → true
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
-  // Кэш деталей: componentId → ComponentPart[]
   const [partsCache, setPartsCache] = useState<Record<string, ComponentPart[]>>({})
+  const fetchedRef = useRef(new Set<string>())
 
   const toggleExpand = async (componentId: string) => {
     setExpandedIds(prev => {
@@ -93,6 +93,24 @@ export default function CostCalculation() {
         setPartsCache(prev => ({ ...prev, [componentId]: parts }))
       } catch (e) { console.error(e) }
     }
+  }
+
+  const SOLUTION_RE = /раствор/i
+
+  const deepExpand = async (componentId: string, componentName?: string) => {
+    if (fetchedRef.current.has(componentId)) return
+    fetchedRef.current.add(componentId)
+    try {
+      const parts = await componentsApi.getParts(componentId)
+      setPartsCache(prev => ({ ...prev, [componentId]: parts }))
+      const isSolution = componentName && SOLUTION_RE.test(componentName)
+      if (!isSolution) {
+        setExpandedIds(prev => new Set([...prev, componentId]))
+      }
+      for (const p of parts) {
+        if (p.part.is_composite) deepExpand(p.part.id, p.part.name)
+      }
+    } catch (e) { console.error(e) }
   }
 
   const loadKits = async () => {
@@ -160,11 +178,108 @@ export default function CostCalculation() {
 
   const allItems = kitDetails?.components ?? []
 
-  const totals = CATEGORY_ORDER.reduce((acc, cat) => {
-    acc[cat] = allItems.filter(kc => kc.component.category === cat).reduce((s, kc) => s + lineTotal(kc), 0)
-    return acc
-  }, {} as Record<string, number>)
-  const grandTotal = Object.values(totals).reduce((s, v) => s + v, 0)
+  useEffect(() => {
+    if (!kitDetails?.components) return
+    fetchedRef.current.clear()
+    kitDetails.components
+      .filter(kc => kc.component.is_composite)
+      .forEach(kc => deepExpand(kc.component.id, kc.component.name))
+  }, [kitDetails])
+
+  const { totals, grandTotal } = useMemo(() => {
+    const t = CATEGORY_ORDER.reduce((acc, cat) => {
+      acc[cat] = allItems.filter(kc => kc.component.category === cat).reduce((s, kc) => s + lineTotal(kc), 0)
+      return acc
+    }, {} as Record<string, number>)
+    return { totals: t, grandTotal: Object.values(t).reduce((s, v) => s + v, 0) }
+  }, [allItems])
+
+  const renderPartRows = (
+    parts: ComponentPart[],
+    accQty: number,
+    depth: number,
+    keyPrefix: string
+  ): React.ReactNode[] => {
+    return parts.flatMap((entry, i) => {
+      const isLast = i === parts.length - 1
+      const isEntryComposite = entry.part.is_composite
+      const entryExpanded = expandedIds.has(entry.part.id)
+      const subParts = partsCache[entry.part.id] ?? []
+      const indentPx = 30 * depth
+
+      const rows: React.ReactNode[] = [
+        <tr key={`${keyPrefix}-${entry.id}`}
+          className={depth === 1 ? 'bg-violet-50/40' : 'bg-violet-50/20'}
+        >
+          <td className="relative">
+            {isEntryComposite && (
+              <button
+                onClick={() => toggleExpand(entry.part.id)}
+                className="absolute -left-1 top-1/2 -translate-y-1/2 text-violet-400 hover:text-violet-700 cursor-pointer"
+                title={entryExpanded ? 'Скрыть состав' : 'Показать состав'}
+              >
+                <ChevronRight className={`h-3.5 w-3.5 transition-transform ${entryExpanded ? 'rotate-90' : ''}`} />
+              </button>
+            )}
+          </td>
+          <td className="py-1.5" style={{ paddingLeft: indentPx }}>
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-gray-300 select-none">{isLast ? '└' : '├'}</span>
+              {entry.part.image_url ? (
+                <img src={`${API_BASE}${entry.part.image_url}`} alt={entry.part.name}
+                  className="h-10 w-10 object-contain rounded shrink-0" />
+              ) : (
+                <div className="h-10 w-10 rounded bg-gray-100 flex items-center justify-center shrink-0">
+                  <ImageIcon className="h-4 w-4 text-gray-300" />
+                </div>
+              )}
+              <div className="min-w-0 max-w-[180px]">
+                <button onClick={() => handleEdit(entry.part)}
+                  className="text-sm text-gray-700 hover:text-blue-600 hover:underline text-left transition-colors truncate block w-full"
+                  title={entry.part.name}
+                >
+                  {entry.part.name}
+                </button>
+              </div>
+              {isEntryComposite && (
+                <span className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-violet-100 text-violet-600 font-medium">СК</span>
+              )}
+              {entry.part.sku && <span className="text-xs text-gray-400">{entry.part.sku}</span>}
+            </div>
+          </td>
+          <td className="py-1.5">
+            {entry.part.factory && <span className="text-xs text-gray-400">{entry.part.factory}</span>}
+          </td>
+          <td className="py-1.5 text-right text-xs text-gray-500">{fmt(Number(entry.part.cost_materials))}</td>
+          <td className="py-1.5 text-right text-xs text-gray-500">{fmt(Number(entry.part.cost_logistics))}</td>
+          <td className="py-1.5 text-right text-xs text-gray-500">{fmt(Number(entry.part.cost_labor))}</td>
+          <td className="py-1.5 text-right text-xs text-gray-500 tabular-nums">
+            ×{Math.round(Number(entry.quantity))}
+          </td>
+          <td className="py-1.5 text-right text-xs text-gray-600 font-medium">
+            {fmt(Number(entry.part.unit_price) * Number(entry.quantity) * accQty)}
+          </td>
+          <td />
+        </tr>
+      ]
+
+      if (isEntryComposite && entryExpanded && subParts.length > 0) {
+        rows.push(...renderPartRows(subParts, accQty * Number(entry.quantity), depth + 1, `${keyPrefix}-${entry.id}`))
+      }
+
+      if (isEntryComposite && entryExpanded && !partsCache[entry.part.id]) {
+        rows.push(
+          <tr key={`${keyPrefix}-${entry.id}-loading`} className="bg-violet-50/20">
+            <td colSpan={9} className="py-2 text-xs text-gray-400" style={{ paddingLeft: indentPx + 24 }}>
+              Загрузка состава…
+            </td>
+          </tr>
+        )
+      }
+
+      return rows
+    })
+  }
 
   if (loading) {
     return (
@@ -184,17 +299,37 @@ export default function CostCalculation() {
       <div className="flex justify-between items-start mb-6">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Себестоимость</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {kitDetails ? `${kitDetails.name} · Партия: ${kitDetails.batch_size} шт` : 'Выберите набор'}
+          <p className="text-sm text-gray-500 mt-1 max-w-[320px] truncate" title={kitDetails?.name}>
+            {kitDetails ? kitDetails.name : 'Выберите набор'}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          {/* Переключатель Таблица / Схема */}
+          <div className="flex rounded-lg border border-gray-200 p-0.5 bg-gray-50">
+            {([
+              { mode: 'table', icon: Table2, label: 'Таблица' },
+              { mode: 'tree',  icon: GitBranch, label: 'Схема сборки' },
+            ] as const).map(({ mode, icon: Icon, label }) => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  viewMode === mode
+                    ? 'bg-white shadow-sm text-gray-900'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+              </button>
+            ))}
+          </div>
+
           <button
             onClick={() => activeKitId && loadKitDetails(activeKitId)}
             className="btn btn-secondary flex items-center gap-2"
           >
             <RefreshCw className="h-4 w-4" />
-            <span>Обновить</span>
           </button>
           <button
             onClick={() => setPickerOpen(true)}
@@ -213,11 +348,12 @@ export default function CostCalculation() {
           <button
             key={kit.id}
             onClick={() => setActiveKitId(kit.id)}
-            className={`px-5 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+            className={`px-5 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px max-w-[180px] truncate ${
               activeKitId === kit.id
                 ? 'border-gray-900 text-gray-900'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
+            title={kit.name}
           >
             {kit.name}
           </button>
@@ -245,6 +381,18 @@ export default function CostCalculation() {
               <h2 className="text-base font-semibold text-gray-900">Итоговая себестоимость</h2>
               <span className="text-2xl font-bold text-gray-900">{fmt(grandTotal)}</span>
             </div>
+            <div className="grid grid-cols-3 gap-4 mb-4 pb-4 border-b border-gray-200">
+              {[
+                { label: 'Материалы', value: allItems.reduce((s, kc) => s + Number(kc.component.cost_materials) * Number(kc.quantity), 0) },
+                { label: 'Логистика', value: allItems.reduce((s, kc) => s + Number(kc.component.cost_logistics) * Number(kc.quantity), 0) },
+                { label: 'Работа', value: allItems.reduce((s, kc) => s + Number(kc.component.cost_labor) * Number(kc.quantity), 0) },
+              ].map(({ label, value }) => (
+                <div key={label}>
+                  <div className="text-xs text-gray-500 mb-0.5">{label}</div>
+                  <div className="text-base font-semibold text-gray-900">{fmt(value)}</div>
+                </div>
+              ))}
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {CATEGORY_ORDER.map(cat => (
                 <div key={cat}>
@@ -256,22 +404,30 @@ export default function CostCalculation() {
           </div>
 
           {/* Схема сборки */}
-          <AssemblyScheme kit={kitDetails} />
+          {viewMode === 'tree' && (
+            <AssemblyTree
+              kitComponents={allItems}
+              onOpenComponent={handleEdit}
+            />
+          )}
 
           {/* Единая таблица компонентов */}
-          {allItems.length > 0 && (
-            <table className="table-minimal mb-8 ml-5">
-              <thead>
-                <tr>
-                  <th className="w-10" />
-                  <th>Название</th>
-                  <th>Артикул / Поставщик</th>
-                  <th className="text-right">Цена за ед.</th>
-                  <th className="text-right">Кол-во</th>
-                  <th className="text-right">Итого</th>
-                  <th className="w-20" />
-                </tr>
-              </thead>
+          {viewMode === 'table' && allItems.length > 0 && (
+            <div className="overflow-x-auto mb-8">
+            <table className="table-minimal ml-5 min-w-max">
+                  <thead>
+                    <tr>
+                      <th className="w-10" />
+                      <th>Название</th>
+                      <th>Артикул / Поставщик</th>
+                      <th className="text-right">Материалы</th>
+                      <th className="text-right">Логистика</th>
+                      <th className="text-right">Работа</th>
+                      <th className="text-right">Кол-во</th>
+                      <th className="text-right">Итого</th>
+                      <th className="w-20" />
+                    </tr>
+                  </thead>
               <tbody>
                     {allItems.map(kc => {
                       const c = kc.component
@@ -313,11 +469,12 @@ export default function CostCalculation() {
 
                             {/* Название + бейдж "сложный" */}
                             <td>
-                              <div className="flex items-center gap-2">
-                                <div>
+                              <div className="flex items-center gap-2 min-w-0">
+                                <div className="min-w-0 max-w-[220px]">
                                   <button
                                     onClick={() => handleEdit(c)}
-                                    className="font-medium text-gray-900 leading-tight hover:text-blue-600 hover:underline text-left transition-colors"
+                                    className="font-medium text-gray-900 leading-tight hover:text-blue-600 hover:underline text-left transition-colors truncate block w-full"
+                                    title={c.name}
                                   >
                                     {c.name}
                                   </button>
@@ -355,7 +512,9 @@ export default function CostCalculation() {
                               )}
                             </td>
 
-                            <td className="text-right text-gray-600">{fmt(c.unit_price)}</td>
+                            <td className="text-right text-gray-500 tabular-nums">{fmt(Number(c.cost_materials))}</td>
+                            <td className="text-right text-gray-500 tabular-nums">{fmt(Number(c.cost_logistics))}</td>
+                            <td className="text-right text-gray-500 tabular-nums">{fmt(Number(c.cost_labor))}</td>
 
                             <td className="text-right">
                               <QuantityCell kc={kc} onSave={qty => handleQuantityChange(kc, qty)} />
@@ -383,60 +542,13 @@ export default function CostCalculation() {
                             </td>
                           </tr>
 
-                          {/* Раскрытые детали */}
-                          {isComposite && expanded && parts.map((entry, i) => (
-                            <tr key={`${kc.id}-part-${entry.id}`} className="bg-violet-50/40">
-                              <td />
-                              <td className="py-1.5 pl-8">
-                                <div className="flex items-center gap-2">
-                                  {i === parts.length - 1
-                                    ? <span className="text-gray-300 select-none">└</span>
-                                    : <span className="text-gray-300 select-none">├</span>
-                                  }
-                                  {entry.part.image_url ? (
-                                    <img
-                                      src={`${API_BASE}${entry.part.image_url}`}
-                                      alt={entry.part.name}
-                                      className="h-10 w-10 object-contain rounded shrink-0"
-                                    />
-                                  ) : (
-                                    <div className="h-10 w-10 rounded bg-gray-100 flex items-center justify-center shrink-0">
-                                      <ImageIcon className="h-4 w-4 text-gray-300" />
-                                    </div>
-                                  )}
-                                  <button
-                                    onClick={() => handleEdit(entry.part)}
-                                    className="text-sm text-gray-700 hover:text-blue-600 hover:underline text-left transition-colors"
-                                  >
-                                    {entry.part.name}
-                                  </button>
-                                  {entry.part.sku && (
-                                    <span className="text-xs text-gray-400">{entry.part.sku}</span>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="py-1.5">
-                                {entry.part.factory && (
-                                  <span className="text-xs text-gray-400">{entry.part.factory}</span>
-                                )}
-                              </td>
-                              <td className="py-1.5 text-right text-xs text-gray-500">
-                                {fmt(entry.part.unit_price)}
-                              </td>
-                              <td className="py-1.5 text-right text-xs text-gray-500 tabular-nums">
-                                {Math.round(Number(entry.quantity))} × {Math.round(Number(kc.quantity))}
-                              </td>
-                              <td className="py-1.5 text-right text-xs text-gray-600 font-medium">
-                                {fmt(Number(entry.part.unit_price) * Number(entry.quantity) * Number(kc.quantity))}
-                              </td>
-                              <td />
-                            </tr>
-                          ))}
+                          {/* Раскрытые детали (рекурсивно) */}
+                          {isComposite && expanded && parts.length > 0 &&
+                            renderPartRows(parts, Number(kc.quantity), 1, kc.id)}
 
-                          {/* Загрузка деталей */}
                           {isComposite && expanded && !partsCache[c.id] && (
                             <tr className="bg-violet-50/40">
-                              <td colSpan={7} className="py-2 pl-16 text-xs text-gray-400">
+                              <td colSpan={9} className="py-2 pl-16 text-xs text-gray-400">
                                 Загрузка состава…
                               </td>
                             </tr>
@@ -446,9 +558,10 @@ export default function CostCalculation() {
                     })}
               </tbody>
             </table>
+            </div>
           )}
 
-          {allItems.length === 0 && (
+          {viewMode === 'table' && allItems.length === 0 && (
             <div className="text-center py-16 border border-dashed border-gray-200 rounded-lg">
               <p className="text-gray-400 mb-4">В этом наборе пока нет компонентов</p>
               <button onClick={() => setPickerOpen(true)} className="btn btn-primary">

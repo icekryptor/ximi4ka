@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import { Counterparty } from './types';
 
 export interface ComponentPart {
   id: string;
@@ -13,17 +14,27 @@ export interface Component {
   id: string;
   name: string;
   sku?: string;
-  category: 'reagent' | 'equipment' | 'print' | 'labor';
+  category: 'reagent' | 'metal' | 'equipment' | 'print' | 'labor';
   dimensions?: string;
-  link_1688?: string;
+  product_url?: string;
+  link_1688?: string;  // legacy alias
+  regulation_url?: string;
   factory?: string;
   weight_kg?: number;
-  unit_price: number;
+  // Структура стоимости
+  cost_materials: number;   // стоимость материалов
+  cost_logistics: number;   // стоимость логистики
+  cost_labor: number;       // стоимость работы
+  unit_price: number;       // итого = materials + logistics + labor
   quantity_per_kit: number;
   price_per_kit: number;
+  per_kit_amount?: number;   // для реактивов: масса в 1 флаконе, г
   is_composite: boolean;
   parts?: ComponentPart[];       // только для сложных, только при getById
   supplier_id?: string;
+  supplier?: Counterparty;
+  carrier_id?: string;
+  carrier?: Counterparty;
   image_url?: string;
   notes?: string;
   is_active: boolean;
@@ -71,7 +82,10 @@ export const componentsApi = {
   },
 
   bulkImport: async (components: Partial<Component>[]) => {
-    const response = await apiClient.post('/components/bulk-import', { components });
+    const response = await apiClient.post<{ imported: number; updated: number; errors: string[] }>(
+      '/components/bulk-import',
+      { components }
+    );
     return response.data;
   },
 
@@ -101,6 +115,11 @@ export const componentsApi = {
     const response = await apiClient.delete(
       `/components/${compositeId}/parts/${partEntryId}`
     );
+    return response.data;
+  },
+
+  deleteAll: async () => {
+    const response = await apiClient.delete('/components/all');
     return response.data;
   },
 };
