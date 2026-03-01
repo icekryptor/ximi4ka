@@ -14,7 +14,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   labor: 'Работа',
 }
 const CATEGORY_COLORS: Record<string, string> = {
-  reagent: 'bg-blue-100 text-blue-600',
+  reagent: 'bg-primary-100 text-primary-600',
   equipment: 'bg-gray-100 text-gray-600',
   print: 'bg-amber-100 text-amber-600',
   labor: 'bg-green-100 text-green-600',
@@ -51,7 +51,7 @@ function QuantityCell({ kc, onSave }: { kc: KitComponent; onSave: (qty: number) 
   return (
     <input
       ref={inputRef}
-      className="w-16 text-right border border-blue-400 rounded px-1 py-0.5 text-sm outline-none"
+      className="w-16 text-right border border-primary-400 rounded px-1 py-0.5 text-sm outline-none"
       type="number"
       min="0.001"
       step="any"
@@ -78,7 +78,6 @@ export default function CostCalculation() {
 
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
   const [partsCache, setPartsCache] = useState<Record<string, ComponentPart[]>>({})
-  const fetchedRef = useRef(new Set<string>())
 
   const toggleExpand = async (componentId: string) => {
     setExpandedIds(prev => {
@@ -97,20 +96,28 @@ export default function CostCalculation() {
 
   const SOLUTION_RE = /раствор/i
 
-  const deepExpand = async (componentId: string, componentName?: string) => {
-    if (fetchedRef.current.has(componentId)) return
-    fetchedRef.current.add(componentId)
+  /** Загрузить все составы одним batch-запросом и раскрыть дерево */
+  const batchExpandAll = async (components: KitComponent[]) => {
     try {
-      const parts = await componentsApi.getParts(componentId)
-      setPartsCache(prev => ({ ...prev, [componentId]: parts }))
-      const isSolution = componentName && SOLUTION_RE.test(componentName)
-      if (!isSolution) {
-        setExpandedIds(prev => new Set([...prev, componentId]))
+      const batchMap = await componentsApi.getBatchParts()
+      setPartsCache(batchMap)
+
+      // Рекурсивно собрать id-шки для раскрытия (кроме растворов)
+      const toExpand = new Set<string>()
+      const walk = (id: string, name?: string) => {
+        const isSolution = name && SOLUTION_RE.test(name)
+        if (!isSolution) toExpand.add(id)
+        const parts = batchMap[id]
+        if (parts) {
+          for (const p of parts) {
+            if (p.part.is_composite) walk(p.part.id, p.part.name)
+          }
+        }
       }
-      // Sequential to avoid exhausting Supabase connection pool on serverless
-      for (const p of parts) {
-        if (p.part.is_composite) await deepExpand(p.part.id, p.part.name)
+      for (const kc of components) {
+        if (kc.component.is_composite) walk(kc.component.id, kc.component.name)
       }
+      setExpandedIds(toExpand)
     } catch (e) { console.error(e) }
   }
 
@@ -181,13 +188,7 @@ export default function CostCalculation() {
 
   useEffect(() => {
     if (!kitDetails?.components) return
-    fetchedRef.current.clear()
-    // Sequential to avoid Supabase pool exhaustion on Vercel serverless
-    ;(async () => {
-      for (const kc of (kitDetails.components ?? []).filter(kc => kc.component.is_composite)) {
-        await deepExpand(kc.component.id, kc.component.name)
-      }
-    })()
+    batchExpandAll(kitDetails.components)
   }, [kitDetails])
 
   const { totals, grandTotal } = useMemo(() => {
@@ -239,7 +240,7 @@ export default function CostCalculation() {
               )}
               <div className="min-w-0 max-w-[180px]">
                 <button onClick={() => handleEdit(entry.part)}
-                  className="text-sm text-gray-700 hover:text-blue-600 hover:underline text-left transition-colors truncate block w-full"
+                  className="text-sm text-gray-700 hover:text-primary-600 hover:underline text-left transition-colors truncate block w-full"
                   title={entry.part.name}
                 >
                   {entry.part.name}
@@ -477,7 +478,7 @@ export default function CostCalculation() {
                                 <div className="min-w-0 max-w-[220px]">
                                   <button
                                     onClick={() => handleEdit(c)}
-                                    className="font-medium text-gray-900 leading-tight hover:text-blue-600 hover:underline text-left transition-colors truncate block w-full"
+                                    className="font-medium text-gray-900 leading-tight hover:text-primary-600 hover:underline text-left transition-colors truncate block w-full"
                                     title={c.name}
                                   >
                                     {c.name}
@@ -509,7 +510,7 @@ export default function CostCalculation() {
                                   href={c.link_1688}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-0.5 text-xs text-blue-500 hover:text-blue-700"
+                                  className="inline-flex items-center gap-0.5 text-xs text-primary-500 hover:text-primary-700"
                                 >
                                   <ExternalLink className="h-3 w-3" />1688
                                 </a>
@@ -530,7 +531,7 @@ export default function CostCalculation() {
                               <div className="flex justify-end gap-1">
                                 <button
                                   onClick={() => handleEdit(c)}
-                                  className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                  className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
                                   title="Редактировать"
                                 >
                                   <Pencil className="h-4 w-4" />

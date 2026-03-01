@@ -99,7 +99,7 @@ export default function ComponentPartsEditor({ compositeId, onTotalsChange }: Pr
         <button
           type="button"
           onClick={openPicker}
-          className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+          className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-800 px-2 py-1 rounded hover:bg-primary-50 transition-colors"
         >
           <Plus className="h-3.5 w-3.5" />
           Добавить деталь
@@ -108,7 +108,7 @@ export default function ComponentPartsEditor({ compositeId, onTotalsChange }: Pr
 
       {/* Пикер деталей */}
       {pickerOpen && (
-        <div className="border border-blue-200 rounded-lg bg-blue-50/30 mb-3 p-3">
+        <div className="border border-primary-200 rounded-lg bg-primary-50/30 mb-3 p-3">
           <div className="flex items-center gap-2 mb-2">
             <div className="relative flex-1">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
@@ -208,7 +208,7 @@ export default function ComponentPartsEditor({ compositeId, onTotalsChange }: Pr
                       onKeyDown={e => {
                         if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
                       }}
-                      className="w-16 text-right border border-gray-200 rounded px-1.5 py-0.5 text-sm outline-none focus:border-blue-400"
+                      className="w-16 text-right border border-gray-200 rounded px-1.5 py-0.5 text-sm outline-none focus:border-primary-400"
                     />
                   </td>
                   <td className="py-1.5 text-right font-medium text-gray-800">

@@ -14,6 +14,9 @@ import categoryRoutes from './routes/category.routes';
 import reportRoutes from './routes/report.routes';
 import componentRoutes from './routes/component.routes';
 import kitRoutes from './routes/kit.routes';
+import supplyRoutes from './routes/supply.routes';
+import financialReportRoutes from './routes/financial-report.routes';
+import marketplaceRoutes from './routes/marketplace.routes';
 
 dotenv.config();
 
@@ -37,6 +40,9 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/components', componentRoutes);
 app.use('/api/kits', kitRoutes);
+app.use('/api/supplies', supplyRoutes);
+app.use('/api/financial-reports', financialReportRoutes);
+app.use('/api/marketplace', marketplaceRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

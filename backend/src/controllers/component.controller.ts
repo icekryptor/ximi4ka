@@ -205,6 +205,26 @@ export const componentController = {
     }
   },
 
+  // Получить составы всех сложных компонентов за один запрос
+  async getBatchParts(_req: Request, res: Response) {
+    try {
+      const allParts = await componentPartRepository.find({
+        relations: ['part'],
+        order: { created_at: 'ASC' },
+      });
+      // Группируем по composite_id
+      const map: Record<string, typeof allParts> = {};
+      for (const p of allParts) {
+        if (!map[p.composite_id]) map[p.composite_id] = [];
+        map[p.composite_id].push(p);
+      }
+      res.json(map);
+    } catch (error) {
+      console.error('Ошибка при получении составов:', error);
+      res.status(500).json({ error: 'Ошибка при получении составов' });
+    }
+  },
+
   // Добавить деталь в сложный компонент
   async addPart(req: Request, res: Response) {
     try {

@@ -4,6 +4,7 @@ import { componentController, upload } from '../controllers/component.controller
 const router = Router();
 
 router.get('/', componentController.getAll);
+router.get('/parts/batch', componentController.getBatchParts);
 router.get('/:id', componentController.getById);
 router.post('/', componentController.create);
 router.post('/bulk-import', componentController.bulkImport);

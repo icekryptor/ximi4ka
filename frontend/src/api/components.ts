@@ -95,6 +95,12 @@ export const componentsApi = {
     return response.data;
   },
 
+  // Все составы за один запрос (для схемы сборки)
+  getBatchParts: async () => {
+    const response = await apiClient.get<Record<string, ComponentPart[]>>('/components/parts/batch');
+    return response.data;
+  },
+
   addPart: async (compositeId: string, partId: string, quantity: number = 1) => {
     const response = await apiClient.post<ComponentPart>(`/components/${compositeId}/parts`, {
       part_id: partId,

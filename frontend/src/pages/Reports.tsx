@@ -49,7 +49,7 @@ const Reports = () => {
     }).format(amount)
   }
 
-  const COLORS = ['#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316']
+  const COLORS = ['#836efe', '#10b981', '#f59e0b', '#ef4444', '#6703ff', '#ec4899', '#14b8a6', '#f97316']
 
   if (loading) {
     return (
@@ -93,7 +93,7 @@ const Reports = () => {
           <div className="flex space-x-2">
             <button
               onClick={() => setReportType('all')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-4 py-2 rounded-xl font-medium transition-colors ${
                 reportType === 'all'
                   ? 'bg-primary-100 text-primary-700'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -157,27 +157,27 @@ const Reports = () => {
 
         <div className={`card bg-gradient-to-br ${
           (summary?.balance || 0) >= 0
-            ? 'from-blue-50 to-blue-100 border-blue-200'
+            ? 'from-primary-50 to-primary-100 border-primary-200'
             : 'from-orange-50 to-orange-100 border-orange-200'
         }`}>
           <div className="flex items-center justify-between">
             <div>
               <p className={`text-sm font-medium ${
-                (summary?.balance || 0) >= 0 ? 'text-blue-600' : 'text-orange-600'
+                (summary?.balance || 0) >= 0 ? 'text-primary-600' : 'text-orange-600'
               }`}>
                 Баланс
               </p>
               <p className={`text-2xl font-bold mt-1 ${
-                (summary?.balance || 0) >= 0 ? 'text-blue-900' : 'text-orange-900'
+                (summary?.balance || 0) >= 0 ? 'text-primary-900' : 'text-orange-900'
               }`}>
                 {formatCurrency(summary?.balance || 0)}
               </p>
             </div>
             <div className={`p-3 rounded-full ${
-              (summary?.balance || 0) >= 0 ? 'bg-blue-200' : 'bg-orange-200'
+              (summary?.balance || 0) >= 0 ? 'bg-primary-200' : 'bg-orange-200'
             }`}>
               <Wallet className={`h-6 w-6 ${
-                (summary?.balance || 0) >= 0 ? 'text-blue-700' : 'text-orange-700'
+                (summary?.balance || 0) >= 0 ? 'text-primary-700' : 'text-orange-700'
               }`} />
             </div>
           </div>
@@ -196,7 +196,7 @@ const Reports = () => {
                 <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
                 <YAxis />
                 <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                <Bar dataKey="total" fill="#0ea5e9" />
+                <Bar dataKey="total" fill="#836efe" />
               </BarChart>
             </ResponsiveContainer>
           ) : (

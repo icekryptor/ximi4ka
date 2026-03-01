@@ -278,7 +278,7 @@ export default function ComponentModal({ component, kitId, onClose, onSaved }: P
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={e => e.stopPropagation()}
-                  className="text-blue-500 hover:text-blue-700 ml-1"
+                  className="text-primary-500 hover:text-primary-700 ml-1"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
                 </a>

@@ -8,18 +8,31 @@ export default {
     extend: {
       colors: {
         primary: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
+          50: '#f5f3ff',
+          100: '#ede9fe',
+          200: '#ddd6fe',
+          300: '#c4b5fd',
+          400: '#a78bfa',
+          500: '#836efe',
+          600: '#6703ff',
+          700: '#5b21b6',
+          800: '#4c1d95',
+          900: '#1c1528',
+        },
+        brand: {
+          border: '#e8e5ef',
+          surface: '#f8f7fa',
+          text: '#1c1528',
+          'text-secondary': '#524667',
         }
-      }
+      },
+      borderRadius: {
+        'brand': '40px',
+        'brand-lg': '55px',
+      },
+      fontFamily: {
+        sans: ['"Plus Jakarta Sans"', 'Arial', 'Helvetica', 'sans-serif'],
+      },
     },
   },
   plugins: [],

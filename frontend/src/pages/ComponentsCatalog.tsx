@@ -158,7 +158,7 @@ export default function ComponentsCatalog() {
                       href={c.link_1688}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-0.5 text-xs text-blue-500 hover:text-blue-700"
+                      className="inline-flex items-center gap-0.5 text-xs text-primary-500 hover:text-primary-700"
                     >
                       <ExternalLink className="h-3 w-3" />1688
                     </a>
@@ -179,7 +179,7 @@ export default function ComponentsCatalog() {
                   <div className="flex justify-end gap-1">
                     <button
                       onClick={() => { setEditing(c); setModalOpen(true) }}
-                      className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                      className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
                       title="Редактировать"
                     >
                       <Pencil className="h-4 w-4" />

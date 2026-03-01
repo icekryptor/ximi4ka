@@ -121,7 +121,7 @@ const Categories = () => {
       <div className="flex justify-end space-x-2 pt-3 border-t border-gray-200">
         <button
           onClick={() => handleEdit(category)}
-          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+          className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
         >
           <Edit2 className="h-4 w-4" />
         </button>

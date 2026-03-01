@@ -75,7 +75,7 @@ const Counterparties = () => {
       case CounterpartyType.SUPPLIER:
         return 'bg-orange-100 text-orange-700'
       case CounterpartyType.CUSTOMER:
-        return 'bg-blue-100 text-blue-700'
+        return 'bg-primary-100 text-primary-700'
       case CounterpartyType.BOTH:
         return 'bg-purple-100 text-purple-700'
       default:
@@ -195,7 +195,7 @@ const Counterparties = () => {
               <div className="flex justify-end space-x-2 mt-4 pt-4 border-t border-gray-200">
                 <button
                   onClick={() => handleEdit(counterparty)}
-                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
                 >
                   <Edit2 className="h-4 w-4" />
                 </button>

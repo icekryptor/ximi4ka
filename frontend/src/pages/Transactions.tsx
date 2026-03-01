@@ -3,10 +3,11 @@ import { transactionsApi } from '../api/transactions'
 import { categoriesApi } from '../api/categories'
 import { counterpartiesApi } from '../api/counterparties'
 import { Transaction, Category, Counterparty, TransactionType } from '../api/types'
-import { Plus, Edit2, Trash2, TrendingUp, TrendingDown, Search, Filter } from 'lucide-react'
+import { Plus, Edit2, Trash2, TrendingUp, TrendingDown, Search, Filter, Download, Upload } from 'lucide-react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale/ru'
 import TransactionModal from '../components/TransactionModal'
+import ImportModal from '../components/ImportModal'
 
 const Transactions = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -17,6 +18,7 @@ const Transactions = () => {
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState<string>('all')
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -105,10 +107,28 @@ const Transactions = () => {
           <h1 className="text-3xl font-bold text-gray-900">Транзакции</h1>
           <p className="text-gray-600 mt-1">Управление доходами и расходами</p>
         </div>
-        <button onClick={handleAdd} className="btn btn-primary flex items-center space-x-2">
-          <Plus className="h-5 w-5" />
-          <span>Добавить транзакцию</span>
-        </button>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => transactionsApi.exportXlsx()}
+            className="btn btn-secondary flex items-center space-x-2"
+            title="Экспорт в Excel"
+          >
+            <Download className="h-4 w-4" />
+            <span>Экспорт</span>
+          </button>
+          <button
+            onClick={() => setIsImportModalOpen(true)}
+            className="btn btn-secondary flex items-center space-x-2"
+            title="Импорт из Excel"
+          >
+            <Upload className="h-4 w-4" />
+            <span>Импорт</span>
+          </button>
+          <button onClick={handleAdd} className="btn btn-primary flex items-center space-x-2">
+            <Plus className="h-5 w-5" />
+            <span>Добавить</span>
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -221,7 +241,7 @@ const Transactions = () => {
                       <div className="flex justify-end space-x-2">
                         <button
                           onClick={() => handleEdit(transaction)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
                         >
                           <Edit2 className="h-4 w-4" />
                         </button>
@@ -247,6 +267,15 @@ const Transactions = () => {
           categories={categories}
           counterparties={counterparties}
           onClose={handleModalClose}
+        />
+      )}
+
+      {isImportModalOpen && (
+        <ImportModal
+          onClose={() => {
+            setIsImportModalOpen(false)
+            loadData()
+          }}
         />
       )}
     </div>

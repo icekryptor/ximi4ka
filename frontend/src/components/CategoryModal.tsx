@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
-import { Category, TransactionType } from '../api/types'
+import { Category, TransactionType, CategoryGroup } from '../api/types'
 import { categoriesApi } from '../api/categories'
 
 interface CategoryModalProps {
@@ -12,14 +12,25 @@ const CategoryModal = ({ category, onClose }: CategoryModalProps) => {
   const [formData, setFormData] = useState({
     name: category?.name || '',
     type: category?.type || TransactionType.EXPENSE,
-    color: category?.color || '#0ea5e9',
+    color: category?.color || '#836efe',
     description: category?.description || '',
-    is_active: category?.is_active !== undefined ? category.is_active : true
+    is_active: category?.is_active !== undefined ? category.is_active : true,
+    group: category?.group || '' as string,
   })
+
+  const groupOptions: { value: string; label: string }[] = [
+    { value: '', label: 'Не задана' },
+    { value: CategoryGroup.OPERATING_INCOME, label: 'Операционные доходы' },
+    { value: CategoryGroup.COGS, label: 'Себестоимость (COGS)' },
+    { value: CategoryGroup.OPERATING_EXPENSE, label: 'Операционные расходы' },
+    { value: CategoryGroup.INVESTING, label: 'Инвестиции' },
+    { value: CategoryGroup.FINANCING, label: 'Финансирование' },
+    { value: CategoryGroup.OTHER, label: 'Прочее' },
+  ]
   const [saving, setSaving] = useState(false)
 
   const colorOptions = [
-    { value: '#0ea5e9', label: 'Синий' },
+    { value: '#836efe', label: 'Фиолетовый (основной)' },
     { value: '#10b981', label: 'Зелёный' },
     { value: '#f59e0b', label: 'Оранжевый' },
     { value: '#ef4444', label: 'Красный' },
@@ -39,10 +50,14 @@ const CategoryModal = ({ category, onClose }: CategoryModalProps) => {
 
     setSaving(true)
     try {
+      const payload = {
+        ...formData,
+        group: formData.group || undefined,
+      } as Partial<Category>
       if (category) {
-        await categoriesApi.update(category.id, formData)
+        await categoriesApi.update(category.id, payload)
       } else {
-        await categoriesApi.create(formData)
+        await categoriesApi.create(payload)
       }
       onClose()
     } catch (error) {
@@ -127,6 +142,20 @@ const CategoryModal = ({ category, onClose }: CategoryModalProps) => {
                 />
               ))}
             </div>
+          </div>
+
+          <div>
+            <label className="label">Группа для отчётов</label>
+            <select
+              className="input"
+              value={formData.group}
+              onChange={(e) => setFormData({ ...formData, group: e.target.value })}
+            >
+              {groupOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-500 mt-1">Используется для БДДС и P&L</p>
           </div>
 
           <div>

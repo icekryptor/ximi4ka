@@ -161,7 +161,7 @@ export default function ComponentPicker({ kitId, existingComponents, onClose, on
                         value={qty}
                         onChange={e => setQty(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter') confirm(c.id); if (e.key === 'Escape') setAdding(null) }}
-                        className="w-16 border border-blue-400 rounded px-2 py-1 text-sm text-right outline-none"
+                        className="w-16 border border-primary-400 rounded px-2 py-1 text-sm text-right outline-none"
                         placeholder="Кол-во"
                       />
                       <button
@@ -181,7 +181,7 @@ export default function ComponentPicker({ kitId, existingComponents, onClose, on
                   ) : (
                     <button
                       onClick={() => startAdd(c.id)}
-                      className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-blue-600 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                      className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-primary-600 px-2 py-1 rounded hover:bg-primary-50 transition-colors"
                     >
                       <Plus className="h-3.5 w-3.5" />
                       Добавить

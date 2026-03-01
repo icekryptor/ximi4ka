@@ -98,30 +98,30 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="card bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+        <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-blue-600">Баланс</p>
-              <p className="text-2xl font-bold text-blue-900 mt-1">
+              <p className="text-sm font-medium text-primary-600">Баланс</p>
+              <p className="text-2xl font-bold text-primary-900 mt-1">
                 {formatCurrency(summary?.balance || 0)}
               </p>
             </div>
-            <div className="bg-blue-200 p-3 rounded-full">
-              <Wallet className="h-6 w-6 text-blue-700" />
+            <div className="bg-primary-200 p-3 rounded-full">
+              <Wallet className="h-6 w-6 text-primary-700" />
             </div>
           </div>
         </div>
 
-        <div className="card bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+        <div className="card bg-gradient-to-br from-primary-50/50 to-primary-100/50 border-primary-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-purple-600">Транзакций</p>
-              <p className="text-2xl font-bold text-purple-900 mt-1">
+              <p className="text-sm font-medium text-primary-500">Транзакций</p>
+              <p className="text-2xl font-bold text-primary-900 mt-1">
                 {summary?.transactionCount || 0}
               </p>
             </div>
-            <div className="bg-purple-200 p-3 rounded-full">
-              <Activity className="h-6 w-6 text-purple-700" />
+            <div className="bg-primary-100 p-3 rounded-full">
+              <Activity className="h-6 w-6 text-primary-500" />
             </div>
           </div>
         </div>

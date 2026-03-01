@@ -9,6 +9,10 @@ import { Component } from '../entities/Component';
 import { ComponentPart } from '../entities/ComponentPart';
 import { Kit } from '../entities/Kit';
 import { KitComponent } from '../entities/KitComponent';
+import { Supply } from '../entities/Supply';
+import { SupplyItem } from '../entities/SupplyItem';
+import { MarketplaceSale } from '../entities/MarketplaceSale';
+import { SkuMapping } from '../entities/SkuMapping';
 
 dotenv.config();
 
@@ -24,7 +28,7 @@ const dataSourceOptions = databaseUrl
       url: databaseUrl,
       synchronize: false,
       logging: isDev,
-      entities: [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent],
+      entities: [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping],
       migrations: ['src/migrations/**/*.ts'],
       subscribers: [],
       ssl: { rejectUnauthorized: false },
@@ -44,7 +48,7 @@ const dataSourceOptions = databaseUrl
       database: process.env.DATABASE_NAME || 'ximfinance',
       synchronize: isDev,
       logging: isDev,
-      entities: [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent],
+      entities: [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping],
       migrations: ['src/migrations/**/*.ts'],
       subscribers: [],
     };

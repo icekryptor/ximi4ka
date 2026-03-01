@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, ArrowLeftRight, Users, FolderOpen, BarChart3, Beaker, Package } from 'lucide-react'
+import { LayoutDashboard, ArrowLeftRight, Users, FolderOpen, BarChart3, Beaker, Package, Truck, FileText, ShoppingBag } from 'lucide-react'
 
 interface LayoutProps {
   children: ReactNode
@@ -18,11 +18,15 @@ const Layout = ({ children }: LayoutProps) => {
     { type: 'group', label: 'Экономика' },
     { type: 'link', name: 'Себестоимость', href: '/cost-calculation', icon: Beaker },
     { type: 'link', name: 'Компоненты', href: '/components', icon: Package },
+    { type: 'link', name: 'Поставки', href: '/supplies', icon: Truck },
     { type: 'group', label: 'Финансы' },
     { type: 'link', name: 'Транзакции', href: '/transactions', icon: ArrowLeftRight },
     { type: 'link', name: 'Контрагенты', href: '/counterparties', icon: Users },
     { type: 'link', name: 'Категории', href: '/categories', icon: FolderOpen },
     { type: 'link', name: 'Отчёты', href: '/reports', icon: BarChart3 },
+    { type: 'link', name: 'Финотчёты', href: '/financial-reports', icon: FileText },
+    { type: 'group', label: 'Маркетплейсы' },
+    { type: 'link', name: 'Аналитика', href: '/marketplace', icon: ShoppingBag },
   ]
 
   const isActive = (path: string) => location.pathname === path
@@ -30,11 +34,11 @@ const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="min-h-screen flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-6 border-b border-gray-200">
+      <aside className="w-64 bg-white border-r border-brand-border flex flex-col">
+        <div className="p-6 border-b border-brand-border">
           <div className="flex items-center space-x-3">
-            <Beaker className="h-6 w-6 text-gray-900" />
-            <h1 className="text-lg font-semibold text-gray-900">XimFinance</h1>
+            <Beaker className="h-6 w-6 text-primary-500" />
+            <h1 className="text-lg font-semibold text-brand-text">XimFinance</h1>
           </div>
         </div>
         
@@ -57,8 +61,8 @@ const Layout = ({ children }: LayoutProps) => {
                 className={`
                   flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-colors
                   ${isActive(item.href)
-                    ? 'bg-gray-100 text-gray-900'
-                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'bg-primary-50 text-primary-700'
+                    : 'text-brand-text-secondary hover:text-brand-text hover:bg-brand-surface'
                   }
                 `}
               >
@@ -69,15 +73,15 @@ const Layout = ({ children }: LayoutProps) => {
           })}
         </nav>
 
-        <div className="p-4 border-t border-gray-200">
-          <p className="text-xs text-gray-400 text-center">
+        <div className="p-4 border-t border-brand-border">
+          <p className="text-xs text-brand-text-secondary text-center">
             © 2025
           </p>
         </div>
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto bg-gray-50">
+      <main className="flex-1 overflow-auto bg-brand-surface">
         {children}
       </main>
     </div>

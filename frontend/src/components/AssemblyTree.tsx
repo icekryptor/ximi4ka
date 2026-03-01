@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ImageIcon, ExternalLink, BookOpen, ChevronDown, ChevronRight } from 'lucide-react'
+import { ImageIcon, ExternalLink, BookOpen, ChevronDown, ChevronRight, Maximize2, Minimize2 } from 'lucide-react'
 import { componentsApi, Component, ComponentPart } from '../api/components'
 import { KitComponent } from '../api/kits'
 
@@ -12,12 +12,13 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const SOLUTION_RE = /раствор/i
 
+/* ── Фиолетовая палитра стадий ── */
 const STAGE_STYLES = [
-  { bg: 'bg-gray-900', text: 'text-white',    border: 'border-gray-800', badge: 'bg-white/20 text-white',    label: 'Готовый набор' },
-  { bg: 'bg-gray-700', text: 'text-white',    border: 'border-gray-600', badge: 'bg-white/20 text-white',    label: 'Стадия 3' },
-  { bg: 'bg-gray-400', text: 'text-white',    border: 'border-gray-400', badge: 'bg-white/30 text-white',    label: 'Стадия 2' },
-  { bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-gray-300', badge: 'bg-gray-200 text-gray-600', label: 'Стадия 1' },
-  { bg: 'bg-white',    text: 'text-gray-600', border: 'border-gray-200', badge: 'bg-gray-100 text-gray-500', label: 'Сырьё' },
+  { bg: 'bg-[#2d1a66]', text: 'text-white',       border: 'border-[#3d2280]', badge: 'bg-white/20 text-white',           label: 'Готовый набор' },
+  { bg: 'bg-[#5b21b6]', text: 'text-white',       border: 'border-[#6d28d9]', badge: 'bg-white/20 text-white',           label: 'Стадия 3' },
+  { bg: 'bg-[#836efe]', text: 'text-white',       border: 'border-[#7c5ce7]', badge: 'bg-white/25 text-white',           label: 'Стадия 2' },
+  { bg: 'bg-[#c4b5fd]', text: 'text-[#3d2280]',  border: 'border-[#a78bfa]', badge: 'bg-[#8b5cf6]/20 text-[#5b21b6]', label: 'Стадия 1' },
+  { bg: 'bg-[#ede9fe]', text: 'text-[#5b21b6]',  border: 'border-[#ddd6fe]', badge: 'bg-[#8b5cf6]/15 text-[#6d28d9]', label: 'Сырьё' },
 ]
 
 function getStageStyle(depth: number, maxDepth: number) {
@@ -40,15 +41,17 @@ function getMaxDepth(nodes: TreeNode[], current = 0): number {
 }
 
 /* connector constants */
-const CHIP_MID = 32  // vertical center of image from chip top (py-2.5 + mt-0.5 + h-10/2)
-const LW = 1         // line width
-const LC = '#d1d5db' // line color (gray-300)
-const VI = 24        // indent for vertical connectors
-const HS = 14        // horizontal-layout stem height
-const HD = 14        // horizontal-layout drop height
-const HG = 16        // horizontal-layout gap between children
+const CHIP_MID = 32
+const LW = 1
+const LC = '#c4b5fd' // purple-300 for connectors
+const VI = 24
+const HS = 14
+const HD = 14
+const HG = 16
 
-/* ── ComponentChip ── */
+type ChipSize = 'large' | 'compact'
+
+/* ── ComponentChip (large) ── */
 
 interface ChipProps {
   node: TreeNode
@@ -57,12 +60,61 @@ interface ChipProps {
   onToggle?: () => void
   stageStyle: typeof STAGE_STYLES[0]
   stageNum: number
+  chipSize: ChipSize
 }
 
-function ComponentChip({ node, onOpen, collapsed, onToggle, stageStyle, stageNum }: ChipProps) {
+function ComponentChip({ node, onOpen, collapsed, onToggle, stageStyle, stageNum, chipSize }: ChipProps) {
   const c = node.component
   const hasChildren = (node.children?.length ?? 0) > 0
 
+  if (chipSize === 'compact') {
+    return (
+      <div
+        className={`
+          group inline-flex items-center gap-2 border rounded-lg px-2 py-1.5 cursor-pointer
+          shadow-sm hover:shadow-md transition-all
+          ${stageStyle.bg} ${stageStyle.text} ${stageStyle.border}
+        `}
+        style={{ width: 140, minHeight: 44 }}
+        onClick={() => onOpen(c)}
+      >
+        {c.image_url ? (
+          <img
+            src={`${API_BASE}${c.image_url}`} alt={c.name}
+            className="h-8 w-8 object-contain rounded shrink-0"
+          />
+        ) : (
+          <div className="h-8 w-8 rounded bg-white/20 flex items-center justify-center shrink-0">
+            <ImageIcon className="h-4 w-4 opacity-40" />
+          </div>
+        )}
+        <div className="flex-1 min-w-0 flex flex-col">
+          <span className="text-[10px] font-semibold leading-tight line-clamp-2" title={c.name}>
+            {c.name}
+          </span>
+          <div className="flex items-center gap-1 mt-0.5">
+            <span className={`text-[8px] px-1 py-0.5 rounded-full font-semibold ${stageStyle.badge}`}>
+              {'①②③④⑤⑥⑦⑧⑨⑩'[stageNum - 1] ?? stageNum}
+            </span>
+            {node.quantity !== 1 && (
+              <span className="text-[8px] opacity-60">×{node.quantity}</span>
+            )}
+          </div>
+        </div>
+        {hasChildren && onToggle && (
+          <button
+            type="button"
+            onClick={e => { e.stopPropagation(); onToggle() }}
+            className="shrink-0 h-4 w-4 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center transition-colors"
+          >
+            {collapsed ? <ChevronRight className="h-2.5 w-2.5" /> : <ChevronDown className="h-2.5 w-2.5" />}
+          </button>
+        )}
+      </div>
+    )
+  }
+
+  // Large chip (original)
   return (
     <div
       className={`
@@ -138,16 +190,18 @@ interface NodeProps {
   depth: number
   maxDepth: number
   defaultCollapsed?: boolean
+  chipSize: ChipSize
 }
 
-function OrgNode({ node, onOpen, depth, maxDepth, defaultCollapsed = false }: NodeProps) {
+function OrgNode({ node, onOpen, depth, maxDepth, defaultCollapsed = false, chipSize }: NodeProps) {
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed)
   const hasChildren = (node.children?.length ?? 0) > 0
   const style = getStageStyle(depth, maxDepth)
   const stageNum = getStageNumber(depth, maxDepth)
 
   const childCount = node.children?.length ?? 0
-  const useHorizontal = hasChildren && childCount < 5
+  const threshold = chipSize === 'compact' ? 6 : 5
+  const useHorizontal = hasChildren && childCount < threshold
 
   return (
     <div className="flex flex-col items-start">
@@ -158,18 +212,19 @@ function OrgNode({ node, onOpen, depth, maxDepth, defaultCollapsed = false }: No
         onToggle={hasChildren ? () => setIsCollapsed(v => !v) : undefined}
         stageStyle={style}
         stageNum={stageNum}
+        chipSize={chipSize}
       />
 
       {hasChildren && !isCollapsed && (
         useHorizontal
-          ? <HorizontalChildren node={node} depth={depth} maxDepth={maxDepth} onOpen={onOpen} />
-          : <VerticalChildren node={node} depth={depth} maxDepth={maxDepth} onOpen={onOpen} />
+          ? <HorizontalChildren node={node} depth={depth} maxDepth={maxDepth} onOpen={onOpen} chipSize={chipSize} />
+          : <VerticalChildren node={node} depth={depth} maxDepth={maxDepth} onOpen={onOpen} chipSize={chipSize} />
       )}
 
       {hasChildren && isCollapsed && (
         <div className="ml-5 mt-1 flex items-center gap-1">
           <div style={{ height: 12, borderLeft: `${LW}px dashed ${LC}` }} />
-          <span className="text-[10px] text-gray-400 select-none ml-1">
+          <span className="text-[10px] text-primary-400 select-none ml-1">
             {node.children!.length} эл.
           </span>
         </div>
@@ -178,17 +233,17 @@ function OrgNode({ node, onOpen, depth, maxDepth, defaultCollapsed = false }: No
   )
 }
 
-/* ── Vertical children (Reddit-style ├── / └──) ── */
+/* ── Vertical children ── */
 
 interface ChildrenProps {
-  node: TreeNode; depth: number; maxDepth: number; onOpen: (c: Component) => void
+  node: TreeNode; depth: number; maxDepth: number; onOpen: (c: Component) => void; chipSize: ChipSize
 }
 
-function VerticalChildren({ node, depth, maxDepth, onOpen }: ChildrenProps) {
+function VerticalChildren({ node, depth, maxDepth, onOpen, chipSize }: ChildrenProps) {
   const children = node.children!
+  const chipMid = chipSize === 'compact' ? 22 : CHIP_MID
   return (
     <div className="flex flex-col" style={{ marginLeft: 20 }}>
-      {/* Stem from parent to first child */}
       <div style={{ height: 10, borderLeft: `${LW}px solid ${LC}` }} />
       {children.map((child, i) => {
         const isLast = i === children.length - 1
@@ -204,7 +259,7 @@ function VerticalChildren({ node, depth, maxDepth, onOpen }: ChildrenProps) {
                 className="absolute left-0 top-0 pointer-events-none"
                 style={{
                   width: VI,
-                  height: CHIP_MID,
+                  height: chipMid,
                   borderLeft: `${LW}px solid ${LC}`,
                   borderBottom: `${LW}px solid ${LC}`,
                   borderBottomLeftRadius: 10,
@@ -218,7 +273,7 @@ function VerticalChildren({ node, depth, maxDepth, onOpen }: ChildrenProps) {
                 />
                 <div
                   className="absolute pointer-events-none"
-                  style={{ left: 0, top: CHIP_MID, width: VI, borderTop: `${LW}px solid ${LC}` }}
+                  style={{ left: 0, top: chipMid, width: VI, borderTop: `${LW}px solid ${LC}` }}
                 />
               </>
             )}
@@ -226,6 +281,7 @@ function VerticalChildren({ node, depth, maxDepth, onOpen }: ChildrenProps) {
               node={child} onOpen={onOpen}
               depth={depth + 1} maxDepth={maxDepth}
               defaultCollapsed={collapse}
+              chipSize={chipSize}
             />
           </div>
         )
@@ -234,16 +290,14 @@ function VerticalChildren({ node, depth, maxDepth, onOpen }: ChildrenProps) {
   )
 }
 
-/* ── Horizontal children (bracket ┬ connector) ── */
+/* ── Horizontal children ── */
 
-function HorizontalChildren({ node, depth, maxDepth, onOpen }: ChildrenProps) {
+function HorizontalChildren({ node, depth, maxDepth, onOpen, chipSize }: ChildrenProps) {
   const children = node.children!
+  const gap = chipSize === 'compact' ? 10 : HG
   return (
     <div className="flex flex-col items-start" style={{ marginLeft: 20 }}>
-      {/* Vertical stem from parent */}
       <div style={{ height: HS, borderLeft: `${LW}px solid ${LC}` }} />
-
-      {/* Children in a row */}
       <div className="flex items-start">
         {children.map((child, i) => {
           const isLast = i === children.length - 1
@@ -252,15 +306,14 @@ function HorizontalChildren({ node, depth, maxDepth, onOpen }: ChildrenProps) {
             <div
               key={`${child.component.id}-${i}`}
               className="relative flex flex-col items-start"
-              style={{ marginRight: isLast ? 0 : HG }}
+              style={{ marginRight: isLast ? 0 : gap }}
             >
-              {/* Connector: vertical drop + horizontal rail to next sibling */}
               <div
                 className="absolute pointer-events-none"
                 style={{
                   top: 0,
                   left: 0,
-                  right: isLast ? 'auto' : -HG,
+                  right: isLast ? 'auto' : -gap,
                   height: HD,
                   display: 'flex',
                 }}
@@ -268,12 +321,12 @@ function HorizontalChildren({ node, depth, maxDepth, onOpen }: ChildrenProps) {
                 <div style={{ width: 0, flexShrink: 0, height: '100%', borderLeft: `${LW}px solid ${LC}` }} />
                 {!isLast && <div style={{ flex: 1, borderTop: `${LW}px solid ${LC}` }} />}
               </div>
-              {/* Spacer for the absolute connector */}
               <div style={{ height: HD }} />
               <OrgNode
                 node={child} onOpen={onOpen}
                 depth={depth + 1} maxDepth={maxDepth}
                 defaultCollapsed={collapse}
+                chipSize={chipSize}
               />
             </div>
           )
@@ -293,6 +346,7 @@ interface Props {
 export default function AssemblyTree({ kitComponents, onOpenComponent }: Props) {
   const [tree, setTree] = useState<TreeNode[]>([])
   const [loading, setLoading] = useState(true)
+  const [chipSize, setChipSize] = useState<ChipSize>('large')
 
   useEffect(() => {
     buildFullTree(kitComponents).then(nodes => {
@@ -305,7 +359,7 @@ export default function AssemblyTree({ kitComponents, onOpenComponent }: Props) 
     return (
       <div className="flex flex-col gap-3 py-4">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-20 w-52 bg-gray-100 rounded-xl animate-pulse" />
+          <div key={i} className="h-20 w-52 bg-primary-100 rounded-xl animate-pulse" />
         ))}
       </div>
     )
@@ -319,6 +373,45 @@ export default function AssemblyTree({ kitComponents, onOpenComponent }: Props) 
 
   return (
     <div className="overflow-auto pb-6 max-h-[75vh]">
+      {/* Chip size toggle */}
+      <div className="flex items-center justify-between px-4 pb-3">
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] text-gray-400 uppercase tracking-wider">Стадии:</span>
+          {STAGE_STYLES.slice().reverse().map((s, i) => (
+            <div key={i} className="flex items-center gap-1">
+              <div className={`h-3 w-3 rounded-sm border ${s.bg} ${s.border}`} />
+              <span className="text-[10px] text-gray-500">{s.label}</span>
+            </div>
+          ))}
+        </div>
+        <div className="flex rounded-lg border border-gray-200 p-0.5 bg-gray-50">
+          <button
+            onClick={() => setChipSize('large')}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+              chipSize === 'large'
+                ? 'bg-white shadow-sm text-gray-900'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+            title="Крупные чипы"
+          >
+            <Maximize2 className="h-3 w-3" />
+            <span>Крупные</span>
+          </button>
+          <button
+            onClick={() => setChipSize('compact')}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+              chipSize === 'compact'
+                ? 'bg-white shadow-sm text-gray-900'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+            title="Компактные чипы"
+          >
+            <Minimize2 className="h-3 w-3" />
+            <span>Микро</span>
+          </button>
+        </div>
+      </div>
+
       <div className="inline-flex flex-col items-start gap-4 py-4 px-4 min-w-max">
         {tree.map((node, i) => {
           const collapse = node.component.is_composite && SOLUTION_RE.test(node.component.name)
@@ -330,42 +423,36 @@ export default function AssemblyTree({ kitComponents, onOpenComponent }: Props) 
               depth={0}
               maxDepth={maxDepth}
               defaultCollapsed={collapse}
+              chipSize={chipSize}
             />
           )
         })}
-      </div>
-
-      <div className="flex items-center gap-3 pt-3 border-t border-gray-100 px-4">
-        <span className="text-[10px] text-gray-400 uppercase tracking-wider">Стадии:</span>
-        {STAGE_STYLES.slice().reverse().map((s, i) => (
-          <div key={i} className="flex items-center gap-1">
-            <div className={`h-3 w-3 rounded-sm border ${s.bg} ${s.border}`} />
-            <span className="text-[10px] text-gray-500">{s.label}</span>
-          </div>
-        ))}
       </div>
     </div>
   )
 }
 
-/* ── Tree builder ── */
+/* ── Tree builder (single batch request) ── */
 
 async function buildFullTree(kitComponents: KitComponent[]): Promise<TreeNode[]> {
-  // Sequential to avoid Supabase connection pool exhaustion on Vercel serverless
-  const nodes: TreeNode[] = []
-  for (const kc of kitComponents) {
-    nodes.push(await buildNode(kc.component, kc.quantity))
+  // Один запрос — получаем все составы разом
+  let partsMap: Record<string, ComponentPart[]> = {}
+  try {
+    partsMap = await componentsApi.getBatchParts()
+  } catch (e) {
+    console.error('Batch parts load failed:', e)
   }
-  return nodes
+
+  return kitComponents.map(kc => buildNodeSync(kc.component, kc.quantity, partsMap))
 }
 
-async function buildNode(component: Component, quantity: number): Promise<TreeNode> {
+function buildNodeSync(
+  component: Component,
+  quantity: number,
+  partsMap: Record<string, ComponentPart[]>,
+): TreeNode {
   if (!component.is_composite) return { component, quantity }
-  let parts: ComponentPart[] = []
-  try { parts = await componentsApi.getParts(component.id) } catch (e) { console.error(e) }
-  const children: TreeNode[] = []
-  for (const p of parts) {
-    children.push(await buildNode(p.part, Number(p.quantity)))
-  }
+  const parts = partsMap[component.id] ?? []
+  const children = parts.map(p => buildNodeSync(p.part, Number(p.quantity), partsMap))
   return { component, quantity, children }
 }

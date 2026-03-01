@@ -7,6 +7,15 @@ import {
 } from 'typeorm';
 import { TransactionType } from './Transaction';
 
+export enum CategoryGroup {
+  OPERATING_INCOME = 'operating_income',
+  OPERATING_EXPENSE = 'operating_expense',
+  COGS = 'cogs',
+  INVESTING = 'investing',
+  FINANCING = 'financing',
+  OTHER = 'other'
+}
+
 @Entity('categories')
 export class Category {
   @PrimaryGeneratedColumn('uuid')
@@ -31,6 +40,9 @@ export class Category {
 
   @Column({ type: 'boolean', default: true, comment: 'Активна' })
   is_active: boolean;
+
+  @Column({ type: 'varchar', length: 30, nullable: true, comment: 'Группа для финансовых отчётов' })
+  group: CategoryGroup;
 
   @CreateDateColumn()
   created_at: Date;

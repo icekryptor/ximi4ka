@@ -15,6 +15,12 @@ export enum TransactionType {
   EXPENSE = 'expense'   // Расход
 }
 
+export enum TransactionSource {
+  MANUAL = 'manual',
+  SUPPLY = 'supply',
+  IMPORT = 'import'
+}
+
 @Entity('transactions')
 export class Transaction {
   @PrimaryGeneratedColumn('uuid')
@@ -56,6 +62,12 @@ export class Transaction {
 
   @Column({ type: 'text', nullable: true, comment: 'Дополнительные заметки' })
   notes: string;
+
+  @Column({ type: 'varchar', length: 20, default: TransactionSource.MANUAL, comment: 'Источник: manual, supply, import' })
+  source: TransactionSource;
+
+  @Column({ type: 'uuid', nullable: true, comment: 'ID источника (supply_id и т.д.)' })
+  source_id: string;
 
   @CreateDateColumn()
   created_at: Date;
