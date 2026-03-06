@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { reportsApi } from '../api/reports'
 import { transactionsApi } from '../api/transactions'
 import { FinancialSummary, Transaction } from '../api/types'
+import { formatCurrency } from '../utils/format'
 import { TrendingUp, TrendingDown, Wallet, Activity } from 'lucide-react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale/ru'
@@ -22,28 +23,21 @@ const Dashboard = () => {
       const startDate = new Date()
       startDate.setDate(startDate.getDate() - 30)
 
-      const [summaryData, transactionsData] = await Promise.all([
+      const [summaryData, transactionsResult] = await Promise.all([
         reportsApi.getSummary({
           startDate: startDate.toISOString().split('T')[0],
           endDate: endDate.toISOString().split('T')[0]
         }),
-        transactionsApi.getAll()
+        transactionsApi.getAll({ page: 1, limit: 5 })
       ])
 
       setSummary(summaryData)
-      setRecentTransactions(transactionsData.slice(0, 5))
+      setRecentTransactions(transactionsResult.data)
     } catch (error) {
       console.error('Ошибка загрузки данных:', error)
     } finally {
       setLoading(false)
     }
-  }
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB'
-    }).format(amount)
   }
 
   if (loading) {

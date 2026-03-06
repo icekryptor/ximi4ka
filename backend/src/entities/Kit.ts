@@ -41,6 +41,9 @@ export class Kit {
   @Column('decimal', { precision: 12, scale: 2, comment: 'Себестоимость одного набора' })
   total_cost: number;
 
+  @Column('decimal', { precision: 12, scale: 2, nullable: true, comment: 'Расчётная себестоимость (вводится вручную)' })
+  estimated_cost: number;
+
   // Цены продажи
   @Column('decimal', { precision: 12, scale: 2, nullable: true, comment: 'Розничная цена' })
   retail_price: number;

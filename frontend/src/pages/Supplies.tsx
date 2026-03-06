@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { suppliesApi } from '../api/supplies'
 import { Supply } from '../api/types'
+import { formatCurrency } from '../utils/format'
 import { Plus, Edit2, Trash2, Package, Truck } from 'lucide-react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale/ru'
@@ -55,9 +56,6 @@ const Supplies = () => {
     setEditingSupply(null)
     loadData()
   }
-
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(amount)
 
   const getItemsTotal = (supply: Supply) =>
     supply.items?.reduce((sum, it) => sum + Number(it.total_cost || 0), 0) || 0

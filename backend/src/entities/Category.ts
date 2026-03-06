@@ -3,7 +3,8 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn
+  UpdateDateColumn,
+  Index
 } from 'typeorm';
 import { TransactionType } from './Transaction';
 
@@ -17,6 +18,8 @@ export enum CategoryGroup {
 }
 
 @Entity('categories')
+@Index(['type'])
+@Index(['is_active'])
 export class Category {
   @PrimaryGeneratedColumn('uuid')
   id: string;

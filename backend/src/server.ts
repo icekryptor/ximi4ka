@@ -17,6 +17,8 @@ import kitRoutes from './routes/kit.routes';
 import supplyRoutes from './routes/supply.routes';
 import financialReportRoutes from './routes/financial-report.routes';
 import marketplaceRoutes from './routes/marketplace.routes';
+import wbAdsRoutes from './routes/wb-ads.routes';
+import wbFinanceRoutes from './routes/wb-finance.routes';
 
 dotenv.config();
 
@@ -25,10 +27,12 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-app.use(cors());
+app.use(cors({
+  exposedHeaders: ['X-Total-Count', 'X-Page', 'X-Limit', 'X-Total-Pages'],
+}));
 app.use(morgan('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Статические файлы — загруженные изображения
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
@@ -43,6 +47,8 @@ app.use('/api/kits', kitRoutes);
 app.use('/api/supplies', supplyRoutes);
 app.use('/api/financial-reports', financialReportRoutes);
 app.use('/api/marketplace', marketplaceRoutes);
+app.use('/api/wb-ads', wbAdsRoutes);
+app.use('/api/wb-finance', wbFinanceRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -71,12 +77,8 @@ async function bootstrap() {
   const dbInfo = isSupabase ? 'Supabase/PostgreSQL' : (AppDataSource.options as any).database || 'PostgreSQL';
   console.log('✅ База данных подключена:', dbInfo);
 
-  // Для Supabase (synchronize: false) — синхронизируем схему без потери данных
-  if (isSupabase && process.env.NODE_ENV === 'development') {
-    console.log('   Синхронизация схемы...');
-    await AppDataSource.synchronize();
-    console.log('   ✅ Схема синхронизирована');
-  }
+  // SAFETY: Never auto-synchronize Supabase — use migrations instead
+  // synchronize() can drop columns and cause data loss
 
   console.log('');
   app.listen(PORT, () => {

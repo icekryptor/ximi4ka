@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { financialReportsApi } from '../api/financialReports'
 import { CashFlowReport, PnlReport, BalanceReport } from '../api/types'
+import { formatCurrency } from '../utils/format'
 import {
   TrendingUp,
   TrendingDown,
@@ -35,11 +36,7 @@ const FinancialReports = () => {
   const [balDate, setBalDate] = useState(new Date().toISOString().split('T')[0])
   const [balance, setBalance] = useState<BalanceReport | null>(null)
 
-  useEffect(() => {
-    loadData()
-  }, [tab])
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true)
     try {
       if (tab === 'cashflow') {
@@ -64,10 +61,11 @@ const FinancialReports = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [tab, cfYear, cfPeriod, cfValue, pnlStart, pnlEnd, balDate])
 
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(amount)
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const monthNames = [
     'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',

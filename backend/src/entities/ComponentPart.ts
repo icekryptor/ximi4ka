@@ -5,10 +5,13 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  Index,
 } from 'typeorm';
 import { Component } from './Component';
 
 @Entity('component_parts')
+@Index(['composite_id'])
+@Index(['part_id'])
 export class ComponentPart {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -26,7 +29,7 @@ export class ComponentPart {
   @JoinColumn({ name: 'composite_id' })
   composite: Component;
 
-  @ManyToOne(() => Component, { onDelete: 'RESTRICT', eager: true })
+  @ManyToOne(() => Component, { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'part_id' })
   part: Component;
 

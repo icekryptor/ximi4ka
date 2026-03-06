@@ -24,6 +24,14 @@ export default function ComponentModal({ component, kitId, onClose, onSaved }: P
   const isEdit = !!component
   const fileRef = useRef<HTMLInputElement>(null)
 
+  // Инициализация полей стоимости: если все три = 0, но unit_price > 0,
+  // для обратной совместимости считаем всю цену как «материалы» (или «работа» для labor)
+  const initMaterials = Number(component?.cost_materials) || 0
+  const initLogistics = Number(component?.cost_logistics) || 0
+  const initLabor = Number(component?.cost_labor) || 0
+  const initUnitPrice = Number(component?.unit_price) || 0
+  const costFieldsEmpty = initMaterials + initLogistics + initLabor === 0 && initUnitPrice > 0
+
   const [form, setForm] = useState({
     name: component?.name ?? '',
     sku: component?.sku ?? '',
@@ -32,11 +40,15 @@ export default function ComponentModal({ component, kitId, onClose, onSaved }: P
     dimensions: component?.dimensions ?? '',
     link_1688: component?.link_1688 ?? '',
     factory: component?.factory ?? '',
-    unit_price: component?.unit_price ?? 0,
+    cost_materials: costFieldsEmpty && component?.category !== 'labor' ? initUnitPrice : initMaterials,
+    cost_logistics: initLogistics,
+    cost_labor: costFieldsEmpty && component?.category === 'labor' ? initUnitPrice : initLabor,
     notes: component?.notes ?? '',
     is_active: component?.is_active ?? true,
     is_composite: component?.is_composite ?? false,
   })
+
+  const computedUnitPrice = Number(form.cost_materials) + Number(form.cost_logistics) + Number(form.cost_labor)
 
   // После создания — сохранённый компонент (для управления составом)
   const [savedComponent, setSavedComponent] = useState<Component | null>(
@@ -68,12 +80,17 @@ export default function ComponentModal({ component, kitId, onClose, onSaved }: P
     setSaving(true)
     setError('')
 
+    const finalUnitPrice = form.is_composite ? compositePrice : computedUnitPrice
+
     const payload = {
       ...form,
       weight_kg: form.weight_kg !== '' ? Number(form.weight_kg) : undefined,
-      unit_price: form.is_composite ? compositePrice : Number(form.unit_price),
+      cost_materials: form.is_composite ? undefined : Number(form.cost_materials),
+      cost_logistics: form.is_composite ? undefined : Number(form.cost_logistics),
+      cost_labor: form.is_composite ? undefined : Number(form.cost_labor),
+      unit_price: finalUnitPrice,
       quantity_per_kit: 1,
-      price_per_kit: form.is_composite ? compositePrice : Number(form.unit_price),
+      price_per_kit: finalUnitPrice,
     }
 
     try {
@@ -293,19 +310,53 @@ export default function ComponentModal({ component, kitId, onClose, onSaved }: P
             />
           </div>
 
-          {/* Цена — только для простых */}
+          {/* Структура стоимости — только для простых */}
           {!form.is_composite && (
-            <div>
-              <label className="label">Цена за единицу, ₽</label>
-              <input
-                className="input"
-                type="number"
-                step="0.01"
-                min="0"
-                value={form.unit_price}
-                onChange={e => set('unit_price', e.target.value)}
-                placeholder="0.00"
-              />
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="label mb-0">Стоимость за единицу</label>
+                <span className="text-sm font-semibold text-gray-900">
+                  = {new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(computedUnitPrice)}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="text-xs text-gray-500">Материалы, ₽</label>
+                  <input
+                    className="input"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={form.cost_materials}
+                    onChange={e => set('cost_materials', e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">Логистика, ₽</label>
+                  <input
+                    className="input"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={form.cost_logistics}
+                    onChange={e => set('cost_logistics', e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">Работа, ₽</label>
+                  <input
+                    className="input"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={form.cost_labor}
+                    onChange={e => set('cost_labor', e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
             </div>
           )}
 

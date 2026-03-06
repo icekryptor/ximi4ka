@@ -30,23 +30,31 @@ export const upload = multer({
 const componentRepository = AppDataSource.getRepository(Component);
 const componentPartRepository = AppDataSource.getRepository(ComponentPart);
 
-/** Пересчитать unit_price и weight_kg сложного компонента из его деталей */
-async function recalculateComposite(compositeId: string) {
+/** Пересчитать стоимость (materials/logistics/labor) и вес сложного компонента из его деталей */
+export async function recalculateComposite(compositeId: string) {
   const parts = await componentPartRepository.find({
     where: { composite_id: compositeId },
     relations: ['part'],
   });
 
-  const totalPrice = parts.reduce(
-    (s, p) => s + Number(p.part.unit_price) * Number(p.quantity),
-    0,
+  const totalMaterials = parts.reduce(
+    (s, p) => s + Number(p.part.cost_materials) * Number(p.quantity), 0,
   );
+  const totalLogistics = parts.reduce(
+    (s, p) => s + Number(p.part.cost_logistics) * Number(p.quantity), 0,
+  );
+  const totalLabor = parts.reduce(
+    (s, p) => s + Number(p.part.cost_labor) * Number(p.quantity), 0,
+  );
+  const totalPrice = totalMaterials + totalLogistics + totalLabor;
   const totalWeight = parts.reduce(
-    (s, p) => s + (Number(p.part.weight_kg) || 0) * Number(p.quantity),
-    0,
+    (s, p) => s + (Number(p.part.weight_kg) || 0) * Number(p.quantity), 0,
   );
 
   await componentRepository.update(compositeId, {
+    cost_materials: totalMaterials,
+    cost_logistics: totalLogistics,
+    cost_labor: totalLabor,
     unit_price: totalPrice,
     price_per_kit: totalPrice,
     ...(totalWeight > 0 ? { weight_kg: totalWeight } : {}),

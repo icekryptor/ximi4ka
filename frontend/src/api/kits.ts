@@ -21,6 +21,7 @@ export interface Kit {
   print_cost: number;
   labor_cost: number;
   total_cost: number;
+  estimated_cost?: number;
   retail_price?: number;
   wholesale_price?: number;
   is_active: boolean;

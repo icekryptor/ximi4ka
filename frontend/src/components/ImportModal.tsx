@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { X, Upload, CheckCircle, AlertTriangle, FileSpreadsheet } from 'lucide-react'
 import { transactionsApi, ParsedTransactionRow, ImportPreview } from '../api/transactions'
+import { formatCurrency } from '../utils/format'
 
 interface ImportModalProps {
   onClose: () => void
@@ -87,8 +88,7 @@ const ImportModal = ({ onClose }: ImportModalProps) => {
     }
   }
 
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(amount)
+  // formatCurrency imported from utils/format
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

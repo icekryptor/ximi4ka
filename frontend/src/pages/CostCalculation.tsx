@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { Plus, RefreshCw, Pencil, Trash2, ImageIcon, ExternalLink, ChevronRight, GitBranch, Table2 } from 'lucide-react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { Plus, RefreshCw, Pencil, Trash2, ImageIcon, ExternalLink, ChevronRight, GitBranch, Table2, AlertTriangle } from 'lucide-react'
 import { Component, ComponentPart, componentsApi } from '../api/components'
 import { kitsApi, Kit, KitComponent } from '../api/kits'
 import ComponentModal from '../components/ComponentModal'
@@ -75,6 +75,10 @@ export default function CostCalculation() {
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [kitModalOpen, setKitModalOpen] = useState(false)
   const [viewMode, setViewMode] = useState<'table' | 'tree'>('table')
+
+  const [editingEstimated, setEditingEstimated] = useState(false)
+  const [estimatedVal, setEstimatedVal] = useState('')
+  const estimatedRef = useRef<HTMLInputElement>(null)
 
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
   const [partsCache, setPartsCache] = useState<Record<string, ComponentPart[]>>({})
@@ -176,6 +180,17 @@ export default function CostCalculation() {
     setEditModalOpen(false)
     setEditingComponent(null)
     if (activeKitId) loadKitDetails(activeKitId)
+  }
+
+  const saveEstimatedCost = async (val: string) => {
+    setEditingEstimated(false)
+    if (!activeKitId) return
+    const n = parseFloat(val)
+    const newVal = isNaN(n) || n <= 0 ? null : n
+    try {
+      await kitsApi.update(activeKitId, { estimated_cost: newVal as any })
+      if (kitDetails) setKitDetails({ ...kitDetails, estimated_cost: newVal as any })
+    } catch (e) { console.error(e) }
   }
 
   const fmt = (price: number) =>
@@ -382,10 +397,68 @@ export default function CostCalculation() {
         <>
           {/* Итоговая карточка */}
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-semibold text-gray-900">Итоговая себестоимость</h2>
-              <span className="text-2xl font-bold text-gray-900">{fmt(grandTotal)}</span>
+            {/* Фактическая и расчётная себестоимости */}
+            <div className="grid grid-cols-2 gap-6 mb-4">
+              <div>
+                <div className="text-xs text-gray-500 mb-1">Фактическая себестоимость</div>
+                <div className="text-2xl font-bold text-gray-900">{fmt(grandTotal)}</div>
+                <div className="text-xs text-gray-400 mt-0.5">рассчитывается из компонентов</div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500 mb-1">Расчётная себестоимость</div>
+                {editingEstimated ? (
+                  <input
+                    ref={estimatedRef}
+                    className="w-40 text-lg font-bold border border-primary-400 rounded px-2 py-1 outline-none"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={estimatedVal}
+                    onChange={e => setEstimatedVal(e.target.value)}
+                    onBlur={() => saveEstimatedCost(estimatedVal)}
+                    onKeyDown={e => { if (e.key === 'Enter') saveEstimatedCost(estimatedVal); if (e.key === 'Escape') setEditingEstimated(false) }}
+                  />
+                ) : (
+                  <span
+                    className="text-2xl font-bold text-gray-900 cursor-pointer hover:text-primary-600 transition-colors"
+                    title="Нажмите для редактирования"
+                    onClick={() => {
+                      setEstimatedVal(kitDetails?.estimated_cost ? String(kitDetails.estimated_cost) : '')
+                      setEditingEstimated(true)
+                      setTimeout(() => estimatedRef.current?.select(), 0)
+                    }}
+                  >
+                    {kitDetails?.estimated_cost ? fmt(Number(kitDetails.estimated_cost)) : '—'}
+                  </span>
+                )}
+                <div className="text-xs text-gray-400 mt-0.5">вводится вручную</div>
+              </div>
             </div>
+
+            {/* Предупреждение о разнице >30% */}
+            {(() => {
+              const estimated = Number(kitDetails?.estimated_cost)
+              if (!estimated || estimated <= 0) return null
+              const diff = ((grandTotal - estimated) / estimated) * 100
+              if (Math.abs(diff) <= 30) return null
+              const isHigher = diff > 0
+              return (
+                <div className={`flex items-start gap-2 p-3 rounded-lg mb-4 ${isHigher ? 'bg-orange-50 border border-orange-200' : 'bg-amber-50 border border-amber-200'}`}>
+                  <AlertTriangle className={`h-4 w-4 mt-0.5 shrink-0 ${isHigher ? 'text-orange-500' : 'text-amber-500'}`} />
+                  <div className="text-sm">
+                    <span className={`font-medium ${isHigher ? 'text-orange-700' : 'text-amber-700'}`}>
+                      Фактическая себестоимость {isHigher ? 'выше' : 'ниже'} расчётной на {Math.abs(diff).toFixed(1)}%
+                    </span>
+                    <span className={`${isHigher ? 'text-orange-600' : 'text-amber-600'}`}>
+                      {isHigher
+                        ? ' — вероятно, цены повысились'
+                        : ' — вероятно, не все поставки учтены'}
+                    </span>
+                  </div>
+                </div>
+              )
+            })()}
+
             <div className="grid grid-cols-3 gap-4 mb-4 pb-4 border-b border-gray-200">
               {[
                 { label: 'Материалы', value: allItems.reduce((s, kc) => s + Number(kc.component.cost_materials) * Number(kc.quantity), 0) },
@@ -441,8 +514,8 @@ export default function CostCalculation() {
                       const parts = partsCache[c.id] ?? []
 
                       return (
-                        <>
-                          <tr key={kc.id} className={isComposite ? 'cursor-default' : ''}>
+                        <Fragment key={kc.id}>
+                          <tr className={isComposite ? 'cursor-default' : ''}>
                             {/* Фото + раскрытие */}
                             <td className="relative">
                               {/* Шеврон вынесен левее колонки */}
@@ -558,7 +631,7 @@ export default function CostCalculation() {
                               </td>
                             </tr>
                           )}
-                        </>
+                        </Fragment>
                       )
                     })}
               </tbody>

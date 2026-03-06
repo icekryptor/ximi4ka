@@ -121,7 +121,7 @@ export const kitController = {
   async calculateCost(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      
+
       const kit = await kitRepository.findOne({
         where: { id },
         relations: ['components', 'components.component']
@@ -131,24 +131,31 @@ export const kitController = {
         return res.status(404).json({ error: 'Набор не найден' });
       }
 
-      // Получаем все компоненты набора
-      const components = await componentRepository.find({
-        where: { is_active: true }
-      });
+      // Используем ТОЛЬКО компоненты этого набора (с учётом количества в наборе)
+      const kitComponents = kit.components || [];
 
-      // Группируем по категориям
-      const reagents = components.filter(c => c.category === ComponentCategory.REAGENT);
-      const equipment = components.filter(c => c.category === ComponentCategory.EQUIPMENT);
-      const printProducts = components.filter(c => c.category === ComponentCategory.PRINT);
-      const labor = components.filter(c => c.category === ComponentCategory.LABOR);
+      // Группируем по категориям компонентов
+      const byCat = (cat: ComponentCategory) =>
+        kitComponents.filter(kc => kc.component.category === cat);
 
-      // Рассчитываем суммы
-      const reagentsCost = reagents.reduce((sum, c) => sum + Number(c.price_per_kit), 0);
-      const equipmentCost = equipment.reduce((sum, c) => sum + Number(c.price_per_kit), 0);
-      const printCost = printProducts.reduce((sum, c) => sum + Number(c.price_per_kit), 0);
-      const laborCost = labor.reduce((sum, c) => sum + Number(c.price_per_kit), 0);
+      const reagentsCost = byCat(ComponentCategory.REAGENT)
+        .reduce((sum, kc) => sum + Number(kc.component.unit_price) * Number(kc.quantity), 0);
+      const equipmentCost = byCat(ComponentCategory.EQUIPMENT)
+        .reduce((sum, kc) => sum + Number(kc.component.unit_price) * Number(kc.quantity), 0);
+      const printCost = byCat(ComponentCategory.PRINT)
+        .reduce((sum, kc) => sum + Number(kc.component.unit_price) * Number(kc.quantity), 0);
+      const laborCost = byCat(ComponentCategory.LABOR)
+        .reduce((sum, kc) => sum + Number(kc.component.unit_price) * Number(kc.quantity), 0);
 
       const totalCost = reagentsCost + equipmentCost + printCost + laborCost;
+
+      // Структура стоимости (материалы / логистика / работа)
+      const materialsCost = kitComponents.reduce(
+        (sum, kc) => sum + Number(kc.component.cost_materials) * Number(kc.quantity), 0);
+      const logisticsCost = kitComponents.reduce(
+        (sum, kc) => sum + Number(kc.component.cost_logistics) * Number(kc.quantity), 0);
+      const laborStructureCost = kitComponents.reduce(
+        (sum, kc) => sum + Number(kc.component.cost_labor) * Number(kc.quantity), 0);
 
       // Обновляем набор
       await kitRepository.update(id, {
@@ -168,23 +175,36 @@ export const kitController = {
           print: printCost,
           labor: laborCost
         },
+        costStructure: {
+          materials: materialsCost,
+          logistics: logisticsCost,
+          labor: laborStructureCost,
+        },
         total: totalCost,
         details: {
-          reagents: reagents.map(c => ({
-            name: c.name,
-            cost: Number(c.price_per_kit)
+          reagents: byCat(ComponentCategory.REAGENT).map(kc => ({
+            name: kc.component.name,
+            quantity: Number(kc.quantity),
+            unit_price: Number(kc.component.unit_price),
+            cost: Number(kc.component.unit_price) * Number(kc.quantity),
           })),
-          equipment: equipment.map(c => ({
-            name: c.name,
-            cost: Number(c.price_per_kit)
+          equipment: byCat(ComponentCategory.EQUIPMENT).map(kc => ({
+            name: kc.component.name,
+            quantity: Number(kc.quantity),
+            unit_price: Number(kc.component.unit_price),
+            cost: Number(kc.component.unit_price) * Number(kc.quantity),
           })),
-          print: printProducts.map(c => ({
-            name: c.name,
-            cost: Number(c.price_per_kit)
+          print: byCat(ComponentCategory.PRINT).map(kc => ({
+            name: kc.component.name,
+            quantity: Number(kc.quantity),
+            unit_price: Number(kc.component.unit_price),
+            cost: Number(kc.component.unit_price) * Number(kc.quantity),
           })),
-          labor: labor.map(c => ({
-            name: c.name,
-            cost: Number(c.price_per_kit)
+          labor: byCat(ComponentCategory.LABOR).map(kc => ({
+            name: kc.component.name,
+            quantity: Number(kc.quantity),
+            unit_price: Number(kc.component.unit_price),
+            cost: Number(kc.component.unit_price) * Number(kc.quantity),
           }))
         }
       });

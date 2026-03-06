@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { reportsApi } from '../api/reports'
 import { FinancialSummary, CategoryReport, CounterpartyReport, TransactionType } from '../api/types'
+import { formatCurrency } from '../utils/format'
 import { TrendingUp, TrendingDown, Wallet, Calendar } from 'lucide-react'
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
@@ -38,15 +39,6 @@ const Reports = () => {
     } finally {
       setLoading(false)
     }
-  }
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount)
   }
 
   const COLORS = ['#836efe', '#10b981', '#f59e0b', '#ef4444', '#6703ff', '#ec4899', '#14b8a6', '#f97316']

@@ -106,11 +106,36 @@ export const marketplaceController = {
       const parsed: any[] = [];
       const errors: string[] = [];
 
-      // Get existing sales for dedup
-      const existingSales = await saleRepository.find({ select: ['date', 'sku', 'marketplace'] });
-      const existingKeys = new Set(
-        existingSales.map((s) => `${String(s.date).split('T')[0]}|${s.sku}|${s.marketplace}`)
-      );
+      // Get existing sales for dedup — only load matching marketplace + date range
+      const importDates = new Set<string>();
+      sheet.eachRow((row, idx) => {
+        if (idx === 1) return;
+        const dateRaw = String(row.getCell(1).value || '').trim();
+        if (dateRaw) {
+          if (dateRaw.includes('.')) {
+            const parts = dateRaw.split('.');
+            importDates.add(`${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`);
+          } else {
+            importDates.add(dateRaw);
+          }
+        }
+      });
+
+      let existingKeys = new Set<string>();
+      const dateArray = Array.from(importDates);
+      if (dateArray.length > 0) {
+        const existingSales = await saleRepository
+          .createQueryBuilder('s')
+          .select(['s.date', 's.sku', 's.marketplace'])
+          .where('s.marketplace = :marketplace AND s.date IN (:...dates)', {
+            marketplace,
+            dates: dateArray,
+          })
+          .getMany();
+        existingKeys = new Set(
+          existingSales.map((s) => `${String(s.date).split('T')[0]}|${s.sku}|${s.marketplace}`)
+        );
+      }
 
       sheet.eachRow((row, idx) => {
         if (idx === 1) return; // skip header
@@ -193,26 +218,33 @@ export const marketplaceController = {
         return res.status(400).json({ error: 'Нет данных для импорта' });
       }
 
+      const entities = rows.map((row: any) => ({
+        marketplace: row.marketplace,
+        date: row.date,
+        sku: row.sku,
+        product_name: row.product_name,
+        orders_count: row.orders_count,
+        buyouts_count: row.buyouts_count,
+        revenue: row.revenue,
+        commission: row.commission,
+        logistics_cost: row.logistics_cost,
+        storage_cost: row.storage_cost,
+        other_costs: row.other_costs,
+        acquiring_cost: row.acquiring_cost,
+        payout: row.payout,
+      }));
+
+      // Bulk insert in batches of 500
       let imported = 0;
       await AppDataSource.manager.transaction(async (em) => {
-        for (const row of rows) {
-          const sale = em.create(MarketplaceSale, {
-            marketplace: row.marketplace,
-            date: row.date,
-            sku: row.sku,
-            product_name: row.product_name,
-            orders_count: row.orders_count,
-            buyouts_count: row.buyouts_count,
-            revenue: row.revenue,
-            commission: row.commission,
-            logistics_cost: row.logistics_cost,
-            storage_cost: row.storage_cost,
-            other_costs: row.other_costs,
-            acquiring_cost: row.acquiring_cost,
-            payout: row.payout,
-          });
-          await em.save(MarketplaceSale, sale);
-          imported++;
+        for (let i = 0; i < entities.length; i += 500) {
+          const batch = entities.slice(i, i + 500);
+          await em.createQueryBuilder()
+            .insert()
+            .into(MarketplaceSale)
+            .values(batch)
+            .execute();
+          imported += batch.length;
         }
       });
 
@@ -229,98 +261,116 @@ export const marketplaceController = {
       const marketplace = req.params.marketplace as string;
       const { startDate, endDate } = req.query;
 
-      let where: any = { marketplace };
+      // Build WHERE clause for SQL
+      const params: any = { marketplace };
+      let dateCondition = '';
       if (startDate && endDate) {
-        where.date = Between(new Date(startDate as string), new Date(endDate as string));
+        dateCondition = ' AND s.date BETWEEN :startDate AND :endDate';
+        params.startDate = startDate;
+        params.endDate = endDate;
       } else if (startDate) {
-        where.date = MoreThanOrEqual(new Date(startDate as string));
+        dateCondition = ' AND s.date >= :startDate';
+        params.startDate = startDate;
       } else if (endDate) {
-        where.date = LessThanOrEqual(new Date(endDate as string));
+        dateCondition = ' AND s.date <= :endDate';
+        params.endDate = endDate;
       }
 
-      const sales = await saleRepository.find({
-        where,
-        order: { date: 'ASC', sku: 'ASC' },
-      });
+      const baseWhere = `s.marketplace = :marketplace${dateCondition}`;
 
-      // Aggregate by SKU
-      const bySku = new Map<string, {
-        sku: string;
-        product_name: string;
-        orders: number;
-        buyouts: number;
-        revenue: number;
-        commission: number;
-        logistics: number;
-        storage: number;
-        other: number;
-        acquiring: number;
-        payout: number;
-        days: number;
-      }>();
+      // Run 3 SQL aggregation queries in parallel instead of loading all rows
+      const [bySkuRows, byDateRows, totalsRow] = await Promise.all([
+        // Aggregate by SKU
+        saleRepository.createQueryBuilder('s')
+          .select('s.sku', 'sku')
+          .addSelect('MAX(s.product_name)', 'product_name')
+          .addSelect('SUM(s.orders_count)', 'orders')
+          .addSelect('SUM(s.buyouts_count)', 'buyouts')
+          .addSelect('SUM(s.revenue)', 'revenue')
+          .addSelect('SUM(s.commission)', 'commission')
+          .addSelect('SUM(s.logistics_cost)', 'logistics')
+          .addSelect('SUM(s.storage_cost)', 'storage')
+          .addSelect('SUM(s.other_costs)', 'other')
+          .addSelect('SUM(s.acquiring_cost)', 'acquiring')
+          .addSelect('SUM(s.payout)', 'payout')
+          .addSelect('COUNT(*)', 'days')
+          .where(baseWhere, params)
+          .groupBy('s.sku')
+          .orderBy('SUM(s.revenue)', 'DESC')
+          .getRawMany(),
 
-      for (const s of sales) {
-        const existing = bySku.get(s.sku) || {
-          sku: s.sku,
-          product_name: s.product_name || s.sku,
-          orders: 0, buyouts: 0, revenue: 0, commission: 0,
-          logistics: 0, storage: 0, other: 0, acquiring: 0, payout: 0, days: 0,
-        };
-        existing.orders += Number(s.orders_count);
-        existing.buyouts += Number(s.buyouts_count);
-        existing.revenue += Number(s.revenue);
-        existing.commission += Number(s.commission);
-        existing.logistics += Number(s.logistics_cost);
-        existing.storage += Number(s.storage_cost);
-        existing.other += Number(s.other_costs);
-        existing.acquiring += Number(s.acquiring_cost);
-        existing.payout += Number(s.payout);
-        existing.days += 1;
-        bySku.set(s.sku, existing);
-      }
+        // Aggregate by date (for chart)
+        saleRepository.createQueryBuilder('s')
+          .select('s.date', 'date')
+          .addSelect('SUM(s.orders_count)', 'orders')
+          .addSelect('SUM(s.buyouts_count)', 'buyouts')
+          .addSelect('SUM(s.revenue)', 'revenue')
+          .addSelect('SUM(s.payout)', 'payout')
+          .where(baseWhere, params)
+          .groupBy('s.date')
+          .orderBy('s.date', 'ASC')
+          .getRawMany(),
 
-      // Aggregate by date (for chart)
-      const byDate = new Map<string, {
-        date: string;
-        orders: number;
-        buyouts: number;
-        revenue: number;
-        payout: number;
-      }>();
+        // Totals + count
+        saleRepository.createQueryBuilder('s')
+          .select('SUM(s.orders_count)', 'orders')
+          .addSelect('SUM(s.buyouts_count)', 'buyouts')
+          .addSelect('SUM(s.revenue)', 'revenue')
+          .addSelect('SUM(s.commission)', 'commission')
+          .addSelect('SUM(s.logistics_cost)', 'logistics')
+          .addSelect('SUM(s.storage_cost)', 'storage')
+          .addSelect('SUM(s.other_costs)', 'other')
+          .addSelect('SUM(s.acquiring_cost)', 'acquiring')
+          .addSelect('SUM(s.payout)', 'payout')
+          .addSelect('COUNT(*)', 'count')
+          .where(baseWhere, params)
+          .getRawOne(),
+      ]);
 
-      for (const s of sales) {
-        const dateStr = String(s.date).split('T')[0];
-        const existing = byDate.get(dateStr) || {
-          date: dateStr, orders: 0, buyouts: 0, revenue: 0, payout: 0,
-        };
-        existing.orders += Number(s.orders_count);
-        existing.buyouts += Number(s.buyouts_count);
-        existing.revenue += Number(s.revenue);
-        existing.payout += Number(s.payout);
-        byDate.set(dateStr, existing);
-      }
-
-      // Totals
       const totals = {
-        orders: sales.reduce((s, r) => s + Number(r.orders_count), 0),
-        buyouts: sales.reduce((s, r) => s + Number(r.buyouts_count), 0),
-        revenue: sales.reduce((s, r) => s + Number(r.revenue), 0),
-        commission: sales.reduce((s, r) => s + Number(r.commission), 0),
-        logistics: sales.reduce((s, r) => s + Number(r.logistics_cost), 0),
-        storage: sales.reduce((s, r) => s + Number(r.storage_cost), 0),
-        other: sales.reduce((s, r) => s + Number(r.other_costs), 0),
-        acquiring: sales.reduce((s, r) => s + Number(r.acquiring_cost), 0),
-        payout: sales.reduce((s, r) => s + Number(r.payout), 0),
+        orders: Number(totalsRow?.orders) || 0,
+        buyouts: Number(totalsRow?.buyouts) || 0,
+        revenue: Number(totalsRow?.revenue) || 0,
+        commission: Number(totalsRow?.commission) || 0,
+        logistics: Number(totalsRow?.logistics) || 0,
+        storage: Number(totalsRow?.storage) || 0,
+        other: Number(totalsRow?.other) || 0,
+        acquiring: Number(totalsRow?.acquiring) || 0,
+        payout: Number(totalsRow?.payout) || 0,
       };
 
       const buyoutRate = totals.orders > 0 ? Math.round((totals.buyouts / totals.orders) * 1000) / 10 : 0;
 
+      // Map raw rows to typed objects
+      const bySku = bySkuRows.map((r: any) => ({
+        sku: r.sku,
+        product_name: r.product_name || r.sku,
+        orders: Number(r.orders),
+        buyouts: Number(r.buyouts),
+        revenue: Number(r.revenue),
+        commission: Number(r.commission),
+        logistics: Number(r.logistics),
+        storage: Number(r.storage),
+        other: Number(r.other),
+        acquiring: Number(r.acquiring),
+        payout: Number(r.payout),
+        days: Number(r.days),
+      }));
+
+      const byDate = byDateRows.map((r: any) => ({
+        date: String(r.date).split('T')[0],
+        orders: Number(r.orders),
+        buyouts: Number(r.buyouts),
+        revenue: Number(r.revenue),
+        payout: Number(r.payout),
+      }));
+
       res.json({
         marketplace,
         totals: { ...totals, buyoutRate },
-        bySku: Array.from(bySku.values()).sort((a, b) => b.revenue - a.revenue),
-        byDate: Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date)),
-        salesCount: sales.length,
+        bySku,
+        byDate,
+        salesCount: Number(totalsRow?.count) || 0,
       });
     } catch (error) {
       console.error('Ошибка аналитики:', error);

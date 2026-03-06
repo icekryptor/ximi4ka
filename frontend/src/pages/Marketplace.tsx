@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { marketplaceApi } from '../api/marketplace'
 import {
   MarketplaceSale,
@@ -6,6 +6,7 @@ import {
   MarketplaceType,
   SkuMapping,
 } from '../api/types'
+import { formatCurrency } from '../utils/format'
 import {
   ShoppingBag,
   TrendingUp,
@@ -44,11 +45,7 @@ const Marketplace = () => {
   const [isSkuModalOpen, setIsSkuModalOpen] = useState(false)
   const [editingSku, setEditingSku] = useState<SkuMapping | null>(null)
 
-  useEffect(() => {
-    loadData()
-  }, [tab])
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true)
     try {
       if (tab === 'skus') {
@@ -68,10 +65,11 @@ const Marketplace = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [tab, startDate, endDate])
 
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(amount)
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const handleDeleteSale = async (id: string) => {
     if (!window.confirm('Удалить запись?')) return
@@ -556,7 +554,7 @@ const SaleModal = ({
           <div className={`rounded-lg p-3 text-center ${payout >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
             <p className="text-sm text-brand-text-secondary">К выплате</p>
             <p className={`text-xl font-bold ${payout >= 0 ? 'text-green-700' : 'text-red-700'}`}>
-              {new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(payout)}
+              {formatCurrency(payout)}
             </p>
           </div>
 

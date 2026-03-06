@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 
 export enum Marketplace {
@@ -12,6 +13,9 @@ export enum Marketplace {
 }
 
 @Entity('marketplace_sales')
+@Index(['marketplace', 'date', 'sku'])
+@Index(['date'])
+@Index(['marketplace'])
 export class MarketplaceSale {
   @PrimaryGeneratedColumn('uuid')
   id: string;

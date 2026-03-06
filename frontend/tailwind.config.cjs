@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -31,7 +31,7 @@ export default {
         'brand-lg': '55px',
       },
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', 'Arial', 'Helvetica', 'sans-serif'],
+        sans: ['Inter', 'Arial', 'Helvetica', 'sans-serif'],
       },
     },
   },

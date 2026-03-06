@@ -3,7 +3,8 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn
+  UpdateDateColumn,
+  Index
 } from 'typeorm';
 
 export enum CounterpartyType {
@@ -13,6 +14,8 @@ export enum CounterpartyType {
 }
 
 @Entity('counterparties')
+@Index(['type'])
+@Index(['name'])
 export class Counterparty {
   @PrimaryGeneratedColumn('uuid')
   id: string;

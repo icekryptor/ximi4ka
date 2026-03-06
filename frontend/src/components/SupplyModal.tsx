@@ -4,6 +4,7 @@ import { Supply, Counterparty, CounterpartyType } from '../api/types'
 import { Component, componentsApi } from '../api/components'
 import { counterpartiesApi } from '../api/counterparties'
 import { suppliesApi, CreateSupplyData } from '../api/supplies'
+import { formatCurrency } from '../utils/format'
 
 interface SupplyModalProps {
   supply: Supply | null
@@ -129,9 +130,6 @@ const SupplyModal = ({ supply, onClose }: SupplyModalProps) => {
       setSaving(false)
     }
   }
-
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(amount)
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

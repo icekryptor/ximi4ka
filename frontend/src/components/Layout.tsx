@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, ArrowLeftRight, Users, FolderOpen, BarChart3, Beaker, Package, Truck, FileText, ShoppingBag } from 'lucide-react'
+import { LayoutDashboard, ArrowLeftRight, Users, FolderOpen, BarChart3, Beaker, Package, Truck, FileText, ShoppingBag, Megaphone } from 'lucide-react'
 
 interface LayoutProps {
   children: ReactNode
@@ -27,6 +27,8 @@ const Layout = ({ children }: LayoutProps) => {
     { type: 'link', name: 'Финотчёты', href: '/financial-reports', icon: FileText },
     { type: 'group', label: 'Маркетплейсы' },
     { type: 'link', name: 'Аналитика', href: '/marketplace', icon: ShoppingBag },
+    { type: 'link', name: 'Реклама WB', href: '/wb-ads', icon: Megaphone },
+    { type: 'link', name: 'Финотчёты WB', href: '/wb-finance', icon: FileText },
   ]
 
   const isActive = (path: string) => location.pathname === path

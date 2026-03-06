@@ -4,6 +4,7 @@ import { Supply } from '../entities/Supply';
 import { SupplyItem } from '../entities/SupplyItem';
 import { Transaction, TransactionType, TransactionSource } from '../entities/Transaction';
 import { Component } from '../entities/Component';
+import { ComponentPart } from '../entities/ComponentPart';
 import { Between, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 
 const supplyRepository = AppDataSource.getRepository(Supply);
@@ -168,6 +169,49 @@ export const supplyController = {
           await em.save(Transaction, deliveryTx);
         }
 
+        // 5. Обновить cost_materials / cost_logistics на компонентах
+        for (const savedItem of savedItems) {
+          const costMaterials = Number(savedItem.unit_cost) || 0;
+          const costLogistics = Number(savedItem.unit_delivery_cost) || 0;
+          const comp = components.find(c => c.id === savedItem.component_id);
+          const costLabor = Number(comp?.cost_labor) || 0;
+          const unitPrice = costMaterials + costLogistics + costLabor;
+
+          await em.update(Component, savedItem.component_id, {
+            cost_materials: Math.round(costMaterials * 100) / 100,
+            cost_logistics: Math.round(costLogistics * 100) / 100,
+            unit_price: Math.round(unitPrice * 100) / 100,
+          });
+        }
+
+        // 6. Пересчитать составные компоненты, содержащие обновлённые детали
+        const updatedComponentIds = savedItems.map(si => si.component_id);
+        const affectedParts = await em.find(ComponentPart, {
+          where: updatedComponentIds.map(cid => ({ part_id: cid })),
+        });
+        const compositeIds = [...new Set(affectedParts.map(p => p.composite_id))];
+
+        for (const compositeId of compositeIds) {
+          const allParts = await em.find(ComponentPart, {
+            where: { composite_id: compositeId },
+            relations: ['part'],
+          });
+          const totalMaterials = allParts.reduce((s, p) => s + Number(p.part.cost_materials) * Number(p.quantity), 0);
+          const totalLogistics = allParts.reduce((s, p) => s + Number(p.part.cost_logistics) * Number(p.quantity), 0);
+          const totalLabor = allParts.reduce((s, p) => s + Number(p.part.cost_labor) * Number(p.quantity), 0);
+          const totalPrice = totalMaterials + totalLogistics + totalLabor;
+          const totalWeight = allParts.reduce((s, p) => s + (Number(p.part.weight_kg) || 0) * Number(p.quantity), 0);
+
+          await em.update(Component, compositeId, {
+            cost_materials: Math.round(totalMaterials * 100) / 100,
+            cost_logistics: Math.round(totalLogistics * 100) / 100,
+            cost_labor: Math.round(totalLabor * 100) / 100,
+            unit_price: Math.round(totalPrice * 100) / 100,
+            price_per_kit: Math.round(totalPrice * 100) / 100,
+            ...(totalWeight > 0 ? { weight_kg: Math.round(totalWeight * 1000) / 1000 } : {}),
+          });
+        }
+
         return savedSupply;
       });
 
@@ -214,6 +258,12 @@ export const supplyController = {
           const deliveryCostNum = Number(supplyData.delivery_cost ?? supply.delivery_cost) || 0;
           const totalQuantity = items.reduce((sum: number, it: any) => sum + Number(it.quantity || 0), 0);
 
+          // Загружаем компоненты для сохранения cost_labor
+          const componentIds = items.map((it: any) => it.component_id);
+          const components = await em.findByIds(Component, componentIds);
+
+          const savedItems: SupplyItem[] = [];
+
           // Создаём новые
           for (const itemData of items) {
             const quantity = Number(itemData.quantity) || 0;
@@ -246,7 +296,49 @@ export const supplyController = {
               unit_delivery_cost: Math.round(unitDeliveryCost * 100) / 100,
             });
 
-            await em.save(SupplyItem, supplyItem);
+            const saved = await em.save(SupplyItem, supplyItem);
+            savedItems.push(saved);
+          }
+
+          // Обновить cost_materials / cost_logistics на компонентах
+          for (const savedItem of savedItems) {
+            const costMaterials = Number(savedItem.unit_cost) || 0;
+            const costLogistics = Number(savedItem.unit_delivery_cost) || 0;
+            const comp = components.find(c => c.id === savedItem.component_id);
+            const costLabor = Number(comp?.cost_labor) || 0;
+            const unitPrice = costMaterials + costLogistics + costLabor;
+
+            await em.update(Component, savedItem.component_id, {
+              cost_materials: Math.round(costMaterials * 100) / 100,
+              cost_logistics: Math.round(costLogistics * 100) / 100,
+              unit_price: Math.round(unitPrice * 100) / 100,
+            });
+          }
+
+          // Пересчитать составные компоненты
+          const updatedIds = savedItems.map(si => si.component_id);
+          const affectedParts = await em.find(ComponentPart, {
+            where: updatedIds.map(cid => ({ part_id: cid })),
+          });
+          const compositeIds = [...new Set(affectedParts.map(p => p.composite_id))];
+          for (const compositeId of compositeIds) {
+            const allParts = await em.find(ComponentPart, {
+              where: { composite_id: compositeId },
+              relations: ['part'],
+            });
+            const tm = allParts.reduce((s, p) => s + Number(p.part.cost_materials) * Number(p.quantity), 0);
+            const tl = allParts.reduce((s, p) => s + Number(p.part.cost_logistics) * Number(p.quantity), 0);
+            const tb = allParts.reduce((s, p) => s + Number(p.part.cost_labor) * Number(p.quantity), 0);
+            const tp = tm + tl + tb;
+            const tw = allParts.reduce((s, p) => s + (Number(p.part.weight_kg) || 0) * Number(p.quantity), 0);
+            await em.update(Component, compositeId, {
+              cost_materials: Math.round(tm * 100) / 100,
+              cost_logistics: Math.round(tl * 100) / 100,
+              cost_labor: Math.round(tb * 100) / 100,
+              unit_price: Math.round(tp * 100) / 100,
+              price_per_kit: Math.round(tp * 100) / 100,
+              ...(tw > 0 ? { weight_kg: Math.round(tw * 1000) / 1000 } : {}),
+            });
           }
         });
       }

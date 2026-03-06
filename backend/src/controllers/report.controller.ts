@@ -1,43 +1,52 @@
 import { Request, Response } from 'express';
 import { AppDataSource } from '../config/database';
 import { Transaction, TransactionType } from '../entities/Transaction';
-import { Between } from 'typeorm';
 
 const transactionRepository = AppDataSource.getRepository(Transaction);
 
 export const reportController = {
-  // Сводка по финансам
+  // Сводка по финансам — SQL aggregation
   async getSummary(req: Request, res: Response) {
     try {
       const { startDate, endDate } = req.query;
-      
-      let where: any = {};
-      
+
+      const qb = transactionRepository
+        .createQueryBuilder('t')
+        .select('t.type', 'type')
+        .addSelect('SUM(t.amount)', 'total')
+        .addSelect('COUNT(*)', 'count')
+        .groupBy('t.type');
+
       if (startDate && endDate) {
-        where.date = Between(new Date(startDate as string), new Date(endDate as string));
+        qb.where('t.date BETWEEN :startDate AND :endDate', {
+          startDate: startDate as string,
+          endDate: endDate as string,
+        });
       }
 
-      const transactions = await transactionRepository.find({ where });
+      const rows: { type: string; total: string; count: string }[] = await qb.getRawMany();
 
-      const income = transactions
-        .filter(t => t.type === TransactionType.INCOME)
-        .reduce((sum, t) => sum + Number(t.amount), 0);
+      let income = 0;
+      let expense = 0;
+      let transactionCount = 0;
 
-      const expense = transactions
-        .filter(t => t.type === TransactionType.EXPENSE)
-        .reduce((sum, t) => sum + Number(t.amount), 0);
-
-      const balance = income - expense;
+      for (const row of rows) {
+        const amount = Number(row.total) || 0;
+        const count = Number(row.count) || 0;
+        transactionCount += count;
+        if (row.type === TransactionType.INCOME) income = amount;
+        else expense = amount;
+      }
 
       res.json({
         income,
         expense,
-        balance,
-        transactionCount: transactions.length,
+        balance: income - expense,
+        transactionCount,
         period: {
           startDate: startDate || 'Не указано',
-          endDate: endDate || 'Не указано'
-        }
+          endDate: endDate || 'Не указано',
+        },
       });
     } catch (error) {
       console.error('Ошибка при получении сводки:', error);
@@ -45,38 +54,37 @@ export const reportController = {
     }
   },
 
-  // Отчет по категориям
+  // Отчет по категориям — SQL aggregation with JOIN
   async getByCategory(req: Request, res: Response) {
     try {
       const { startDate, endDate, type } = req.query;
-      
-      let where: any = {};
-      
+
+      const qb = transactionRepository
+        .createQueryBuilder('t')
+        .leftJoin('t.category', 'c')
+        .select("COALESCE(c.name, 'Без категории')", 'name')
+        .addSelect('SUM(t.amount)', 'total')
+        .addSelect('COUNT(*)', 'count')
+        .groupBy("COALESCE(c.name, 'Без категории')")
+        .orderBy('SUM(t.amount)', 'DESC');
+
       if (startDate && endDate) {
-        where.date = Between(new Date(startDate as string), new Date(endDate as string));
+        qb.where('t.date BETWEEN :startDate AND :endDate', {
+          startDate: startDate as string,
+          endDate: endDate as string,
+        });
       }
       if (type) {
-        where.type = type;
+        qb.andWhere('t.type = :type', { type: type as string });
       }
 
-      const transactions = await transactionRepository.find({
-        where,
-        relations: ['category']
-      });
+      const rows: { name: string; total: string; count: string }[] = await qb.getRawMany();
 
-      const categoryMap = new Map<string, { name: string; total: number; count: number }>();
-
-      transactions.forEach(t => {
-        const categoryName = t.category?.name || 'Без категории';
-        const existing = categoryMap.get(categoryName) || { name: categoryName, total: 0, count: 0 };
-        
-        existing.total += Number(t.amount);
-        existing.count += 1;
-        
-        categoryMap.set(categoryName, existing);
-      });
-
-      const report = Array.from(categoryMap.values()).sort((a, b) => b.total - a.total);
+      const report = rows.map((row) => ({
+        name: row.name,
+        total: Number(row.total) || 0,
+        count: Number(row.count) || 0,
+      }));
 
       res.json(report);
     } catch (error) {
@@ -85,43 +93,42 @@ export const reportController = {
     }
   },
 
-  // Отчет по контрагентам
+  // Отчет по контрагентам — SQL aggregation with JOIN
   async getByCounterparty(req: Request, res: Response) {
     try {
       const { startDate, endDate, type } = req.query;
-      
-      let where: any = {};
-      
+
+      const qb = transactionRepository
+        .createQueryBuilder('t')
+        .leftJoin('t.counterparty', 'cp')
+        .select("COALESCE(cp.name, 'Без контрагента')", 'name')
+        .addSelect('SUM(t.amount)', 'total')
+        .addSelect('COUNT(*)', 'count')
+        .groupBy("COALESCE(cp.name, 'Без контрагента')")
+        .orderBy('SUM(t.amount)', 'DESC');
+
       if (startDate && endDate) {
-        where.date = Between(new Date(startDate as string), new Date(endDate as string));
+        qb.where('t.date BETWEEN :startDate AND :endDate', {
+          startDate: startDate as string,
+          endDate: endDate as string,
+        });
       }
       if (type) {
-        where.type = type;
+        qb.andWhere('t.type = :type', { type: type as string });
       }
 
-      const transactions = await transactionRepository.find({
-        where,
-        relations: ['counterparty']
-      });
+      const rows: { name: string; total: string; count: string }[] = await qb.getRawMany();
 
-      const counterpartyMap = new Map<string, { name: string; total: number; count: number }>();
-
-      transactions.forEach(t => {
-        const counterpartyName = t.counterparty?.name || 'Без контрагента';
-        const existing = counterpartyMap.get(counterpartyName) || { name: counterpartyName, total: 0, count: 0 };
-        
-        existing.total += Number(t.amount);
-        existing.count += 1;
-        
-        counterpartyMap.set(counterpartyName, existing);
-      });
-
-      const report = Array.from(counterpartyMap.values()).sort((a, b) => b.total - a.total);
+      const report = rows.map((row) => ({
+        name: row.name,
+        total: Number(row.total) || 0,
+        count: Number(row.count) || 0,
+      }));
 
       res.json(report);
     } catch (error) {
       console.error('Ошибка при получении отчета по контрагентам:', error);
       res.status(500).json({ error: 'Ошибка при получении отчета по контрагентам' });
     }
-  }
+  },
 };

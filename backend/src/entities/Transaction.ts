@@ -5,7 +5,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
-  JoinColumn
+  JoinColumn,
+  Index
 } from 'typeorm';
 import { Counterparty } from './Counterparty';
 import { Category } from './Category';
@@ -22,6 +23,11 @@ export enum TransactionSource {
 }
 
 @Entity('transactions')
+@Index(['date'])
+@Index(['type'])
+@Index(['category_id'])
+@Index(['counterparty_id'])
+@Index(['source', 'source_id'])
 export class Transaction {
   @PrimaryGeneratedColumn('uuid')
   id: string;

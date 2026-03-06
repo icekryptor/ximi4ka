@@ -4,12 +4,15 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
-  CreateDateColumn
+  CreateDateColumn,
+  Index
 } from 'typeorm';
 import { Kit } from './Kit';
 import { Component } from './Component';
 
 @Entity('kit_components')
+@Index(['kit_id'])
+@Index(['component_id'])
 export class KitComponent {
   @PrimaryGeneratedColumn('uuid')
   id: string;

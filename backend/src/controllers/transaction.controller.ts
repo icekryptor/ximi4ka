@@ -9,17 +9,19 @@ import ExcelJS from 'exceljs';
 const transactionRepository = AppDataSource.getRepository(Transaction);
 
 export const transactionController = {
-  // Получить все транзакции с фильтрами
+  // Получить все транзакции с фильтрами и пагинацией
   async getAll(req: Request, res: Response) {
     try {
       const { type, startDate, endDate, categoryId, counterpartyId } = req.query;
-      
+      const page = Math.max(1, parseInt(req.query.page as string) || 1);
+      const limit = Math.min(500, Math.max(1, parseInt(req.query.limit as string) || 100));
+
       let where: any = {};
-      
+
       if (type) where.type = type;
       if (categoryId) where.category_id = categoryId;
       if (counterpartyId) where.counterparty_id = counterpartyId;
-      
+
       if (startDate && endDate) {
         where.date = Between(new Date(startDate as string), new Date(endDate as string));
       } else if (startDate) {
@@ -28,12 +30,19 @@ export const transactionController = {
         where.date = LessThanOrEqual(new Date(endDate as string));
       }
 
-      const transactions = await transactionRepository.find({
+      const [transactions, total] = await transactionRepository.findAndCount({
         where,
         relations: ['category', 'counterparty'],
-        order: { date: 'DESC', created_at: 'DESC' }
+        order: { date: 'DESC', created_at: 'DESC' },
+        skip: (page - 1) * limit,
+        take: limit,
       });
 
+      // Set pagination headers for frontend
+      res.set('X-Total-Count', String(total));
+      res.set('X-Page', String(page));
+      res.set('X-Limit', String(limit));
+      res.set('X-Total-Pages', String(Math.ceil(total / limit)));
       res.json(transactions);
     } catch (error) {
       console.error('Ошибка при получении транзакций:', error);
@@ -282,8 +291,27 @@ export const transactionController = {
         });
       });
 
-      // Deduplication
-      const existingTx = await transactionRepository.find({ select: ['id', 'date', 'amount', 'counterparty_id', 'description', 'document_number'] });
+      // Deduplication — only load transactions matching dates in the import
+      const importDates = [...new Set(parsed.map((r: any) => r.date))];
+      const importDocNums = parsed
+        .filter((r: any) => r.document_number)
+        .map((r: any) => r.document_number.toLowerCase());
+
+      let existingTx: { date: any; amount: number; counterparty_id: string | null; description: string; document_number: string | null }[] = [];
+      if (importDates.length > 0) {
+        const qb = transactionRepository.createQueryBuilder('t')
+          .select(['t.date', 't.amount', 't.counterparty_id', 't.description', 't.document_number']);
+
+        if (importDocNums.length > 0) {
+          qb.where('t.date IN (:...dates) OR LOWER(t.document_number) IN (:...docNums)', {
+            dates: importDates,
+            docNums: importDocNums,
+          });
+        } else {
+          qb.where('t.date IN (:...dates)', { dates: importDates });
+        }
+        existingTx = await qb.getMany();
+      }
 
       const existByDocNum = new Set(
         existingTx.filter((t) => t.document_number).map((t) => t.document_number!.toLowerCase())
@@ -325,23 +353,29 @@ export const transactionController = {
         return res.status(400).json({ error: 'Нет данных для импорта' });
       }
 
-      let imported = 0;
+      const entities = rows.map((row: any) => ({
+        type: row.type,
+        amount: row.amount,
+        description: row.description,
+        date: row.date,
+        category_id: row.category_id || null,
+        counterparty_id: row.counterparty_id || null,
+        document_number: row.document_number || null,
+        notes: row.notes || null,
+        source: TransactionSource.IMPORT,
+      }));
 
+      // Bulk insert in batches of 500 for safety
+      let imported = 0;
       await AppDataSource.manager.transaction(async (em) => {
-        for (const row of rows) {
-          const tx = em.create(Transaction, {
-            type: row.type,
-            amount: row.amount,
-            description: row.description,
-            date: row.date,
-            category_id: row.category_id || null,
-            counterparty_id: row.counterparty_id || null,
-            document_number: row.document_number || null,
-            notes: row.notes || null,
-            source: TransactionSource.IMPORT,
-          });
-          await em.save(Transaction, tx);
-          imported++;
+        for (let i = 0; i < entities.length; i += 500) {
+          const batch = entities.slice(i, i + 500);
+          await em.createQueryBuilder()
+            .insert()
+            .into(Transaction)
+            .values(batch)
+            .execute();
+          imported += batch.length;
         }
       });
 

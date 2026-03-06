@@ -24,6 +24,18 @@ export interface ImportPreview {
   total: number;
 }
 
+export interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: PaginationMeta;
+}
+
 export const transactionsApi = {
   getAll: async (params?: {
     type?: string;
@@ -31,9 +43,17 @@ export const transactionsApi = {
     endDate?: string;
     categoryId?: string;
     counterpartyId?: string;
-  }) => {
+    page?: number;
+    limit?: number;
+  }): Promise<PaginatedResponse<Transaction>> => {
     const response = await apiClient.get<Transaction[]>('/transactions', { params });
-    return response.data;
+    const pagination: PaginationMeta = {
+      total: parseInt(response.headers['x-total-count'] || '0', 10),
+      page: parseInt(response.headers['x-page'] || '1', 10),
+      limit: parseInt(response.headers['x-limit'] || '100', 10),
+      totalPages: parseInt(response.headers['x-total-pages'] || '1', 10),
+    };
+    return { data: response.data, pagination };
   },
 
   getById: async (id: string) => {

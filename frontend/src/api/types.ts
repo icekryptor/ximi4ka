@@ -242,3 +242,56 @@ export interface MarketplaceAnalytics {
   }[];
   salesCount: number;
 }
+
+// ===== WB Ads Analytics =====
+
+export interface WbAdAnalytics {
+  dates: string[];
+  metrics: Record<string, number[]>;
+  totals: Record<string, number>;
+  nmIds: number[];
+}
+
+export interface WbAdNote {
+  id: string;
+  date: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WbAdArticle {
+  nm_id: number;
+  product_name: string;
+}
+
+export interface WbAdSyncStatus {
+  lastDate: string | null;
+  firstDate: string | null;
+  daysCount: number;
+}
+
+export interface WbTokenStatus {
+  hasToken: boolean;
+  maskedToken: string | null;
+}
+
+// ===== WB Financial Reports =====
+
+export interface WbFinanceAnalytics {
+  dates: string[];
+  metrics: Record<string, number[]>;
+  totals: Record<string, number>;
+  nmIds: number[];
+}
+
+export interface WbFinanceArticle {
+  nm_id: number;
+  product_name: string;
+}
+
+export interface WbFinanceSyncStatus {
+  lastDate: string | null;
+  firstDate: string | null;
+  daysCount: number;
+}
