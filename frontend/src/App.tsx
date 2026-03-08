@@ -16,6 +16,7 @@ const FinancialReports = lazy(() => import('./pages/FinancialReports'))
 const Marketplace = lazy(() => import('./pages/Marketplace'))
 const WbAdsAnalytics = lazy(() => import('./pages/WbAdsAnalytics'))
 const WbFinanceReports = lazy(() => import('./pages/WbFinanceReports'))
+const UnitEconomics = lazy(() => import('./pages/UnitEconomics'))
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[400px]">
@@ -56,6 +57,7 @@ function App() {
               <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/wb-ads" element={<WbAdsAnalytics />} />
               <Route path="/wb-finance" element={<WbFinanceReports />} />
+              <Route path="/unit-economics" element={<UnitEconomics />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </ErrorBoundary>

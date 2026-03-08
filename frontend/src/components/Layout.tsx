@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, ArrowLeftRight, Users, FolderOpen, BarChart3, Beaker, Package, Truck, FileText, ShoppingBag, Megaphone } from 'lucide-react'
+import { LayoutDashboard, ArrowLeftRight, Users, FolderOpen, BarChart3, Beaker, Package, Truck, FileText, ShoppingBag, Megaphone, Calculator } from 'lucide-react'
 
 interface LayoutProps {
   children: ReactNode
@@ -17,6 +17,7 @@ const Layout = ({ children }: LayoutProps) => {
     { type: 'link', name: 'Главная', href: '/', icon: LayoutDashboard },
     { type: 'group', label: 'Экономика' },
     { type: 'link', name: 'Себестоимость', href: '/cost-calculation', icon: Beaker },
+    { type: 'link', name: 'UNIT-экономика', href: '/unit-economics', icon: Calculator },
     { type: 'link', name: 'Компоненты', href: '/components', icon: Package },
     { type: 'link', name: 'Поставки', href: '/supplies', icon: Truck },
     { type: 'group', label: 'Финансы' },
