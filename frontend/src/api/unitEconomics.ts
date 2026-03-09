@@ -18,6 +18,8 @@ export interface UnitEconomicsCalculation {
   name: string;
   channel_name: string;
   seller_price: number;
+  start_price?: number | null;
+  seller_discount?: number | null;
   cost_type: CostType;
   tax_rate: number;
   variable_blocks: VariableBlock[];
@@ -34,6 +36,8 @@ export interface UnitEconomicsCalculation {
 export interface ChannelConfig {
   channel_name: string;
   seller_price: number;
+  start_price?: number;
+  seller_discount?: number;
   cost_type: CostType;
   tax_rate: number;
   variable_blocks: VariableBlock[];
@@ -78,10 +82,19 @@ export function calculateUnitEconomics(
   };
 }
 
+// Check if channel uses WB pricing model (start_price × discount)
+export const isWbChannel = (channelName: string) => channelName === 'ВБ';
+
+// Compute seller_price from start_price and seller_discount
+export function computeSellerPrice(startPrice: number, sellerDiscount: number): number {
+  return Math.round(startPrice * (1 - sellerDiscount / 100) * 100) / 100;
+}
+
 export function createDefaultChannel(channelName: string): ChannelConfig {
   return {
     channel_name: channelName,
     seller_price: 0,
+    ...(isWbChannel(channelName) && { start_price: 0, seller_discount: 0 }),
     cost_type: 'estimated',
     tax_rate: 0,
     variable_blocks: [],
@@ -106,6 +119,8 @@ export const unitEconomicsApi = {
     name: string;
     channel_name: string;
     seller_price: number;
+    start_price?: number;
+    seller_discount?: number;
     cost_type: CostType;
     tax_rate: number;
     variable_blocks: VariableBlock[];
@@ -118,6 +133,8 @@ export const unitEconomicsApi = {
     name: string;
     channel_name: string;
     seller_price: number;
+    start_price?: number;
+    seller_discount?: number;
     cost_type: CostType;
     tax_rate: number;
     variable_blocks: VariableBlock[];

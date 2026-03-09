@@ -39,6 +39,12 @@ export class UnitEconomicsCalculation {
   @Column('decimal', { precision: 12, scale: 2, default: 0 })
   seller_price: number;
 
+  @Column('decimal', { precision: 12, scale: 2, nullable: true })
+  start_price: number;
+
+  @Column('decimal', { precision: 6, scale: 2, nullable: true })
+  seller_discount: number;
+
   @Column({ type: 'varchar', length: 20, default: 'estimated' })
   cost_type: CostType;
 

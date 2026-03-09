@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
+import { Dialog, Transition } from '@headlessui/react'
 import { X } from 'lucide-react'
 import { kitsApi } from '../api/kits'
 
@@ -11,6 +12,7 @@ export default function KitModal({ onClose, onSaved }: Props) {
   const [form, setForm] = useState({
     name: '',
     sku: '',
+    seller_sku: '',
     description: '',
     batch_size: 1000,
   })
@@ -41,71 +43,107 @@ export default function KitModal({ onClose, onSaved }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Новый набор</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <X className="h-5 w-5" />
-          </button>
+    <Transition show={true} as={Fragment}>
+      <Dialog onClose={onClose} className="relative z-50">
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-200"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-150"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+        </Transition.Child>
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-200"
+            enterFrom="opacity-0 scale-95 translate-y-2"
+            enterTo="opacity-100 scale-100 translate-y-0"
+            leave="ease-in duration-150"
+            leaveFrom="opacity-100 scale-100"
+            leaveTo="opacity-0 scale-95"
+          >
+            <Dialog.Panel className="modal-panel max-w-md">
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900">Новый набор</h2>
+                <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <div>
+                  <label className="label">Название *</label>
+                  <input
+                    className="input"
+                    value={form.name}
+                    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                    placeholder="Например: Электрохимичка"
+                    autoFocus
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="label">Артикул (SKU)</label>
+                    <input
+                      className="input"
+                      value={form.sku}
+                      onChange={e => setForm(f => ({ ...f, sku: e.target.value }))}
+                      placeholder="ECHEM-001"
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Артикул продавца</label>
+                    <input
+                      className="input"
+                      value={form.seller_sku}
+                      onChange={e => setForm(f => ({ ...f, seller_sku: e.target.value }))}
+                      placeholder="7V25"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="label">Описание</label>
+                  <textarea
+                    className="input resize-none"
+                    rows={2}
+                    value={form.description}
+                    onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                    placeholder="Краткое описание набора"
+                  />
+                </div>
+
+                <div>
+                  <label className="label">Размер партии, шт</label>
+                  <input
+                    className="input"
+                    type="number"
+                    min="1"
+                    value={form.batch_size}
+                    onChange={e => setForm(f => ({ ...f, batch_size: parseInt(e.target.value) || 1 }))}
+                  />
+                </div>
+
+                {error && <p className="text-sm text-red-600">{error}</p>}
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <button type="button" onClick={onClose} className="btn btn-secondary">
+                    Отмена
+                  </button>
+                  <button type="submit" className="btn btn-primary" disabled={saving}>
+                    {saving ? 'Создание...' : 'Создать'}
+                  </button>
+                </div>
+              </form>
+            </Dialog.Panel>
+          </Transition.Child>
         </div>
-
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="label">Название *</label>
-            <input
-              className="input"
-              value={form.name}
-              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-              placeholder="Например: Электрохимичка"
-              autoFocus
-            />
-          </div>
-
-          <div>
-            <label className="label">Артикул (SKU)</label>
-            <input
-              className="input"
-              value={form.sku}
-              onChange={e => setForm(f => ({ ...f, sku: e.target.value }))}
-              placeholder="Например: ECHEM-001"
-            />
-          </div>
-
-          <div>
-            <label className="label">Описание</label>
-            <textarea
-              className="input resize-none"
-              rows={2}
-              value={form.description}
-              onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-              placeholder="Краткое описание набора"
-            />
-          </div>
-
-          <div>
-            <label className="label">Размер партии, шт</label>
-            <input
-              className="input"
-              type="number"
-              min="1"
-              value={form.batch_size}
-              onChange={e => setForm(f => ({ ...f, batch_size: parseInt(e.target.value) || 1 }))}
-            />
-          </div>
-
-          {error && <p className="text-sm text-red-600">{error}</p>}
-
-          <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className="btn btn-secondary">
-              Отмена
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={saving}>
-              {saving ? 'Создание...' : 'Создать'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </Dialog>
+    </Transition>
   )
 }

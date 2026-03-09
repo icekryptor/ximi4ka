@@ -102,8 +102,8 @@ export default function ComponentsCatalog() {
 
       {/* Таблица */}
       {loading ? (
-        <div className="animate-pulse space-y-3">
-          {[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-gray-100 rounded" />)}
+        <div className="space-y-3">
+          {[...Array(5)].map((_, i) => <div key={i} className="skeleton h-14" />)}
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 border border-dashed border-gray-200 rounded-lg">

@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
+import { useToast } from '../App'
 import { marketplaceApi } from '../api/marketplace'
 import {
   MarketplaceSale,
@@ -23,6 +24,7 @@ type Tab = 'wildberries' | 'website' | 'skus'
 const currentYear = new Date().getFullYear()
 
 const Marketplace = () => {
+  const { showToast } = useToast()
   const [tab, setTab] = useState<Tab>('wildberries')
   const [loading, setLoading] = useState(false)
 
@@ -77,7 +79,7 @@ const Marketplace = () => {
       await marketplaceApi.deleteSale(id)
       loadData()
     } catch (error) {
-      alert('Ошибка удаления')
+      showToast('Ошибка удаления', 'error')
     }
   }
 
@@ -87,7 +89,7 @@ const Marketplace = () => {
       await marketplaceApi.deleteSkuMapping(id)
       setSkuMappings(skuMappings.filter((s) => s.id !== id))
     } catch (error) {
-      alert('Ошибка удаления')
+      showToast('Ошибка удаления', 'error')
     }
   }
 
@@ -396,6 +398,7 @@ const SaleModal = ({
   marketplace: MarketplaceType;
   onClose: () => void;
 }) => {
+  const { showToast } = useToast()
   const isWB = marketplace === MarketplaceType.WILDBERRIES
   const [formData, setFormData] = useState({
     marketplace,
@@ -422,7 +425,7 @@ const SaleModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.sku || !formData.date) {
-      alert('Укажите артикул и дату')
+      showToast('Укажите артикул и дату', 'error')
       return
     }
     setSaving(true)
@@ -436,7 +439,7 @@ const SaleModal = ({
       onClose()
     } catch (error) {
       console.error('Ошибка:', error)
-      alert('Ошибка сохранения')
+      showToast('Ошибка сохранения', 'error')
     } finally {
       setSaving(false)
     }
@@ -580,6 +583,7 @@ const SkuModal = ({
   sku: SkuMapping | null;
   onClose: () => void;
 }) => {
+  const { showToast } = useToast()
   const [formData, setFormData] = useState({
     marketplace_sku: sku?.marketplace_sku || '',
     product_name: sku?.product_name || '',
@@ -590,7 +594,7 @@ const SkuModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.marketplace_sku || !formData.product_name) {
-      alert('Укажите артикул и название')
+      showToast('Укажите артикул и название', 'error')
       return
     }
     setSaving(true)
@@ -604,7 +608,7 @@ const SkuModal = ({
       onClose()
     } catch (error) {
       console.error('Ошибка:', error)
-      alert('Ошибка сохранения')
+      showToast('Ошибка сохранения', 'error')
     } finally {
       setSaving(false)
     }

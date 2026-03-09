@@ -1,261 +1,288 @@
-# XimFinance - Система финансового управления
+# XimFinance
 
-Современный микросервис для управления финансами компании по производству химических наборов для опытов.
+Financial management system for **Ximi4ka** — a company manufacturing chemistry experiment kits.
+Russian-language UI throughout.
 
-![XimFinance](https://img.shields.io/badge/XimFinance-v1.0.0-blue)
-![Node.js](https://img.shields.io/badge/Node.js-18+-green)
-![React](https://img.shields.io/badge/React-18-blue)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+## Tech Stack
 
-## 🎯 Возможности
+| Layer | Technology |
+|-------|-----------|
+| Backend | Node.js + Express + TypeORM |
+| Frontend | React 18 + TypeScript + Vite + TailwindCSS |
+| Database | PostgreSQL (Supabase pooler) |
+| State | Local React state + Axios (no Redux/Zustand) |
+| Charts | Recharts |
+| Icons | Lucide React |
 
-- 🧪 **Расчет себестоимости** - Детальный расчет себестоимости наборов с разбивкой по компонентам
-- 📊 **Управление транзакциями** - Учет доходов и расходов с детальной информацией
-- 💰 **Финансовая аналитика** - Интерактивные графики и отчеты
-- 👥 **Контрагенты** - Управление поставщиками и клиентами
-- 🏷️ **Категории** - Гибкая система категоризации операций
-- 📈 **Отчеты** - Детальные отчеты по категориям и контрагентам
-- 🎨 **Минималистичный UI** - Чистый интерфейс на русском языке
-- 🔍 **Поиск и фильтры** - Удобный поиск и фильтрация данных
-
-## 📁 Структура проекта
-
-```
-ximfinance/
-├── backend/                    # Backend сервер
-│   ├── src/
-│   │   ├── config/            # Конфигурация (БД)
-│   │   ├── entities/          # Модели данных (TypeORM)
-│   │   ├── controllers/       # Бизнес-логика
-│   │   ├── routes/            # API маршруты
-│   │   ├── seeds/             # Начальные данные
-│   │   └── server.ts          # Точка входа
-│   ├── package.json
-│   └── tsconfig.json
-│
-├── frontend/                   # Frontend приложение
-│   ├── src/
-│   │   ├── api/               # API клиенты
-│   │   ├── components/        # React компоненты
-│   │   ├── pages/             # Страницы приложения
-│   │   ├── App.tsx
-│   │   └── main.tsx
-│   ├── package.json
-│   └── vite.config.ts
-│
-├── docker-compose.yml         # Docker конфигурация
-├── start.sh                   # Скрипт быстрого старта
-├── SETUP.md                   # Детальная инструкция
-└── README.md
-```
-
-## 🚀 Быстрый старт
-
-### Автоматический запуск (рекомендуется)
+## Quick Start
 
 ```bash
-./start.sh
+# 1. Install
+cd backend && npm install
+cd ../frontend && npm install
+
+# 2. Configure
+cp backend/.env.example backend/.env    # set DATABASE_URL
+cp frontend/.env.example frontend/.env  # defaults to localhost:3001
+
+# 3. Seed
+cd backend && npm run seed        # categories & counterparties
+cd backend && npm run seed:cost   # components & kits
+
+# 4. Run (two terminals)
+cd backend && npm run dev     # http://localhost:3001
+cd frontend && npm run dev    # http://localhost:5173
 ```
 
-Скрипт автоматически:
-- Проверит наличие Node.js и PostgreSQL
-- Установит зависимости
-- Создаст .env файлы
-- Запустит оба сервера
+## Environment Variables
 
-### Ручной запуск
+### Backend (`backend/.env`)
 
-#### 1. Установка PostgreSQL (macOS)
-
-```bash
-brew install postgresql@14
-brew services start postgresql@14
-
-# Создание базы данных
-psql postgres
-CREATE DATABASE ximfinance;
-CREATE USER ximfinance_user WITH PASSWORD 'ximfinance_pass';
-GRANT ALL PRIVILEGES ON DATABASE ximfinance TO ximfinance_user;
-\q
+```env
+PORT=3001
+DATABASE_URL=postgresql://postgres.<ref>:<password>@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres
+JWT_SECRET=<secret>
+JWT_EXPIRES_IN=7d
+WB_API_TOKEN=<wildberries-api-token>
+NODE_ENV=development
 ```
 
-#### 2. Установка зависимостей
+Or individual DB vars for local PostgreSQL:
 
-```bash
-# Backend
-cd backend
-npm install
-
-# Frontend
-cd ../frontend
-npm install
+```env
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_NAME=ximfinance
+DATABASE_USER=ximfinance_user
+DATABASE_PASSWORD=ximfinance_pass
 ```
 
-#### 3. Настройка окружения
+### Frontend (`frontend/.env`)
 
-Backend `.env` уже создан, но вы можете изменить параметры в `backend/.env`
-
-Frontend `.env` уже создан для работы с локальным API
-
-#### 4. Инициализация данных
-
-**Базовые данные (категории и контрагенты):**
-```bash
-cd backend
-npm run seed
+```env
+VITE_API_URL=http://localhost:3001/api
 ```
 
-**Данные расчета себестоимости (компоненты и наборы):**
-```bash
-npm run seed:cost
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `cd backend && npm run dev` | Start backend (port 3001, nodemon) |
+| `cd frontend && npm run dev` | Start frontend (port 5173, Vite HMR) |
+| `cd backend && npm run seed` | Seed categories & counterparties |
+| `cd backend && npm run seed:cost` | Seed components & kits |
+| `cd backend && npm run build` | Compile TypeScript → `dist/` |
+| `cd frontend && npm run build` | Production build → `dist/` |
+| `cd frontend && npm run lint` | ESLint |
+
+## Project Structure
+
+```
+backend/
+  src/
+    config/database.ts          — TypeORM DataSource (Supabase-aware, pooler SSL)
+    entities/                   — 23 TypeORM entities (UUID PKs, decorators)
+    controllers/                — 18 Express controllers
+    routes/                     — 18 route files, mounted at /api/*
+    services/wb-api.service.ts  — Wildberries API integration
+    seeds/                      — initial-data.ts, cost-calculation-data.ts
+    utils/                      — supabaseStorage.ts, syncCosts.ts
+    server.ts                   — Express entry + Vercel serverless export
+
+frontend/
+  src/
+    api/                        — 20 Axios API modules + client.ts + types.ts
+    components/                 — 17 reusable UI components
+    pages/                      — 18 page components (lazy-loaded)
+    utils/format.ts             — Number/date formatting helpers
+    App.tsx                     — React Router with code splitting
+    main.tsx                    — Entry point
+    index.css                   — Tailwind imports + custom utilities
 ```
 
-Это создаст:
-- 20 реактивов
-- 15 комплектующих  
-- 7 элементов печатной продукции
-- 3 позиции работы
-- Набор "Химичка" с себестоимостью 1124,14₽
+## API Routes
 
-#### 5. Запуск
+All routes prefixed `/api`. Health check: `GET /health`.
 
-Откройте два терминала:
+| Route | Resource |
+|-------|----------|
+| `/api/transactions` | Income/expense transactions |
+| `/api/counterparties` | Suppliers and clients |
+| `/api/categories` | Transaction categories (hierarchical) |
+| `/api/reports` | Summary, by-category, by-counterparty reports |
+| `/api/financial-reports` | Financial analysis |
+| `/api/components` | Reagents, materials, printed goods |
+| `/api/kits` | Chemistry experiment kits |
+| `/api/supplies` | Procurement records with items |
+| `/api/supply-documents` | Supply document attachments |
+| `/api/marketplace` | Marketplace sales + SKU mappings |
+| `/api/wb-ads` | Wildberries ad campaign stats |
+| `/api/wb-finance` | Wildberries financial data |
+| `/api/unit-economics` | Per-channel unit economics (save/load) |
+| `/api/employees` | Employee records |
+| `/api/production-orders` | Production orders |
+| `/api/qc` | Quality control checklists & inspections |
+| `/api/sales-channels` | Sales channel definitions |
+| `/api/economics` | Margin calculations |
 
-**Терминал 1 - Backend:**
-```bash
-cd backend
-npm run dev
-```
-Сервер запустится на http://localhost:3001
+Standard CRUD on all resources: `GET /`, `GET /:id`, `POST /`, `PUT /:id`, `DELETE /:id`.
 
-**Терминал 2 - Frontend:**
-```bash
-cd frontend
-npm run dev
-```
-Приложение откроется на http://localhost:5173
+## Frontend Routes
 
-## 🐳 Запуск с Docker
+| Path | Page | Description |
+|------|------|-------------|
+| `/` | Dashboard | Overview with key metrics |
+| `/cost-calculation` | CostCalculation | Kit cost breakdown (reagents, equipment, print, labor) |
+| `/components` | ComponentsCatalog | Component inventory with parts editor |
+| `/supplies` | Supplies | Supply management with items |
+| `/transactions` | Transactions | Income/expense log |
+| `/counterparties` | Counterparties | Suppliers and clients |
+| `/categories` | Categories | Transaction categories |
+| `/reports` | Reports | General reports |
+| `/financial-reports` | FinancialReports | Financial analysis |
+| `/marketplace` | Marketplace | Marketplace integration |
+| `/wb-ads` | WbAdsAnalytics | Wildberries ad campaign analytics |
+| `/wb-finance` | WbFinanceReports | Wildberries financial reports |
+| `/unit-economics` | UnitEconomics | Per-unit profit/margin calculator |
 
-```bash
-docker-compose up
-```
+## Database Entities
 
-Приложение будет доступно на http://localhost
+### Core Business
 
-## 🛠️ Технологии
+| Entity | Key Fields | Notes |
+|--------|-----------|-------|
+| `Kit` | name, sku, seller_sku, batch_size, reagents_cost, equipment_cost, print_cost, labor_cost, total_cost, estimated_cost | Chemistry kit. `seller_sku` — universal article across all marketplaces (e.g. "7V25") |
+| `Component` | name, sku, unit_price, unit, category | Reagent or material |
+| `ComponentPart` | component_id, child_component_id, quantity | Subcomponents within a component |
+| `KitComponent` | kit_id, component_id, quantity, cost | Many-to-many: kit to component |
+
+### Finance
+
+| Entity | Key Fields | Notes |
+|--------|-----------|-------|
+| `Transaction` | amount, type (income/expense), category_id, counterparty_id, date | Financial transactions |
+| `Category` | name, type, parent_id | Hierarchical categories |
+| `Counterparty` | name, type (supplier/client/both), contact info | Business partners |
+
+### Supply Chain
+
+| Entity | Key Fields | Notes |
+|--------|-----------|-------|
+| `Supply` | counterparty_id, date, total_amount, status | Procurement record |
+| `SupplyItem` | supply_id, component_id, quantity, unit_price | Items within a supply |
+| `SupplyDocument` | supply_id, file_path, type | Attached documents |
+
+### Unit Economics
+
+| Entity | Key Fields | Notes |
+|--------|-----------|-------|
+| `UnitEconomicsCalculation` | kit_id, channel_name, seller_price, start_price, seller_discount, cost_type, tax_rate, variable_blocks (JSONB), profit, margin | Per-channel unit economics |
+
+**WB-specific pricing:** `seller_price = start_price * (1 - seller_discount / 100)`. Other channels enter `seller_price` directly.
+
+**Variable blocks** (JSONB array): each block has `type`, `label`, `value_type` (fixed/percent), `value`. Types: commission, logistics, storage, advertising, acquiring, credit_commission.
+
+**Calculation:** `profit = seller_price - (cost_price + tax + sum_of_variable_blocks)`, `margin = profit / seller_price * 100`.
+
+### Wildberries Integration
+
+| Entity | Key Fields | Notes |
+|--------|-----------|-------|
+| `WbAdStat` | campaign_id, date, views, clicks, ctr, cpc, orders, cr | Ad campaign statistics |
+| `WbAdNote` | campaign_id, text | Notes for ad campaigns |
+| `WbFinancialStat` | date, sale, return_amount, logistics, storage, penalty | Financial breakdown |
+| `MarketplaceSale` | sku, date, quantity, revenue, commission | Sale records |
+| `SkuMapping` | internal_sku, marketplace, external_sku | Cross-platform SKU mapping |
+
+### Operations
+
+| Entity | Key Fields | Notes |
+|--------|-----------|-------|
+| `ProductionOrder` | kit_id, quantity, status, planned_date | Production orders |
+| `Employee` | name, position, salary | Staff records |
+| `QcChecklist` | name, items (JSONB) | Quality control templates |
+| `QcInspection` | checklist_id, production_order_id, results, status | QC inspections |
+| `SalesChannel` | name, type, commission_rate | Sales channel definitions |
+| `MarginCalculation` | kit_id, channel_id, calculations (JSONB) | Margin analysis |
+
+## Architecture Decisions
+
+### Database
+
+- **`synchronize: false`** — schema changes via direct SQL on Supabase, NOT TypeORM auto-sync.
+- **UUID primary keys** on all entities.
+- **Supabase pooler** (`aws-1-ap-southeast-1.pooler.supabase.com`). The direct host (`db.<ref>.supabase.co`) is deprecated for this project.
+- **Max 10 connections** to prevent Supabase pool exhaustion.
 
 ### Frontend
-- **React 18** - UI библиотека
-- **TypeScript** - Типизация
-- **Vite** - Сборщик проектов
-- **TailwindCSS** - Стилизация
-- **React Router** - Маршрутизация
-- **Axios** - HTTP клиент
-- **Recharts** - Графики и диаграммы
-- **Lucide React** - Иконки
-- **date-fns** - Работа с датами
+
+- **Lazy-loaded pages** via `React.lazy()` + `Suspense` for code splitting.
+- **No global state** — each page manages its own state via `useState` + API calls.
+- **Axios client** with base URL from `VITE_API_URL` and error interceptors.
+- **Vite proxy**: `/api` → `http://localhost:3001` in development.
 
 ### Backend
-- **Node.js** - Runtime
-- **Express** - Web фреймворк
-- **TypeScript** - Типизация
-- **PostgreSQL** - База данных
-- **TypeORM** - ORM
-- **Helmet** - Безопасность
-- **Morgan** - Логирование
 
-## 📖 API Документация
+- **Express** with Helmet, CORS, Morgan.
+- **Vercel-compatible** — exports `app` as default for serverless.
+- **File uploads** served from `/uploads` static directory.
 
-### Endpoints
+## Design System
 
-#### Транзакции
-- `GET /api/transactions` - Получить все транзакции
-- `GET /api/transactions/:id` - Получить транзакцию по ID
-- `POST /api/transactions` - Создать транзакцию
-- `PUT /api/transactions/:id` - Обновить транзакцию
-- `DELETE /api/transactions/:id` - Удалить транзакцию
+| Token | Value |
+|-------|-------|
+| Primary | `#836efe` (purple/violet) |
+| Gradient | `rgba(141,103,255,1)` → `rgba(200,86,255,1)` |
+| Dark accent | `#6703ff` |
+| Text | `#1c1528` |
+| Text secondary | `#524667` |
+| Border | `#e8e5ef` |
+| Surface | `#f8f7fa` |
+| Border radius | `40px` cards, `55px` large buttons |
+| Font | Arial |
 
-#### Контрагенты
-- `GET /api/counterparties` - Получить всех контрагентов
-- `GET /api/counterparties/:id` - Получить контрагента по ID
-- `POST /api/counterparties` - Создать контрагента
-- `PUT /api/counterparties/:id` - Обновить контрагента
-- `DELETE /api/counterparties/:id` - Удалить контрагента
+CSS utility classes: `card`, `btn`, `btn-primary`, `btn-secondary`, `input`, `label`.
 
-#### Категории
-- `GET /api/categories` - Получить все категории
-- `GET /api/categories/:id` - Получить категорию по ID
-- `POST /api/categories` - Создать категорию
-- `PUT /api/categories/:id` - Обновить категорию
-- `DELETE /api/categories/:id` - Удалить категорию
+## Conventions
 
-#### Отчеты
-- `GET /api/reports/summary` - Финансовая сводка
-- `GET /api/reports/by-category` - Отчет по категориям
-- `GET /api/reports/by-counterparty` - Отчет по контрагентам
+- **All UI text in Russian** — labels, buttons, errors, placeholders.
+- **Currency: `₽`** (never `$`).
+- **Number format:** `Intl.NumberFormat('ru-RU')` with 2 decimal places.
+- **UUID primary keys** everywhere.
+- **RESTful API** at `/api/*`.
+- **TypeORM decorators** for entities.
+- **Functional components + hooks** only.
 
-## 💡 Использование
+## Adding a New Feature
 
-### Первые шаги
+### Backend
 
-1. **Создайте категории** (или используйте `npm run seed` в backend)
-   - Перейдите в раздел "Категории"
-   - Создайте категории для доходов (например: "Продажа наборов")
-   - Создайте категории для расходов (например: "Закупка сырья")
+1. Create entity: `backend/src/entities/NewEntity.ts` (UUID PK, `@Entity`, `@Column`)
+2. Register in `config/database.ts` entities array
+3. Run SQL `CREATE TABLE` on Supabase (no synchronize)
+4. Create controller: `backend/src/controllers/new.controller.ts`
+5. Create routes: `backend/src/routes/new.routes.ts`
+6. Mount in `server.ts`: `app.use('/api/new', newRoutes)`
 
-2. **Добавьте контрагентов**
-   - Перейдите в раздел "Контрагенты"
-   - Добавьте поставщиков и клиентов
+### Frontend
 
-3. **Начните вести учет**
-   - Перейдите в раздел "Транзакции"
-   - Создавайте записи о доходах и расходах
+1. Add API module: `frontend/src/api/new.ts` (interface + CRUD functions via apiClient)
+2. Create page: `frontend/src/pages/New.tsx`
+3. Add lazy route in `App.tsx`
+4. Create modal/form components in `components/` if needed
 
-4. **Анализируйте данные**
-   - Раздел "Отчёты" покажет финансовую аналитику
-   - Графики по категориям и контрагентам
-   - Финансовая сводка за период
+## Deployment
 
-## 🔧 Разработка
+Backend exports a Vercel-compatible handler:
 
-### Структура базы данных
+```typescript
+export default app; // Vercel serverless
+app.listen(PORT);   // Long-running server
+```
 
-**Таблицы:**
-- `transactions` - Финансовые операции
-- `counterparties` - Контрагенты (поставщики/клиенты)
-- `categories` - Категории операций
+```bash
+cd backend && npm run build   # → dist/
+cd frontend && npm run build  # → dist/
+```
 
-### Добавление новых функций
-
-1. **Backend:**
-   - Создайте entity в `backend/src/entities/`
-   - Добавьте controller в `backend/src/controllers/`
-   - Создайте routes в `backend/src/routes/`
-   - Подключите route в `backend/src/server.ts`
-
-2. **Frontend:**
-   - Создайте API функции в `frontend/src/api/`
-   - Добавьте компоненты в `frontend/src/components/`
-   - Создайте страницу в `frontend/src/pages/`
-   - Добавьте маршрут в `frontend/src/App.tsx`
-
-## 🐛 Устранение проблем
-
-Смотрите [SETUP.md](./SETUP.md) для детальной информации по установке и решению проблем.
-
-## 📝 Лицензия
-
-Внутреннее использование компании
-
-## 👥 Поддержка
-
-При возникновении проблем:
-1. Проверьте логи в `backend.log` и `frontend.log`
-2. Убедитесь, что PostgreSQL запущен
-3. Проверьте настройки в `.env` файлах
-
----
-
-Разработано для компании по производству химических наборов 🧪
-# ximi4ka_finance
+Frontend expects `VITE_API_URL` to point to the deployed backend in production.

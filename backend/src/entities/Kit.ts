@@ -19,6 +19,9 @@ export class Kit {
   @Column({ type: 'varchar', length: 100, nullable: true, comment: 'Артикул' })
   sku: string;
 
+  @Column({ type: 'varchar', length: 50, nullable: true, comment: 'Артикул продавца (единый для всех площадок)' })
+  seller_sku: string;
+
   @Column({ type: 'text', nullable: true, comment: 'Описание набора' })
   description: string;
 

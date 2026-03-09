@@ -9,10 +9,12 @@ import { format } from 'date-fns'
 import { ru } from 'date-fns/locale/ru'
 import TransactionModal from '../components/TransactionModal'
 import ImportModal from '../components/ImportModal'
+import { useToast } from '../App'
 
 const PAGE_SIZE = 50
 
 const Transactions = () => {
+  const { showToast } = useToast()
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [counterparties, setCounterparties] = useState<Counterparty[]>([])
@@ -78,7 +80,7 @@ const Transactions = () => {
       loadTransactions(page)
     } catch (error) {
       console.error('Ошибка удаления транзакции:', error)
-      alert('Не удалось удалить транзакцию')
+      showToast('Не удалось удалить транзакцию', 'error')
     }
   }
 
@@ -200,7 +202,7 @@ const Transactions = () => {
                 </thead>
                 <tbody>
                   {filteredTransactions.map((transaction) => (
-                    <tr key={transaction.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <tr key={transaction.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150">
                       <td className="py-3 px-4">
                         {transaction.type === TransactionType.INCOME ? (
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
