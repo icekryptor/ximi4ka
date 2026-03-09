@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { X } from 'lucide-react'
 import { Category, TransactionType, CategoryGroup } from '../api/types'
 import { categoriesApi } from '../api/categories'
+import { useToast } from '../contexts/ToastContext'
 
 interface CategoryModalProps {
   category: Category | null
@@ -9,6 +10,7 @@ interface CategoryModalProps {
 }
 
 const CategoryModal = ({ category, onClose }: CategoryModalProps) => {
+  const toast = useToast()
   const [formData, setFormData] = useState({
     name: category?.name || '',
     type: category?.type || TransactionType.EXPENSE,
@@ -44,7 +46,7 @@ const CategoryModal = ({ category, onClose }: CategoryModalProps) => {
     e.preventDefault()
     
     if (!formData.name) {
-      alert('Пожалуйста, укажите название категории')
+      toast.warning('Пожалуйста, укажите название категории')
       return
     }
 
@@ -62,7 +64,7 @@ const CategoryModal = ({ category, onClose }: CategoryModalProps) => {
       onClose()
     } catch (error) {
       console.error('Ошибка сохранения категории:', error)
-      alert('Не удалось сохранить категорию')
+      toast.error('Не удалось сохранить категорию')
     } finally {
       setSaving(false)
     }

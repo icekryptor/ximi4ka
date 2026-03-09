@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Plus, Pencil, Trash2, ImageIcon, Search, ExternalLink } from 'lucide-react'
 import { componentsApi, Component } from '../api/components'
 import ComponentModal from '../components/ComponentModal'
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext'
 
 const CATEGORY_LABELS: Record<string, string> = {
   reagent: 'Реактив',
@@ -16,6 +17,7 @@ const fmt = (v: number) =>
   new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', minimumFractionDigits: 2 }).format(v)
 
 export default function ComponentsCatalog() {
+  const { confirm } = useConfirmDialog()
   const [components, setComponents] = useState<Component[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -39,7 +41,13 @@ export default function ComponentsCatalog() {
   useEffect(() => { load() }, [])
 
   const handleDelete = async (c: Component) => {
-    if (!window.confirm(`Удалить компонент «${c.name}»?\nОн будет удалён из всех наборов.`)) return
+    const ok = await confirm({
+      title: `Удалить компонент?`,
+      message: `Удалить «${c.name}»? Он будет удалён из всех наборов. Это действие нельзя отменить.`,
+      confirmText: 'Удалить',
+      variant: 'danger',
+    })
+    if (!ok) return
     try {
       await componentsApi.delete(c.id)
       setComponents(prev => prev.filter(x => x.id !== c.id))

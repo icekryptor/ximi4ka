@@ -2,6 +2,8 @@ import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
 import ErrorBoundary from './components/ErrorBoundary'
+import { ToastProvider } from './contexts/ToastContext'
+import { ConfirmDialogProvider } from './contexts/ConfirmDialogContext'
 
 // Lazy-load all pages for code splitting
 const Dashboard = lazy(() => import('./pages/Dashboard'))
@@ -39,29 +41,33 @@ const NotFound = () => (
 
 function App() {
   return (
-    <ErrorBoundary>
-      <Layout>
-        <Suspense fallback={<PageLoader />}>
-          <ErrorBoundary>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/cost-calculation" element={<CostCalculation />} />
-              <Route path="/components" element={<ComponentsCatalog />} />
-              <Route path="/supplies" element={<Supplies />} />
-              <Route path="/transactions" element={<Transactions />} />
-              <Route path="/counterparties" element={<Counterparties />} />
-              <Route path="/categories" element={<Categories />} />
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/financial-reports" element={<FinancialReports />} />
-              <Route path="/marketplace" element={<Marketplace />} />
-              <Route path="/wb-ads" element={<WbAdsAnalytics />} />
-              <Route path="/wb-finance" element={<WbFinanceReports />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </ErrorBoundary>
-        </Suspense>
-      </Layout>
-    </ErrorBoundary>
+    <ToastProvider>
+      <ConfirmDialogProvider>
+        <ErrorBoundary>
+          <Layout>
+            <Suspense fallback={<PageLoader />}>
+              <ErrorBoundary>
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/cost-calculation" element={<CostCalculation />} />
+                  <Route path="/components" element={<ComponentsCatalog />} />
+                  <Route path="/supplies" element={<Supplies />} />
+                  <Route path="/transactions" element={<Transactions />} />
+                  <Route path="/counterparties" element={<Counterparties />} />
+                  <Route path="/categories" element={<Categories />} />
+                  <Route path="/reports" element={<Reports />} />
+                  <Route path="/financial-reports" element={<FinancialReports />} />
+                  <Route path="/marketplace" element={<Marketplace />} />
+                  <Route path="/wb-ads" element={<WbAdsAnalytics />} />
+                  <Route path="/wb-finance" element={<WbFinanceReports />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </ErrorBoundary>
+            </Suspense>
+          </Layout>
+        </ErrorBoundary>
+      </ConfirmDialogProvider>
+    </ToastProvider>
   )
 }
 

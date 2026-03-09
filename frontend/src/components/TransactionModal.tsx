@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { Transaction, Category, Counterparty, TransactionType } from '../api/types'
 import { transactionsApi } from '../api/transactions'
+import { useToast } from '../contexts/ToastContext'
 
 interface TransactionModalProps {
   transaction: Transaction | null
@@ -11,6 +12,7 @@ interface TransactionModalProps {
 }
 
 const TransactionModal = ({ transaction, categories, counterparties, onClose }: TransactionModalProps) => {
+  const toast = useToast()
   const [formData, setFormData] = useState({
     type: transaction?.type || TransactionType.EXPENSE,
     amount: transaction?.amount || 0,
@@ -27,7 +29,7 @@ const TransactionModal = ({ transaction, categories, counterparties, onClose }: 
     e.preventDefault()
     
     if (!formData.description || !formData.amount) {
-      alert('Пожалуйста, заполните обязательные поля')
+      toast.warning('Пожалуйста, заполните обязательные поля')
       return
     }
 
@@ -41,7 +43,7 @@ const TransactionModal = ({ transaction, categories, counterparties, onClose }: 
       onClose()
     } catch (error) {
       console.error('Ошибка сохранения транзакции:', error)
-      alert('Не удалось сохранить транзакцию')
+      toast.error('Не удалось сохранить транзакцию')
     } finally {
       setSaving(false)
     }

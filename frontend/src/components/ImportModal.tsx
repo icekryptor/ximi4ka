@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { X, Upload, CheckCircle, AlertTriangle, FileSpreadsheet } from 'lucide-react'
 import { transactionsApi, ParsedTransactionRow, ImportPreview } from '../api/transactions'
 import { formatCurrency } from '../utils/format'
+import { useToast } from '../contexts/ToastContext'
 
 interface ImportModalProps {
   onClose: () => void
@@ -10,6 +11,7 @@ interface ImportModalProps {
 type Step = 'upload' | 'preview' | 'done'
 
 const ImportModal = ({ onClose }: ImportModalProps) => {
+  const toast = useToast()
   const [step, setStep] = useState<Step>('upload')
   const [loading, setLoading] = useState(false)
   const [preview, setPreview] = useState<ImportPreview | null>(null)
@@ -19,7 +21,7 @@ const ImportModal = ({ onClose }: ImportModalProps) => {
 
   const handleFileSelect = async (file: File) => {
     if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
-      alert('Поддерживаются только файлы .xlsx')
+      toast.warning('Поддерживаются только файлы .xlsx')
       return
     }
 
@@ -38,7 +40,7 @@ const ImportModal = ({ onClose }: ImportModalProps) => {
       setStep('preview')
     } catch (error) {
       console.error('Ошибка загрузки файла:', error)
-      alert('Ошибка при разборе файла')
+      toast.error('Ошибка при разборе файла')
     } finally {
       setLoading(false)
     }
@@ -55,7 +57,7 @@ const ImportModal = ({ onClose }: ImportModalProps) => {
 
     const rowsToImport = preview.parsed.filter((_, idx) => selectedRows.has(idx))
     if (rowsToImport.length === 0) {
-      alert('Нет выбранных строк')
+      toast.warning('Нет выбранных строк')
       return
     }
 
@@ -66,7 +68,7 @@ const ImportModal = ({ onClose }: ImportModalProps) => {
       setStep('done')
     } catch (error) {
       console.error('Ошибка импорта:', error)
-      alert('Ошибка при импорте')
+      toast.error('Ошибка при импорте')
     } finally {
       setLoading(false)
     }

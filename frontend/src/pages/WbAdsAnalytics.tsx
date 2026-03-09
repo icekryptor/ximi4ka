@@ -3,6 +3,7 @@ import { wbAdsApi } from '../api/wbAds'
 import { WbAdAnalytics, WbAdNote, WbAdArticle, WbAdSyncStatus, WbTokenStatus } from '../api/types'
 import { formatCurrency } from '../utils/format'
 import { RefreshCw, Megaphone, MessageSquare, X, Key, Eye, EyeOff, CheckCircle, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import { useToast } from '../contexts/ToastContext'
 
 interface MetricRow {
   key: string
@@ -63,6 +64,7 @@ const today = new Date().toISOString().split('T')[0]
 const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]
 
 const WbAdsAnalytics = () => {
+  const toast = useToast()
   const [loading, setLoading] = useState(false)
   const [syncing, setSyncing] = useState(false)
 
@@ -159,10 +161,10 @@ const WbAdsAnalytics = () => {
     setSyncing(true)
     try {
       const result = await wbAdsApi.syncStats(startDate, endDate)
-      alert(`Синхронизация завершена: ${result.message}`)
+      toast.success(`Синхронизация завершена: ${result.message}`)
       await loadData()
     } catch (err: any) {
-      alert('Ошибка синхронизации: ' + (err.response?.data?.error || err.message))
+      toast.error('Ошибка синхронизации: ' + (err.response?.data?.error || err.message))
     } finally {
       setSyncing(false)
     }

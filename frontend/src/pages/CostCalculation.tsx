@@ -6,6 +6,7 @@ import ComponentModal from '../components/ComponentModal'
 import ComponentPicker from '../components/ComponentPicker'
 import KitModal from '../components/KitModal'
 import AssemblyTree from '../components/AssemblyTree'
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext'
 
 const CATEGORY_LABELS: Record<string, string> = {
   reagent: 'Реактив',
@@ -64,6 +65,7 @@ function QuantityCell({ kc, onSave }: { kc: KitComponent; onSave: (qty: number) 
 }
 
 export default function CostCalculation() {
+  const { confirm } = useConfirmDialog()
   const [kits, setKits] = useState<Kit[]>([])
   const [activeKitId, setActiveKitId] = useState<string | null>(null)
   const [kitDetails, setKitDetails] = useState<Kit | null>(null)
@@ -156,7 +158,13 @@ export default function CostCalculation() {
 
   const handleDelete = async (component: Component) => {
     if (!activeKitId) return
-    if (!window.confirm(`Удалить «${component.name}» из набора?`)) return
+    const ok = await confirm({
+      title: 'Удалить из набора?',
+      message: `Удалить «${component.name}» из набора?`,
+      confirmText: 'Удалить',
+      variant: 'danger',
+    })
+    if (!ok) return
     try {
       await kitsApi.removeComponent(activeKitId, component.id)
       await loadKitDetails(activeKitId)

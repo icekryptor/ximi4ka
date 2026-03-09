@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { X } from 'lucide-react'
 import { Counterparty, CounterpartyType } from '../api/types'
 import { counterpartiesApi } from '../api/counterparties'
+import { useToast } from '../contexts/ToastContext'
 
 interface CounterpartyModalProps {
   counterparty: Counterparty | null
@@ -9,6 +10,7 @@ interface CounterpartyModalProps {
 }
 
 const CounterpartyModal = ({ counterparty, onClose }: CounterpartyModalProps) => {
+  const toast = useToast()
   const [formData, setFormData] = useState({
     name: counterparty?.name || '',
     type: counterparty?.type || CounterpartyType.BOTH,
@@ -26,7 +28,7 @@ const CounterpartyModal = ({ counterparty, onClose }: CounterpartyModalProps) =>
     e.preventDefault()
     
     if (!formData.name) {
-      alert('Пожалуйста, укажите название контрагента')
+      toast.warning('Пожалуйста, укажите название контрагента')
       return
     }
 
@@ -40,7 +42,7 @@ const CounterpartyModal = ({ counterparty, onClose }: CounterpartyModalProps) =>
       onClose()
     } catch (error) {
       console.error('Ошибка сохранения контрагента:', error)
-      alert('Не удалось сохранить контрагента')
+      toast.error('Не удалось сохранить контрагента')
     } finally {
       setSaving(false)
     }

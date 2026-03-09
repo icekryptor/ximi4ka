@@ -3,6 +3,8 @@ import { categoriesApi } from '../api/categories'
 import { Category, TransactionType } from '../api/types'
 import { Plus, Edit2, Trash2, FolderOpen, TrendingUp, TrendingDown } from 'lucide-react'
 import CategoryModal from '../components/CategoryModal'
+import { useToast } from '../contexts/ToastContext'
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext'
 
 // Extracted outside component to prevent remount on every render
 const CategoryCard = ({
@@ -73,6 +75,8 @@ const CategoryCard = ({
 )
 
 const Categories = () => {
+  const toast = useToast()
+  const { confirm } = useConfirmDialog()
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -96,16 +100,20 @@ const Categories = () => {
   }
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Вы уверены, что хотите удалить эту категорию?')) {
-      return
-    }
+    const ok = await confirm({
+      title: 'Удалить категорию?',
+      message: 'Вы уверены, что хотите удалить эту категорию? Это действие нельзя отменить.',
+      confirmText: 'Удалить',
+      variant: 'danger',
+    })
+    if (!ok) return
 
     try {
       await categoriesApi.delete(id)
       setCategories(categories.filter(c => c.id !== id))
     } catch (error) {
       console.error('Ошибка удаления категории:', error)
-      alert('Не удалось удалить категорию')
+      toast.error('Не удалось удалить категорию')
     }
   }
 

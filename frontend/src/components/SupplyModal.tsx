@@ -5,6 +5,7 @@ import { Component, componentsApi } from '../api/components'
 import { counterpartiesApi } from '../api/counterparties'
 import { suppliesApi, CreateSupplyData } from '../api/supplies'
 import { formatCurrency } from '../utils/format'
+import { useToast } from '../contexts/ToastContext'
 
 interface SupplyModalProps {
   supply: Supply | null
@@ -26,6 +27,7 @@ const emptyItem = (): ItemForm => ({
 })
 
 const SupplyModal = ({ supply, onClose }: SupplyModalProps) => {
+  const toast = useToast()
   const [formData, setFormData] = useState({
     supplier_id: supply?.supplier_id || '',
     carrier_id: supply?.carrier_id || '',
@@ -97,7 +99,7 @@ const SupplyModal = ({ supply, onClose }: SupplyModalProps) => {
 
     const validItems = items.filter((it) => it.component_id)
     if (validItems.length === 0) {
-      alert('Добавьте хотя бы одну позицию')
+      toast.warning('Добавьте хотя бы одну позицию')
       return
     }
 
@@ -125,7 +127,7 @@ const SupplyModal = ({ supply, onClose }: SupplyModalProps) => {
       onClose()
     } catch (error) {
       console.error('Ошибка сохранения поставки:', error)
-      alert('Не удалось сохранить поставку')
+      toast.error('Не удалось сохранить поставку')
     } finally {
       setSaving(false)
     }

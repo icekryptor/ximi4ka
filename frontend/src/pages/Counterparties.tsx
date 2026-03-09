@@ -3,8 +3,12 @@ import { counterpartiesApi } from '../api/counterparties'
 import { Counterparty, CounterpartyType } from '../api/types'
 import { Plus, Edit2, Trash2, Users, Search, Building2 } from 'lucide-react'
 import CounterpartyModal from '../components/CounterpartyModal'
+import { useToast } from '../contexts/ToastContext'
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext'
 
 const Counterparties = () => {
+  const toast = useToast()
+  const { confirm } = useConfirmDialog()
   const [counterparties, setCounterparties] = useState<Counterparty[]>([])
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -28,16 +32,20 @@ const Counterparties = () => {
   }
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Вы уверены, что хотите удалить этого контрагента?')) {
-      return
-    }
+    const ok = await confirm({
+      title: 'Удалить контрагента?',
+      message: 'Вы уверены, что хотите удалить этого контрагента? Это действие нельзя отменить.',
+      confirmText: 'Удалить',
+      variant: 'danger',
+    })
+    if (!ok) return
 
     try {
       await counterpartiesApi.delete(id)
       setCounterparties(counterparties.filter(c => c.id !== id))
     } catch (error) {
       console.error('Ошибка удаления контрагента:', error)
-      alert('Не удалось удалить контрагента')
+      toast.error('Не удалось удалить контрагента')
     }
   }
 

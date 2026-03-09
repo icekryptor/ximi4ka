@@ -17,12 +17,16 @@ import {
   Package,
   X,
 } from 'lucide-react'
+import { useToast } from '../contexts/ToastContext'
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext'
 
 type Tab = 'wildberries' | 'website' | 'skus'
 
 const currentYear = new Date().getFullYear()
 
 const Marketplace = () => {
+  const toast = useToast()
+  const { confirm } = useConfirmDialog()
   const [tab, setTab] = useState<Tab>('wildberries')
   const [loading, setLoading] = useState(false)
 
@@ -72,22 +76,34 @@ const Marketplace = () => {
   }, [loadData])
 
   const handleDeleteSale = async (id: string) => {
-    if (!window.confirm('Удалить запись?')) return
+    const ok = await confirm({
+      title: 'Удалить запись?',
+      message: 'Вы уверены, что хотите удалить эту запись? Это действие нельзя отменить.',
+      confirmText: 'Удалить',
+      variant: 'danger',
+    })
+    if (!ok) return
     try {
       await marketplaceApi.deleteSale(id)
       loadData()
     } catch (error) {
-      alert('Ошибка удаления')
+      toast.error('Ошибка удаления')
     }
   }
 
   const handleDeleteSku = async (id: string) => {
-    if (!window.confirm('Удалить артикул?')) return
+    const ok = await confirm({
+      title: 'Удалить артикул?',
+      message: 'Вы уверены, что хотите удалить этот артикул? Это действие нельзя отменить.',
+      confirmText: 'Удалить',
+      variant: 'danger',
+    })
+    if (!ok) return
     try {
       await marketplaceApi.deleteSkuMapping(id)
       setSkuMappings(skuMappings.filter((s) => s.id !== id))
     } catch (error) {
-      alert('Ошибка удаления')
+      toast.error('Ошибка удаления')
     }
   }
 
@@ -396,6 +412,7 @@ const SaleModal = ({
   marketplace: MarketplaceType;
   onClose: () => void;
 }) => {
+  const toast = useToast()
   const isWB = marketplace === MarketplaceType.WILDBERRIES
   const [formData, setFormData] = useState({
     marketplace,
@@ -422,7 +439,7 @@ const SaleModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.sku || !formData.date) {
-      alert('Укажите артикул и дату')
+      toast.warning('Укажите артикул и дату')
       return
     }
     setSaving(true)
@@ -436,7 +453,7 @@ const SaleModal = ({
       onClose()
     } catch (error) {
       console.error('Ошибка:', error)
-      alert('Ошибка сохранения')
+      toast.error('Ошибка сохранения')
     } finally {
       setSaving(false)
     }
@@ -580,6 +597,7 @@ const SkuModal = ({
   sku: SkuMapping | null;
   onClose: () => void;
 }) => {
+  const toast = useToast()
   const [formData, setFormData] = useState({
     marketplace_sku: sku?.marketplace_sku || '',
     product_name: sku?.product_name || '',
@@ -590,7 +608,7 @@ const SkuModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.marketplace_sku || !formData.product_name) {
-      alert('Укажите артикул и название')
+      toast.warning('Укажите артикул и название')
       return
     }
     setSaving(true)
@@ -604,7 +622,7 @@ const SkuModal = ({
       onClose()
     } catch (error) {
       console.error('Ошибка:', error)
-      alert('Ошибка сохранения')
+      toast.error('Ошибка сохранения')
     } finally {
       setSaving(false)
     }

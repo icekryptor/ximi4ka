@@ -9,10 +9,14 @@ import { format } from 'date-fns'
 import { ru } from 'date-fns/locale/ru'
 import TransactionModal from '../components/TransactionModal'
 import ImportModal from '../components/ImportModal'
+import { useToast } from '../contexts/ToastContext'
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext'
 
 const PAGE_SIZE = 50
 
 const Transactions = () => {
+  const toast = useToast()
+  const { confirm } = useConfirmDialog()
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [counterparties, setCounterparties] = useState<Counterparty[]>([])
@@ -69,16 +73,20 @@ const Transactions = () => {
   }, [page, loadTransactions])
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Вы уверены, что хотите удалить эту транзакцию?')) {
-      return
-    }
+    const ok = await confirm({
+      title: 'Удалить транзакцию?',
+      message: 'Вы уверены, что хотите удалить эту транзакцию? Это действие нельзя отменить.',
+      confirmText: 'Удалить',
+      variant: 'danger',
+    })
+    if (!ok) return
 
     try {
       await transactionsApi.delete(id)
       loadTransactions(page)
     } catch (error) {
       console.error('Ошибка удаления транзакции:', error)
-      alert('Не удалось удалить транзакцию')
+      toast.error('Не удалось удалить транзакцию')
     }
   }
 
