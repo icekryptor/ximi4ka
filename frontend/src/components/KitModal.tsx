@@ -11,6 +11,7 @@ export default function KitModal({ onClose, onSaved }: Props) {
   const [form, setForm] = useState({
     name: '',
     sku: '',
+    seller_sku: '',
     description: '',
     batch_size: 1000,
   })
@@ -62,14 +63,25 @@ export default function KitModal({ onClose, onSaved }: Props) {
             />
           </div>
 
-          <div>
-            <label className="label">Артикул (SKU)</label>
-            <input
-              className="input"
-              value={form.sku}
-              onChange={e => setForm(f => ({ ...f, sku: e.target.value }))}
-              placeholder="Например: ECHEM-001"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label">Артикул (SKU)</label>
+              <input
+                className="input"
+                value={form.sku}
+                onChange={e => setForm(f => ({ ...f, sku: e.target.value }))}
+                placeholder="ECHEM-001"
+              />
+            </div>
+            <div>
+              <label className="label">Артикул продавца</label>
+              <input
+                className="input"
+                value={form.seller_sku}
+                onChange={e => setForm(f => ({ ...f, seller_sku: e.target.value }))}
+                placeholder="7V25"
+              />
+            </div>
           </div>
 
           <div>

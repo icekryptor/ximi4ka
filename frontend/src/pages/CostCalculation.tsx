@@ -319,8 +319,13 @@ export default function CostCalculation() {
       <div className="flex justify-between items-start mb-6">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Себестоимость</h1>
-          <p className="text-sm text-gray-500 mt-1 max-w-[320px] truncate" title={kitDetails?.name}>
+          <p className="text-sm text-gray-500 mt-1 max-w-[420px] truncate" title={kitDetails?.name}>
             {kitDetails ? kitDetails.name : 'Выберите набор'}
+            {kitDetails?.seller_sku && (
+              <span className="ml-2 text-xs bg-primary-50 text-primary-600 px-1.5 py-0.5 rounded font-medium">
+                {kitDetails.seller_sku}
+              </span>
+            )}
           </p>
         </div>
         <div className="flex items-center gap-2">

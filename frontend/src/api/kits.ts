@@ -14,6 +14,7 @@ export interface Kit {
   id: string;
   name: string;
   sku?: string;
+  seller_sku?: string;
   description?: string;
   batch_size: number;
   reagents_cost: number;
