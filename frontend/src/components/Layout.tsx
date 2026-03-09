@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, ArrowLeftRight, Users, FolderOpen, BarChart3, Beaker, Package, Truck, FileText, ShoppingBag, Megaphone } from 'lucide-react'
+import { LayoutDashboard, ArrowLeftRight, Users, FolderOpen, BarChart3, Beaker, Package, Truck, FileText, ShoppingBag, Megaphone, LogOut } from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext'
 
 interface LayoutProps {
   children: ReactNode
@@ -12,6 +13,7 @@ type NavItem =
 
 const Layout = ({ children }: LayoutProps) => {
   const location = useLocation()
+  const { user, logout } = useAuth()
 
   const navigation: NavItem[] = [
     { type: 'link', name: 'Главная', href: '/', icon: LayoutDashboard },
@@ -75,10 +77,20 @@ const Layout = ({ children }: LayoutProps) => {
           })}
         </nav>
 
-        <div className="p-4 border-t border-brand-border">
-          <p className="text-xs text-brand-text-secondary text-center">
-            © 2025
-          </p>
+        <div className="p-4 border-t border-brand-border space-y-2">
+          {user && (
+            <div className="px-1">
+              <p className="text-xs font-medium text-brand-text truncate">{user.name}</p>
+              <p className="text-xs text-brand-text-secondary truncate">{user.email}</p>
+            </div>
+          )}
+          <button
+            onClick={logout}
+            className="flex items-center space-x-2 w-full px-3 py-2 rounded-md text-sm text-brand-text-secondary hover:text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Выйти</span>
+          </button>
         </div>
       </aside>
 

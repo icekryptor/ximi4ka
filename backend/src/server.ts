@@ -19,6 +19,10 @@ import financialReportRoutes from './routes/financial-report.routes';
 import marketplaceRoutes from './routes/marketplace.routes';
 import wbAdsRoutes from './routes/wb-ads.routes';
 import wbFinanceRoutes from './routes/wb-finance.routes';
+import authRoutes from './routes/auth';
+
+// Middleware
+import { authMiddleware } from './middleware/auth';
 
 dotenv.config();
 
@@ -37,18 +41,21 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Статические файлы — загруженные изображения
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
-// Routes
-app.use('/api/transactions', transactionRoutes);
-app.use('/api/counterparties', counterpartyRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/reports', reportRoutes);
-app.use('/api/components', componentRoutes);
-app.use('/api/kits', kitRoutes);
-app.use('/api/supplies', supplyRoutes);
-app.use('/api/financial-reports', financialReportRoutes);
-app.use('/api/marketplace', marketplaceRoutes);
-app.use('/api/wb-ads', wbAdsRoutes);
-app.use('/api/wb-finance', wbFinanceRoutes);
+// Public routes (no auth required)
+app.use('/api/auth', authRoutes);
+
+// Protected routes (auth required)
+app.use('/api/transactions', authMiddleware, transactionRoutes);
+app.use('/api/counterparties', authMiddleware, counterpartyRoutes);
+app.use('/api/categories', authMiddleware, categoryRoutes);
+app.use('/api/reports', authMiddleware, reportRoutes);
+app.use('/api/components', authMiddleware, componentRoutes);
+app.use('/api/kits', authMiddleware, kitRoutes);
+app.use('/api/supplies', authMiddleware, supplyRoutes);
+app.use('/api/financial-reports', authMiddleware, financialReportRoutes);
+app.use('/api/marketplace', authMiddleware, marketplaceRoutes);
+app.use('/api/wb-ads', authMiddleware, wbAdsRoutes);
+app.use('/api/wb-finance', authMiddleware, wbFinanceRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

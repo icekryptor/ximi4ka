@@ -2,6 +2,8 @@ import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
 import ErrorBoundary from './components/ErrorBoundary'
+import ProtectedRoute from './components/ProtectedRoute'
+import { AuthProvider } from './contexts/AuthContext'
 
 // Lazy-load all pages for code splitting
 const Dashboard = lazy(() => import('./pages/Dashboard'))
@@ -16,6 +18,7 @@ const FinancialReports = lazy(() => import('./pages/FinancialReports'))
 const Marketplace = lazy(() => import('./pages/Marketplace'))
 const WbAdsAnalytics = lazy(() => import('./pages/WbAdsAnalytics'))
 const WbFinanceReports = lazy(() => import('./pages/WbFinanceReports'))
+const LoginPage = lazy(() => import('./pages/LoginPage'))
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[400px]">
@@ -40,27 +43,44 @@ const NotFound = () => (
 function App() {
   return (
     <ErrorBoundary>
-      <Layout>
+      <AuthProvider>
         <Suspense fallback={<PageLoader />}>
           <ErrorBoundary>
             <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/cost-calculation" element={<CostCalculation />} />
-              <Route path="/components" element={<ComponentsCatalog />} />
-              <Route path="/supplies" element={<Supplies />} />
-              <Route path="/transactions" element={<Transactions />} />
-              <Route path="/counterparties" element={<Counterparties />} />
-              <Route path="/categories" element={<Categories />} />
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/financial-reports" element={<FinancialReports />} />
-              <Route path="/marketplace" element={<Marketplace />} />
-              <Route path="/wb-ads" element={<WbAdsAnalytics />} />
-              <Route path="/wb-finance" element={<WbFinanceReports />} />
-              <Route path="*" element={<NotFound />} />
+              {/* Public route */}
+              <Route path="/login" element={<LoginPage />} />
+
+              {/* Protected routes — wrapped in Layout */}
+              <Route
+                path="/*"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Suspense fallback={<PageLoader />}>
+                        <Routes>
+                          <Route path="/" element={<Dashboard />} />
+                          <Route path="/cost-calculation" element={<CostCalculation />} />
+                          <Route path="/components" element={<ComponentsCatalog />} />
+                          <Route path="/supplies" element={<Supplies />} />
+                          <Route path="/transactions" element={<Transactions />} />
+                          <Route path="/counterparties" element={<Counterparties />} />
+                          <Route path="/categories" element={<Categories />} />
+                          <Route path="/reports" element={<Reports />} />
+                          <Route path="/financial-reports" element={<FinancialReports />} />
+                          <Route path="/marketplace" element={<Marketplace />} />
+                          <Route path="/wb-ads" element={<WbAdsAnalytics />} />
+                          <Route path="/wb-finance" element={<WbFinanceReports />} />
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                      </Suspense>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
             </Routes>
           </ErrorBoundary>
         </Suspense>
-      </Layout>
+      </AuthProvider>
     </ErrorBoundary>
   )
 }
