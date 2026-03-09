@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Upload, Trash2, FileText, FileImage, FileSpreadsheet, File, ExternalLink, Loader2 } from 'lucide-react'
 import { supplyDocumentsApi, SupplyDocument, DOC_TYPE_LABELS } from '../api/supplyDocuments'
-import { useToast } from '../App'
+import { useToast } from '../contexts/ToastContext'
 
 const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') ?? 'http://localhost:3001'
 
@@ -25,7 +25,7 @@ interface Props {
 }
 
 export default function SupplyDocuments({ supplyId }: Props) {
-  const { showToast } = useToast()
+  const toast = useToast()
   const fileRef = useRef<HTMLInputElement>(null)
   const [docs,       setDocs]       = useState<SupplyDocument[]>([])
   const [loading,    setLoading]    = useState(true)
@@ -67,7 +67,7 @@ export default function SupplyDocuments({ supplyId }: Props) {
       await supplyDocumentsApi.delete(supplyId, doc.id)
       setDocs(prev => prev.filter(d => d.id !== doc.id))
     } catch {
-      showToast('Не удалось удалить документ', 'error')
+      toast.error('Не удалось удалить документ')
     }
   }
 

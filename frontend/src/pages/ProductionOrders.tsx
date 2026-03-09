@@ -10,7 +10,7 @@ import {
 } from '../api/orders'
 import { kitsApi, Kit } from '../api/kits'
 import { channelsApi, SalesChannel } from '../api/channels'
-import { useToast } from '../App'
+import { useToast } from '../contexts/ToastContext'
 
 const rub = (v: number) =>
   new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', minimumFractionDigits: 0 }).format(v)
@@ -26,7 +26,7 @@ const STATUS_FLOW: OrderStatus[] = [
 ]
 
 const ProductionOrders = () => {
-  const { showToast } = useToast()
+  const toast = useToast()
   const [orders, setOrders] = useState<ProductionOrder[]>([])
   const [stats, setStats] = useState<OrderStats[]>([])
   const [kits, setKits] = useState<Kit[]>([])
@@ -60,14 +60,14 @@ const ProductionOrders = () => {
     try {
       await ordersApi.updateStatus(order.id, next)
       loadData()
-    } catch { showToast('Не удалось обновить статус', 'error') }
+    } catch { toast.error('Не удалось обновить статус') }
   }
 
   const handleCreate = async () => {
     try {
       await ordersApi.create(form)
       setIsFormOpen(false); setForm({}); loadData()
-    } catch { showToast('Не удалось создать заказ', 'error') }
+    } catch { toast.error('Не удалось создать заказ') }
   }
 
   const filtered = useMemo(() =>

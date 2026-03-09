@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Plus, Edit2, Trash2, Search, UserCircle, Phone, Send, Eye, EyeOff, Clock } from 'lucide-react'
 import { employeesApi, Employee } from '../api/employees'
 import EmployeeModal from '../components/EmployeeModal'
-import { useToast } from '../App'
+import { useToast } from '../contexts/ToastContext'
 
 const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') ?? 'http://localhost:3001'
 
@@ -10,7 +10,7 @@ const fmt = (v: number) =>
   new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', minimumFractionDigits: 0 }).format(v)
 
 const Employees = () => {
-  const { showToast } = useToast()
+  const toast = useToast()
   const [employees, setEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -38,7 +38,7 @@ const Employees = () => {
       await employeesApi.delete(id)
       setEmployees(prev => prev.filter(e => e.id !== id))
     } catch {
-        showToast('Не удалось удалить сотрудника', 'error')
+        toast.error('Не удалось удалить сотрудника')
     }
   }
 

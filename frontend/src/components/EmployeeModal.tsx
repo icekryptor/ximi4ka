@@ -2,7 +2,7 @@ import { Fragment, useRef, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { X, Upload, UserCircle } from 'lucide-react'
 import { employeesApi, Employee } from '../api/employees'
-import { useToast } from '../App'
+import { useToast } from '../contexts/ToastContext'
 
 const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') ?? 'http://localhost:3001'
 
@@ -12,7 +12,7 @@ interface Props {
 }
 
 const EmployeeModal = ({ employee, onClose }: Props) => {
-  const { showToast } = useToast()
+  const toast = useToast()
   const [form, setForm] = useState({
     name: employee?.name ?? '',
     phone: employee?.phone ?? '',
@@ -39,7 +39,7 @@ const EmployeeModal = ({ employee, onClose }: Props) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.name.trim()) { showToast('Укажите имя сотрудника', 'error'); return }
+    if (!form.name.trim()) { toast.error('Укажите имя сотрудника'); return }
 
     setSaving(true)
     try {
@@ -62,7 +62,7 @@ const EmployeeModal = ({ employee, onClose }: Props) => {
       onClose()
     } catch (error) {
       console.error('Ошибка сохранения сотрудника:', error)
-      showToast('Не удалось сохранить', 'error')
+      toast.error('Не удалось сохранить')
     } finally {
       setSaving(false)
     }

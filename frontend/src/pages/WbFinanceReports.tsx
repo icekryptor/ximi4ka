@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useToast } from '../App'
 import { RefreshCw, Key, ChevronDown, ChevronUp } from 'lucide-react'
 import { wbFinanceApi } from '../api/wbFinance'
 import { WbFinanceAnalytics, WbFinanceArticle, WbFinanceSyncStatus, WbTokenStatus } from '../api/types'
+import { useToast } from '../contexts/ToastContext'
 
 // ─── Metric rows definition ───
 
@@ -72,7 +72,7 @@ function getDefaultDates() {
 // ─── Component ───
 
 const WbFinanceReports = () => {
-  const { showToast } = useToast()
+  const toast = useToast()
   const defaults = getDefaultDates()
 
   // Token
@@ -112,7 +112,7 @@ const WbFinanceReports = () => {
       setTokenInput('')
       setShowTokenInput(false)
     } catch (e: any) {
-      showToast(e.response?.data?.error || 'Ошибка сохранения токена', 'error')
+      toast.error(e.response?.data?.error || 'Ошибка сохранения токена')
     }
   }
 
@@ -122,12 +122,12 @@ const WbFinanceReports = () => {
     setSyncing(true)
     try {
       const result = await wbFinanceApi.syncStats(startDate, endDate)
-      showToast(result.message)
+      toast.success(result.message)
       await loadSyncStatus()
       await loadAnalytics()
       await loadArticles()
     } catch (e: any) {
-      showToast(e.response?.data?.error || 'Ошибка синхронизации', 'error')
+      toast.error(e.response?.data?.error || 'Ошибка синхронизации')
     } finally {
       setSyncing(false)
     }

@@ -3,10 +3,12 @@ import { counterpartiesApi } from '../api/counterparties'
 import { Counterparty, CounterpartyType } from '../api/types'
 import { Plus, Edit2, Trash2, Users, Search, Building2 } from 'lucide-react'
 import CounterpartyModal from '../components/CounterpartyModal'
-import { useToast } from '../App'
+import { useToast } from '../contexts/ToastContext'
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext'
 
 const Counterparties = () => {
-  const { showToast } = useToast()
+  const toast = useToast()
+  const { confirm } = useConfirmDialog()
   const [counterparties, setCounterparties] = useState<Counterparty[]>([])
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -30,16 +32,20 @@ const Counterparties = () => {
   }
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Вы уверены, что хотите удалить этого контрагента?')) {
-      return
-    }
+    const ok = await confirm({
+      title: 'Удалить контрагента?',
+      message: 'Вы уверены, что хотите удалить этого контрагента? Это действие нельзя отменить.',
+      confirmText: 'Удалить',
+      variant: 'danger',
+    })
+    if (!ok) return
 
     try {
       await counterpartiesApi.delete(id)
       setCounterparties(counterparties.filter(c => c.id !== id))
     } catch (error) {
       console.error('Ошибка удаления контрагента:', error)
-      showToast('Не удалось удалить контрагента', 'error')
+      toast.error('Не удалось удалить контрагента')
     }
   }
 
@@ -94,9 +100,9 @@ const Counterparties = () => {
   if (loading) {
     return (
       <div className="p-8">
-        <div className="space-y-4">
-          <div className="skeleton h-8 w-1/4"></div>
-          <div className="skeleton h-64"></div>
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
         </div>
       </div>
     )
@@ -140,8 +146,8 @@ const Counterparties = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCounterparties.map((counterparty, index) => (
-            <div key={counterparty.id} className="card-hover stagger-item" style={{ animationDelay: `${index * 60}ms` }}>
+          {filteredCounterparties.map((counterparty) => (
+            <div key={counterparty.id} className="card hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <div className="bg-primary-100 p-3 rounded-full">

@@ -11,10 +11,10 @@ import {
 } from '../api/qc'
 import { kitsApi, Kit } from '../api/kits'
 // import { employeesApi } from '../api/employees'  // TODO: нужно для формы инспекции
-import { useToast } from '../App'
+import { useToast } from '../contexts/ToastContext'
 
 const QualityControl = () => {
-  const { showToast } = useToast()
+  const toast = useToast()
   const [tab, setTab] = useState<'checklists' | 'inspections'>('checklists')
   const [checklists, setChecklists] = useState<QcChecklist[]>([])
   const [inspections, setInspections] = useState<QcInspection[]>([])
@@ -63,7 +63,7 @@ const QualityControl = () => {
       setIsChecklistForm(false)
       setClForm({ name: '', kit_id: '', items: [] })
       loadData()
-    } catch { showToast('Не удалось сохранить чек-лист', 'error') }
+    } catch { toast.error('Не удалось сохранить чек-лист') }
   }
 
   if (loading) return (

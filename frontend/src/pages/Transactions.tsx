@@ -9,12 +9,14 @@ import { format } from 'date-fns'
 import { ru } from 'date-fns/locale/ru'
 import TransactionModal from '../components/TransactionModal'
 import ImportModal from '../components/ImportModal'
-import { useToast } from '../App'
+import { useToast } from '../contexts/ToastContext'
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext'
 
 const PAGE_SIZE = 50
 
 const Transactions = () => {
-  const { showToast } = useToast()
+  const toast = useToast()
+  const { confirm } = useConfirmDialog()
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [counterparties, setCounterparties] = useState<Counterparty[]>([])
@@ -71,16 +73,20 @@ const Transactions = () => {
   }, [page, loadTransactions])
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Вы уверены, что хотите удалить эту транзакцию?')) {
-      return
-    }
+    const ok = await confirm({
+      title: 'Удалить транзакцию?',
+      message: 'Вы уверены, что хотите удалить эту транзакцию? Это действие нельзя отменить.',
+      confirmText: 'Удалить',
+      variant: 'danger',
+    })
+    if (!ok) return
 
     try {
       await transactionsApi.delete(id)
       loadTransactions(page)
     } catch (error) {
       console.error('Ошибка удаления транзакции:', error)
-      showToast('Не удалось удалить транзакцию', 'error')
+      toast.error('Не удалось удалить транзакцию')
     }
   }
 
@@ -202,7 +208,7 @@ const Transactions = () => {
                 </thead>
                 <tbody>
                   {filteredTransactions.map((transaction) => (
-                    <tr key={transaction.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150">
+                    <tr key={transaction.id} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-3 px-4">
                         {transaction.type === TransactionType.INCOME ? (
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">

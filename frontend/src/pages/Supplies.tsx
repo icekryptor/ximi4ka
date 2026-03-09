@@ -6,10 +6,12 @@ import { Plus, Edit2, Trash2, Package, Truck } from 'lucide-react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale/ru'
 import SupplyModal from '../components/SupplyModal'
-import { useToast } from '../App'
+import { useToast } from '../contexts/ToastContext'
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext'
 
 const Supplies = () => {
-  const { showToast } = useToast()
+  const toast = useToast()
+  const { confirm } = useConfirmDialog()
   const [supplies, setSupplies] = useState<Supply[]>([])
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -32,14 +34,20 @@ const Supplies = () => {
   }
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Удалить поставку? Связанные транзакции тоже будут удалены.')) return
+    const ok = await confirm({
+      title: 'Удалить поставку?',
+      message: 'Связанные транзакции тоже будут удалены. Это действие нельзя отменить.',
+      confirmText: 'Удалить',
+      variant: 'danger',
+    })
+    if (!ok) return
 
     try {
       await suppliesApi.delete(id)
       setSupplies(supplies.filter((s) => s.id !== id))
     } catch (error) {
       console.error('Ошибка удаления поставки:', error)
-      showToast('Не удалось удалить поставку', 'error')
+      toast.error('Не удалось удалить поставку')
     }
   }
 
@@ -68,9 +76,9 @@ const Supplies = () => {
   if (loading) {
     return (
       <div className="p-8">
-        <div className="space-y-4">
-          <div className="skeleton h-8 w-1/4"></div>
-          <div className="skeleton h-64"></div>
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
         </div>
       </div>
     )

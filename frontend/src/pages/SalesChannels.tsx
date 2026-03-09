@@ -6,14 +6,14 @@ import {
   MarketplaceType,
   MARKETPLACE_LABELS,
 } from '../api/channels'
-import { useToast } from '../App'
+import { useToast } from '../contexts/ToastContext'
 
 const pct = (v: number) => `${Number(v).toFixed(1)}%`
 const rub = (v: number) =>
   new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', minimumFractionDigits: 0 }).format(v)
 
 const SalesChannels = () => {
-  const { showToast } = useToast()
+  const toast = useToast()
   const [channels, setChannels] = useState<SalesChannel[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -34,13 +34,13 @@ const SalesChannels = () => {
       if (editing) await channelsApi.update(editing.id, form)
       else await channelsApi.create(form)
       setIsFormOpen(false); setEditing(null); setForm({}); loadData()
-    } catch { showToast('Не удалось сохранить канал', 'error') }
+    } catch { toast.error('Не удалось сохранить канал') }
   }
 
   const handleDelete = async (id: string) => {
     if (!window.confirm('Удалить канал продаж?')) return
     try { await channelsApi.delete(id); setChannels(prev => prev.filter(c => c.id !== id)) }
-    catch { showToast('Не удалось удалить канал', 'error') }
+    catch { toast.error('Не удалось удалить канал') }
   }
 
   const openEdit = (ch: SalesChannel) => { setEditing(ch); setForm(ch); setIsFormOpen(true) }
