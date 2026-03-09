@@ -2,6 +2,8 @@ import { lazy, Suspense, createContext, useContext, useState, useCallback } from
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Layout from './components/Layout'
 import ErrorBoundary from './components/ErrorBoundary'
+import ProtectedRoute from './components/ProtectedRoute'
+import { AuthProvider } from './contexts/AuthContext'
 
 // Lazy-load all pages for code splitting
 const Dashboard = lazy(() => import('./pages/Dashboard'))
@@ -17,6 +19,7 @@ const Marketplace = lazy(() => import('./pages/Marketplace'))
 const WbAdsAnalytics = lazy(() => import('./pages/WbAdsAnalytics'))
 const WbFinanceReports = lazy(() => import('./pages/WbFinanceReports'))
 const UnitEconomics = lazy(() => import('./pages/UnitEconomics'))
+const LoginPage = lazy(() => import('./pages/LoginPage'))
 
 // === Toast System ===
 type ToastType = 'success' | 'error'
@@ -93,32 +96,49 @@ const NotFound = () => (
 function App() {
   return (
     <ErrorBoundary>
-      <ToastProvider>
-        <Layout>
+      <AuthProvider>
+        <ToastProvider>
           <Suspense fallback={<PageLoader />}>
             <ErrorBoundary>
-              <PageTransition>
-                <Routes>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/cost-calculation" element={<CostCalculation />} />
-                  <Route path="/components" element={<ComponentsCatalog />} />
-                  <Route path="/supplies" element={<Supplies />} />
-                  <Route path="/transactions" element={<Transactions />} />
-                  <Route path="/counterparties" element={<Counterparties />} />
-                  <Route path="/categories" element={<Categories />} />
-                  <Route path="/reports" element={<Reports />} />
-                  <Route path="/financial-reports" element={<FinancialReports />} />
-                  <Route path="/marketplace" element={<Marketplace />} />
-                  <Route path="/wb-ads" element={<WbAdsAnalytics />} />
-                  <Route path="/wb-finance" element={<WbFinanceReports />} />
-                  <Route path="/unit-economics" element={<UnitEconomics />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </PageTransition>
+              <Routes>
+                {/* Public route */}
+                <Route path="/login" element={<LoginPage />} />
+
+                {/* Protected routes — wrapped in Layout */}
+                <Route
+                  path="/*"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Suspense fallback={<PageLoader />}>
+                          <PageTransition>
+                            <Routes>
+                              <Route path="/" element={<Dashboard />} />
+                              <Route path="/cost-calculation" element={<CostCalculation />} />
+                              <Route path="/components" element={<ComponentsCatalog />} />
+                              <Route path="/supplies" element={<Supplies />} />
+                              <Route path="/transactions" element={<Transactions />} />
+                              <Route path="/counterparties" element={<Counterparties />} />
+                              <Route path="/categories" element={<Categories />} />
+                              <Route path="/reports" element={<Reports />} />
+                              <Route path="/financial-reports" element={<FinancialReports />} />
+                              <Route path="/marketplace" element={<Marketplace />} />
+                              <Route path="/wb-ads" element={<WbAdsAnalytics />} />
+                              <Route path="/wb-finance" element={<WbFinanceReports />} />
+                              <Route path="/unit-economics" element={<UnitEconomics />} />
+                              <Route path="*" element={<NotFound />} />
+                            </Routes>
+                          </PageTransition>
+                        </Suspense>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
             </ErrorBoundary>
           </Suspense>
-        </Layout>
-      </ToastProvider>
+        </ToastProvider>
+      </AuthProvider>
     </ErrorBoundary>
   )
 }
