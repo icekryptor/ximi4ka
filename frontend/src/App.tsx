@@ -20,6 +20,11 @@ const WbAdsAnalytics = lazy(() => import('./pages/WbAdsAnalytics'))
 const WbFinanceReports = lazy(() => import('./pages/WbFinanceReports'))
 const UnitEconomics = lazy(() => import('./pages/UnitEconomics'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
+const MarginMatrix = lazy(() => import('./pages/MarginMatrix'))
+const ProductionOrders = lazy(() => import('./pages/ProductionOrders'))
+const QualityControl = lazy(() => import('./pages/QualityControl'))
+const Employees = lazy(() => import('./pages/Employees'))
+const SalesChannels = lazy(() => import('./pages/SalesChannels'))
 
 // === Toast System ===
 type ToastType = 'success' | 'error'
@@ -74,10 +79,7 @@ const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[400px]">
     <div className="text-center space-y-4">
       <div className="animate-spin h-10 w-10 border-4 border-primary-500 border-t-transparent rounded-full mx-auto" />
-      <div className="space-y-2">
-        <div className="skeleton h-4 w-32 mx-auto" />
-        <div className="skeleton h-3 w-24 mx-auto" />
-      </div>
+      <p className="text-brand-text-secondary">Загрузка...</p>
     </div>
   </div>
 )
@@ -114,18 +116,29 @@ function App() {
                           <PageTransition>
                             <Routes>
                               <Route path="/" element={<Dashboard />} />
-                              <Route path="/cost-calculation" element={<CostCalculation />} />
-                              <Route path="/components" element={<ComponentsCatalog />} />
-                              <Route path="/supplies" element={<Supplies />} />
+                              {/* Финансы */}
                               <Route path="/transactions" element={<Transactions />} />
-                              <Route path="/counterparties" element={<Counterparties />} />
                               <Route path="/categories" element={<Categories />} />
+                              <Route path="/counterparties" element={<Counterparties />} />
                               <Route path="/reports" element={<Reports />} />
                               <Route path="/financial-reports" element={<FinancialReports />} />
+                              {/* Себестоимость */}
+                              <Route path="/components" element={<ComponentsCatalog />} />
+                              <Route path="/cost-calculation" element={<CostCalculation />} />
+                              <Route path="/unit-economics" element={<UnitEconomics />} />
+                              <Route path="/margin-matrix" element={<MarginMatrix />} />
+                              {/* Закупки */}
+                              <Route path="/supplies" element={<Supplies />} />
+                              {/* Производство */}
+                              <Route path="/production-orders" element={<ProductionOrders />} />
+                              <Route path="/quality-control" element={<QualityControl />} />
+                              {/* Маркетплейсы */}
                               <Route path="/marketplace" element={<Marketplace />} />
                               <Route path="/wb-ads" element={<WbAdsAnalytics />} />
                               <Route path="/wb-finance" element={<WbFinanceReports />} />
-                              <Route path="/unit-economics" element={<UnitEconomics />} />
+                              {/* Настройки */}
+                              <Route path="/employees" element={<Employees />} />
+                              <Route path="/sales-channels" element={<SalesChannels />} />
                               <Route path="*" element={<NotFound />} />
                             </Routes>
                           </PageTransition>

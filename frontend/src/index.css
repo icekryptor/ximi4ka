@@ -19,30 +19,30 @@
 
   .btn-primary {
     @apply bg-primary-500 text-white
-           hover:bg-primary-600 hover:shadow-glow
+           hover:bg-primary-600
            active:bg-primary-700;
   }
 
   .btn-secondary {
     @apply bg-white text-brand-text border border-brand-border
-           hover:bg-brand-surface hover:border-primary-200 hover:shadow-soft;
+           hover:bg-brand-surface hover:border-primary-200;
   }
 
   .btn-danger {
     @apply bg-white text-red-600 border border-red-300
-           hover:bg-red-50 hover:shadow-[0_0_12px_rgba(239,68,68,0.15)];
+           hover:bg-red-50;
   }
 
   /* === CARDS === */
   .card {
     @apply bg-white border border-brand-border rounded-2xl p-6
-           shadow-card transition-all duration-250;
+           transition-all duration-200;
   }
 
   .card-hover {
     @apply bg-white border border-brand-border rounded-2xl p-6
-           shadow-card transition-all duration-250
-           hover:shadow-card-hover hover:-translate-y-0.5;
+           transition-all duration-200
+           hover:-translate-y-0.5;
   }
 
   /* === INPUTS === */
@@ -50,7 +50,7 @@
     @apply w-full px-3 py-2 border border-brand-border rounded-xl
            transition-all duration-200
            focus:outline-none focus:ring-2 focus:ring-primary-400/50
-           focus:border-primary-400 focus:shadow-soft;
+           focus:border-primary-400;
   }
 
   .label {
@@ -60,7 +60,7 @@
   /* === GLASS === */
   .glass {
     @apply backdrop-blur-[30px] bg-white/70
-           border border-white/20 shadow-soft;
+           border border-white/20;
   }
 
   /* === TABLE === */
@@ -80,22 +80,15 @@
     @apply py-3 px-4 text-sm text-brand-text-secondary border-b border-gray-100;
   }
 
-  /* === SHIMMER SKELETON === */
+  /* === SKELETON === */
   .skeleton {
     @apply bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200
-           bg-[length:200%_100%] animate-shimmer rounded-lg;
-  }
-
-  /* === STAGGER ANIMATION === */
-  .stagger-item {
-    @apply animate-fade-in-up;
-    opacity: 0;
-    animation-fill-mode: forwards;
+           rounded-lg animate-pulse;
   }
 
   /* === PAGE ENTER === */
   .page-enter {
-    @apply animate-fade-in;
+    animation: fadeIn 0.18s ease-out both;
   }
 
   /* === MODAL === */
@@ -105,13 +98,15 @@
   }
 
   .modal-panel {
-    @apply bg-white rounded-2xl shadow-modal w-full;
+    @apply bg-white rounded-2xl w-full;
+    box-shadow: 0 20px 60px rgba(131,110,254,0.15), 0 4px 16px rgba(0,0,0,0.08);
   }
 
   /* === TOAST NOTIFICATIONS === */
   .toast {
-    @apply px-5 py-3 rounded-xl shadow-modal text-sm font-medium
-           animate-slide-in-bottom;
+    @apply px-5 py-3 rounded-xl text-sm font-medium;
+    animation: slideInBottom 0.25s ease-out both;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
   }
 
   .toast-success {
@@ -127,4 +122,14 @@
   .animation-fill-forwards {
     animation-fill-mode: forwards;
   }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInBottom {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
