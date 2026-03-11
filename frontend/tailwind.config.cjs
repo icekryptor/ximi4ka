@@ -19,6 +19,7 @@ module.exports = {
           700: '#5b21b6',
           800: '#4c1d95',
           900: '#1c1528',
+          950: '#0f0a17',
         },
         brand: {
           border: 'var(--color-border)',
