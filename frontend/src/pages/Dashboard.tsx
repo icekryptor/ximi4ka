@@ -96,12 +96,12 @@ const Dashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-green-600 dark:text-green-400">Доходы</p>
-              <p className="text-2xl font-bold text-green-900 mt-1">
+              <p className="text-2xl font-bold text-green-900 dark:text-green-100 mt-1">
                 {formatCurrency(animatedIncome)}
               </p>
             </div>
-            <div className="bg-green-200 p-3 rounded-full">
-              <TrendingUp className="h-6 w-6 text-green-700" />
+            <div className="bg-green-200 dark:bg-green-800 p-3 rounded-full">
+              <TrendingUp className="h-6 w-6 text-green-700 dark:text-green-300" />
             </div>
           </div>
         </div>
@@ -113,46 +113,46 @@ const Dashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-red-600 dark:text-red-400">Расходы</p>
-              <p className="text-2xl font-bold text-red-900 mt-1">
+              <p className="text-2xl font-bold text-red-900 dark:text-red-100 mt-1">
                 {formatCurrency(animatedExpense)}
               </p>
             </div>
-            <div className="bg-red-200 p-3 rounded-full">
-              <TrendingDown className="h-6 w-6 text-red-700" />
+            <div className="bg-red-200 dark:bg-red-800 p-3 rounded-full">
+              <TrendingDown className="h-6 w-6 text-red-700 dark:text-red-300" />
             </div>
           </div>
         </div>
 
         <div
-          className="card-hover bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200 stagger-item"
+          className="card-hover bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-950 dark:to-primary-900 border-primary-200 dark:border-primary-800 stagger-item"
           style={{ animationDelay: '160ms' }}
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-primary-600">Баланс</p>
-              <p className="text-2xl font-bold text-primary-900 mt-1">
+              <p className="text-sm font-medium text-primary-600 dark:text-primary-400">Баланс</p>
+              <p className="text-2xl font-bold text-primary-900 dark:text-primary-100 mt-1">
                 {formatCurrency(animatedBalance)}
               </p>
             </div>
-            <div className="bg-primary-200 p-3 rounded-full">
-              <Wallet className="h-6 w-6 text-primary-700" />
+            <div className="bg-primary-200 dark:bg-primary-800 p-3 rounded-full">
+              <Wallet className="h-6 w-6 text-primary-700 dark:text-primary-300" />
             </div>
           </div>
         </div>
 
         <div
-          className="card-hover bg-gradient-to-br from-primary-50/50 to-primary-100/50 border-primary-200 stagger-item"
+          className="card-hover bg-gradient-to-br from-primary-50/50 to-primary-100/50 dark:from-primary-950/50 dark:to-primary-900/50 border-primary-200 dark:border-primary-800 stagger-item"
           style={{ animationDelay: '240ms' }}
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-primary-500">Транзакций</p>
-              <p className="text-2xl font-bold text-primary-900 mt-1">
+              <p className="text-sm font-medium text-primary-500 dark:text-primary-400">Транзакций</p>
+              <p className="text-2xl font-bold text-primary-900 dark:text-primary-100 mt-1">
                 {animatedCount}
               </p>
             </div>
-            <div className="bg-primary-100 p-3 rounded-full">
-              <Activity className="h-6 w-6 text-primary-500" />
+            <div className="bg-primary-100 dark:bg-primary-800 p-3 rounded-full">
+              <Activity className="h-6 w-6 text-primary-500 dark:text-primary-400" />
             </div>
           </div>
         </div>
