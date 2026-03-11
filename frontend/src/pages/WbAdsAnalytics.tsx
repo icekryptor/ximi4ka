@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
+import { useToast } from '../App'
 import { wbAdsApi } from '../api/wbAds'
 import { WbAdAnalytics, WbAdNote, WbAdArticle, WbAdSyncStatus, WbTokenStatus } from '../api/types'
 import { formatCurrency } from '../utils/format'
@@ -63,6 +64,7 @@ const today = new Date().toISOString().split('T')[0]
 const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]
 
 const WbAdsAnalytics = () => {
+  const { showToast } = useToast()
   const [loading, setLoading] = useState(false)
   const [syncing, setSyncing] = useState(false)
 
@@ -159,10 +161,10 @@ const WbAdsAnalytics = () => {
     setSyncing(true)
     try {
       const result = await wbAdsApi.syncStats(startDate, endDate)
-      alert(`Синхронизация завершена: ${result.message}`)
+      showToast(`Синхронизация завершена: ${result.message}`)
       await loadData()
     } catch (err: any) {
-      alert('Ошибка синхронизации: ' + (err.response?.data?.error || err.message))
+      showToast('Ошибка синхронизации: ' + (err.response?.data?.error || err.message), 'error')
     } finally {
       setSyncing(false)
     }

@@ -3,8 +3,10 @@ import { counterpartiesApi } from '../api/counterparties'
 import { Counterparty, CounterpartyType } from '../api/types'
 import { Plus, Edit2, Trash2, Users, Search, Building2 } from 'lucide-react'
 import CounterpartyModal from '../components/CounterpartyModal'
+import { useToast } from '../App'
 
 const Counterparties = () => {
+  const { showToast } = useToast()
   const [counterparties, setCounterparties] = useState<Counterparty[]>([])
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -37,7 +39,7 @@ const Counterparties = () => {
       setCounterparties(counterparties.filter(c => c.id !== id))
     } catch (error) {
       console.error('Ошибка удаления контрагента:', error)
-      alert('Не удалось удалить контрагента')
+      showToast('Не удалось удалить контрагента', 'error')
     }
   }
 
@@ -92,9 +94,9 @@ const Counterparties = () => {
   if (loading) {
     return (
       <div className="p-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+        <div className="space-y-4">
+          <div className="skeleton h-8 w-1/4"></div>
+          <div className="skeleton h-64"></div>
         </div>
       </div>
     )
@@ -138,8 +140,8 @@ const Counterparties = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCounterparties.map((counterparty) => (
-            <div key={counterparty.id} className="card hover:shadow-md transition-shadow">
+          {filteredCounterparties.map((counterparty, index) => (
+            <div key={counterparty.id} className="card-hover stagger-item" style={{ animationDelay: `${index * 60}ms` }}>
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <div className="bg-primary-100 p-3 rounded-full">

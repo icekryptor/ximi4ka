@@ -3,6 +3,7 @@ import { categoriesApi } from '../api/categories'
 import { Category, TransactionType } from '../api/types'
 import { Plus, Edit2, Trash2, FolderOpen, TrendingUp, TrendingDown } from 'lucide-react'
 import CategoryModal from '../components/CategoryModal'
+import { useToast } from '../App'
 
 // Extracted outside component to prevent remount on every render
 const CategoryCard = ({
@@ -14,7 +15,7 @@ const CategoryCard = ({
   onEdit: (category: Category) => void
   onDelete: (id: string) => void
 }) => (
-  <div className="card hover:shadow-md transition-shadow">
+  <div className="card-hover">
     <div className="flex items-start justify-between mb-3">
       <div className="flex items-center space-x-3 flex-1">
         <div
@@ -73,6 +74,7 @@ const CategoryCard = ({
 )
 
 const Categories = () => {
+  const { showToast } = useToast()
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -105,7 +107,7 @@ const Categories = () => {
       setCategories(categories.filter(c => c.id !== id))
     } catch (error) {
       console.error('Ошибка удаления категории:', error)
-      alert('Не удалось удалить категорию')
+      showToast('Не удалось удалить категорию', 'error')
     }
   }
 
@@ -136,9 +138,9 @@ const Categories = () => {
   if (loading) {
     return (
       <div className="p-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+        <div className="space-y-4">
+          <div className="skeleton h-8 w-1/4"></div>
+          <div className="skeleton h-64"></div>
         </div>
       </div>
     )
@@ -210,8 +212,10 @@ const Categories = () => {
                 Категории доходов
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {incomeCategories.map(category => (
-                  <CategoryCard key={category.id} category={category} onEdit={handleEdit} onDelete={handleDelete} />
+                {incomeCategories.map((category, index) => (
+                  <div key={category.id} className="stagger-item" style={{ animationDelay: `${index * 60}ms` }}>
+                    <CategoryCard category={category} onEdit={handleEdit} onDelete={handleDelete} />
+                  </div>
                 ))}
               </div>
             </div>
@@ -224,8 +228,10 @@ const Categories = () => {
                 Категории расходов
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {expenseCategories.map(category => (
-                  <CategoryCard key={category.id} category={category} onEdit={handleEdit} onDelete={handleDelete} />
+                {expenseCategories.map((category, index) => (
+                  <div key={category.id} className="stagger-item" style={{ animationDelay: `${index * 60}ms` }}>
+                    <CategoryCard category={category} onEdit={handleEdit} onDelete={handleDelete} />
+                  </div>
                 ))}
               </div>
             </div>

@@ -38,14 +38,14 @@ const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="min-h-screen flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-brand-border flex flex-col">
-        <div className="p-6 border-b border-brand-border">
+      <aside className="w-64 bg-white border-r border-brand-border shadow-soft flex flex-col">
+        <div className="p-6 border-b border-brand-border bg-gradient-to-r from-primary-50/30 to-transparent">
           <div className="flex items-center space-x-3">
             <Beaker className="h-6 w-6 text-primary-500" />
             <h1 className="text-lg font-semibold text-brand-text">XimFinance</h1>
           </div>
         </div>
-        
+
         <nav className="flex-1 p-4 space-y-0.5">
           {navigation.map((item, i) => {
             if (item.type === 'group') {
@@ -63,9 +63,9 @@ const Layout = ({ children }: LayoutProps) => {
                 key={item.name}
                 to={item.href}
                 className={`
-                  flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-colors
+                  flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 relative
                   ${isActive(item.href)
-                    ? 'bg-primary-50 text-primary-700'
+                    ? 'bg-primary-50 text-primary-700 shadow-soft before:absolute before:left-0 before:top-1 before:bottom-1 before:w-[3px] before:bg-primary-500 before:rounded-full'
                     : 'text-brand-text-secondary hover:text-brand-text hover:bg-brand-surface'
                   }
                 `}
@@ -79,7 +79,7 @@ const Layout = ({ children }: LayoutProps) => {
 
         <div className="p-4 border-t border-brand-border">
           <p className="text-xs text-brand-text-secondary text-center">
-            © 2025
+            © 2026
           </p>
         </div>
       </aside>
