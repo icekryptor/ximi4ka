@@ -156,18 +156,18 @@ export default function ComponentModal({ component, kitId, onClose, onSaved }: P
             <Dialog.Panel className="modal-panel max-w-xl max-h-[94vh] flex flex-col">
 
               {/* Шапка */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 shrink-0">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-brand-border shrink-0">
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900">
+                  <h2 className="text-lg font-semibold text-brand-text">
                     {isEdit ? 'Редактировать компонент' : 'Добавить компонент'}
                   </h2>
                   {inCompositeEditMode && !isEdit && (
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p className="text-xs text-brand-text-secondary mt-0.5">
                       Компонент создан — добавьте детали в состав
                     </p>
                   )}
                 </div>
-                <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <button onClick={onClose} className="text-brand-text-secondary hover:text-brand-text">
                   <X className="h-5 w-5" />
                 </button>
               </div>
@@ -175,7 +175,7 @@ export default function ComponentModal({ component, kitId, onClose, onSaved }: P
               <div className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
 
                 {/* Переключатель Простой / Сложный */}
-                <div className="flex rounded-lg border border-gray-200 p-1 gap-1 bg-gray-50">
+                <div className="flex rounded-lg border border-brand-border p-1 gap-1 bg-subtle">
                   {[
                     { value: false, label: 'Простой' },
                     { value: true, label: 'Сложный (состоит из деталей)' },
@@ -187,8 +187,8 @@ export default function ComponentModal({ component, kitId, onClose, onSaved }: P
                       onClick={() => set('is_composite', opt.value)}
                       className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                         form.is_composite === opt.value
-                          ? 'bg-white shadow-sm text-gray-900'
-                          : 'text-gray-500 hover:text-gray-700'
+                          ? 'bg-card shadow-sm text-brand-text'
+                          : 'text-brand-text-secondary hover:text-brand-text-secondary'
                       }`}
                     >
                       {opt.label}
@@ -198,17 +198,17 @@ export default function ComponentModal({ component, kitId, onClose, onSaved }: P
 
                 {/* Блок отображения авторасчётных значений для сложного компонента */}
                 {form.is_composite && savedComponent && (
-                  <div className="flex gap-4 text-sm bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+                  <div className="flex gap-4 text-sm bg-subtle border border-brand-border rounded-lg px-4 py-3">
                     <div>
-                      <div className="text-xs text-gray-400 mb-0.5">Цена (из состава)</div>
-                      <div className="font-semibold text-gray-900">
+                      <div className="text-xs text-brand-text-secondary mb-0.5">Цена (из состава)</div>
+                      <div className="font-semibold text-brand-text">
                         {new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(compositePrice)}
                       </div>
                     </div>
                     {compositeWeight > 0 && (
                       <div>
-                        <div className="text-xs text-gray-400 mb-0.5">Вес (из состава)</div>
-                        <div className="font-semibold text-gray-900">{compositeWeight.toFixed(3)} кг</div>
+                        <div className="text-xs text-brand-text-secondary mb-0.5">Вес (из состава)</div>
+                        <div className="font-semibold text-brand-text">{compositeWeight.toFixed(3)} кг</div>
                       </div>
                     )}
                   </div>
@@ -218,18 +218,18 @@ export default function ComponentModal({ component, kitId, onClose, onSaved }: P
                 <div>
                   <label className="label">Фото</label>
                   <div
-                    className="border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors py-4"
+                    className="border-2 border-dashed border-brand-border rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-brand-border transition-colors py-4"
                     onClick={() => fileRef.current?.click()}
                   >
                     {imgSrc ? (
                       <img src={imgSrc} alt="preview" className="h-28 w-28 object-contain rounded" />
                     ) : (
-                      <div className="flex flex-col items-center text-gray-400">
+                      <div className="flex flex-col items-center text-brand-text-secondary">
                         <ImageIcon className="h-10 w-10 mb-1" />
                         <span className="text-sm">Нажмите для загрузки</span>
                       </div>
                     )}
-                    <span className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                    <span className="text-xs text-brand-text-secondary mt-2 flex items-center gap-1">
                       <Upload className="h-3 w-3" /> JPG, PNG, WEBP до 5 МБ
                     </span>
                   </div>
@@ -272,7 +272,7 @@ export default function ComponentModal({ component, kitId, onClose, onSaved }: P
                     <label className="label">
                       Вес, кг
                       {form.is_composite && savedComponent && (
-                        <span className="text-gray-400 font-normal ml-1">(авто)</span>
+                        <span className="text-brand-text-secondary font-normal ml-1">(авто)</span>
                       )}
                     </label>
                     <input
@@ -338,13 +338,13 @@ export default function ComponentModal({ component, kitId, onClose, onSaved }: P
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <label className="label mb-0">Стоимость за единицу</label>
-                      <span className="text-sm font-semibold text-gray-900">
+                      <span className="text-sm font-semibold text-brand-text">
                         = {new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(computedUnitPrice)}
                       </span>
                     </div>
                     <div className="grid grid-cols-3 gap-3">
                       <div>
-                        <label className="text-xs text-gray-500">Материалы, ₽</label>
+                        <label className="text-xs text-brand-text-secondary">Материалы, ₽</label>
                         <input
                           className="input"
                           type="number"
@@ -356,7 +356,7 @@ export default function ComponentModal({ component, kitId, onClose, onSaved }: P
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500">Логистика, ₽</label>
+                        <label className="text-xs text-brand-text-secondary">Логистика, ₽</label>
                         <input
                           className="input"
                           type="number"
@@ -368,7 +368,7 @@ export default function ComponentModal({ component, kitId, onClose, onSaved }: P
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500">Работа, ₽</label>
+                        <label className="text-xs text-brand-text-secondary">Работа, ₽</label>
                         <input
                           className="input"
                           type="number"
@@ -396,12 +396,12 @@ export default function ComponentModal({ component, kitId, onClose, onSaved }: P
 
                 <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input type="checkbox" checked={form.is_active} onChange={e => set('is_active', e.target.checked)} />
-                  <span className="text-sm text-gray-700">Активен</span>
+                  <span className="text-sm text-brand-text-secondary">Активен</span>
                 </label>
 
                 {/* Секция состава — только для сложного, только после сохранения */}
                 {form.is_composite && savedComponent && (
-                  <div className="border border-gray-200 rounded-lg p-4">
+                  <div className="border border-brand-border rounded-lg p-4">
                     <ComponentPartsEditor
                       compositeId={savedComponent.id}
                       onTotalsChange={(price, weight) => {
@@ -422,7 +422,7 @@ export default function ComponentModal({ component, kitId, onClose, onSaved }: P
               </div>
 
               {/* Кнопки */}
-              <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3 shrink-0">
+              <div className="px-6 py-4 border-t border-brand-border flex justify-end gap-3 shrink-0">
                 <button type="button" onClick={onClose} className="btn btn-secondary">
                   {inCompositeEditMode && !isEdit ? 'Готово' : 'Отмена'}
                 </button>

@@ -278,7 +278,7 @@ const WbAdsAnalytics = () => {
             <button
               type="button"
               onClick={() => setShowToken(!showToken)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-brand-text-secondary hover:text-brand-text"
             >
               {showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -341,7 +341,7 @@ const WbAdsAnalytics = () => {
           className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
             selectedNmId === undefined
               ? 'bg-primary-500 text-white'
-              : 'bg-white border border-brand-border text-brand-text-secondary hover:bg-brand-surface'
+              : 'bg-card border border-brand-border text-brand-text-secondary hover:bg-brand-surface'
           }`}
         >
           Сводная
@@ -353,7 +353,7 @@ const WbAdsAnalytics = () => {
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
               selectedNmId === a.nm_id
                 ? 'bg-primary-500 text-white'
-                : 'bg-white border border-brand-border text-brand-text-secondary hover:bg-brand-surface'
+                : 'bg-card border border-brand-border text-brand-text-secondary hover:bg-brand-surface'
             }`}
           >
             {a.nm_id}
@@ -371,8 +371,8 @@ const WbAdsAnalytics = () => {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="bg-gray-50 border-b border-brand-border">
-                  <th className="text-left py-3 px-4 font-medium text-brand-text sticky left-0 bg-gray-50 z-20 min-w-[140px] border-r border-brand-border">
+                <tr className="bg-subtle border-b border-brand-border">
+                  <th className="text-left py-3 px-4 font-medium text-brand-text sticky left-0 bg-subtle z-20 min-w-[140px] border-r border-brand-border">
                     Метрика
                   </th>
                   <th className="text-left py-3 px-3 font-semibold text-brand-text sticky left-[140px] bg-primary-50 z-20 min-w-[100px] border-r border-brand-border whitespace-nowrap shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
@@ -390,13 +390,13 @@ const WbAdsAnalytics = () => {
                   const values = analytics.metrics[metric.key] || []
                   const summary = computeSummary(values, metric.agg)
                   const isEven = idx % 2 === 0
-                  const stickyBg = isEven ? 'bg-white' : 'bg-[#fafafb]'
+                  const stickyBg = isEven ? 'bg-card' : 'bg-[#fafafb]'
                   const summaryBg = isEven ? 'bg-[#f3f0ff]' : 'bg-[#edeafc]'
 
                   return (
                     <tr
                       key={metric.key}
-                      className={`border-b border-gray-100 ${isEven ? '' : 'bg-[#fafafb]'} hover:bg-primary-50/30 transition-colors`}
+                      className={`border-b border-brand-border ${isEven ? '' : 'bg-[#fafafb]'} hover:bg-primary-50/30 transition-colors`}
                     >
                       <td className={`py-2.5 px-4 font-medium text-brand-text sticky left-0 z-20 ${stickyBg} border-r border-brand-border`}>
                         {metric.label}
@@ -446,7 +446,7 @@ const WbAdsAnalytics = () => {
                               </button>
                               <button
                                 onClick={() => { setEditingNoteDate(null); setNoteText('') }}
-                                className="text-xs text-gray-400 hover:text-gray-600"
+                                className="text-xs text-brand-text-secondary hover:text-brand-text"
                               >
                                 <X className="h-3 w-3" />
                               </button>
@@ -461,7 +461,7 @@ const WbAdsAnalytics = () => {
                             >
                               <MessageSquare className="h-4 w-4 mx-auto fill-amber-200" />
                             </button>
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-30 w-48 p-2 bg-white rounded-lg shadow-lg border text-xs text-left text-brand-text">
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-30 w-48 p-2 bg-card rounded-lg shadow-lg border text-xs text-left text-brand-text">
                               {note.content}
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleDeleteNote(note.id) }}
@@ -474,7 +474,7 @@ const WbAdsAnalytics = () => {
                         ) : (
                           <button
                             onClick={() => { setEditingNoteDate(date); setNoteText('') }}
-                            className="text-gray-300 hover:text-gray-500"
+                            className="text-brand-text-secondary hover:text-brand-text"
                           >
                             <MessageSquare className="h-4 w-4 mx-auto" />
                           </button>
@@ -489,7 +489,7 @@ const WbAdsAnalytics = () => {
         </div>
       ) : (
         <div className="card text-center py-12">
-          <Megaphone className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+          <Megaphone className="h-12 w-12 text-brand-text-secondary mx-auto mb-4" />
           <p className="text-brand-text-secondary">
             {analytics && analytics.dates.length === 0
               ? 'Нет данных за выбранный период. Нажмите «Синхронизация» для загрузки из WB.'

@@ -37,17 +37,16 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-4"
-      style={{ background: 'linear-gradient(135deg, #eeebf3 0%, #f5f3ff 50%, #ede9fe 100%)' }}
+      className="min-h-screen flex items-center justify-center px-4 bg-page"
     >
       <div
         className="w-full max-w-md"
         style={{
-          background: 'rgba(255,255,255,0.85)',
+          background: 'var(--color-glass-bg)',
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',
           borderRadius: '40px',
-          border: '1px solid #e8e5ef',
+          border: '1px solid var(--color-border)',
           boxShadow: '0 24px 64px rgba(131,110,254,0.12)',
           padding: '48px 40px',
         }}
@@ -73,7 +72,7 @@ export default function LoginPage() {
           >
             Ximi4ka
           </h1>
-          <p className="text-sm" style={{ color: '#524667' }}>
+          <p className="text-sm text-brand-text-secondary">
             Финансовая система управления
           </p>
         </div>
@@ -83,8 +82,7 @@ export default function LoginPage() {
           <div className="mb-5">
             <label
               htmlFor="email"
-              className="block text-sm font-medium mb-1.5"
-              style={{ color: '#1c1528' }}
+              className="block text-sm font-medium mb-1.5 text-brand-text"
             >
               Email
             </label>
@@ -96,18 +94,18 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               disabled={isLoading}
-              className="w-full px-4 py-3 text-sm rounded-2xl border transition-all outline-none"
+              className="w-full px-4 py-3 text-sm rounded-2xl transition-all outline-none"
               style={{
-                border: '1px solid #e8e5ef',
-                color: '#1c1528',
-                background: '#ffffff',
+                border: '1px solid var(--color-border)',
+                color: 'var(--color-text-primary)',
+                background: 'var(--color-bg-card)',
               }}
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = '#836efe';
                 e.currentTarget.style.boxShadow = '0 0 0 3px rgba(131,110,254,0.15)';
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = '#e8e5ef';
+                e.currentTarget.style.borderColor = 'var(--color-border)';
                 e.currentTarget.style.boxShadow = 'none';
               }}
             />
@@ -116,8 +114,7 @@ export default function LoginPage() {
           <div className="mb-6">
             <label
               htmlFor="password"
-              className="block text-sm font-medium mb-1.5"
-              style={{ color: '#1c1528' }}
+              className="block text-sm font-medium mb-1.5 text-brand-text"
             >
               Пароль
             </label>
@@ -129,18 +126,18 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               disabled={isLoading}
-              className="w-full px-4 py-3 text-sm rounded-2xl border transition-all outline-none"
+              className="w-full px-4 py-3 text-sm rounded-2xl transition-all outline-none"
               style={{
-                border: '1px solid #e8e5ef',
-                color: '#1c1528',
-                background: '#ffffff',
+                border: '1px solid var(--color-border)',
+                color: 'var(--color-text-primary)',
+                background: 'var(--color-bg-card)',
               }}
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = '#836efe';
                 e.currentTarget.style.boxShadow = '0 0 0 3px rgba(131,110,254,0.15)';
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = '#e8e5ef';
+                e.currentTarget.style.borderColor = 'var(--color-border)';
                 e.currentTarget.style.boxShadow = 'none';
               }}
             />

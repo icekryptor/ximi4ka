@@ -16,7 +16,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 }
 const CATEGORY_COLORS: Record<string, string> = {
   reagent: 'bg-primary-100 text-primary-600',
-  equipment: 'bg-gray-100 text-gray-600',
+  equipment: 'bg-muted text-brand-text-secondary',
   print: 'bg-amber-100 text-amber-600',
   labor: 'bg-green-100 text-green-600',
 }
@@ -40,7 +40,7 @@ function QuantityCell({ kc, onSave }: { kc: KitComponent; onSave: (qty: number) 
   if (!editing) {
     return (
       <span
-        className="cursor-pointer px-2 py-0.5 rounded hover:bg-gray-100 tabular-nums"
+        className="cursor-pointer px-2 py-0.5 rounded hover:bg-muted tabular-nums"
         title="Нажмите для редактирования"
         onClick={() => { setVal(String(kc.quantity)); setEditing(true); setTimeout(() => inputRef.current?.select(), 0) }}
       >
@@ -252,18 +252,18 @@ export default function CostCalculation() {
           </td>
           <td className="py-1.5" style={{ paddingLeft: indentPx }}>
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-gray-300 select-none">{isLast ? '└' : '├'}</span>
+              <span className="text-brand-text-secondary select-none">{isLast ? '└' : '├'}</span>
               {entry.part.image_url ? (
                 <img src={`${API_BASE}${entry.part.image_url}`} alt={entry.part.name}
                   className="h-10 w-10 object-contain rounded shrink-0" />
               ) : (
-                <div className="h-10 w-10 rounded bg-gray-100 flex items-center justify-center shrink-0">
-                  <ImageIcon className="h-4 w-4 text-gray-300" />
+                <div className="h-10 w-10 rounded bg-muted flex items-center justify-center shrink-0">
+                  <ImageIcon className="h-4 w-4 text-brand-text-secondary" />
                 </div>
               )}
               <div className="min-w-0 max-w-[180px]">
                 <button onClick={() => handleEdit(entry.part)}
-                  className="text-sm text-gray-700 hover:text-primary-600 hover:underline text-left transition-colors truncate block w-full"
+                  className="text-sm text-brand-text-secondary hover:text-primary-600 hover:underline text-left transition-colors truncate block w-full"
                   title={entry.part.name}
                 >
                   {entry.part.name}
@@ -272,19 +272,19 @@ export default function CostCalculation() {
               {isEntryComposite && (
                 <span className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-violet-100 text-violet-600 font-medium">СК</span>
               )}
-              {entry.part.sku && <span className="text-xs text-gray-400">{entry.part.sku}</span>}
+              {entry.part.sku && <span className="text-xs text-brand-text-secondary">{entry.part.sku}</span>}
             </div>
           </td>
           <td className="py-1.5">
-            {entry.part.factory && <span className="text-xs text-gray-400">{entry.part.factory}</span>}
+            {entry.part.factory && <span className="text-xs text-brand-text-secondary">{entry.part.factory}</span>}
           </td>
-          <td className="py-1.5 text-right text-xs text-gray-500">{fmt(Number(entry.part.cost_materials))}</td>
-          <td className="py-1.5 text-right text-xs text-gray-500">{fmt(Number(entry.part.cost_logistics))}</td>
-          <td className="py-1.5 text-right text-xs text-gray-500">{fmt(Number(entry.part.cost_labor))}</td>
-          <td className="py-1.5 text-right text-xs text-gray-500 tabular-nums">
+          <td className="py-1.5 text-right text-xs text-brand-text-secondary">{fmt(Number(entry.part.cost_materials))}</td>
+          <td className="py-1.5 text-right text-xs text-brand-text-secondary">{fmt(Number(entry.part.cost_logistics))}</td>
+          <td className="py-1.5 text-right text-xs text-brand-text-secondary">{fmt(Number(entry.part.cost_labor))}</td>
+          <td className="py-1.5 text-right text-xs text-brand-text-secondary tabular-nums">
             ×{Math.round(Number(entry.quantity))}
           </td>
-          <td className="py-1.5 text-right text-xs text-gray-600 font-medium">
+          <td className="py-1.5 text-right text-xs text-brand-text-secondary font-medium">
             {fmt(Number(entry.part.unit_price) * Number(entry.quantity) * accQty)}
           </td>
           <td />
@@ -298,7 +298,7 @@ export default function CostCalculation() {
       if (isEntryComposite && entryExpanded && !partsCache[entry.part.id]) {
         rows.push(
           <tr key={`${keyPrefix}-${entry.id}-loading`} className="bg-violet-50/20">
-            <td colSpan={9} className="py-2 text-xs text-gray-400" style={{ paddingLeft: indentPx + 24 }}>
+            <td colSpan={9} className="py-2 text-xs text-brand-text-secondary" style={{ paddingLeft: indentPx + 24 }}>
               Загрузка состава…
             </td>
           </tr>
@@ -313,9 +313,9 @@ export default function CostCalculation() {
     return (
       <div className="p-8">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-48" />
-          <div className="h-10 bg-gray-200 rounded w-72" />
-          <div className="h-64 bg-gray-200 rounded" />
+          <div className="h-8 bg-muted rounded w-48" />
+          <div className="h-10 bg-muted rounded w-72" />
+          <div className="h-64 bg-muted rounded" />
         </div>
       </div>
     )
@@ -326,8 +326,8 @@ export default function CostCalculation() {
       {/* Заголовок */}
       <div className="flex justify-between items-start mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Себестоимость</h1>
-          <p className="text-sm text-gray-500 mt-1 max-w-[420px] truncate" title={kitDetails?.name}>
+          <h1 className="text-2xl font-semibold text-brand-text">Себестоимость</h1>
+          <p className="text-sm text-brand-text-secondary mt-1 max-w-[420px] truncate" title={kitDetails?.name}>
             {kitDetails ? kitDetails.name : 'Выберите набор'}
             {kitDetails?.seller_sku && (
               <span className="ml-2 text-xs bg-primary-50 text-primary-600 px-1.5 py-0.5 rounded font-medium">
@@ -338,7 +338,7 @@ export default function CostCalculation() {
         </div>
         <div className="flex items-center gap-2">
           {/* Переключатель Таблица / Схема */}
-          <div className="flex rounded-lg border border-gray-200 p-0.5 bg-gray-50">
+          <div className="flex rounded-lg border border-brand-border p-0.5 bg-subtle">
             {([
               { mode: 'table', icon: Table2, label: 'Таблица' },
               { mode: 'tree',  icon: GitBranch, label: 'Схема сборки' },
@@ -348,8 +348,8 @@ export default function CostCalculation() {
                 onClick={() => setViewMode(mode)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                   viewMode === mode
-                    ? 'bg-white shadow-sm text-gray-900'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? 'bg-card shadow-sm text-brand-text'
+                    : 'text-brand-text-secondary hover:text-brand-text'
                 }`}
               >
                 <Icon className="h-3.5 w-3.5" />
@@ -376,15 +376,15 @@ export default function CostCalculation() {
       </div>
 
       {/* Вкладки китов */}
-      <div className="flex items-center gap-1 border-b border-gray-200 mb-6">
+      <div className="flex items-center gap-1 border-b border-brand-border mb-6">
         {kits.map(kit => (
           <button
             key={kit.id}
             onClick={() => setActiveKitId(kit.id)}
             className={`px-5 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px max-w-[180px] truncate ${
               activeKitId === kit.id
-                ? 'border-gray-900 text-gray-900'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-brand-text text-brand-text'
+                : 'border-transparent text-brand-text-secondary hover:text-brand-text hover:border-brand-border'
             }`}
             title={kit.name}
           >
@@ -393,7 +393,7 @@ export default function CostCalculation() {
         ))}
         <button
           onClick={() => setKitModalOpen(true)}
-          className="ml-2 px-3 py-2 text-sm text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors flex items-center gap-1 -mb-px"
+          className="ml-2 px-3 py-2 text-sm text-brand-text-secondary hover:text-brand-text hover:bg-muted rounded transition-colors flex items-center gap-1 -mb-px"
           title="Добавить набор"
         >
           <Plus className="h-4 w-4" />
@@ -403,22 +403,22 @@ export default function CostCalculation() {
 
       {kitLoading ? (
         <div className="animate-pulse space-y-3">
-          <div className="h-28 bg-gray-100 rounded" />
-          <div className="h-48 bg-gray-100 rounded" />
+          <div className="h-28 bg-muted rounded" />
+          <div className="h-48 bg-muted rounded" />
         </div>
       ) : kitDetails ? (
         <>
           {/* Итоговая карточка */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 mb-6">
+          <div className="bg-subtle border border-brand-border rounded-lg p-5 mb-6">
             {/* Фактическая и расчётная себестоимости */}
             <div className="grid grid-cols-2 gap-6 mb-4">
               <div>
-                <div className="text-xs text-gray-500 mb-1">Фактическая себестоимость</div>
-                <div className="text-2xl font-bold text-gray-900">{fmt(grandTotal)}</div>
-                <div className="text-xs text-gray-400 mt-0.5">рассчитывается из компонентов</div>
+                <div className="text-xs text-brand-text-secondary mb-1">Фактическая себестоимость</div>
+                <div className="text-2xl font-bold text-brand-text">{fmt(grandTotal)}</div>
+                <div className="text-xs text-brand-text-secondary mt-0.5">рассчитывается из компонентов</div>
               </div>
               <div>
-                <div className="text-xs text-gray-500 mb-1">Расчётная себестоимость</div>
+                <div className="text-xs text-brand-text-secondary mb-1">Расчётная себестоимость</div>
                 {editingEstimated ? (
                   <input
                     ref={estimatedRef}
@@ -433,7 +433,7 @@ export default function CostCalculation() {
                   />
                 ) : (
                   <span
-                    className="text-2xl font-bold text-gray-900 cursor-pointer hover:text-primary-600 transition-colors"
+                    className="text-2xl font-bold text-brand-text cursor-pointer hover:text-primary-600 transition-colors"
                     title="Нажмите для редактирования"
                     onClick={() => {
                       setEstimatedVal(kitDetails?.estimated_cost ? String(kitDetails.estimated_cost) : '')
@@ -444,7 +444,7 @@ export default function CostCalculation() {
                     {kitDetails?.estimated_cost ? fmt(Number(kitDetails.estimated_cost)) : '—'}
                   </span>
                 )}
-                <div className="text-xs text-gray-400 mt-0.5">вводится вручную</div>
+                <div className="text-xs text-brand-text-secondary mt-0.5">вводится вручную</div>
               </div>
             </div>
 
@@ -472,23 +472,23 @@ export default function CostCalculation() {
               )
             })()}
 
-            <div className="grid grid-cols-3 gap-4 mb-4 pb-4 border-b border-gray-200">
+            <div className="grid grid-cols-3 gap-4 mb-4 pb-4 border-b border-brand-border">
               {[
                 { label: 'Материалы', value: allItems.reduce((s, kc) => s + Number(kc.component.cost_materials) * Number(kc.quantity), 0) },
                 { label: 'Логистика', value: allItems.reduce((s, kc) => s + Number(kc.component.cost_logistics) * Number(kc.quantity), 0) },
                 { label: 'Работа', value: allItems.reduce((s, kc) => s + Number(kc.component.cost_labor) * Number(kc.quantity), 0) },
               ].map(({ label, value }) => (
                 <div key={label}>
-                  <div className="text-xs text-gray-500 mb-0.5">{label}</div>
-                  <div className="text-base font-semibold text-gray-900">{fmt(value)}</div>
+                  <div className="text-xs text-brand-text-secondary mb-0.5">{label}</div>
+                  <div className="text-base font-semibold text-brand-text">{fmt(value)}</div>
                 </div>
               ))}
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {CATEGORY_ORDER.map(cat => (
                 <div key={cat}>
-                  <div className="text-xs text-gray-500 mb-0.5">{CATEGORY_LABELS[cat]}</div>
-                  <div className="text-base font-semibold text-gray-900">{fmt(totals[cat])}</div>
+                  <div className="text-xs text-brand-text-secondary mb-0.5">{CATEGORY_LABELS[cat]}</div>
+                  <div className="text-base font-semibold text-brand-text">{fmt(totals[cat])}</div>
                 </div>
               ))}
             </div>
@@ -536,7 +536,7 @@ export default function CostCalculation() {
                                 onClick={() => isComposite && toggleExpand(c.id)}
                                 className={`absolute -left-5 top-1/2 -translate-y-1/2 transition-colors ${
                                   isComposite
-                                    ? 'text-gray-400 hover:text-gray-700 cursor-pointer'
+                                    ? 'text-brand-text-secondary hover:text-brand-text cursor-pointer'
                                     : 'text-transparent cursor-default pointer-events-none'
                                 }`}
                                 tabIndex={isComposite ? 0 : -1}
@@ -552,8 +552,8 @@ export default function CostCalculation() {
                                   className="h-[60px] w-[60px] object-contain rounded"
                                 />
                               ) : (
-                                <div className="h-[60px] w-[60px] rounded bg-gray-100 flex items-center justify-center">
-                                  <ImageIcon className="h-6 w-6 text-gray-300" />
+                                <div className="h-[60px] w-[60px] rounded bg-muted flex items-center justify-center">
+                                  <ImageIcon className="h-6 w-6 text-brand-text-secondary" />
                                 </div>
                               )}
                             </td>
@@ -564,19 +564,19 @@ export default function CostCalculation() {
                                 <div className="min-w-0 max-w-[220px]">
                                   <button
                                     onClick={() => handleEdit(c)}
-                                    className="font-medium text-gray-900 leading-tight hover:text-primary-600 hover:underline text-left transition-colors truncate block w-full"
+                                    className="font-medium text-brand-text leading-tight hover:text-primary-600 hover:underline text-left transition-colors truncate block w-full"
                                     title={c.name}
                                   >
                                     {c.name}
                                   </button>
                                   {(c.dimensions || c.weight_kg) && (
-                                    <div className="text-xs text-gray-400 mt-0.5">
+                                    <div className="text-xs text-brand-text-secondary mt-0.5">
                                       {[c.dimensions, c.weight_kg ? `${c.weight_kg} кг` : null]
                                         .filter(Boolean).join(' · ')}
                                     </div>
                                   )}
                                 </div>
-                                <span className={`shrink-0 text-xs px-1.5 py-0.5 rounded font-medium ${CATEGORY_COLORS[c.category] ?? 'bg-gray-100 text-gray-500'}`}>
+                                <span className={`shrink-0 text-xs px-1.5 py-0.5 rounded font-medium ${CATEGORY_COLORS[c.category] ?? 'bg-muted text-brand-text-secondary'}`}>
                                   {CATEGORY_LABELS[c.category]}
                                 </span>
                                 {isComposite && (
@@ -589,8 +589,8 @@ export default function CostCalculation() {
 
                             {/* Артикул / фабрика / ссылка 1688 */}
                             <td>
-                              {c.sku && <div className="text-sm text-gray-700">{c.sku}</div>}
-                              {c.factory && <div className="text-xs text-gray-400">{c.factory}</div>}
+                              {c.sku && <div className="text-sm text-brand-text-secondary">{c.sku}</div>}
+                              {c.factory && <div className="text-xs text-brand-text-secondary">{c.factory}</div>}
                               {c.link_1688 && (
                                 <a
                                   href={c.link_1688}
@@ -603,9 +603,9 @@ export default function CostCalculation() {
                               )}
                             </td>
 
-                            <td className="text-right text-gray-500 tabular-nums">{fmt(Number(c.cost_materials))}</td>
-                            <td className="text-right text-gray-500 tabular-nums">{fmt(Number(c.cost_logistics))}</td>
-                            <td className="text-right text-gray-500 tabular-nums">{fmt(Number(c.cost_labor))}</td>
+                            <td className="text-right text-brand-text-secondary tabular-nums">{fmt(Number(c.cost_materials))}</td>
+                            <td className="text-right text-brand-text-secondary tabular-nums">{fmt(Number(c.cost_logistics))}</td>
+                            <td className="text-right text-brand-text-secondary tabular-nums">{fmt(Number(c.cost_labor))}</td>
 
                             <td className="text-right">
                               <QuantityCell kc={kc} onSave={qty => handleQuantityChange(kc, qty)} />
@@ -617,14 +617,14 @@ export default function CostCalculation() {
                               <div className="flex justify-end gap-1">
                                 <button
                                   onClick={() => handleEdit(c)}
-                                  className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
+                                  className="p-1.5 text-brand-text-secondary hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
                                   title="Редактировать"
                                 >
                                   <Pencil className="h-4 w-4" />
                                 </button>
                                 <button
                                   onClick={() => handleDelete(c)}
-                                  className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                  className="p-1.5 text-brand-text-secondary hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                                   title="Удалить из набора"
                                 >
                                   <Trash2 className="h-4 w-4" />
@@ -639,7 +639,7 @@ export default function CostCalculation() {
 
                           {isComposite && expanded && !partsCache[c.id] && (
                             <tr className="bg-violet-50/40">
-                              <td colSpan={9} className="py-2 pl-16 text-xs text-gray-400">
+                              <td colSpan={9} className="py-2 pl-16 text-xs text-brand-text-secondary">
                                 Загрузка состава…
                               </td>
                             </tr>
@@ -653,8 +653,8 @@ export default function CostCalculation() {
           )}
 
           {viewMode === 'table' && allItems.length === 0 && (
-            <div className="text-center py-16 border border-dashed border-gray-200 rounded-lg">
-              <p className="text-gray-400 mb-4">В этом наборе пока нет компонентов</p>
+            <div className="text-center py-16 border border-dashed border-brand-border rounded-lg">
+              <p className="text-brand-text-secondary mb-4">В этом наборе пока нет компонентов</p>
               <button onClick={() => setPickerOpen(true)} className="btn btn-primary">
                 Добавить первый компонент
               </button>
@@ -662,7 +662,7 @@ export default function CostCalculation() {
           )}
         </>
       ) : (
-        <div className="text-center py-16 text-gray-400">Выберите набор</div>
+        <div className="text-center py-16 text-brand-text-secondary">Выберите набор</div>
       )}
 
       {/* Пикер — выбор существующего компонента из каталога */}

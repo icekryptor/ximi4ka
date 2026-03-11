@@ -12,7 +12,7 @@ function fileIcon(name: string) {
   if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext ?? '')) return <FileImage className="h-4 w-4 text-blue-500" />
   if (['xls', 'xlsx'].includes(ext ?? ''))  return <FileSpreadsheet className="h-4 w-4 text-green-600" />
   if (ext === 'pdf')                         return <FileText className="h-4 w-4 text-red-500" />
-  return <File className="h-4 w-4 text-gray-400" />
+  return <File className="h-4 w-4 text-brand-text-secondary" />
 }
 
 function formatBytes(name: string) {
@@ -73,7 +73,7 @@ export default function SupplyDocuments({ supplyId }: Props) {
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-semibold text-gray-700">Документы</h3>
+      <h3 className="text-sm font-semibold text-brand-text-secondary">Документы</h3>
 
       {/* Upload controls */}
       <div className="flex gap-2 flex-wrap">
@@ -120,23 +120,23 @@ export default function SupplyDocuments({ supplyId }: Props) {
 
       {/* Documents list */}
       {loading ? (
-        <div className="text-sm text-gray-400 py-2">Загрузка...</div>
+        <div className="text-sm text-brand-text-secondary py-2">Загрузка...</div>
       ) : docs.length === 0 ? (
-        <div className="text-sm text-gray-400 py-3 text-center border border-dashed border-gray-200 rounded-lg">
+        <div className="text-sm text-brand-text-secondary py-3 text-center border border-dashed border-brand-border rounded-lg">
           Нет прикреплённых документов
         </div>
       ) : (
         <div className="space-y-1.5">
           {docs.map(doc => (
             <div key={doc.id}
-              className="flex items-center gap-3 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg group"
+              className="flex items-center gap-3 px-3 py-2 bg-subtle border border-brand-border rounded-lg group"
             >
               {fileIcon(doc.original_name)}
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-800 truncate">{doc.original_name}</span>
-                  <span className="text-xs px-1.5 py-0.5 bg-white border border-gray-200 rounded text-gray-500 shrink-0">
+                  <span className="text-sm font-medium text-brand-text truncate">{doc.original_name}</span>
+                  <span className="text-xs px-1.5 py-0.5 bg-card border border-brand-border rounded text-brand-text-secondary shrink-0">
                     {formatBytes(doc.original_name)}
                   </span>
                   <span className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded shrink-0">
@@ -144,7 +144,7 @@ export default function SupplyDocuments({ supplyId }: Props) {
                   </span>
                 </div>
                 {doc.notes && (
-                  <div className="text-xs text-gray-400 mt-0.5 truncate">{doc.notes}</div>
+                  <div className="text-xs text-brand-text-secondary mt-0.5 truncate">{doc.notes}</div>
                 )}
               </div>
 

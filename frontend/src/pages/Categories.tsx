@@ -26,11 +26,11 @@ const CategoryCard = ({
           <FolderOpen className="h-5 w-5 text-white" />
         </div>
         <div className="flex-1">
-          <h3 className="font-semibold text-gray-900">{category.name}</h3>
+          <h3 className="font-semibold text-brand-text">{category.name}</h3>
           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${
             category.type === TransactionType.INCOME
-              ? 'bg-green-100 text-green-700'
-              : 'bg-red-100 text-red-700'
+              ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-400'
+              : 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-400'
           }`}>
             {category.type === TransactionType.INCOME ? (
               <>
@@ -47,17 +47,17 @@ const CategoryCard = ({
         </div>
       </div>
       {!category.is_active && (
-        <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+        <span className="px-2 py-1 bg-muted text-brand-text-secondary text-xs rounded-full">
           Неактивна
         </span>
       )}
     </div>
 
     {category.description && (
-      <p className="text-sm text-gray-600 mb-3">{category.description}</p>
+      <p className="text-sm text-brand-text-secondary mb-3">{category.description}</p>
     )}
 
-    <div className="flex justify-end space-x-2 pt-3 border-t border-gray-200">
+    <div className="flex justify-end space-x-2 pt-3 border-t border-brand-border">
       <button
         onClick={() => onEdit(category)}
         className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
@@ -145,8 +145,8 @@ const Categories = () => {
     return (
       <div className="p-8">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className="h-8 bg-muted rounded w-1/4"></div>
+          <div className="h-64 bg-muted rounded"></div>
         </div>
       </div>
     )
@@ -156,8 +156,8 @@ const Categories = () => {
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Категории</h1>
-          <p className="text-gray-600 mt-1">Управление категориями доходов и расходов</p>
+          <h1 className="text-3xl font-bold text-brand-text">Категории</h1>
+          <p className="text-brand-text-secondary mt-1">Управление категориями доходов и расходов</p>
         </div>
         <button onClick={handleAdd} className="btn btn-primary flex items-center space-x-2">
           <Plus className="h-5 w-5" />
@@ -173,7 +173,7 @@ const Categories = () => {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               filterType === 'all'
                 ? 'bg-primary-100 text-primary-700'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                : 'bg-muted text-brand-text-secondary hover:bg-subtle'
             }`}
           >
             Все категории
@@ -183,7 +183,7 @@ const Categories = () => {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               filterType === TransactionType.INCOME
                 ? 'bg-green-100 text-green-700'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                : 'bg-muted text-brand-text-secondary hover:bg-subtle'
             }`}
           >
             Доходы
@@ -193,7 +193,7 @@ const Categories = () => {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               filterType === TransactionType.EXPENSE
                 ? 'bg-red-100 text-red-700'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                : 'bg-muted text-brand-text-secondary hover:bg-subtle'
             }`}
           >
             Расходы
@@ -203,8 +203,8 @@ const Categories = () => {
 
       {filteredCategories.length === 0 ? (
         <div className="card text-center py-12">
-          <FolderOpen className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 text-lg mb-4">Категории не найдены</p>
+          <FolderOpen className="h-16 w-16 text-brand-text-secondary mx-auto mb-4" />
+          <p className="text-brand-text-secondary text-lg mb-4">Категории не найдены</p>
           <button onClick={handleAdd} className="btn btn-primary">
             Добавить первую категорию
           </button>
@@ -213,8 +213,8 @@ const Categories = () => {
         <div className="space-y-8">
           {(filterType === 'all' || filterType === TransactionType.INCOME) && incomeCategories.length > 0 && (
             <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <TrendingUp className="h-6 w-6 text-green-600 mr-2" />
+              <h2 className="text-xl font-bold text-brand-text mb-4 flex items-center">
+                <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400 mr-2" />
                 Категории доходов
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -227,8 +227,8 @@ const Categories = () => {
 
           {(filterType === 'all' || filterType === TransactionType.EXPENSE) && expenseCategories.length > 0 && (
             <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <TrendingDown className="h-6 w-6 text-red-600 mr-2" />
+              <h2 className="text-xl font-bold text-brand-text mb-4 flex items-center">
+                <TrendingDown className="h-6 w-6 text-red-600 dark:text-red-400 mr-2" />
                 Категории расходов
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

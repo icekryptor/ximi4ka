@@ -44,22 +44,22 @@ const icons: Record<ToastType, JSX.Element> = {
 
 const typeStyles: Record<ToastType, { container: string; icon: string; bar: string }> = {
   success: {
-    container: 'border-green-200 bg-white',
+    container: 'border-green-200 dark:border-green-800 bg-card',
     icon: 'text-green-500',
     bar: 'bg-green-500',
   },
   error: {
-    container: 'border-red-200 bg-white',
+    container: 'border-red-200 dark:border-red-800 bg-card',
     icon: 'text-red-500',
     bar: 'bg-red-500',
   },
   warning: {
-    container: 'border-amber-200 bg-white',
+    container: 'border-amber-200 dark:border-amber-800 bg-card',
     icon: 'text-amber-500',
     bar: 'bg-amber-500',
   },
   info: {
-    container: 'border-primary-200 bg-white',
+    container: 'border-primary-200 dark:border-primary-800 bg-card',
     icon: 'text-primary-500',
     bar: 'bg-primary-500',
   },
@@ -75,30 +75,42 @@ const DEFAULT_DURATION: Record<ToastType, number> = {
 export const Toast = ({ toast, onDismiss }: ToastProps) => {
   const [visible, setVisible] = useState(false)
   const [leaving, setLeaving] = useState(false)
+  const dismissedRef = { current: false }
   const duration = toast.duration ?? DEFAULT_DURATION[toast.type]
   const styles = typeStyles[toast.type]
 
   useEffect(() => {
+    let manualDismissTimer: ReturnType<typeof setTimeout> | null = null
     // Trigger enter animation on mount
     const enterTimer = setTimeout(() => setVisible(true), 10)
     // Trigger leave animation before actual dismiss
     const leaveTimer = setTimeout(() => {
       setLeaving(true)
-    }, duration - 400)
+    }, Math.max(0, duration - 400))
     const dismissTimer = setTimeout(() => {
-      onDismiss(toast.id)
+      if (!dismissedRef.current) {
+        dismissedRef.current = true
+        onDismiss(toast.id)
+      }
     }, duration)
 
     return () => {
       clearTimeout(enterTimer)
       clearTimeout(leaveTimer)
       clearTimeout(dismissTimer)
+      if (manualDismissTimer) clearTimeout(manualDismissTimer)
     }
   }, [toast.id, duration, onDismiss])
 
   const handleDismiss = () => {
+    if (dismissedRef.current) return
     setLeaving(true)
-    setTimeout(() => onDismiss(toast.id), 350)
+    setTimeout(() => {
+      if (!dismissedRef.current) {
+        dismissedRef.current = true
+        onDismiss(toast.id)
+      }
+    }, 350)
   }
 
   return (

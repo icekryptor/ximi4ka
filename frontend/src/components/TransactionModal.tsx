@@ -55,14 +55,14 @@ const TransactionModal = ({ transaction, categories, counterparties, onClose }: 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">
+      <div className="bg-card rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-brand-border">
+          <h2 className="text-2xl font-bold text-brand-text">
             {transaction ? 'Редактировать транзакцию' : 'Новая транзакция'}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-muted rounded-lg transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -81,7 +81,7 @@ const TransactionModal = ({ transaction, categories, counterparties, onClose }: 
                   onChange={(e) => setFormData({ ...formData, type: e.target.value as TransactionType, category_id: '' })}
                   className="text-primary-600 focus:ring-primary-500"
                 />
-                <span className="text-sm font-medium text-gray-700">Доход</span>
+                <span className="text-sm font-medium text-brand-text-secondary">Доход</span>
               </label>
               <label className="flex items-center space-x-2 cursor-pointer">
                 <input
@@ -92,7 +92,7 @@ const TransactionModal = ({ transaction, categories, counterparties, onClose }: 
                   onChange={(e) => setFormData({ ...formData, type: e.target.value as TransactionType, category_id: '' })}
                   className="text-primary-600 focus:ring-primary-500"
                 />
-                <span className="text-sm font-medium text-gray-700">Расход</span>
+                <span className="text-sm font-medium text-brand-text-secondary">Расход</span>
               </label>
             </div>
           </div>
@@ -191,7 +191,7 @@ const TransactionModal = ({ transaction, categories, counterparties, onClose }: 
             />
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <div className="flex justify-end space-x-3 pt-4 border-t border-brand-border">
             <button
               type="button"
               onClick={onClose}

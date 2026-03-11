@@ -1,3 +1,42 @@
+/* === Theme CSS Variables === */
+:root {
+  --color-bg-page: #f8f7fa;
+  --color-bg-card: #ffffff;
+  --color-bg-surface: #f8f7fa;
+  --color-bg-hover: #eeebf3;
+  --color-bg-subtle: #f9fafb;
+  --color-bg-muted: #f3f4f6;
+  --color-border: #e8e5ef;
+  --color-border-subtle: #f3f4f6;
+  --color-text-primary: #1c1528;
+  --color-text-secondary: #524667;
+  --color-skeleton-from: #e5e7eb;
+  --color-skeleton-via: #f3f4f6;
+  --color-skeleton-to: #e5e7eb;
+  --color-glass-bg: rgba(255, 255, 255, 0.7);
+  --color-glass-border: rgba(255, 255, 255, 0.2);
+  --color-modal-shadow: rgba(131, 110, 254, 0.15);
+}
+
+.dark {
+  --color-bg-page: #0f0d13;
+  --color-bg-card: #1a1721;
+  --color-bg-surface: #1e1b26;
+  --color-bg-hover: #2d2a36;
+  --color-bg-subtle: #1e1b26;
+  --color-bg-muted: #252230;
+  --color-border: #2d2a36;
+  --color-border-subtle: #2d2a36;
+  --color-text-primary: #e8e5ef;
+  --color-text-secondary: #9f95b0;
+  --color-skeleton-from: #2d2a36;
+  --color-skeleton-via: #1e1b26;
+  --color-skeleton-to: #2d2a36;
+  --color-glass-bg: rgba(26, 23, 33, 0.7);
+  --color-glass-border: rgba(45, 42, 54, 0.5);
+  --color-modal-shadow: rgba(0, 0, 0, 0.5);
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -21,7 +60,7 @@
 
 @layer base {
   body {
-    @apply bg-white text-brand-text antialiased;
+    @apply bg-page text-brand-text antialiased;
   }
 }
 
@@ -41,23 +80,23 @@
   }
 
   .btn-secondary {
-    @apply bg-white text-brand-text border border-brand-border
+    @apply bg-card text-brand-text border border-brand-border
            hover:bg-brand-surface hover:border-primary-200;
   }
 
   .btn-danger {
-    @apply bg-white text-red-600 border border-red-300
-           hover:bg-red-50;
+    @apply bg-card text-red-600 border border-red-300
+           hover:bg-red-50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-950;
   }
 
   /* === CARDS === */
   .card {
-    @apply bg-white border border-brand-border rounded-2xl p-6
+    @apply bg-card border border-brand-border rounded-2xl p-6
            transition-all duration-200;
   }
 
   .card-hover {
-    @apply bg-white border border-brand-border rounded-2xl p-6
+    @apply bg-card border border-brand-border rounded-2xl p-6
            transition-all duration-200
            hover:-translate-y-0.5;
   }
@@ -65,6 +104,7 @@
   /* === INPUTS === */
   .input {
     @apply w-full px-3 py-2 border border-brand-border rounded-xl
+           bg-card text-brand-text
            transition-all duration-200
            focus:outline-none focus:ring-2 focus:ring-primary-400/50
            focus:border-primary-400;
@@ -76,8 +116,9 @@
 
   /* === GLASS === */
   .glass {
-    @apply backdrop-blur-[30px] bg-white/70
-           border border-white/20;
+    backdrop-filter: blur(30px);
+    background: var(--color-glass-bg);
+    border: 1px solid var(--color-glass-border);
   }
 
   /* === TABLE === */
@@ -94,18 +135,20 @@
   }
 
   .table-minimal td {
-    @apply py-3 px-4 text-sm text-brand-text-secondary border-b border-gray-100;
+    @apply py-3 px-4 text-sm text-brand-text-secondary;
+    border-bottom: 1px solid var(--color-border-subtle);
   }
 
   /* === SKELETON === */
   .skeleton {
-    @apply bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200
-           rounded-lg animate-pulse;
+    background: linear-gradient(90deg, var(--color-skeleton-from), var(--color-skeleton-via), var(--color-skeleton-to));
+    background-size: 200% 100%;
+    @apply rounded-lg animate-pulse;
   }
 
   /* === PAGE ENTER === */
   .page-enter {
-    animation: fadeIn 0.18s ease-out both;
+    animation: fadeSlideUp 0.18s ease-out both;
   }
 
   /* === MODAL === */
@@ -115,8 +158,9 @@
   }
 
   .modal-panel {
-    @apply bg-white rounded-2xl w-full;
-    box-shadow: 0 20px 60px rgba(131,110,254,0.15), 0 4px 16px rgba(0,0,0,0.08);
+    @apply rounded-2xl w-full;
+    background: var(--color-bg-card);
+    box-shadow: 0 20px 60px var(--color-modal-shadow), 0 4px 16px rgba(0,0,0,0.08);
   }
 
   /* === TOAST NOTIFICATIONS === */
@@ -141,7 +185,7 @@
   }
 }
 
-@keyframes fadeIn {
+@keyframes fadeSlideUp {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }

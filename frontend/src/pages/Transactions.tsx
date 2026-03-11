@@ -122,8 +122,8 @@ const Transactions = () => {
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Транзакции</h1>
-          <p className="text-gray-600 mt-1">Управление доходами и расходами</p>
+          <h1 className="text-3xl font-bold text-brand-text">Транзакции</h1>
+          <p className="text-brand-text-secondary mt-1">Управление доходами и расходами</p>
         </div>
         <div className="flex items-center space-x-2">
           <button
@@ -153,7 +153,7 @@ const Transactions = () => {
       <div className="card mb-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-brand-text-secondary" />
             <input
               type="text"
               placeholder="Поиск по описанию, контрагенту, категории..."
@@ -163,7 +163,7 @@ const Transactions = () => {
             />
           </div>
           <div className="flex items-center space-x-2">
-            <Filter className="h-5 w-5 text-gray-400" />
+            <Filter className="h-5 w-5 text-brand-text-secondary" />
             <select
               className="input"
               value={filterType}
@@ -182,11 +182,11 @@ const Transactions = () => {
         {loading ? (
           <div className="py-12 text-center">
             <div className="animate-spin h-8 w-8 border-4 border-primary-500 border-t-transparent rounded-full mx-auto" />
-            <p className="text-gray-500 mt-3">Загрузка...</p>
+            <p className="text-brand-text-secondary mt-3">Загрузка...</p>
           </div>
         ) : filteredTransactions.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">Транзакции не найдены</p>
+            <p className="text-brand-text-secondary text-lg">Транзакции не найдены</p>
             <button onClick={handleAdd} className="btn btn-primary mt-4">
               Добавить первую транзакцию
             </button>
@@ -196,39 +196,39 @@ const Transactions = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Тип</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Дата</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Описание</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Категория</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Контрагент</th>
-                    <th className="text-right py-3 px-4 font-medium text-gray-700">Сумма</th>
-                    <th className="text-right py-3 px-4 font-medium text-gray-700">Действия</th>
+                  <tr className="border-b border-brand-border">
+                    <th className="text-left py-3 px-4 font-medium text-brand-text-secondary">Тип</th>
+                    <th className="text-left py-3 px-4 font-medium text-brand-text-secondary">Дата</th>
+                    <th className="text-left py-3 px-4 font-medium text-brand-text-secondary">Описание</th>
+                    <th className="text-left py-3 px-4 font-medium text-brand-text-secondary">Категория</th>
+                    <th className="text-left py-3 px-4 font-medium text-brand-text-secondary">Контрагент</th>
+                    <th className="text-right py-3 px-4 font-medium text-brand-text-secondary">Сумма</th>
+                    <th className="text-right py-3 px-4 font-medium text-brand-text-secondary">Действия</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredTransactions.map((transaction) => (
-                    <tr key={transaction.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <tr key={transaction.id} className="border-b border-brand-border hover:bg-subtle">
                       <td className="py-3 px-4">
                         {transaction.type === TransactionType.INCOME ? (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-400">
                             <TrendingUp className="h-3 w-3 mr-1" />
                             Доход
                           </span>
                         ) : (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-400">
                             <TrendingDown className="h-3 w-3 mr-1" />
                             Расход
                           </span>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">
+                      <td className="py-3 px-4 text-sm text-brand-text-secondary">
                         {format(new Date(transaction.date), 'd MMM yyyy', { locale: ru })}
                       </td>
                       <td className="py-3 px-4">
-                        <p className="font-medium text-gray-900">{transaction.description}</p>
+                        <p className="font-medium text-brand-text">{transaction.description}</p>
                         {transaction.notes && (
-                          <p className="text-sm text-gray-500">{transaction.notes}</p>
+                          <p className="text-sm text-brand-text-secondary">{transaction.notes}</p>
                         )}
                       </td>
                       <td className="py-3 px-4">
@@ -243,18 +243,18 @@ const Transactions = () => {
                             {transaction.category.name}
                           </span>
                         ) : (
-                          <span className="text-gray-400 text-sm">—</span>
+                          <span className="text-brand-text-secondary text-sm">—</span>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">
+                      <td className="py-3 px-4 text-sm text-brand-text-secondary">
                         {transaction.counterparty?.name || '—'}
                       </td>
                       <td className="py-3 px-4 text-right">
                         <span
                           className={`font-semibold ${
                             transaction.type === TransactionType.INCOME
-                              ? 'text-green-600'
-                              : 'text-red-600'
+                              ? 'text-green-600 dark:text-green-400'
+                              : 'text-red-600 dark:text-red-400'
                           }`}
                         >
                           {transaction.type === TransactionType.INCOME ? '+' : '-'}
@@ -285,8 +285,8 @@ const Transactions = () => {
 
             {/* Pagination */}
             {pagination.totalPages > 1 && (
-              <div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-200">
-                <p className="text-sm text-gray-600">
+              <div className="flex items-center justify-between pt-4 mt-4 border-t border-brand-border">
+                <p className="text-sm text-brand-text-secondary">
                   Показано {(pagination.page - 1) * pagination.limit + 1}–
                   {Math.min(pagination.page * pagination.limit, pagination.total)} из{' '}
                   {pagination.total}
@@ -295,7 +295,7 @@ const Transactions = () => {
                   <button
                     onClick={() => setPage(p => Math.max(1, p - 1))}
                     disabled={page <= 1}
-                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    className="p-2 rounded-lg border border-brand-border hover:bg-subtle disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </button>
@@ -318,7 +318,7 @@ const Transactions = () => {
                         className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
                           page === pageNum
                             ? 'bg-primary-500 text-white'
-                            : 'border border-gray-200 hover:bg-gray-50 text-gray-700'
+                            : 'border border-brand-border hover:bg-subtle text-brand-text-secondary'
                         }`}
                       >
                         {pageNum}
@@ -328,7 +328,7 @@ const Transactions = () => {
                   <button
                     onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))}
                     disabled={page >= pagination.totalPages}
-                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    className="p-2 rounded-lg border border-brand-border hover:bg-subtle disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </button>

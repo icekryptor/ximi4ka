@@ -30,11 +30,11 @@ const ImportModal = ({ onClose }: ImportModalProps) => {
       const result = await transactionsApi.importXlsx(file)
       setPreview(result)
 
-      // Auto-select non-duplicate rows
+      // Auto-select non-duplicate rows (use original indices, not filtered)
       const nonDupIndexes = new Set(
         result.parsed
-          .filter((r) => !r.is_duplicate)
-          .map((_, idx) => idx)
+          .map((r, idx) => (!r.is_duplicate ? idx : -1))
+          .filter((idx) => idx !== -1)
       )
       setSelectedRows(nonDupIndexes)
       setStep('preview')
@@ -94,7 +94,7 @@ const ImportModal = ({ onClose }: ImportModalProps) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-card rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-brand-border">
           <h2 className="text-2xl font-bold text-brand-text">
             {step === 'upload' && 'Импорт транзакций'}
@@ -200,7 +200,7 @@ const ImportModal = ({ onClose }: ImportModalProps) => {
                       {preview.parsed.map((row, idx) => (
                         <tr
                           key={idx}
-                          className={`border-t border-gray-100 ${
+                          className={`border-t border-brand-border ${
                             row.is_duplicate ? 'bg-amber-50/50' : ''
                           }`}
                         >

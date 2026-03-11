@@ -174,9 +174,9 @@ const Marketplace = () => {
                   <p className="text-sm text-orange-600">Хранение</p>
                   <p className="text-lg font-bold text-orange-700">{formatCurrency(t.storage)}</p>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-3 text-center">
-                  <p className="text-sm text-gray-600">Прочее</p>
-                  <p className="text-lg font-bold text-gray-700">{formatCurrency(t.other)}</p>
+                <div className="bg-subtle rounded-lg p-3 text-center">
+                  <p className="text-sm text-brand-text-secondary">Прочее</p>
+                  <p className="text-lg font-bold text-brand-text">{formatCurrency(t.other)}</p>
                 </div>
               </>
             ) : (
@@ -212,7 +212,7 @@ const Marketplace = () => {
                 </thead>
                 <tbody>
                   {analytics.bySku.map((row) => (
-                    <tr key={row.sku} className="border-t border-gray-100">
+                    <tr key={row.sku} className="border-t border-brand-border">
                       <td className="py-2 px-3 font-medium">{row.sku}</td>
                       <td className="py-2 px-3 text-brand-text-secondary">{row.product_name}</td>
                       <td className="py-2 px-3 text-right">{row.orders}</td>
@@ -246,7 +246,7 @@ const Marketplace = () => {
                 </thead>
                 <tbody>
                   {sales.map((sale) => (
-                    <tr key={sale.id} className="border-t border-gray-100 hover:bg-gray-50">
+                    <tr key={sale.id} className="border-t border-brand-border hover:bg-subtle">
                       <td className="py-2 px-3 whitespace-nowrap">{sale.date}</td>
                       <td className="py-2 px-3 font-medium">{sale.sku}</td>
                       <td className="py-2 px-3 text-right">{sale.orders_count}</td>
@@ -310,7 +310,7 @@ const Marketplace = () => {
             </thead>
             <tbody>
               {skuMappings.map((sku) => (
-                <tr key={sku.id} className="border-t border-gray-100">
+                <tr key={sku.id} className="border-t border-brand-border">
                   <td className="py-2 px-3 font-medium">{sku.marketplace_sku}</td>
                   <td className="py-2 px-3">{sku.product_name}</td>
                   <td className="py-2 px-3 text-brand-text-secondary">{sku.kit?.name || '—'}</td>
@@ -342,8 +342,8 @@ const Marketplace = () => {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Маркетплейсы</h1>
-        <p className="text-gray-600 mt-1">Аналитика продаж на площадках</p>
+        <h1 className="text-3xl font-bold text-brand-text">Маркетплейсы</h1>
+        <p className="text-brand-text-secondary mt-1">Аналитика продаж на площадках</p>
       </div>
 
       {/* Tabs */}
@@ -360,7 +360,7 @@ const Marketplace = () => {
               className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
                 tab === t.key
                   ? 'bg-primary-100 text-primary-700'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-muted text-brand-text-secondary hover:bg-subtle'
               }`}
             >
               <t.icon className="h-4 w-4" />
@@ -465,7 +465,7 @@ const SaleModal = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-card rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-brand-border">
           <h2 className="text-xl font-bold text-brand-text">
             {sale ? 'Редактировать' : 'Новая запись'} — {isWB ? 'Wildberries' : 'Сайт'}
@@ -568,7 +568,7 @@ const SaleModal = ({
           </div>
 
           {/* Payout preview */}
-          <div className={`rounded-lg p-3 text-center ${payout >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
+          <div className={`rounded-lg p-3 text-center ${payout >= 0 ? 'bg-green-50 dark:bg-green-950' : 'bg-red-50 dark:bg-red-950'}`}>
             <p className="text-sm text-brand-text-secondary">К выплате</p>
             <p className={`text-xl font-bold ${payout >= 0 ? 'text-green-700' : 'text-red-700'}`}>
               {formatCurrency(payout)}
@@ -630,7 +630,7 @@ const SkuModal = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+      <div className="bg-card rounded-lg shadow-xl max-w-md w-full">
         <div className="flex items-center justify-between p-6 border-b border-brand-border">
           <h2 className="text-xl font-bold text-brand-text">
             {sku ? 'Редактировать артикул' : 'Новый артикул'}

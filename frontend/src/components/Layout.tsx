@@ -1,6 +1,7 @@
 import { ReactNode, useState, useEffect, useCallback } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useTheme } from '../contexts/ThemeContext'
 
 interface LayoutProps {
   children: ReactNode
@@ -194,6 +195,26 @@ const IconLogo = () => (
   </svg>
 )
 
+const IconSun = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="5" />
+    <line x1="12" y1="1" x2="12" y2="3" />
+    <line x1="12" y1="21" x2="12" y2="23" />
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+    <line x1="1" y1="12" x2="3" y2="12" />
+    <line x1="21" y1="12" x2="23" y2="12" />
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+  </svg>
+)
+
+const IconMoon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+)
+
 // ─── Nav structure ─────────────────────────────────────────────────────────────
 
 interface NavLink {
@@ -318,12 +339,11 @@ const NavGroupSection = ({ group, isOpen, onToggle, currentPath, onNavClick }: N
         aria-expanded={isOpen}
       >
         <span
-          className="text-[10px] font-semibold uppercase tracking-widest"
-          style={{ color: '#524667', opacity: 0.6 }}
+          className="text-[10px] font-semibold uppercase tracking-widest text-brand-text-secondary opacity-60"
         >
           {group.label}
         </span>
-        <span style={{ color: '#524667', opacity: 0.5 }} className="group-hover:opacity-80 transition-opacity">
+        <span className="text-brand-text-secondary opacity-50 group-hover:opacity-80 transition-opacity">
           <IconChevron open={isOpen} />
         </span>
       </button>
@@ -351,19 +371,19 @@ const NavGroupSection = ({ group, isOpen, onToggle, currentPath, onNavClick }: N
                   background: active
                     ? 'linear-gradient(135deg, rgba(141,103,255,1) 0%, rgba(200,86,255,1) 100%)'
                     : 'transparent',
-                  color: active ? '#ffffff' : '#524667',
+                  color: active ? '#ffffff' : 'var(--color-text-secondary)',
                   boxShadow: active ? '0 4px 12px rgba(131,110,254,0.3)' : 'none',
                 }}
                 onMouseEnter={(e) => {
                   if (!active) {
-                    e.currentTarget.style.background = '#eeebf3'
-                    e.currentTarget.style.color = '#1c1528'
+                    e.currentTarget.style.background = 'var(--color-bg-hover)'
+                    e.currentTarget.style.color = 'var(--color-text-primary)'
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!active) {
                     e.currentTarget.style.background = 'transparent'
-                    e.currentTarget.style.color = '#524667'
+                    e.currentTarget.style.color = 'var(--color-text-secondary)'
                   }
                 }}
               >
@@ -392,10 +412,11 @@ const IconLogout = () => (
 
 const UserFooter = () => {
   const { user, logout } = useAuth()
+  const { resolved, toggle } = useTheme()
   const initials = user?.name ? user.name.slice(0, 2).toUpperCase() : '??'
 
   return (
-    <div className="px-4 py-4" style={{ borderTop: '1px solid #e8e5ef' }}>
+    <div className="px-4 py-4" style={{ borderTop: '1px solid var(--color-border)' }}>
       <div className="flex items-center gap-3">
         <div
           className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
@@ -406,19 +427,25 @@ const UserFooter = () => {
           {initials}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium leading-tight truncate" style={{ color: '#1c1528' }}>
+          <p className="text-sm font-medium leading-tight truncate text-brand-text">
             {user?.name || 'Пользователь'}
           </p>
-          <p className="text-xs leading-tight truncate" style={{ color: '#524667' }}>
+          <p className="text-xs leading-tight truncate text-brand-text-secondary">
             {user?.email || ''}
           </p>
         </div>
+        {/* Theme toggle */}
+        <button
+          onClick={toggle}
+          className="flex-shrink-0 p-1.5 rounded-lg transition-colors text-brand-text-secondary hover:text-brand-text hover:bg-surface-hover"
+          title={resolved === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
+        >
+          {resolved === 'dark' ? <IconSun /> : <IconMoon />}
+        </button>
+        {/* Logout */}
         <button
           onClick={logout}
-          className="flex-shrink-0 p-1.5 rounded-lg transition-colors"
-          style={{ color: '#524667' }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = '#dc2626'; e.currentTarget.style.background = '#fef2f2' }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = '#524667'; e.currentTarget.style.background = 'transparent' }}
+          className="flex-shrink-0 p-1.5 rounded-lg transition-colors text-brand-text-secondary hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
           title="Выйти"
         >
           <IconLogout />
@@ -451,7 +478,7 @@ const SidebarContent = ({ currentPath, onNavClick }: SidebarContentProps) => {
       {/* Logo */}
       <div
         className="flex items-center gap-3 px-5 py-5"
-        style={{ borderBottom: '1px solid #e8e5ef' }}
+        style={{ borderBottom: '1px solid var(--color-border)' }}
       >
         <IconLogo />
         <span
@@ -473,7 +500,7 @@ const SidebarContent = ({ currentPath, onNavClick }: SidebarContentProps) => {
         style={{
           overflowY: 'auto',
           scrollbarWidth: 'thin',
-          scrollbarColor: '#e8e5ef transparent',
+          scrollbarColor: 'var(--color-border) transparent',
         }}
       >
         {NAV_GROUPS.map((group) => (
@@ -520,14 +547,14 @@ const Layout = ({ children }: LayoutProps) => {
   const closeSidebar = useCallback(() => setMobileOpen(false), [])
 
   return (
-    <div className="min-h-screen flex" style={{ fontFamily: 'Arial, sans-serif' }}>
+    <div className="min-h-screen flex font-sans">
       {/* ── Desktop sidebar (always visible ≥ 1024px) ── */}
       <aside
         className="hidden lg:flex flex-col flex-shrink-0"
         style={{
           width: '260px',
-          background: '#ffffff',
-          borderRight: '1px solid #e8e5ef',
+          background: 'var(--color-bg-card)',
+          borderRight: '1px solid var(--color-border)',
           boxShadow: '2px 0 12px rgba(131,110,254,0.06)',
           position: 'sticky',
           top: 0,
@@ -540,8 +567,8 @@ const Layout = ({ children }: LayoutProps) => {
 
       {/* ── Mobile: Hamburger button ── */}
       <button
-        className="lg:hidden fixed top-4 left-4 z-50 flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-md"
-        style={{ border: '1px solid #e8e5ef', color: '#524667' }}
+        className="lg:hidden fixed top-4 left-4 z-50 flex items-center justify-center w-10 h-10 rounded-xl bg-card shadow-md"
+        style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}
         onClick={() => setMobileOpen(true)}
         aria-label="Открыть меню"
       >
@@ -563,7 +590,7 @@ const Layout = ({ children }: LayoutProps) => {
         className="lg:hidden fixed left-0 top-0 bottom-0 z-50 flex flex-col"
         style={{
           width: '260px',
-          background: '#ffffff',
+          background: 'var(--color-bg-card)',
           boxShadow: '4px 0 24px rgba(131,110,254,0.15)',
           transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)',
           transition: 'transform 0.28s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -573,8 +600,7 @@ const Layout = ({ children }: LayoutProps) => {
       >
         {/* Close button */}
         <button
-          className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-lg"
-          style={{ color: '#524667', background: '#eeebf3' }}
+          className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-lg text-brand-text-secondary bg-surface-hover"
           onClick={closeSidebar}
           aria-label="Закрыть меню"
         >
@@ -586,8 +612,8 @@ const Layout = ({ children }: LayoutProps) => {
 
       {/* ── Main content ── */}
       <main
-        className="flex-1 overflow-auto"
-        style={{ background: '#f8f7fa', minWidth: 0 }}
+        className="flex-1 overflow-auto bg-page"
+        style={{ minWidth: 0 }}
       >
         {children}
       </main>

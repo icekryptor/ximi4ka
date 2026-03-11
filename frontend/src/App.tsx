@@ -6,6 +6,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider } from './contexts/AuthContext'
 import { ToastProvider } from './contexts/ToastContext'
 import { ConfirmDialogProvider } from './contexts/ConfirmDialogContext'
+import { ThemeProvider } from './contexts/ThemeContext'
 
 // Lazy-load all pages for code splitting
 const Dashboard = lazy(() => import('./pages/Dashboard'))
@@ -62,6 +63,7 @@ const NotFound = () => (
 function App() {
   return (
     <ErrorBoundary>
+      <ThemeProvider>
       <AuthProvider>
         <ToastProvider>
           <ConfirmDialogProvider>
@@ -118,6 +120,7 @@ function App() {
           </ConfirmDialogProvider>
         </ToastProvider>
       </AuthProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   )
 }

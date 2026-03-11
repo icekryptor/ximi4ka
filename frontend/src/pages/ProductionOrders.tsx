@@ -89,8 +89,8 @@ const ProductionOrders = () => {
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Заказы на производство</h1>
-          <p className="text-gray-600 mt-1">FBO-логистика и статусы</p>
+          <h1 className="text-3xl font-bold text-brand-text">Заказы на производство</h1>
+          <p className="text-brand-text-secondary mt-1">FBO-логистика и статусы</p>
         </div>
         <button onClick={() => { setForm({ quantity: 1 }); setIsFormOpen(true) }} className="btn btn-primary flex items-center space-x-2">
           <Plus className="h-5 w-5" /><span>Новый заказ</span>
@@ -102,7 +102,7 @@ const ProductionOrders = () => {
         <div className="flex flex-wrap gap-3 mb-6">
           <button
             onClick={() => setStatusFilter('')}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${!statusFilter ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${!statusFilter ? 'bg-brand-text text-white' : 'bg-muted text-brand-text-secondary hover:bg-subtle'}`}
           >
             Все ({orders.length})
           </button>
@@ -125,7 +125,7 @@ const ProductionOrders = () => {
       {/* Search */}
       <div className="card mb-6">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-brand-text-secondary" />
           <input type="text" placeholder="Поиск по номеру, набору, каналу…" className="input pl-10" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
       </div>
@@ -133,8 +133,8 @@ const ProductionOrders = () => {
       {/* Order list */}
       {filtered.length === 0 ? (
         <div className="card text-center py-12">
-          <ClipboardList className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 text-lg">Заказы не найдены</p>
+          <ClipboardList className="h-16 w-16 text-brand-text-secondary mx-auto mb-4" />
+          <p className="text-brand-text-secondary text-lg">Заказы не найдены</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -146,28 +146,28 @@ const ProductionOrders = () => {
                   {/* Order number & Kit */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <Hash className="h-4 w-4 text-gray-400" />
-                      <span className="font-mono text-sm font-semibold text-gray-900">{order.order_number}</span>
+                      <Hash className="h-4 w-4 text-brand-text-secondary" />
+                      <span className="font-mono text-sm font-semibold text-brand-text">{order.order_number}</span>
                       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${ORDER_STATUS_COLORS[order.status]}`}>
                         {ORDER_STATUS_LABELS[order.status]}
                       </span>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-4 text-sm text-brand-text-secondary">
                       <span className="flex items-center gap-1"><Package className="h-3.5 w-3.5" />{order.kit?.name || '—'}</span>
                       <span>× {order.quantity} шт.</span>
-                      {order.channel && <span className="text-gray-400">→ {order.channel.name}</span>}
+                      {order.channel && <span className="text-brand-text-secondary">→ {order.channel.name}</span>}
                     </div>
                   </div>
 
                   {/* Dates & Cost */}
                   <div className="text-right text-sm shrink-0">
                     {order.target_date && (
-                      <div className="flex items-center gap-1 text-gray-500 justify-end">
+                      <div className="flex items-center gap-1 text-brand-text-secondary justify-end">
                         <Calendar className="h-3.5 w-3.5" />
                         <span>{new Date(order.target_date).toLocaleDateString('ru-RU')}</span>
                       </div>
                     )}
-                    <div className="text-gray-700 font-medium">{rub(order.planned_cost)}</div>
+                    <div className="text-brand-text-secondary font-medium">{rub(order.planned_cost)}</div>
                   </div>
 
                   {/* QC indicators */}
@@ -199,33 +199,33 @@ const ProductionOrders = () => {
       {/* Create form modal */}
       {isFormOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setIsFormOpen(false)}>
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-modal animate-scale-in" onClick={e => e.stopPropagation()}>
+          <div className="bg-card rounded-xl p-6 w-full max-w-md shadow-modal animate-scale-in" onClick={e => e.stopPropagation()}>
             <h2 className="text-lg font-bold mb-4">Новый заказ на производство</h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Набор (SKU)</label>
+                <label className="block text-sm font-medium text-brand-text-secondary mb-1">Набор (SKU)</label>
                 <select className="input" value={form.kit_id || ''} onChange={e => setForm(f => ({ ...f, kit_id: e.target.value }))}>
                   <option value="">Выберите набор</option>
                   {kits.filter(k => k.is_active).map(k => <option key={k.id} value={k.id}>{k.name} {k.sku ? `(${k.sku})` : ''}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Количество</label>
+                <label className="block text-sm font-medium text-brand-text-secondary mb-1">Количество</label>
                 <input type="number" min="1" className="input" value={form.quantity ?? 1} onChange={e => setForm(f => ({ ...f, quantity: +e.target.value }))} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Целевой канал</label>
+                <label className="block text-sm font-medium text-brand-text-secondary mb-1">Целевой канал</label>
                 <select className="input" value={form.channel_id || ''} onChange={e => setForm(f => ({ ...f, channel_id: e.target.value || undefined }))}>
                   <option value="">—</option>
                   {channels.filter(c => c.is_active).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Целевая дата</label>
+                <label className="block text-sm font-medium text-brand-text-secondary mb-1">Целевая дата</label>
                 <input type="date" className="input" value={form.target_date || ''} onChange={e => setForm(f => ({ ...f, target_date: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Заметки</label>
+                <label className="block text-sm font-medium text-brand-text-secondary mb-1">Заметки</label>
                 <textarea className="input" rows={2} value={form.notes || ''} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
               </div>
             </div>

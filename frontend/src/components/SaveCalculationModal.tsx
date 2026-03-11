@@ -69,7 +69,7 @@ const SaveCalculationModal = ({
             <Dialog.Panel className="modal-panel max-w-md">
               <div className="flex items-center justify-between p-4 border-b border-brand-border">
                 <h3 className="text-lg font-semibold text-brand-text">Сохранить расчёт</h3>
-                <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <button onClick={onClose} className="text-brand-text-secondary hover:text-brand-text">
                   <X className="h-5 w-5" />
                 </button>
               </div>

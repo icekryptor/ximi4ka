@@ -33,6 +33,10 @@ const EmployeeModal = ({ employee, onClose }: Props) => {
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    // Revoke previous blob URL to prevent memory leak
+    if (preview && preview.startsWith('blob:')) {
+      URL.revokeObjectURL(preview)
+    }
     setPhotoFile(file)
     setPreview(URL.createObjectURL(file))
   }
@@ -95,11 +99,11 @@ const EmployeeModal = ({ employee, onClose }: Props) => {
             leaveTo="opacity-0 scale-95"
           >
             <Dialog.Panel className="modal-panel max-w-2xl max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                <h2 className="text-2xl font-bold text-gray-900">
+              <div className="flex items-center justify-between p-6 border-b border-brand-border">
+                <h2 className="text-2xl font-bold text-brand-text">
                   {employee ? 'Редактировать сотрудника' : 'Новый сотрудник'}
                 </h2>
-                <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                <button onClick={onClose} className="p-2 hover:bg-muted rounded-lg transition-colors">
                   <X className="h-5 w-5" />
                 </button>
               </div>
@@ -108,22 +112,22 @@ const EmployeeModal = ({ employee, onClose }: Props) => {
                 {/* Фото */}
                 <div className="flex items-center gap-5">
                   <div
-                    className="relative h-20 w-20 rounded-full overflow-hidden bg-gray-100 shrink-0 cursor-pointer group"
+                    className="relative h-20 w-20 rounded-full overflow-hidden bg-muted shrink-0 cursor-pointer group"
                     onClick={() => fileRef.current?.click()}
                   >
                     {preview ? (
                       <img src={preview} alt="Фото" className="h-full w-full object-cover" />
                     ) : (
                       <div className="h-full w-full flex items-center justify-center">
-                        <UserCircle className="h-10 w-10 text-gray-300" />
+                        <UserCircle className="h-10 w-10 text-brand-text-secondary" />
                       </div>
                     )}
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 flex items-center justify-center transition-all">
                       <Upload className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                   </div>
-                  <div className="text-sm text-gray-500">
-                    <p className="font-medium text-gray-700">Фото сотрудника</p>
+                  <div className="text-sm text-brand-text-secondary">
+                    <p className="font-medium text-brand-text-secondary">Фото сотрудника</p>
                     <p className="text-xs mt-0.5">Нажмите на аватар для загрузки. JPG, PNG до 5 МБ.</p>
                   </div>
                   <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
@@ -202,7 +206,7 @@ const EmployeeModal = ({ employee, onClose }: Props) => {
                     value={form.passport_data}
                     onChange={e => set('passport_data', e.target.value)}
                   />
-                  <p className="text-xs text-gray-400 mt-1">Конфиденциальная информация. На карточке скрыта по умолчанию.</p>
+                  <p className="text-xs text-brand-text-secondary mt-1">Конфиденциальная информация. На карточке скрыта по умолчанию.</p>
                 </div>
 
                 {/* Заметки */}
@@ -225,11 +229,11 @@ const EmployeeModal = ({ employee, onClose }: Props) => {
                     onChange={e => set('is_active', e.target.checked)}
                     className="rounded text-primary-600 focus:ring-primary-500"
                   />
-                  <span className="text-sm font-medium text-gray-700">Активен</span>
+                  <span className="text-sm font-medium text-brand-text-secondary">Активен</span>
                 </label>
 
                 {/* Actions */}
-                <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                <div className="flex justify-end space-x-3 pt-4 border-t border-brand-border">
                   <button type="button" onClick={onClose} className="btn btn-secondary" disabled={saving}>
                     Отмена
                   </button>

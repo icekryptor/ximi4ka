@@ -23,6 +23,8 @@ export const ConfirmDialogProvider = ({ children }: { children: React.ReactNode 
   const resolveRef = useRef<((value: boolean) => void) | null>(null)
 
   const confirm = useCallback((options: ConfirmOptions): Promise<boolean> => {
+    // Cancel any pending dialog before opening a new one
+    resolveRef.current?.(false)
     return new Promise<boolean>((resolve) => {
       resolveRef.current = resolve
       setDialog({ ...options, isOpen: true })

@@ -33,13 +33,13 @@ const MarginMatrix = () => {
   useEffect(() => { load() }, [])
 
   if (loading) return (
-    <div className="p-8"><div className="animate-pulse space-y-4"><div className="h-8 bg-gray-200 rounded w-1/3" /><div className="h-96 bg-gray-200 rounded" /></div></div>
+    <div className="p-8"><div className="animate-pulse space-y-4"><div className="h-8 bg-muted rounded w-1/3" /><div className="h-96 bg-muted rounded" /></div></div>
   )
 
   if (!data || data.rows.length === 0) return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">Матрица маржинальности</h1>
-      <p className="text-gray-500">Нет данных. Добавьте наборы и каналы продаж для расчёта.</p>
+      <h1 className="text-3xl font-bold text-brand-text mb-2">Матрица маржинальности</h1>
+      <p className="text-brand-text-secondary">Нет данных. Добавьте наборы и каналы продаж для расчёта.</p>
     </div>
   )
 
@@ -47,8 +47,8 @@ const MarginMatrix = () => {
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Матрица маржинальности</h1>
-          <p className="text-gray-600 mt-1">Все SKU × все каналы продаж</p>
+          <h1 className="text-3xl font-bold text-brand-text">Матрица маржинальности</h1>
+          <p className="text-brand-text-secondary mt-1">Все SKU × все каналы продаж</p>
         </div>
         <button onClick={load} className="btn flex items-center gap-2">
           <RefreshCw className="h-4 w-4" /><span>Обновить</span>
@@ -58,22 +58,22 @@ const MarginMatrix = () => {
       <div className="card overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-200">
-              <th className="text-left py-3 px-4 font-semibold text-gray-700 sticky left-0 bg-white z-10">SKU</th>
-              <th className="text-right py-3 px-4 font-semibold text-gray-700">Себестоимость</th>
+            <tr className="border-b border-brand-border">
+              <th className="text-left py-3 px-4 font-semibold text-brand-text-secondary sticky left-0 bg-card z-10">SKU</th>
+              <th className="text-right py-3 px-4 font-semibold text-brand-text-secondary">Себестоимость</th>
               {data.channels.map(ch => (
-                <th key={ch.id} className="text-center py-3 px-4 font-semibold text-gray-700 min-w-[160px]">{ch.name}</th>
+                <th key={ch.id} className="text-center py-3 px-4 font-semibold text-brand-text-secondary min-w-[160px]">{ch.name}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {data.rows.map(row => (
-              <tr key={row.kit_id} className="border-b border-gray-100 hover:bg-gray-50">
-                <td className="py-3 px-4 sticky left-0 bg-white z-10">
-                  <div className="font-medium text-gray-900">{row.kit_name}</div>
-                  {row.sku && <div className="text-xs text-gray-400">{row.sku}</div>}
+              <tr key={row.kit_id} className="border-b border-brand-border hover:bg-subtle">
+                <td className="py-3 px-4 sticky left-0 bg-card z-10">
+                  <div className="font-medium text-brand-text">{row.kit_name}</div>
+                  {row.sku && <div className="text-xs text-brand-text-secondary">{row.sku}</div>}
                 </td>
-                <td className="text-right py-3 px-4 text-gray-700">{rub(row.cost_price)}</td>
+                <td className="text-right py-3 px-4 text-brand-text-secondary">{rub(row.cost_price)}</td>
                 {row.channels.map(ch => (
                   <td key={ch.channel_id} className="py-3 px-4 text-center">
                     {ch.selling_price > 0 ? (
@@ -82,10 +82,10 @@ const MarginMatrix = () => {
                           <MarginIcon pct={ch.margin_pct} />
                           {ch.margin_pct.toFixed(1)}%
                         </div>
-                        <div className="text-xs text-gray-500">{rub(ch.unit_margin)}</div>
+                        <div className="text-xs text-brand-text-secondary">{rub(ch.unit_margin)}</div>
                       </div>
                     ) : (
-                      <span className="text-gray-300">—</span>
+                      <span className="text-brand-text-secondary">—</span>
                     )}
                   </td>
                 ))}
@@ -96,7 +96,7 @@ const MarginMatrix = () => {
       </div>
 
       {/* Legend */}
-      <div className="flex gap-4 mt-4 text-xs text-gray-500">
+      <div className="flex gap-4 mt-4 text-xs text-brand-text-secondary">
         <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-green-100 inline-block" /> ≥30% отлично</span>
         <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-yellow-100 inline-block" /> 15-30% нормально</span>
         <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-orange-100 inline-block" /> 0-15% внимание</span>

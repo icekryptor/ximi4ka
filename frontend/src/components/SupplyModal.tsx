@@ -135,7 +135,7 @@ const SupplyModal = ({ supply, onClose }: SupplyModalProps) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-card rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-brand-border">
           <h2 className="text-2xl font-bold text-brand-text">
             {supply ? 'Редактировать поставку' : 'Новая поставка'}
@@ -237,7 +237,7 @@ const SupplyModal = ({ supply, onClose }: SupplyModalProps) => {
                 </thead>
                 <tbody>
                   {items.map((item, idx) => (
-                    <tr key={idx} className="border-t border-gray-100">
+                    <tr key={idx} className="border-t border-brand-border">
                       <td className="py-2 px-3">
                         <select
                           className="input text-sm py-1.5"

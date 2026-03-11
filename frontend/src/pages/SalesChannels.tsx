@@ -58,8 +58,8 @@ const SalesChannels = () => {
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Каналы продаж</h1>
-          <p className="text-gray-600 mt-1">Маркетплейсы и параметры комиссий</p>
+          <h1 className="text-3xl font-bold text-brand-text">Каналы продаж</h1>
+          <p className="text-brand-text-secondary mt-1">Маркетплейсы и параметры комиссий</p>
         </div>
         <button onClick={openAdd} className="btn btn-primary flex items-center space-x-2">
           <Plus className="h-5 w-5" /><span>Добавить</span>
@@ -68,15 +68,15 @@ const SalesChannels = () => {
 
       <div className="card mb-6">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-brand-text-secondary" />
           <input type="text" placeholder="Поиск по названию…" className="input pl-10" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
       </div>
 
       {filtered.length === 0 ? (
         <div className="card text-center py-12">
-          <Store className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 text-lg mb-4">Каналы не найдены</p>
+          <Store className="h-16 w-16 text-brand-text-secondary mx-auto mb-4" />
+          <p className="text-brand-text-secondary text-lg mb-4">Каналы не найдены</p>
           <button onClick={openAdd} className="btn btn-primary">Добавить канал</button>
         </div>
       ) : (
@@ -93,26 +93,26 @@ const SalesChannels = () => {
                   <Store className="h-5 w-5 text-indigo-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">{ch.name}</h3>
-                  <span className="text-xs text-gray-500">{MARKETPLACE_LABELS[ch.marketplace_type]}</span>
+                  <h3 className="font-semibold text-brand-text">{ch.name}</h3>
+                  <span className="text-xs text-brand-text-secondary">{MARKETPLACE_LABELS[ch.marketplace_type]}</span>
                 </div>
-                {!ch.is_active && <span className="ml-auto px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full">Неактивен</span>}
+                {!ch.is_active && <span className="ml-auto px-2 py-0.5 bg-muted text-brand-text-secondary text-xs rounded-full">Неактивен</span>}
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="flex items-center gap-2 text-gray-600">
+                <div className="flex items-center gap-2 text-brand-text-secondary">
                   <Percent className="h-4 w-4 text-orange-400 shrink-0" />
                   <span>Комиссия: <b>{pct(ch.commission_pct)}</b></span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-600">
+                <div className="flex items-center gap-2 text-brand-text-secondary">
                   <TruckIcon className="h-4 w-4 text-blue-400 shrink-0" />
                   <span>Логистика: <b>{rub(ch.logistics_cost)}</b></span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-600">
+                <div className="flex items-center gap-2 text-brand-text-secondary">
                   <Warehouse className="h-4 w-4 text-green-400 shrink-0" />
                   <span>Хранение: <b>{rub(ch.storage_cost)}</b></span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-600">
+                <div className="flex items-center gap-2 text-brand-text-secondary">
                   <Percent className="h-4 w-4 text-purple-400 shrink-0" />
                   <span>Реклама: <b>{pct(ch.ad_spend_pct)}</b></span>
                 </div>
@@ -125,44 +125,44 @@ const SalesChannels = () => {
       {/* Inline form modal */}
       {isFormOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setIsFormOpen(false)}>
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-modal animate-scale-in" onClick={e => e.stopPropagation()}>
+          <div className="bg-card rounded-xl p-6 w-full max-w-md shadow-modal animate-scale-in" onClick={e => e.stopPropagation()}>
             <h2 className="text-lg font-bold mb-4">{editing ? 'Редактировать канал' : 'Новый канал'}</h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Название</label>
+                <label className="block text-sm font-medium text-brand-text-secondary mb-1">Название</label>
                 <input className="input" value={form.name || ''} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Тип маркетплейса</label>
+                <label className="block text-sm font-medium text-brand-text-secondary mb-1">Тип маркетплейса</label>
                 <select className="input" value={form.marketplace_type || ''} onChange={e => setForm(f => ({ ...f, marketplace_type: e.target.value as MarketplaceType }))}>
                   {Object.entries(MARKETPLACE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Комиссия %</label>
+                  <label className="block text-sm font-medium text-brand-text-secondary mb-1">Комиссия %</label>
                   <input type="number" step="0.1" className="input" value={form.commission_pct ?? ''} onChange={e => setForm(f => ({ ...f, commission_pct: +e.target.value }))} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Логистика ₽</label>
+                  <label className="block text-sm font-medium text-brand-text-secondary mb-1">Логистика ₽</label>
                   <input type="number" step="0.01" className="input" value={form.logistics_cost ?? ''} onChange={e => setForm(f => ({ ...f, logistics_cost: +e.target.value }))} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Хранение ₽</label>
+                  <label className="block text-sm font-medium text-brand-text-secondary mb-1">Хранение ₽</label>
                   <input type="number" step="0.01" className="input" value={form.storage_cost ?? ''} onChange={e => setForm(f => ({ ...f, storage_cost: +e.target.value }))} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Реклама %</label>
+                  <label className="block text-sm font-medium text-brand-text-secondary mb-1">Реклама %</label>
                   <input type="number" step="0.1" className="input" value={form.ad_spend_pct ?? ''} onChange={e => setForm(f => ({ ...f, ad_spend_pct: +e.target.value }))} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Возврат %</label>
+                  <label className="block text-sm font-medium text-brand-text-secondary mb-1">Возврат %</label>
                   <input type="number" step="0.1" className="input" value={form.return_rate_pct ?? ''} onChange={e => setForm(f => ({ ...f, return_rate_pct: +e.target.value }))} />
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <input type="checkbox" checked={form.is_active ?? true} onChange={e => setForm(f => ({ ...f, is_active: e.target.checked }))} />
-                <label className="text-sm text-gray-700">Активен</label>
+                <label className="text-sm text-brand-text-secondary">Активен</label>
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">

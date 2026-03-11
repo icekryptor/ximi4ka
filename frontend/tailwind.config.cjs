@@ -4,6 +4,7 @@ module.exports = {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -20,18 +21,25 @@ module.exports = {
           900: '#1c1528',
         },
         brand: {
-          border: '#e8e5ef',
-          surface: '#f8f7fa',
-          text: '#1c1528',
-          'text-secondary': '#524667',
-        }
+          border: 'var(--color-border)',
+          surface: 'var(--color-bg-surface)',
+          text: 'var(--color-text-primary)',
+          'text-secondary': 'var(--color-text-secondary)',
+        },
+        // Semantic dark-mode-aware tokens
+        page: 'var(--color-bg-page)',
+        card: 'var(--color-bg-card)',
+        subtle: 'var(--color-bg-subtle)',
+        muted: 'var(--color-bg-muted)',
+        'surface-hover': 'var(--color-bg-hover)',
+        'border-subtle': 'var(--color-border-subtle)',
       },
       borderRadius: {
         'brand': '40px',
         'brand-lg': '55px',
       },
       fontFamily: {
-        sans: ['Inter', 'Arial', 'Helvetica', 'sans-serif'],
+        sans: ['IBM Plex Sans', 'Arial', 'Helvetica', 'sans-serif'],
       },
       keyframes: {
         'fade-in': {

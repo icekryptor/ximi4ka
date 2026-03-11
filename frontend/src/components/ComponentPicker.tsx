@@ -70,19 +70,19 @@ export default function ComponentPicker({ kitId, existingComponents, onClose, on
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[86vh] flex flex-col">
+      <div className="bg-card rounded-lg shadow-xl w-full max-w-2xl max-h-[86vh] flex flex-col">
         {/* Шапка */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 shrink-0">
-          <h2 className="text-lg font-semibold text-gray-900">Добавить компонент в набор</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-brand-border shrink-0">
+          <h2 className="text-lg font-semibold text-brand-text">Добавить компонент в набор</h2>
+          <button onClick={onClose} className="text-brand-text-secondary hover:text-brand-text">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Поиск */}
-        <div className="px-6 py-3 border-b border-gray-100 shrink-0">
+        <div className="px-6 py-3 border-b border-brand-border shrink-0">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-text-secondary" />
             <input
               autoFocus
               className="input pl-9"
@@ -97,10 +97,10 @@ export default function ComponentPicker({ kitId, existingComponents, onClose, on
         <div className="overflow-y-auto flex-1 px-6 py-3 space-y-1">
           {loading ? (
             <div className="space-y-2 py-4">
-              {[...Array(4)].map((_, i) => <div key={i} className="h-12 bg-gray-100 rounded animate-pulse" />)}
+              {[...Array(4)].map((_, i) => <div key={i} className="h-12 bg-muted rounded animate-pulse" />)}
             </div>
           ) : filtered.length === 0 ? (
-            <p className="text-center text-gray-400 py-10">
+            <p className="text-center text-brand-text-secondary py-10">
               {all.length === 0 ? 'Каталог пуст — сначала добавьте компоненты в каталоге' : 'Ничего не найдено'}
             </p>
           ) : filtered.map(c => {
@@ -111,7 +111,7 @@ export default function ComponentPicker({ kitId, existingComponents, onClose, on
               <div
                 key={c.id}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                  inKit ? 'bg-green-50' : 'hover:bg-gray-50'
+                  inKit ? 'bg-green-50' : 'hover:bg-subtle'
                 }`}
               >
                 {/* Фото */}
@@ -122,17 +122,17 @@ export default function ComponentPicker({ kitId, existingComponents, onClose, on
                     className="h-10 w-10 object-contain rounded shrink-0"
                   />
                 ) : (
-                  <div className="h-10 w-10 rounded bg-gray-100 flex items-center justify-center shrink-0">
-                    <ImageIcon className="h-4 w-4 text-gray-300" />
+                  <div className="h-10 w-10 rounded bg-muted flex items-center justify-center shrink-0">
+                    <ImageIcon className="h-4 w-4 text-brand-text-secondary" />
                   </div>
                 )}
 
                 {/* Инфо */}
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 leading-tight truncate">{c.name}</div>
-                  <div className="text-xs text-gray-400 flex items-center gap-2 mt-0.5">
+                  <div className="font-medium text-brand-text leading-tight truncate">{c.name}</div>
+                  <div className="text-xs text-brand-text-secondary flex items-center gap-2 mt-0.5">
                     {c.sku && <span>{c.sku}</span>}
-                    <span className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-500">
+                    <span className="px-1.5 py-0.5 bg-muted rounded text-brand-text-secondary">
                       {CATEGORY_LABELS[c.category] ?? c.category}
                     </span>
                     {c.factory && <span>{c.factory}</span>}
@@ -140,7 +140,7 @@ export default function ComponentPicker({ kitId, existingComponents, onClose, on
                 </div>
 
                 {/* Цена */}
-                <div className="text-sm font-medium text-gray-700 shrink-0">
+                <div className="text-sm font-medium text-brand-text-secondary shrink-0">
                   {fmt(c.unit_price)}
                 </div>
 
@@ -173,7 +173,7 @@ export default function ComponentPicker({ kitId, existingComponents, onClose, on
                       </button>
                       <button
                         onClick={() => setAdding(null)}
-                        className="text-gray-400 hover:text-gray-600"
+                        className="text-brand-text-secondary hover:text-brand-text"
                       >
                         <X className="h-4 w-4" />
                       </button>
@@ -181,7 +181,7 @@ export default function ComponentPicker({ kitId, existingComponents, onClose, on
                   ) : (
                     <button
                       onClick={() => startAdd(c.id)}
-                      className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-primary-600 px-2 py-1 rounded hover:bg-primary-50 transition-colors"
+                      className="inline-flex items-center gap-1 text-xs font-medium text-brand-text-secondary hover:text-primary-600 px-2 py-1 rounded hover:bg-primary-50 transition-colors"
                     >
                       <Plus className="h-3.5 w-3.5" />
                       Добавить
@@ -194,8 +194,8 @@ export default function ComponentPicker({ kitId, existingComponents, onClose, on
         </div>
 
         {/* Подвал */}
-        <div className="px-6 py-3 border-t border-gray-100 shrink-0">
-          <p className="text-xs text-gray-400">
+        <div className="px-6 py-3 border-t border-brand-border shrink-0">
+          <p className="text-xs text-brand-text-secondary">
             Компоненты из каталога можно добавить в несколько наборов одновременно. Управление каталогом — в разделе «Компоненты».
           </p>
         </div>

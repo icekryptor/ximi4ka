@@ -77,8 +77,8 @@ const Supplies = () => {
     return (
       <div className="p-8">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className="h-8 bg-muted rounded w-1/4"></div>
+          <div className="h-64 bg-muted rounded"></div>
         </div>
       </div>
     )
@@ -123,8 +123,8 @@ const Supplies = () => {
       <div className="card">
         {supplies.length === 0 ? (
           <div className="text-center py-12">
-            <Package className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 text-lg">Поставок пока нет</p>
+            <Package className="h-12 w-12 text-brand-text-secondary mx-auto mb-3" />
+            <p className="text-brand-text-secondary text-lg">Поставок пока нет</p>
             <button onClick={handleAdd} className="btn btn-primary mt-4">
               Добавить первую поставку
             </button>
@@ -156,7 +156,7 @@ const Supplies = () => {
                       </td>
                       <td>
                         <div>
-                          {supply.supplier?.name || <span className="text-gray-400">—</span>}
+                          {supply.supplier?.name || <span className="text-brand-text-secondary">—</span>}
                         </div>
                         {supply.carrier && (
                           <div className="text-xs text-brand-text-secondary flex items-center mt-0.5">
