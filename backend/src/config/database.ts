@@ -17,6 +17,7 @@ import { WbAdStat } from '../entities/WbAdStat';
 import { WbAdNote } from '../entities/WbAdNote';
 import { WbFinancialStat } from '../entities/WbFinancialStat';
 import { UnitEconomicsCalculation } from '../entities/UnitEconomicsCalculation';
+import { DailySales } from '../entities/DailySales';
 
 dotenv.config();
 
@@ -32,7 +33,7 @@ const dataSourceOptions = databaseUrl
       url: databaseUrl,
       synchronize: false,
       logging: isDev,
-      entities: [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation],
+      entities: [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, DailySales],
       migrations: ['src/migrations/**/*.ts'],
       subscribers: [],
       ssl: { rejectUnauthorized: false },
@@ -52,7 +53,7 @@ const dataSourceOptions = databaseUrl
       database: process.env.DATABASE_NAME || 'ximfinance',
       synchronize: isDev,
       logging: isDev,
-      entities: [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation],
+      entities: [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, DailySales],
       migrations: ['src/migrations/**/*.ts'],
       subscribers: [],
     };

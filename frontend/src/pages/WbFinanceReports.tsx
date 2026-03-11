@@ -200,18 +200,21 @@ const WbFinanceReports = () => {
           </select>
 
           {/* Date range */}
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="input input-sm"
-          />
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="input input-sm"
-          />
+          <div className="flex items-center gap-1.5">
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="input-date"
+            />
+            <span className="text-brand-text-secondary text-sm">—</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="input-date"
+            />
+          </div>
 
           {/* Sync */}
           <button
@@ -291,7 +294,9 @@ const WbFinanceReports = () => {
             : 'Нет данных. Нажмите «Синк» для загрузки.'}
         </div>
       ) : (
-        <div className="card overflow-x-auto relative">
+        <div className="card !p-0 overflow-hidden relative">
+          <div className="pivot-mask-left" style={{ left: 270 }} />
+          <div className="overflow-x-auto pivot-scroll">
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b border-brand-border">
@@ -300,7 +305,7 @@ const WbFinanceReports = () => {
                   Метрика
                 </th>
                 {/* Sticky summary */}
-                <th className="text-left px-3 py-2 font-semibold text-primary-700 sticky left-[160px] bg-primary-50 z-20 min-w-[110px] border-r border-brand-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
+                <th className="text-left px-3 py-2 font-semibold text-primary-700 sticky left-[160px] bg-primary-50 z-20 min-w-[110px] ">
                   Итого
                 </th>
                 {/* Date columns */}
@@ -329,7 +334,7 @@ const WbFinanceReports = () => {
                       {row.label}
                     </td>
                     {/* Summary — sticky */}
-                    <td className={`px-3 py-1.5 font-semibold text-primary-800 sticky left-[160px] z-10 ${summaryBg} border-r border-brand-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]`}>
+                    <td className={`px-3 py-1.5 font-semibold text-primary-800 sticky left-[160px] z-10 ${summaryBg} `}>
                       {formatValue(summary, row.format)}
                     </td>
                     {/* Data cells */}
@@ -343,6 +348,7 @@ const WbFinanceReports = () => {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

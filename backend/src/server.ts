@@ -20,6 +20,7 @@ import marketplaceRoutes from './routes/marketplace.routes';
 import wbAdsRoutes from './routes/wb-ads.routes';
 import wbFinanceRoutes from './routes/wb-finance.routes';
 import unitEconomicsRoutes from './routes/unit-economics.routes';
+import salesReportRoutes from './routes/sales-report.routes';
 
 dotenv.config();
 
@@ -51,6 +52,7 @@ app.use('/api/marketplace', marketplaceRoutes);
 app.use('/api/wb-ads', wbAdsRoutes);
 app.use('/api/wb-finance', wbFinanceRoutes);
 app.use('/api/unit-economics', unitEconomicsRoutes);
+app.use('/api/sales-report', salesReportRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

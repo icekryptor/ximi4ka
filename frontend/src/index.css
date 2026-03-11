@@ -37,8 +37,42 @@
     @apply block text-sm font-medium text-brand-text mb-1;
   }
 
+  .input-date {
+    @apply px-2.5 py-1.5 text-sm border border-brand-border rounded-xl bg-white
+           focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400
+           text-brand-text w-[140px];
+  }
+
   .glass {
     @apply backdrop-blur-[30px] bg-white/70;
+  }
+
+  /* Scroll-fade overlays for pivot tables with sticky columns */
+  .pivot-scroll {
+    position: relative;
+  }
+  /* Right edge fade */
+  .pivot-scroll::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40px;
+    height: 100%;
+    background: linear-gradient(to right, transparent, white);
+    pointer-events: none;
+    z-index: 30;
+  }
+
+  /* Left-side gradient mask after sticky columns */
+  .pivot-mask-left {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 32px;
+    background: linear-gradient(to right, white 10%, transparent);
+    pointer-events: none;
+    z-index: 25;
   }
 
   .table-minimal {

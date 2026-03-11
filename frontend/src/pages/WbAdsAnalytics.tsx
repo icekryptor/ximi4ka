@@ -209,20 +209,22 @@ const WbAdsAnalytics = () => {
           <h1 className="text-2xl font-bold text-brand-text">Реклама WB</h1>
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap">
-          <input
-            type="date"
-            value={startDate}
-            onChange={e => setStartDate(e.target.value)}
-            className="input !w-auto"
-          />
-          <span className="text-brand-text-secondary">—</span>
-          <input
-            type="date"
-            value={endDate}
-            onChange={e => setEndDate(e.target.value)}
-            className="input !w-auto"
-          />
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <input
+              type="date"
+              value={startDate}
+              onChange={e => setStartDate(e.target.value)}
+              className="input-date"
+            />
+            <span className="text-brand-text-secondary text-sm">—</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={e => setEndDate(e.target.value)}
+              className="input-date"
+            />
+          </div>
           <button
             onClick={handleSync}
             disabled={syncing}
@@ -365,15 +367,16 @@ const WbAdsAnalytics = () => {
           <div className="animate-spin h-8 w-8 border-4 border-primary-500 border-t-transparent rounded-full" />
         </div>
       ) : analytics && analytics.dates.length > 0 ? (
-        <div className="card !p-0 overflow-hidden">
-          <div className="overflow-x-auto">
+        <div className="card !p-0 overflow-hidden relative">
+          <div className="pivot-mask-left" style={{ left: 240 }} />
+          <div className="overflow-x-auto pivot-scroll">
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="bg-gray-50 border-b border-brand-border">
                   <th className="text-left py-3 px-4 font-medium text-brand-text sticky left-0 bg-gray-50 z-20 min-w-[140px] border-r border-brand-border">
                     Метрика
                   </th>
-                  <th className="text-left py-3 px-3 font-semibold text-brand-text sticky left-[140px] bg-primary-50 z-20 min-w-[100px] border-r border-brand-border whitespace-nowrap shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
+                  <th className="text-left py-3 px-3 font-semibold text-brand-text sticky left-[140px] bg-primary-50 z-20 min-w-[100px] whitespace-nowrap ">
                     Итого
                   </th>
                   {analytics.dates.map(date => (
@@ -399,7 +402,7 @@ const WbAdsAnalytics = () => {
                       <td className={`py-2.5 px-4 font-medium text-brand-text sticky left-0 z-20 ${stickyBg} border-r border-brand-border`}>
                         {metric.label}
                       </td>
-                      <td className={`py-2.5 px-3 font-semibold text-brand-text sticky left-[140px] z-20 ${summaryBg} border-r border-brand-border tabular-nums whitespace-nowrap shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]`}>
+                      <td className={`py-2.5 px-3 font-semibold text-brand-text sticky left-[140px] z-20 ${summaryBg} tabular-nums whitespace-nowrap `}>
                         {formatMetricValue(summary, metric.format)}
                       </td>
                       {values.map((val, i) => (
@@ -419,7 +422,7 @@ const WbAdsAnalytics = () => {
                       Заметки
                     </div>
                   </td>
-                  <td className="sticky left-[140px] bg-[#fef9ee] z-20 border-r border-brand-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]" />
+                  <td className="sticky left-[140px] bg-[#fef9ee] z-20 " />
                   {analytics.dates.map(date => {
                     const note = getNoteForDate(date)
                     const isEditing = editingNoteDate === date
