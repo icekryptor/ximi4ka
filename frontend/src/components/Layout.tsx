@@ -146,6 +146,12 @@ const IconSalesChannels = () => (
   </svg>
 )
 
+const IconSalesReport = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+  </svg>
+)
+
 const IconChevron = ({ open }: { open: boolean }) => (
   <svg
     width="14"
@@ -257,6 +263,7 @@ const NAV_GROUPS: NavGroup[] = [
       { type: 'link', name: 'Расчёт себестоимости', href: '/cost-calculation', icon: IconCostCalc },
       { type: 'link', name: 'Юнит-экономика', href: '/unit-economics', icon: IconUnitEconomics },
       { type: 'link', name: 'Матрица маржи', href: '/margin-matrix', icon: IconMarginMatrix },
+      { type: 'link', name: 'Отчёт о продажах', href: '/sales-report', icon: IconSalesReport },
     ],
   },
   {

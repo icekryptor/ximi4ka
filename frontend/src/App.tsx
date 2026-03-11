@@ -28,6 +28,7 @@ const ProductionOrders = lazy(() => import('./pages/ProductionOrders'))
 const QualityControl = lazy(() => import('./pages/QualityControl'))
 const Employees = lazy(() => import('./pages/Employees'))
 const SalesChannels = lazy(() => import('./pages/SalesChannels'))
+const SalesReport = lazy(() => import('./pages/SalesReport'))
 
 // === Page Transition ===
 const PageTransition = ({ children }: { children: React.ReactNode }) => {
@@ -103,6 +104,8 @@ function App() {
                                 <Route path="/marketplace" element={<Marketplace />} />
                                 <Route path="/wb-ads" element={<WbAdsAnalytics />} />
                                 <Route path="/wb-finance" element={<WbFinanceReports />} />
+                                {/* Продажи */}
+                                <Route path="/sales-report" element={<SalesReport />} />
                                 {/* Настройки */}
                                 <Route path="/employees" element={<Employees />} />
                                 <Route path="/sales-channels" element={<SalesChannels />} />

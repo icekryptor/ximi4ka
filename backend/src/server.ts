@@ -21,6 +21,7 @@ import wbAdsRoutes from './routes/wb-ads.routes';
 import wbFinanceRoutes from './routes/wb-finance.routes';
 import unitEconomicsRoutes from './routes/unit-economics.routes';
 import authRoutes from './routes/auth';
+import salesReportRoutes from './routes/sales-report.routes';
 
 // Middleware
 import { authMiddleware } from './middleware/auth';
@@ -58,6 +59,7 @@ app.use('/api/marketplace', authMiddleware, marketplaceRoutes);
 app.use('/api/wb-ads', authMiddleware, wbAdsRoutes);
 app.use('/api/wb-finance', authMiddleware, wbFinanceRoutes);
 app.use('/api/unit-economics', authMiddleware, unitEconomicsRoutes);
+app.use('/api/sales-report', authMiddleware, salesReportRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
