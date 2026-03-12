@@ -194,7 +194,7 @@ export default function ComponentsCatalog() {
                     </button>
                     <button
                       onClick={() => handleDelete(c)}
-                      className="p-1.5 text-brand-text-secondary hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                      className="p-1.5 text-brand-text-secondary hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950 rounded transition-colors"
                       title="Удалить"
                     >
                       <Trash2 className="h-4 w-4" />

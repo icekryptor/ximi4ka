@@ -81,7 +81,7 @@ const Counterparties = () => {
   const getTypeBadgeColor = (type: CounterpartyType) => {
     switch (type) {
       case CounterpartyType.SUPPLIER:
-        return 'bg-orange-100 text-orange-700'
+        return 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300'
       case CounterpartyType.CUSTOMER:
         return 'bg-primary-100 text-primary-700'
       case CounterpartyType.BOTH:

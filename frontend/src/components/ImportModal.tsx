@@ -147,29 +147,29 @@ const ImportModal = ({ onClose }: ImportModalProps) => {
             <div className="space-y-4">
               {/* Stats */}
               <div className="grid grid-cols-3 gap-4">
-                <div className="bg-green-50 rounded-xl p-3 text-center">
-                  <p className="text-2xl font-bold text-green-700">{preview.newRows}</p>
-                  <p className="text-sm text-green-600">Новых</p>
+                <div className="bg-green-50 dark:bg-green-950 rounded-xl p-3 text-center">
+                  <p className="text-2xl font-bold text-green-700 dark:text-green-300">{preview.newRows}</p>
+                  <p className="text-sm text-green-600 dark:text-green-400">Новых</p>
                 </div>
-                <div className="bg-amber-50 rounded-xl p-3 text-center">
-                  <p className="text-2xl font-bold text-amber-700">{preview.duplicates}</p>
-                  <p className="text-sm text-amber-600">Дубликатов</p>
+                <div className="bg-amber-50 dark:bg-amber-950 rounded-xl p-3 text-center">
+                  <p className="text-2xl font-bold text-amber-700 dark:text-amber-300">{preview.duplicates}</p>
+                  <p className="text-sm text-amber-600 dark:text-amber-400">Дубликатов</p>
                 </div>
-                <div className="bg-red-50 rounded-xl p-3 text-center">
-                  <p className="text-2xl font-bold text-red-700">{preview.errors.length}</p>
-                  <p className="text-sm text-red-600">Ошибок</p>
+                <div className="bg-red-50 dark:bg-red-950 rounded-xl p-3 text-center">
+                  <p className="text-2xl font-bold text-red-700 dark:text-red-300">{preview.errors.length}</p>
+                  <p className="text-sm text-red-600 dark:text-red-400">Ошибок</p>
                 </div>
               </div>
 
               {/* Errors */}
               {preview.errors.length > 0 && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-3">
-                  <p className="text-sm font-medium text-red-700 mb-1">Ошибки:</p>
+                <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl p-3">
+                  <p className="text-sm font-medium text-red-700 dark:text-red-300 mb-1">Ошибки:</p>
                   {preview.errors.slice(0, 5).map((err, i) => (
-                    <p key={i} className="text-xs text-red-600">{err}</p>
+                    <p key={i} className="text-xs text-red-600 dark:text-red-400">{err}</p>
                   ))}
                   {preview.errors.length > 5 && (
-                    <p className="text-xs text-red-500 mt-1">...и ещё {preview.errors.length - 5}</p>
+                    <p className="text-xs text-red-500 dark:text-red-400 mt-1">...и ещё {preview.errors.length - 5}</p>
                   )}
                 </div>
               )}
@@ -201,7 +201,7 @@ const ImportModal = ({ onClose }: ImportModalProps) => {
                         <tr
                           key={idx}
                           className={`border-t border-brand-border ${
-                            row.is_duplicate ? 'bg-amber-50/50' : ''
+                            row.is_duplicate ? 'bg-amber-50/50 dark:bg-amber-950/50' : ''
                           }`}
                         >
                           <td className="py-2 px-3">
@@ -215,8 +215,8 @@ const ImportModal = ({ onClose }: ImportModalProps) => {
                             <span
                               className={`text-xs px-1.5 py-0.5 rounded ${
                                 row.type === 'income'
-                                  ? 'bg-green-100 text-green-700'
-                                  : 'bg-red-100 text-red-700'
+                                  ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
+                                  : 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'
                               }`}
                             >
                               {row.type === 'income' ? 'Д' : 'Р'}

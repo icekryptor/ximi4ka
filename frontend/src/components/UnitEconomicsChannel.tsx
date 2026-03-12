@@ -168,17 +168,17 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
         </div>
 
         {/* Результат */}
-        <div className={`rounded-lg p-5 border-2 ${profitPositive ? 'bg-green-50/50 border-green-200' : 'bg-red-50/50 border-red-200'}`}>
+        <div className={`rounded-lg p-5 border-2 ${profitPositive ? 'bg-green-50/50 dark:bg-green-950/40 border-green-200 dark:border-green-800' : 'bg-red-50/50 dark:bg-red-950/40 border-red-200 dark:border-red-800'}`}>
           <div className="space-y-3">
             <div>
               <div className="text-xs text-brand-text-secondary mb-1">Чистая прибыль</div>
-              <div className={`text-3xl font-bold tabular-nums ${profitPositive ? 'text-green-600' : 'text-red-600'}`}>
+              <div className={`text-3xl font-bold tabular-nums ${profitPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                 {result.profit >= 0 ? '+' : ''}{fmt(result.profit)} ₽
               </div>
             </div>
             <div>
               <div className="text-xs text-brand-text-secondary mb-1">Маржинальность</div>
-              <div className={`text-2xl font-bold tabular-nums ${profitPositive ? 'text-green-600' : 'text-red-600'}`}>
+              <div className={`text-2xl font-bold tabular-nums ${profitPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                 {result.margin.toFixed(1)}%
               </div>
             </div>
@@ -297,7 +297,7 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
                     type="button"
                     className={`flex items-center justify-center w-7 h-7 rounded border text-xs transition-colors ${
                       block.value_type === 'percent'
-                        ? 'bg-primary-50 border-primary-200 text-primary-700'
+                        ? 'bg-primary-50 dark:bg-primary-900/50 border-primary-200 dark:border-primary-700 text-primary-700 dark:text-primary-300'
                         : 'bg-subtle border-brand-border text-brand-text-secondary'
                     }`}
                     onClick={() => updateBlock(i, { value_type: block.value_type === 'percent' ? 'fixed' : 'percent' })}
@@ -327,7 +327,7 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
             <div className="relative mt-3 pt-3 border-t border-brand-border">
               <button
                 type="button"
-                className="flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-700 transition-colors"
+                className="flex items-center gap-1.5 text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
                 onClick={() => setShowBlockMenu(!showBlockMenu)}
               >
                 <Plus className="h-4 w-4" />

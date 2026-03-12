@@ -173,8 +173,8 @@ const ProductionOrders = () => {
                   {/* QC indicators */}
                   {(order.qc_passed > 0 || order.qc_failed > 0) && (
                     <div className="flex gap-2 text-xs shrink-0">
-                      <span className="px-2 py-1 bg-green-50 text-green-700 rounded">✓ {order.qc_passed}</span>
-                      {order.qc_failed > 0 && <span className="px-2 py-1 bg-red-50 text-red-700 rounded">✗ {order.qc_failed}</span>}
+                      <span className="px-2 py-1 bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 rounded">✓ {order.qc_passed}</span>
+                      {order.qc_failed > 0 && <span className="px-2 py-1 bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300 rounded">✗ {order.qc_failed}</span>}
                     </div>
                   )}
 
@@ -182,7 +182,7 @@ const ProductionOrders = () => {
                   {canAdvance && (
                     <button
                       onClick={() => advanceStatus(order)}
-                      className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors shrink-0"
+                      className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 rounded-lg text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors shrink-0"
                       title={`Перевести → ${ORDER_STATUS_LABELS[STATUS_FLOW[STATUS_FLOW.indexOf(order.status) + 1]]}`}
                     >
                       <ChevronRight className="h-4 w-4" />

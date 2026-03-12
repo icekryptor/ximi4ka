@@ -139,7 +139,7 @@ export default function SupplyDocuments({ supplyId }: Props) {
                   <span className="text-xs px-1.5 py-0.5 bg-card border border-brand-border rounded text-brand-text-secondary shrink-0">
                     {formatBytes(doc.original_name)}
                   </span>
-                  <span className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded shrink-0">
+                  <span className="text-xs px-1.5 py-0.5 bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 rounded shrink-0">
                     {DOC_TYPE_LABELS[doc.doc_type] ?? doc.doc_type}
                   </span>
                 </div>
@@ -153,7 +153,7 @@ export default function SupplyDocuments({ supplyId }: Props) {
                   href={`${API_BASE}${doc.file_url}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                  className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 rounded transition-colors"
                   title="Открыть"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />

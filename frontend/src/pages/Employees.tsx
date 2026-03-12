@@ -135,7 +135,7 @@ const Employees = () => {
                     className="h-14 w-14 rounded-full object-cover shrink-0 ring-2 ring-brand-border"
                   />
                 ) : (
-                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center shrink-0">
+                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-blue-100 dark:from-blue-900 to-blue-200 dark:to-blue-800 flex items-center justify-center shrink-0">
                     <UserCircle className="h-7 w-7 text-blue-500" />
                   </div>
                 )}

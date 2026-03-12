@@ -97,7 +97,7 @@ const Reports = () => {
               onClick={() => setReportType(TransactionType.INCOME)}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 reportType === TransactionType.INCOME
-                  ? 'bg-green-100 text-green-700'
+                  ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
                   : 'bg-muted text-brand-text-secondary hover:bg-subtle'
               }`}
             >
@@ -107,7 +107,7 @@ const Reports = () => {
               onClick={() => setReportType(TransactionType.EXPENSE)}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 reportType === TransactionType.EXPENSE
-                  ? 'bg-red-100 text-red-700'
+                  ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
                   : 'bg-muted text-brand-text-secondary hover:bg-subtle'
               }`}
             >

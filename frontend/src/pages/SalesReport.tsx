@@ -182,7 +182,7 @@ const SalesReport = () => {
           className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
             !selectedChannel
               ? 'bg-primary-500 text-white'
-              : 'bg-gray-100 text-brand-text-secondary hover:bg-gray-200'
+              : 'bg-gray-100 dark:bg-gray-700 text-brand-text-secondary hover:bg-gray-200 dark:hover:bg-gray-600'
           }`}
         >
           Все каналы
@@ -194,7 +194,7 @@ const SalesReport = () => {
             className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
               selectedChannel === ch
                 ? 'bg-primary-500 text-white'
-                : 'bg-gray-100 text-brand-text-secondary hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-700 text-brand-text-secondary hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
             {ch}
@@ -236,7 +236,7 @@ const SalesReport = () => {
             {summary.channels.map(ch => (
               <div
                 key={ch.channel_name}
-                className="bg-gray-50 rounded-lg p-3 cursor-pointer hover:bg-gray-100 transition-colors"
+                className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 onClick={() => setSelectedChannel(ch.channel_name)}
               >
                 <p className="text-sm font-medium text-brand-text">{ch.channel_name}</p>
@@ -272,7 +272,7 @@ const SalesReport = () => {
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b border-brand-border">
-                <th className="text-left px-3 py-2 font-semibold text-brand-text-secondary sticky left-0 bg-gray-50 z-20 min-w-[140px] border-r border-brand-border">
+                <th className="text-left px-3 py-2 font-semibold text-brand-text-secondary sticky left-0 bg-gray-50 dark:bg-gray-800 z-20 min-w-[140px] border-r border-brand-border">
                   Метрика
                 </th>
                 <th className="text-left px-3 py-2 font-semibold text-primary-700 sticky left-[140px] bg-primary-50 z-20 min-w-[110px] ">
@@ -290,13 +290,13 @@ const SalesReport = () => {
                 const values = report!.metrics[row.key] || []
                 const total = report!.totals[row.key] ?? 0
                 const isEven = idx % 2 === 0
-                const stickyBg = isEven ? 'bg-white' : 'bg-[#fafafb]'
+                const stickyBg = isEven ? 'bg-white dark:bg-[#1a1721]' : 'bg-[#fafafb] dark:bg-[#1e1b26]'
                 const summaryBg = isEven ? 'bg-[#f3f0ff]' : 'bg-[#edeafc]'
 
                 return (
                   <tr
                     key={row.key}
-                    className={`${isEven ? 'bg-white' : 'bg-[#fafafb]'} ${row.highlight ? 'border-t-2 border-gray-200' : 'border-b border-gray-50'}`}
+                    className={`${isEven ? 'bg-white dark:bg-[#1a1721]' : 'bg-[#fafafb] dark:bg-[#1e1b26]'} ${row.highlight ? 'border-t-2 border-gray-200 dark:border-gray-700' : 'border-b border-gray-50 dark:border-gray-800'}`}
                   >
                     <td className={`px-3 py-1.5 font-medium sticky left-0 z-10 ${stickyBg} border-r border-brand-border ${row.highlight ? 'text-brand-text font-semibold' : 'text-brand-text'}`}>
                       {row.label}

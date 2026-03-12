@@ -84,8 +84,8 @@ const SalesChannels = () => {
           {filtered.map((ch, index) => (
             <div key={ch.id} className="card-hover stagger-item relative group" style={{ animationDelay: `${index * 60}ms` }}>
               <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={() => openEdit(ch)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"><Edit2 className="h-3.5 w-3.5" /></button>
-                <button onClick={() => handleDelete(ch.id)} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg"><Trash2 className="h-3.5 w-3.5" /></button>
+                <button onClick={() => openEdit(ch)} className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 rounded-lg"><Edit2 className="h-3.5 w-3.5" /></button>
+                <button onClick={() => handleDelete(ch.id)} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950 rounded-lg"><Trash2 className="h-3.5 w-3.5" /></button>
               </div>
 
               <div className="flex items-center gap-3 mb-4">

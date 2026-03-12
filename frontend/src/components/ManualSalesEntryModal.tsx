@@ -71,9 +71,9 @@ export default function ManualSalesEntryModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Добавить запись о продажах</h2>
+      <div className="bg-white dark:bg-[#1a1721] rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Добавить запись о продажах</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X className="h-5 w-5" />
           </button>
@@ -200,20 +200,20 @@ export default function ManualSalesEntryModal({
 
           {/* Calculated preview */}
           {form.sales_count > 0 && (
-            <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-500">Общий доход</span>
+                <span className="text-gray-500 dark:text-gray-400">Общий доход</span>
                 <span className="font-medium">{fmt(totalRevenue)} ₽</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Себестоимость ({form.sales_count} × {fmt(costPrice)})</span>
-                <span className="text-gray-600">{fmt(costPrice * form.sales_count)} ₽</span>
+                <span className="text-gray-500 dark:text-gray-400">Себестоимость ({form.sales_count} × {fmt(costPrice)})</span>
+                <span className="text-gray-600 dark:text-gray-400">{fmt(costPrice * form.sales_count)} ₽</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Общие расходы</span>
-                <span className="text-gray-600">{fmt(totalCosts)} ₽</span>
+                <span className="text-gray-500 dark:text-gray-400">Общие расходы</span>
+                <span className="text-gray-600 dark:text-gray-400">{fmt(totalCosts)} ₽</span>
               </div>
-              <div className="border-t border-gray-200 pt-2 flex justify-between">
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-2 flex justify-between">
                 <span className="font-medium">Прибыль</span>
                 <span className={`font-bold ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {fmt(profit)} ₽ ({margin.toFixed(1)}%)
@@ -223,7 +223,7 @@ export default function ManualSalesEntryModal({
           )}
 
           {error && (
-            <div className="bg-red-50 text-red-700 p-3 rounded-md text-sm">{error}</div>
+            <div className="bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300 p-3 rounded-md text-sm">{error}</div>
           )}
 
           <div className="flex justify-end gap-3 pt-2">

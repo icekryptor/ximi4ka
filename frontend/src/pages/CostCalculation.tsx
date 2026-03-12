@@ -17,8 +17,8 @@ const CATEGORY_LABELS: Record<string, string> = {
 const CATEGORY_COLORS: Record<string, string> = {
   reagent: 'bg-primary-100 text-primary-600',
   equipment: 'bg-muted text-brand-text-secondary',
-  print: 'bg-amber-100 text-amber-600',
-  labor: 'bg-green-100 text-green-600',
+  print: 'bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-300',
+  labor: 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300',
 }
 const CATEGORY_ORDER = ['reagent', 'equipment', 'print', 'labor']
 
@@ -456,7 +456,7 @@ export default function CostCalculation() {
               if (Math.abs(diff) <= 30) return null
               const isHigher = diff > 0
               return (
-                <div className={`flex items-start gap-2 p-3 rounded-lg mb-4 ${isHigher ? 'bg-orange-50 border border-orange-200' : 'bg-amber-50 border border-amber-200'}`}>
+                <div className={`flex items-start gap-2 p-3 rounded-lg mb-4 ${isHigher ? 'bg-orange-50 border border-orange-200 dark:bg-orange-950 dark:border-orange-800' : 'bg-amber-50 border border-amber-200 dark:bg-amber-950 dark:border-amber-800'}`}>
                   <AlertTriangle className={`h-4 w-4 mt-0.5 shrink-0 ${isHigher ? 'text-orange-500' : 'text-amber-500'}`} />
                   <div className="text-sm">
                     <span className={`font-medium ${isHigher ? 'text-orange-700' : 'text-amber-700'}`}>

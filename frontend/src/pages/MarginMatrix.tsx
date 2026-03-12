@@ -6,10 +6,10 @@ const rub = (v: number) =>
   new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', minimumFractionDigits: 0 }).format(v)
 
 const marginColor = (pct: number) => {
-  if (pct >= 30) return 'text-green-700 bg-green-50'
-  if (pct >= 15) return 'text-yellow-700 bg-yellow-50'
-  if (pct >= 0) return 'text-orange-700 bg-orange-50'
-  return 'text-red-700 bg-red-50'
+  if (pct >= 30) return 'text-green-700 bg-green-50 dark:text-green-300 dark:bg-green-950'
+  if (pct >= 15) return 'text-yellow-700 bg-yellow-50 dark:text-yellow-300 dark:bg-yellow-950'
+  if (pct >= 0) return 'text-orange-700 bg-orange-50 dark:text-orange-300 dark:bg-orange-950'
+  return 'text-red-700 bg-red-50 dark:text-red-300 dark:bg-red-950'
 }
 
 const MarginIcon = ({ pct }: { pct: number }) => {
@@ -97,10 +97,10 @@ const MarginMatrix = () => {
 
       {/* Legend */}
       <div className="flex gap-4 mt-4 text-xs text-brand-text-secondary">
-        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-green-100 inline-block" /> ≥30% отлично</span>
-        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-yellow-100 inline-block" /> 15-30% нормально</span>
-        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-orange-100 inline-block" /> 0-15% внимание</span>
-        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-red-100 inline-block" /> &lt;0% убыток</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-green-100 dark:bg-green-900 inline-block" /> ≥30% отлично</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-yellow-100 dark:bg-yellow-900 inline-block" /> 15-30% нормально</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-orange-100 dark:bg-orange-900 inline-block" /> 0-15% внимание</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-red-100 dark:bg-red-900 inline-block" /> &lt;0% убыток</span>
       </div>
     </div>
   )

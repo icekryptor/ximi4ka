@@ -285,7 +285,7 @@ const UnitEconomics = () => {
               <button
                 className={`px-5 py-2.5 text-sm font-medium transition-colors border-t border-x rounded-t-lg ${
                   activeChannelIdx === i
-                    ? 'bg-card text-primary-700 border-brand-border -mb-px z-10'
+                    ? 'bg-card text-primary-700 dark:text-primary-300 border-brand-border -mb-px z-10'
                     : 'bg-subtle text-brand-text-secondary hover:text-brand-text border-transparent hover:bg-muted'
                 }`}
                 onClick={() => setActiveChannelIdx(i)}
@@ -309,7 +309,7 @@ const UnitEconomics = () => {
           {/* Add channel */}
           <div className="relative shrink-0">
             <button
-              className="flex items-center gap-1 px-3 py-2.5 text-sm text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-t-lg transition-colors"
+              className="flex items-center gap-1 px-3 py-2.5 text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-t-lg transition-colors"
               onClick={() => setShowChannelMenu(!showChannelMenu)}
             >
               <Plus className="h-4 w-4" />

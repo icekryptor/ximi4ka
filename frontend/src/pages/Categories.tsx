@@ -182,7 +182,7 @@ const Categories = () => {
             onClick={() => setFilterType(TransactionType.INCOME)}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               filterType === TransactionType.INCOME
-                ? 'bg-green-100 text-green-700'
+                ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
                 : 'bg-muted text-brand-text-secondary hover:bg-subtle'
             }`}
           >
@@ -192,7 +192,7 @@ const Categories = () => {
             onClick={() => setFilterType(TransactionType.EXPENSE)}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               filterType === TransactionType.EXPENSE
-                ? 'bg-red-100 text-red-700'
+                ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'
                 : 'bg-muted text-brand-text-secondary hover:bg-subtle'
             }`}
           >

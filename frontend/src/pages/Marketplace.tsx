@@ -162,17 +162,17 @@ const Marketplace = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {tab === 'wildberries' ? (
               <>
-                <div className="bg-amber-50 rounded-lg p-3 text-center">
-                  <p className="text-sm text-amber-600">Комиссия</p>
-                  <p className="text-lg font-bold text-amber-700">{formatCurrency(t.commission)}</p>
+                <div className="bg-amber-50 dark:bg-amber-950 rounded-lg p-3 text-center">
+                  <p className="text-sm text-amber-600 dark:text-amber-400">Комиссия</p>
+                  <p className="text-lg font-bold text-amber-700 dark:text-amber-300">{formatCurrency(t.commission)}</p>
                 </div>
-                <div className="bg-red-50 rounded-lg p-3 text-center">
-                  <p className="text-sm text-red-600">Логистика</p>
-                  <p className="text-lg font-bold text-red-700">{formatCurrency(t.logistics)}</p>
+                <div className="bg-red-50 dark:bg-red-950 rounded-lg p-3 text-center">
+                  <p className="text-sm text-red-600 dark:text-red-400">Логистика</p>
+                  <p className="text-lg font-bold text-red-700 dark:text-red-300">{formatCurrency(t.logistics)}</p>
                 </div>
-                <div className="bg-orange-50 rounded-lg p-3 text-center">
-                  <p className="text-sm text-orange-600">Хранение</p>
-                  <p className="text-lg font-bold text-orange-700">{formatCurrency(t.storage)}</p>
+                <div className="bg-orange-50 dark:bg-orange-950 rounded-lg p-3 text-center">
+                  <p className="text-sm text-orange-600 dark:text-orange-400">Хранение</p>
+                  <p className="text-lg font-bold text-orange-700 dark:text-orange-300">{formatCurrency(t.storage)}</p>
                 </div>
                 <div className="bg-subtle rounded-lg p-3 text-center">
                   <p className="text-sm text-brand-text-secondary">Прочее</p>
@@ -181,13 +181,13 @@ const Marketplace = () => {
               </>
             ) : (
               <>
-                <div className="bg-red-50 rounded-lg p-3 text-center">
-                  <p className="text-sm text-red-600">Логистика</p>
-                  <p className="text-lg font-bold text-red-700">{formatCurrency(t.logistics)}</p>
+                <div className="bg-red-50 dark:bg-red-950 rounded-lg p-3 text-center">
+                  <p className="text-sm text-red-600 dark:text-red-400">Логистика</p>
+                  <p className="text-lg font-bold text-red-700 dark:text-red-300">{formatCurrency(t.logistics)}</p>
                 </div>
-                <div className="bg-amber-50 rounded-lg p-3 text-center">
-                  <p className="text-sm text-amber-600">Эквайринг</p>
-                  <p className="text-lg font-bold text-amber-700">{formatCurrency(t.acquiring)}</p>
+                <div className="bg-amber-50 dark:bg-amber-950 rounded-lg p-3 text-center">
+                  <p className="text-sm text-amber-600 dark:text-amber-400">Эквайринг</p>
+                  <p className="text-lg font-bold text-amber-700 dark:text-amber-300">{formatCurrency(t.acquiring)}</p>
                 </div>
               </>
             )}
@@ -257,13 +257,13 @@ const Marketplace = () => {
                         <div className="flex justify-center space-x-1">
                           <button
                             onClick={() => { setEditingSale(sale); setIsSaleModalOpen(true) }}
-                            className="p-1 text-primary-600 hover:bg-primary-50 rounded"
+                            className="p-1 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950 rounded"
                           >
                             <Edit2 className="h-3.5 w-3.5" />
                           </button>
                           <button
                             onClick={() => handleDeleteSale(sale.id)}
-                            className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950 rounded"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
@@ -318,13 +318,13 @@ const Marketplace = () => {
                     <div className="flex justify-center space-x-1">
                       <button
                         onClick={() => { setEditingSku(sku); setIsSkuModalOpen(true) }}
-                        className="p-1 text-primary-600 hover:bg-primary-50 rounded"
+                        className="p-1 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950 rounded"
                       >
                         <Edit2 className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={() => handleDeleteSku(sku.id)}
-                        className="p-1 text-red-600 hover:bg-red-50 rounded"
+                        className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950 rounded"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>

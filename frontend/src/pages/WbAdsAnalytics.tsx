@@ -252,11 +252,11 @@ const WbAdsAnalytics = () => {
             <Key className="h-4 w-4 text-primary-500" />
             <span className="text-sm font-medium text-brand-text">API-токен Wildberries</span>
             {tokenStatus?.hasToken ? (
-              <span className="inline-flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+              <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950 px-2 py-0.5 rounded-full">
                 <CheckCircle className="h-3 w-3" /> Подключён
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+              <span className="inline-flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950 px-2 py-0.5 rounded-full">
                 <AlertCircle className="h-3 w-3" /> Не задан
               </span>
             )}
@@ -327,7 +327,7 @@ const WbAdsAnalytics = () => {
                 <li>Остальные разрешения не требуются — оставьте их отключёнными</li>
                 <li>Нажмите <span className="font-medium text-brand-text">«Создать токен»</span> и скопируйте его</li>
               </ol>
-              <div className="mt-2 p-2 bg-amber-50 rounded-lg text-amber-700">
+              <div className="mt-2 p-2 bg-amber-50 dark:bg-amber-950 rounded-lg text-amber-700 dark:text-amber-300">
                 <span className="font-medium">Важно:</span> токен действителен 180 дней. После истечения создайте новый и обновите его здесь.
                 Токен хранится только в оперативной памяти сервера и сбрасывается при перезапуске.
               </div>
