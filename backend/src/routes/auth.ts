@@ -4,16 +4,16 @@ import jwt from 'jsonwebtoken';
 import { AppDataSource } from '../config/database';
 import { User, UserRole } from '../entities/User';
 import { authMiddleware } from '../middleware/auth';
+import { getJwtSecret, JWT_EXPIRY, JWT_ALGORITHM } from '../config/auth';
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'ximfinance-dev-secret-key-2024';
-const JWT_EXPIRY = '7d';
+const JWT_SECRET = getJwtSecret();
 
 function generateToken(user: User): string {
   return jwt.sign(
     { userId: user.id, email: user.email, role: user.role },
     JWT_SECRET,
-    { expiresIn: JWT_EXPIRY }
+    { expiresIn: JWT_EXPIRY, algorithm: JWT_ALGORITHM }
   );
 }
 
@@ -31,14 +31,20 @@ function sanitizeUser(user: User) {
 // POST /api/auth/register
 router.post('/register', async (req: Request, res: Response) => {
   try {
-    const { email, password, name, role } = req.body;
+    const { email, password, name } = req.body;
 
     if (!email || !password || !name) {
       return res.status(400).json({ error: 'Email, пароль и имя обязательны' });
     }
 
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Пароль должен содержать минимум 6 символов' });
+    if (typeof password !== 'string' || password.length < 8 || password.length > 128) {
+      return res.status(400).json({ error: 'Пароль должен содержать от 8 до 128 символов' });
+    }
+
+    // Basic email format check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Некорректный формат email' });
     }
 
     const userRepo = AppDataSource.getRepository(User);
@@ -48,13 +54,14 @@ router.post('/register', async (req: Request, res: Response) => {
       return res.status(409).json({ error: 'Пользователь с таким email уже существует' });
     }
 
-    const password_hash = await bcrypt.hash(password, 10);
+    const password_hash = await bcrypt.hash(password, 12);
 
+    // SECURITY: Never accept role from client — always assign MANAGER for self-registration
     const user = userRepo.create({
       email: email.toLowerCase().trim(),
       password_hash,
-      name: name.trim(),
-      role: (role as UserRole) || UserRole.MANAGER,
+      name: name.trim().slice(0, 255),
+      role: UserRole.MANAGER,
       is_active: true,
     });
 

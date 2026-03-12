@@ -34,6 +34,7 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   exposedHeaders: ['X-Total-Count', 'X-Page', 'X-Limit', 'X-Total-Pages'],
 }));
 app.use(morgan('dev'));
@@ -74,8 +75,9 @@ app.use((req, res) => {
 // Error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
+  const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
   res.status(err.status || 500).json({
-    error: err.message || 'Внутренняя ошибка сервера'
+    error: isDev ? err.message : 'Внутренняя ошибка сервера'
   });
 });
 

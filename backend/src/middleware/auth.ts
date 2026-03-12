@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { getJwtSecret } from '../config/auth';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'ximfinance-dev-secret-key-2024';
+const JWT_SECRET = getJwtSecret();
 
 export interface JwtPayload {
   userId: string;
@@ -29,7 +30,7 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction):
   const token = authHeader.substring(7);
 
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as JwtPayload;
+    const payload = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as JwtPayload;
     req.user = payload;
     next();
   } catch {
