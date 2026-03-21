@@ -74,6 +74,7 @@ export default function CostCalculation() {
   const [editingComponent, setEditingComponent] = useState<Component | null>(null)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [kitModalOpen, setKitModalOpen] = useState(false)
+  const [editingKit, setEditingKit] = useState<Kit | null>(null)
   const [viewMode, setViewMode] = useState<'table' | 'tree'>('table')
 
   const [editingEstimated, setEditingEstimated] = useState(false)
@@ -370,18 +371,28 @@ export default function CostCalculation() {
       {/* Вкладки китов */}
       <div className="flex items-center gap-1 border-b border-gray-200 mb-6">
         {kits.map(kit => (
-          <button
-            key={kit.id}
-            onClick={() => setActiveKitId(kit.id)}
-            className={`px-5 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px max-w-[180px] truncate ${
-              activeKitId === kit.id
-                ? 'border-gray-900 text-gray-900'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-            title={kit.name}
-          >
-            {kit.name}
-          </button>
+          <div key={kit.id} className="flex items-center -mb-px">
+            <button
+              onClick={() => setActiveKitId(kit.id)}
+              className={`px-5 py-2.5 text-sm font-medium transition-colors border-b-2 max-w-[180px] truncate ${
+                activeKitId === kit.id
+                  ? 'border-gray-900 text-gray-900'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+              title={kit.name}
+            >
+              {kit.name}
+            </button>
+            {activeKitId === kit.id && (
+              <button
+                onClick={() => setEditingKit(kit)}
+                className="p-1 text-gray-400 hover:text-primary-500 transition-colors rounded"
+                title="Редактировать набор"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
         ))}
         <button
           onClick={() => setKitModalOpen(true)}
@@ -683,6 +694,17 @@ export default function CostCalculation() {
             setKitModalOpen(false)
             await loadKits()
             setActiveKitId(kitId)
+          }}
+        />
+      )}
+
+      {editingKit && (
+        <KitModal
+          kit={editingKit}
+          onClose={() => setEditingKit(null)}
+          onSaved={async () => {
+            setEditingKit(null)
+            await loadKits()
           }}
         />
       )}
