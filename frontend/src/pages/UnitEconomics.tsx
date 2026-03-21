@@ -285,8 +285,8 @@ const UnitEconomics = () => {
               <button
                 className={`px-5 py-2.5 text-sm font-medium transition-colors border-t border-x rounded-t-lg ${
                   activeChannelIdx === i
-                    ? 'bg-white text-primary-700 border-brand-border -mb-px z-10'
-                    : 'bg-gray-50 text-brand-text-secondary hover:text-brand-text border-transparent hover:bg-gray-100'
+                    ? 'bg-card text-primary-700 dark:text-primary-300 border-brand-border -mb-px z-10'
+                    : 'bg-subtle text-brand-text-secondary hover:text-brand-text border-transparent hover:bg-muted'
                 }`}
                 onClick={() => setActiveChannelIdx(i)}
               >
@@ -295,7 +295,7 @@ const UnitEconomics = () => {
               {channels.length > 1 && (
                 <button
                   className={`-ml-1 mr-1 transition-opacity ${
-                    activeChannelIdx === i ? 'text-gray-400 hover:text-red-500' : 'text-gray-300 hover:text-red-400'
+                    activeChannelIdx === i ? 'text-brand-text-secondary hover:text-red-500' : 'text-brand-text-secondary hover:text-red-400'
                   }`}
                   onClick={() => removeChannel(i)}
                   title="Удалить канал"
@@ -309,14 +309,14 @@ const UnitEconomics = () => {
           {/* Add channel */}
           <div className="relative shrink-0">
             <button
-              className="flex items-center gap-1 px-3 py-2.5 text-sm text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-t-lg transition-colors"
+              className="flex items-center gap-1 px-3 py-2.5 text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-t-lg transition-colors"
               onClick={() => setShowChannelMenu(!showChannelMenu)}
             >
               <Plus className="h-4 w-4" />
               <span>Канал</span>
             </button>
             {showChannelMenu && (
-              <div className="absolute top-11 left-0 z-20 bg-white rounded-lg shadow-lg border border-brand-border py-1 min-w-[180px]">
+              <div className="absolute top-11 left-0 z-20 bg-card rounded-lg shadow-lg border border-brand-border py-1 min-w-[180px]">
                 {availablePresets.map(name => (
                   <button
                     key={name}
@@ -326,7 +326,7 @@ const UnitEconomics = () => {
                     {name}
                   </button>
                 ))}
-                <div className="border-t border-gray-100 mt-1 pt-1">
+                <div className="border-t border-brand-border mt-1 pt-1">
                   <button
                     className="w-full text-left px-4 py-2 text-sm text-primary-600 hover:bg-brand-surface transition-colors"
                     onClick={() => {
@@ -346,7 +346,7 @@ const UnitEconomics = () => {
 
       {/* Channel content — visually connected to tabs */}
       {selectedKit && channels.length > 0 && channels[activeChannelIdx] && (
-        <div className="bg-white border border-brand-border rounded-b-lg rounded-tr-lg p-5 -mt-px">
+        <div className="bg-card border border-brand-border rounded-b-lg rounded-tr-lg p-5 -mt-px">
           <UnitEconomicsChannel
             kit={selectedKit}
             channel={channels[activeChannelIdx]}
@@ -358,7 +358,7 @@ const UnitEconomics = () => {
       {/* Empty state — no channels yet */}
       {selectedKitId && channels.length === 0 && (
         <div className="card p-8 text-center mt-2">
-          <Calculator className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+          <Calculator className="h-12 w-12 text-brand-text-secondary mx-auto mb-3" />
           <p className="text-brand-text-secondary mb-4">
             Добавьте канал продаж для начала расчёта
           </p>
@@ -379,7 +379,7 @@ const UnitEconomics = () => {
       {/* Empty state — no kit selected */}
       {!selectedKitId && (
         <div className="card p-8 text-center mt-2">
-          <Calculator className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+          <Calculator className="h-12 w-12 text-brand-text-secondary mx-auto mb-3" />
           <p className="text-brand-text-secondary">
             Выберите артикул для начала расчёта
           </p>

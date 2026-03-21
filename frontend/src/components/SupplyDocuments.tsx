@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Upload, Trash2, FileText, FileImage, FileSpreadsheet, File, ExternalLink, Loader2 } from 'lucide-react'
 import { supplyDocumentsApi, SupplyDocument, DOC_TYPE_LABELS } from '../api/supplyDocuments'
-import { useToast } from '../App'
+import { useToast } from '../contexts/ToastContext'
 
 const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') ?? 'http://localhost:3001'
 
@@ -12,7 +12,7 @@ function fileIcon(name: string) {
   if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext ?? '')) return <FileImage className="h-4 w-4 text-blue-500" />
   if (['xls', 'xlsx'].includes(ext ?? ''))  return <FileSpreadsheet className="h-4 w-4 text-green-600" />
   if (ext === 'pdf')                         return <FileText className="h-4 w-4 text-red-500" />
-  return <File className="h-4 w-4 text-gray-400" />
+  return <File className="h-4 w-4 text-brand-text-secondary" />
 }
 
 function formatBytes(name: string) {
@@ -25,7 +25,7 @@ interface Props {
 }
 
 export default function SupplyDocuments({ supplyId }: Props) {
-  const { showToast } = useToast()
+  const toast = useToast()
   const fileRef = useRef<HTMLInputElement>(null)
   const [docs,       setDocs]       = useState<SupplyDocument[]>([])
   const [loading,    setLoading]    = useState(true)
@@ -67,13 +67,13 @@ export default function SupplyDocuments({ supplyId }: Props) {
       await supplyDocumentsApi.delete(supplyId, doc.id)
       setDocs(prev => prev.filter(d => d.id !== doc.id))
     } catch {
-      showToast('Не удалось удалить документ', 'error')
+      toast.error('Не удалось удалить документ')
     }
   }
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-semibold text-gray-700">Документы</h3>
+      <h3 className="text-sm font-semibold text-brand-text-secondary">Документы</h3>
 
       {/* Upload controls */}
       <div className="flex gap-2 flex-wrap">
@@ -120,31 +120,31 @@ export default function SupplyDocuments({ supplyId }: Props) {
 
       {/* Documents list */}
       {loading ? (
-        <div className="text-sm text-gray-400 py-2">Загрузка...</div>
+        <div className="text-sm text-brand-text-secondary py-2">Загрузка...</div>
       ) : docs.length === 0 ? (
-        <div className="text-sm text-gray-400 py-3 text-center border border-dashed border-gray-200 rounded-lg">
+        <div className="text-sm text-brand-text-secondary py-3 text-center border border-dashed border-brand-border rounded-lg">
           Нет прикреплённых документов
         </div>
       ) : (
         <div className="space-y-1.5">
           {docs.map(doc => (
             <div key={doc.id}
-              className="flex items-center gap-3 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg group"
+              className="flex items-center gap-3 px-3 py-2 bg-subtle border border-brand-border rounded-lg group"
             >
               {fileIcon(doc.original_name)}
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-800 truncate">{doc.original_name}</span>
-                  <span className="text-xs px-1.5 py-0.5 bg-white border border-gray-200 rounded text-gray-500 shrink-0">
+                  <span className="text-sm font-medium text-brand-text truncate">{doc.original_name}</span>
+                  <span className="text-xs px-1.5 py-0.5 bg-card border border-brand-border rounded text-brand-text-secondary shrink-0">
                     {formatBytes(doc.original_name)}
                   </span>
-                  <span className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded shrink-0">
+                  <span className="text-xs px-1.5 py-0.5 bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 rounded shrink-0">
                     {DOC_TYPE_LABELS[doc.doc_type] ?? doc.doc_type}
                   </span>
                 </div>
                 {doc.notes && (
-                  <div className="text-xs text-gray-400 mt-0.5 truncate">{doc.notes}</div>
+                  <div className="text-xs text-brand-text-secondary mt-0.5 truncate">{doc.notes}</div>
                 )}
               </div>
 
@@ -153,7 +153,7 @@ export default function SupplyDocuments({ supplyId }: Props) {
                   href={`${API_BASE}${doc.file_url}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                  className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 rounded transition-colors"
                   title="Открыть"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />

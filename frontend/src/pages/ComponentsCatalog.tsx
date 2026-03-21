@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Plus, Pencil, Trash2, ImageIcon, Search, ExternalLink } from 'lucide-react'
 import { componentsApi, Component } from '../api/components'
 import ComponentModal from '../components/ComponentModal'
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext'
 
 const CATEGORY_LABELS: Record<string, string> = {
   reagent: 'Реактив',
@@ -16,6 +17,7 @@ const fmt = (v: number) =>
   new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', minimumFractionDigits: 2 }).format(v)
 
 export default function ComponentsCatalog() {
+  const { confirm } = useConfirmDialog()
   const [components, setComponents] = useState<Component[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -39,7 +41,13 @@ export default function ComponentsCatalog() {
   useEffect(() => { load() }, [])
 
   const handleDelete = async (c: Component) => {
-    if (!window.confirm(`Удалить компонент «${c.name}»?\nОн будет удалён из всех наборов.`)) return
+    const ok = await confirm({
+      title: `Удалить компонент?`,
+      message: `Удалить «${c.name}»? Он будет удалён из всех наборов. Это действие нельзя отменить.`,
+      confirmText: 'Удалить',
+      variant: 'danger',
+    })
+    if (!ok) return
     try {
       await componentsApi.delete(c.id)
       setComponents(prev => prev.filter(x => x.id !== c.id))
@@ -63,8 +71,8 @@ export default function ComponentsCatalog() {
       {/* Заголовок */}
       <div className="flex justify-between items-start mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Каталог компонентов</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-semibold text-brand-text">Каталог компонентов</h1>
+          <p className="text-sm text-brand-text-secondary mt-1">
             Все компоненты · {components.length} позиций
           </p>
         </div>
@@ -80,7 +88,7 @@ export default function ComponentsCatalog() {
       {/* Фильтры */}
       <div className="flex gap-3 mb-6">
         <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-text-secondary" />
           <input
             className="input pl-9"
             placeholder="Поиск по названию, артикулу…"
@@ -106,10 +114,10 @@ export default function ComponentsCatalog() {
           {[...Array(5)].map((_, i) => <div key={i} className="skeleton h-14" />)}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-gray-200 rounded-lg">
+        <div className="text-center py-16 border border-dashed border-brand-border rounded-lg">
           {components.length === 0 ? (
             <>
-              <p className="text-gray-400 mb-4">Каталог пуст</p>
+              <p className="text-brand-text-secondary mb-4">Каталог пуст</p>
               <button
                 onClick={() => { setEditing(null); setModalOpen(true) }}
                 className="btn btn-primary"
@@ -118,7 +126,7 @@ export default function ComponentsCatalog() {
               </button>
             </>
           ) : (
-            <p className="text-gray-400">Ничего не найдено</p>
+            <p className="text-brand-text-secondary">Ничего не найдено</p>
           )}
         </div>
       ) : (
@@ -146,13 +154,13 @@ export default function ComponentsCatalog() {
                       className="h-9 w-9 object-contain rounded"
                     />
                   ) : (
-                    <div className="h-9 w-9 rounded bg-gray-100 flex items-center justify-center">
-                      <ImageIcon className="h-4 w-4 text-gray-300" />
+                    <div className="h-9 w-9 rounded bg-muted flex items-center justify-center">
+                      <ImageIcon className="h-4 w-4 text-brand-text-secondary" />
                     </div>
                   )}
                 </td>
                 <td>
-                  <div className="font-medium text-gray-900">{c.name}</div>
+                  <div className="font-medium text-brand-text">{c.name}</div>
                   {c.link_1688 && (
                     <a
                       href={c.link_1688}
@@ -164,29 +172,29 @@ export default function ComponentsCatalog() {
                     </a>
                   )}
                 </td>
-                <td className="text-sm text-gray-600">{c.sku ?? '—'}</td>
+                <td className="text-sm text-brand-text-secondary">{c.sku ?? '—'}</td>
                 <td>
-                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-muted text-brand-text-secondary">
                     {CATEGORY_LABELS[c.category] ?? c.category}
                   </span>
                 </td>
-                <td className="text-sm text-gray-600">{c.factory ?? '—'}</td>
-                <td className="text-sm text-gray-500">
+                <td className="text-sm text-brand-text-secondary">{c.factory ?? '—'}</td>
+                <td className="text-sm text-brand-text-secondary">
                   {[c.dimensions, c.weight_kg ? `${c.weight_kg} кг` : null].filter(Boolean).join(' · ') || '—'}
                 </td>
-                <td className="text-right font-medium text-gray-900">{fmt(c.unit_price)}</td>
+                <td className="text-right font-medium text-brand-text">{fmt(c.unit_price)}</td>
                 <td>
                   <div className="flex justify-end gap-1">
                     <button
                       onClick={() => { setEditing(c); setModalOpen(true) }}
-                      className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
+                      className="p-1.5 text-brand-text-secondary hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
                       title="Редактировать"
                     >
                       <Pencil className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(c)}
-                      className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                      className="p-1.5 text-brand-text-secondary hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950 rounded transition-colors"
                       title="Удалить"
                     >
                       <Trash2 className="h-4 w-4" />

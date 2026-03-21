@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useToast } from '../App'
 import { RefreshCw, Key, ChevronDown, ChevronUp } from 'lucide-react'
 import { wbFinanceApi } from '../api/wbFinance'
 import { WbFinanceAnalytics, WbFinanceArticle, WbFinanceSyncStatus, WbTokenStatus } from '../api/types'
+import { useToast } from '../contexts/ToastContext'
 
 // ─── Metric rows definition ───
 
@@ -72,7 +72,7 @@ function getDefaultDates() {
 // ─── Component ───
 
 const WbFinanceReports = () => {
-  const { showToast } = useToast()
+  const toast = useToast()
   const defaults = getDefaultDates()
 
   // Token
@@ -112,7 +112,7 @@ const WbFinanceReports = () => {
       setTokenInput('')
       setShowTokenInput(false)
     } catch (e: any) {
-      showToast(e.response?.data?.error || 'Ошибка сохранения токена', 'error')
+      toast.error(e.response?.data?.error || 'Ошибка сохранения токена')
     }
   }
 
@@ -122,12 +122,12 @@ const WbFinanceReports = () => {
     setSyncing(true)
     try {
       const result = await wbFinanceApi.syncStats(startDate, endDate)
-      showToast(result.message)
+      toast.success(result.message)
       await loadSyncStatus()
       await loadAnalytics()
       await loadArticles()
     } catch (e: any) {
-      showToast(e.response?.data?.error || 'Ошибка синхронизации', 'error')
+      toast.error(e.response?.data?.error || 'Ошибка синхронизации')
     } finally {
       setSyncing(false)
     }
@@ -263,7 +263,7 @@ const WbFinanceReports = () => {
             className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
               selectedNmId === undefined
                 ? 'bg-primary-500 text-white'
-                : 'bg-gray-100 text-brand-text-secondary hover:bg-gray-200'
+                : 'bg-muted text-brand-text-secondary hover:bg-subtle'
             }`}
           >
             Сводная
@@ -275,7 +275,7 @@ const WbFinanceReports = () => {
               className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                 selectedNmId === a.nm_id
                   ? 'bg-primary-500 text-white'
-                  : 'bg-gray-100 text-brand-text-secondary hover:bg-gray-200'
+                  : 'bg-muted text-brand-text-secondary hover:bg-subtle'
               }`}
             >
               {a.nm_id}
@@ -303,7 +303,7 @@ const WbFinanceReports = () => {
             <thead>
               <tr className="border-b border-brand-border">
                 {/* Sticky metric name */}
-                <th className="text-left px-3 py-2 font-semibold text-brand-text-secondary sticky left-0 bg-gray-50 z-20 min-w-[160px] border-r border-brand-border">
+                <th className="text-left px-3 py-2 font-semibold text-brand-text-secondary sticky left-0 bg-subtle z-20 min-w-[160px] border-r border-brand-border">
                   Метрика
                 </th>
                 {/* Sticky summary */}
@@ -323,13 +323,13 @@ const WbFinanceReports = () => {
                 const values = analytics!.metrics[row.key] || []
                 const summary = computeSummary(values, row.agg)
                 const isEven = idx % 2 === 0
-                const stickyBg = isEven ? 'bg-white' : 'bg-[#fafafb]'
+                const stickyBg = isEven ? 'bg-card' : 'bg-[#fafafb]'
                 const summaryBg = isEven ? 'bg-[#f3f0ff]' : 'bg-[#edeafc]'
 
                 return (
                   <tr
                     key={row.key}
-                    className={`${isEven ? 'bg-white' : 'bg-[#fafafb]'} ${row.separator ? 'border-t-2 border-gray-200' : 'border-b border-gray-50'}`}
+                    className={`${isEven ? 'bg-card' : 'bg-[#fafafb]'} ${row.separator ? 'border-t-2 border-brand-border' : 'border-b border-brand-border/50'}`}
                   >
                     {/* Metric name — sticky */}
                     <td className={`px-3 py-1.5 font-medium text-brand-text sticky left-0 z-10 ${stickyBg} border-r border-brand-border`}>

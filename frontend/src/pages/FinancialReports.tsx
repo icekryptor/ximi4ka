@@ -167,7 +167,7 @@ const FinancialReports = () => {
                       <span className="text-green-600 font-medium">+{formatCurrency(item.amount)}</span>
                     </div>
                   ))}
-                  <div className="flex justify-between py-1 text-sm font-semibold border-t border-gray-100 mt-1">
+                  <div className="flex justify-between py-1 text-sm font-semibold border-t border-brand-border mt-1">
                     <span>Итого поступлений</span>
                     <span className="text-green-700">{formatCurrency(section.inflow)}</span>
                   </div>
@@ -183,7 +183,7 @@ const FinancialReports = () => {
                       <span className="text-red-600 font-medium">-{formatCurrency(item.amount)}</span>
                     </div>
                   ))}
-                  <div className="flex justify-between py-1 text-sm font-semibold border-t border-gray-100 mt-1">
+                  <div className="flex justify-between py-1 text-sm font-semibold border-t border-brand-border mt-1">
                     <span>Итого выбытий</span>
                     <span className="text-red-700">{formatCurrency(section.outflow)}</span>
                   </div>
@@ -259,7 +259,7 @@ const FinancialReports = () => {
         <div className="card">
           <div className="space-y-1">
             {/* Revenue */}
-            <div className="bg-green-50 rounded-lg p-3">
+            <div className="bg-green-50 dark:bg-green-950 rounded-lg p-3">
               <div className="flex justify-between items-center font-bold text-green-800">
                 <span className="flex items-center space-x-2">
                   <ArrowUpCircle className="h-5 w-5" />
@@ -276,7 +276,7 @@ const FinancialReports = () => {
             </div>
 
             {/* COGS */}
-            <div className="bg-amber-50 rounded-lg p-3">
+            <div className="bg-amber-50 dark:bg-amber-950 rounded-lg p-3">
               <div className="flex justify-between items-center font-bold text-amber-800">
                 <span className="flex items-center space-x-2">
                   <MinusCircle className="h-5 w-5" />
@@ -293,7 +293,7 @@ const FinancialReports = () => {
             </div>
 
             {/* Gross Profit */}
-            <div className="bg-white rounded-lg p-3 border-2 border-brand-border">
+            <div className="bg-card rounded-lg p-3 border-2 border-brand-border">
               <div className="flex justify-between items-center font-bold text-brand-text">
                 <span>Валовая прибыль</span>
                 <span className={pnl.grossProfit >= 0 ? 'text-green-700' : 'text-red-700'}>
@@ -306,7 +306,7 @@ const FinancialReports = () => {
             </div>
 
             {/* Operating Expenses */}
-            <div className="bg-red-50 rounded-lg p-3">
+            <div className="bg-red-50 dark:bg-red-950 rounded-lg p-3">
               <div className="flex justify-between items-center font-bold text-red-800">
                 <span className="flex items-center space-x-2">
                   <ArrowDownCircle className="h-5 w-5" />
@@ -323,7 +323,7 @@ const FinancialReports = () => {
             </div>
 
             {/* Operating Profit */}
-            <div className="bg-white rounded-lg p-3 border-2 border-brand-border">
+            <div className="bg-card rounded-lg p-3 border-2 border-brand-border">
               <div className="flex justify-between items-center font-bold text-brand-text">
                 <span>Операционная прибыль (EBIT)</span>
                 <span className={pnl.operatingProfit >= 0 ? 'text-green-700' : 'text-red-700'}>
@@ -337,15 +337,15 @@ const FinancialReports = () => {
 
             {/* Other */}
             {(pnl.other.income > 0 || pnl.other.expenses > 0) && (
-              <div className="bg-gray-50 rounded-lg p-3">
-                <div className="flex justify-between items-center font-bold text-gray-700">
+              <div className="bg-subtle rounded-lg p-3">
+                <div className="flex justify-between items-center font-bold text-brand-text-secondary">
                   <span>Прочие доходы/расходы</span>
                   <span className={pnl.other.net >= 0 ? 'text-green-700' : 'text-red-700'}>
                     {formatCurrency(pnl.other.net)}
                   </span>
                 </div>
                 {pnl.other.details.map((item, i) => (
-                  <div key={i} className="flex justify-between text-sm mt-1 pl-4 text-gray-600">
+                  <div key={i} className="flex justify-between text-sm mt-1 pl-4 text-brand-text-secondary">
                     <span>{item.name}</span>
                     <span className={item.type === 'income' ? 'text-green-600' : 'text-red-600'}>
                       {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount)}
@@ -356,7 +356,7 @@ const FinancialReports = () => {
             )}
 
             {/* Net Profit */}
-            <div className={`rounded-lg p-4 ${pnl.netProfit >= 0 ? 'bg-green-100' : 'bg-red-100'}`}>
+            <div className={`rounded-lg p-4 ${pnl.netProfit >= 0 ? 'bg-green-100 dark:bg-green-900' : 'bg-red-100 dark:bg-red-900'}`}>
               <div className="flex justify-between items-center font-bold text-lg">
                 <span className="text-brand-text">Чистая прибыль</span>
                 <span className={pnl.netProfit >= 0 ? 'text-green-700' : 'text-red-700'}>
@@ -420,7 +420,7 @@ const FinancialReports = () => {
               <span>Активы</span>
             </h3>
             {balance.assets.items.map((item, i) => (
-              <div key={i} className="flex justify-between py-2 text-sm border-b border-gray-100">
+              <div key={i} className="flex justify-between py-2 text-sm border-b border-brand-border">
                 <span className="text-brand-text-secondary">{item.name}</span>
                 <span className="font-medium">{formatCurrency(item.amount)}</span>
               </div>
@@ -441,7 +441,7 @@ const FinancialReports = () => {
               <p className="text-sm text-brand-text-secondary italic py-2">Нет обязательств</p>
             ) : (
               balance.liabilities.items.map((item, i) => (
-                <div key={i} className="flex justify-between py-2 text-sm border-b border-gray-100">
+                <div key={i} className="flex justify-between py-2 text-sm border-b border-brand-border">
                   <span className="text-brand-text-secondary">{item.name}</span>
                   <span className="font-medium">{formatCurrency(item.amount)}</span>
                 </div>
@@ -460,7 +460,7 @@ const FinancialReports = () => {
               <span>Капитал</span>
             </h3>
             {balance.equity.items.map((item, i) => (
-              <div key={i} className="flex justify-between py-2 text-sm border-b border-gray-100">
+              <div key={i} className="flex justify-between py-2 text-sm border-b border-brand-border">
                 <span className="text-brand-text-secondary">{item.name}</span>
                 <span className="font-medium">{formatCurrency(item.amount)}</span>
               </div>
@@ -486,8 +486,8 @@ const FinancialReports = () => {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Финансовые отчёты</h1>
-        <p className="text-gray-600 mt-1">БДДС, P&L, управленческий баланс</p>
+        <h1 className="text-3xl font-bold text-brand-text">Финансовые отчёты</h1>
+        <p className="text-brand-text-secondary mt-1">БДДС, P&L, управленческий баланс</p>
       </div>
 
       {/* Tabs */}
@@ -504,7 +504,7 @@ const FinancialReports = () => {
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 tab === t.key
                   ? 'bg-primary-100 text-primary-700'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-muted text-brand-text-secondary hover:bg-subtle'
               }`}
             >
               {t.label}

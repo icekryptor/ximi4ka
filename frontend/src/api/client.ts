@@ -9,12 +9,28 @@ export const apiClient = axios.create({
   },
 });
 
-// Interceptor для обработки ошибок
+// On init: attach token from localStorage if it exists
+const storedToken = localStorage.getItem('auth_token');
+if (storedToken) {
+  apiClient.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+}
+
+// Response interceptor for error handling and 401 auto-logout
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
-      console.error('API Error:', error.response.data);
+      if (error.response.status === 401) {
+        // Clear token and redirect to login on unauthorized
+        localStorage.removeItem('auth_token');
+        delete apiClient.defaults.headers.common['Authorization'];
+        // Avoid redirect loops — only redirect if not already on /login
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
+      } else {
+        console.error('API Error:', error.response.data);
+      }
     } else if (error.request) {
       console.error('Network Error:', error.request);
     } else {

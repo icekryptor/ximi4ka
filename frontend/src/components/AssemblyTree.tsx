@@ -366,7 +366,7 @@ export default function AssemblyTree({ kitComponents, onOpenComponent }: Props) 
   }
 
   if (!tree.length) {
-    return <div className="text-center py-16 text-gray-400">В наборе нет компонентов</div>
+    return <div className="text-center py-16 text-brand-text-secondary">В наборе нет компонентов</div>
   }
 
   const maxDepth = getMaxDepth(tree)
@@ -376,21 +376,21 @@ export default function AssemblyTree({ kitComponents, onOpenComponent }: Props) 
       {/* Chip size toggle */}
       <div className="flex items-center justify-between px-4 pb-3">
         <div className="flex items-center gap-3">
-          <span className="text-[10px] text-gray-400 uppercase tracking-wider">Стадии:</span>
+          <span className="text-[10px] text-brand-text-secondary uppercase tracking-wider">Стадии:</span>
           {STAGE_STYLES.slice().reverse().map((s, i) => (
             <div key={i} className="flex items-center gap-1">
               <div className={`h-3 w-3 rounded-sm border ${s.bg} ${s.border}`} />
-              <span className="text-[10px] text-gray-500">{s.label}</span>
+              <span className="text-[10px] text-brand-text-secondary">{s.label}</span>
             </div>
           ))}
         </div>
-        <div className="flex rounded-lg border border-gray-200 p-0.5 bg-gray-50">
+        <div className="flex rounded-lg border border-brand-border p-0.5 bg-subtle">
           <button
             onClick={() => setChipSize('large')}
             className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
               chipSize === 'large'
-                ? 'bg-white shadow-sm text-gray-900'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-card shadow-sm text-brand-text'
+                : 'text-brand-text-secondary hover:text-brand-text'
             }`}
             title="Крупные чипы"
           >
@@ -401,8 +401,8 @@ export default function AssemblyTree({ kitComponents, onOpenComponent }: Props) 
             onClick={() => setChipSize('compact')}
             className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
               chipSize === 'compact'
-                ? 'bg-white shadow-sm text-gray-900'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-card shadow-sm text-brand-text'
+                : 'text-brand-text-secondary hover:text-brand-text'
             }`}
             title="Компактные чипы"
           >

@@ -95,7 +95,7 @@ export default function ComponentPartsEditor({ compositeId, onTotalsChange }: Pr
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-gray-700">Состав</span>
+        <span className="text-sm font-medium text-brand-text-secondary">Состав</span>
         <button
           type="button"
           onClick={openPicker}
@@ -111,7 +111,7 @@ export default function ComponentPartsEditor({ compositeId, onTotalsChange }: Pr
         <div className="border border-primary-200 rounded-lg bg-primary-50/30 mb-3 p-3">
           <div className="flex items-center gap-2 mb-2">
             <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-brand-text-secondary" />
               <input
                 ref={searchRef}
                 className="input py-1.5 pl-8 text-sm"
@@ -120,34 +120,34 @@ export default function ComponentPartsEditor({ compositeId, onTotalsChange }: Pr
                 onChange={e => setSearch(e.target.value)}
               />
             </div>
-            <button type="button" onClick={() => setPickerOpen(false)} className="text-gray-400 hover:text-gray-600">
+            <button type="button" onClick={() => setPickerOpen(false)} className="text-brand-text-secondary hover:text-brand-text-secondary">
               <X className="h-4 w-4" />
             </button>
           </div>
 
           <div className="max-h-48 overflow-y-auto space-y-0.5">
             {catalogLoading ? (
-              <p className="text-sm text-gray-400 py-2 text-center">Загрузка…</p>
+              <p className="text-sm text-brand-text-secondary py-2 text-center">Загрузка…</p>
             ) : filtered.length === 0 ? (
-              <p className="text-sm text-gray-400 py-2 text-center">
+              <p className="text-sm text-brand-text-secondary py-2 text-center">
                 {catalog.length === 0 ? 'Нет простых компонентов в каталоге' : 'Ничего не найдено'}
               </p>
             ) : filtered.map(c => (
               <div
                 key={c.id}
                 onClick={() => handleAdd(c.id)}
-                className="flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer hover:bg-white transition-colors"
+                className="flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer hover:bg-card transition-colors"
               >
                 {c.image_url ? (
                   <img src={`${API_BASE}${c.image_url}`} alt={c.name} className="h-7 w-7 object-contain rounded shrink-0" />
                 ) : (
-                  <div className="h-7 w-7 rounded bg-gray-100 flex items-center justify-center shrink-0">
-                    <ImageIcon className="h-3.5 w-3.5 text-gray-300" />
+                  <div className="h-7 w-7 rounded bg-muted flex items-center justify-center shrink-0">
+                    <ImageIcon className="h-3.5 w-3.5 text-brand-text-secondary" />
                   </div>
                 )}
-                <span className="flex-1 text-sm text-gray-800 truncate">{c.name}</span>
-                {c.sku && <span className="text-xs text-gray-400">{c.sku}</span>}
-                <span className="text-xs font-medium text-gray-600 shrink-0">{fmt(c.unit_price)}</span>
+                <span className="flex-1 text-sm text-brand-text truncate">{c.name}</span>
+                {c.sku && <span className="text-xs text-brand-text-secondary">{c.sku}</span>}
+                <span className="text-xs font-medium text-brand-text-secondary shrink-0">{fmt(c.unit_price)}</span>
               </div>
             ))}
           </div>
@@ -157,17 +157,17 @@ export default function ComponentPartsEditor({ compositeId, onTotalsChange }: Pr
       {/* Список деталей */}
       {loading ? (
         <div className="space-y-1.5">
-          {[...Array(2)].map((_, i) => <div key={i} className="h-9 bg-gray-100 rounded animate-pulse" />)}
+          {[...Array(2)].map((_, i) => <div key={i} className="h-9 bg-muted rounded animate-pulse" />)}
         </div>
       ) : parts.length === 0 ? (
-        <div className="text-center py-5 border border-dashed border-gray-200 rounded-lg">
-          <p className="text-xs text-gray-400">Детали не добавлены</p>
+        <div className="text-center py-5 border border-dashed border-brand-border rounded-lg">
+          <p className="text-xs text-brand-text-secondary">Детали не добавлены</p>
         </div>
       ) : (
         <>
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-gray-400 border-b border-gray-100">
+              <tr className="text-left text-xs text-brand-text-secondary border-b border-brand-border">
                 <th className="pb-1.5 font-medium">Деталь</th>
                 <th className="pb-1.5 font-medium text-right">Цена</th>
                 <th className="pb-1.5 font-medium text-right">Кол-во</th>
@@ -175,7 +175,7 @@ export default function ComponentPartsEditor({ compositeId, onTotalsChange }: Pr
                 <th className="w-6" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-brand-border/50">
               {parts.map(entry => (
                 <tr key={entry.id}>
                   <td className="py-1.5">
@@ -187,14 +187,14 @@ export default function ComponentPartsEditor({ compositeId, onTotalsChange }: Pr
                           className="h-6 w-6 object-contain rounded shrink-0"
                         />
                       ) : (
-                        <div className="h-6 w-6 rounded bg-gray-100 flex items-center justify-center shrink-0">
-                          <ImageIcon className="h-3 w-3 text-gray-300" />
+                        <div className="h-6 w-6 rounded bg-muted flex items-center justify-center shrink-0">
+                          <ImageIcon className="h-3 w-3 text-brand-text-secondary" />
                         </div>
                       )}
-                      <span className="truncate text-gray-800">{entry.part.name}</span>
+                      <span className="truncate text-brand-text">{entry.part.name}</span>
                     </div>
                   </td>
-                  <td className="py-1.5 text-right text-gray-500">{fmt(entry.part.unit_price)}</td>
+                  <td className="py-1.5 text-right text-brand-text-secondary">{fmt(entry.part.unit_price)}</td>
                   <td className="py-1.5 text-right">
                     <input
                       type="number"
@@ -208,17 +208,17 @@ export default function ComponentPartsEditor({ compositeId, onTotalsChange }: Pr
                       onKeyDown={e => {
                         if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
                       }}
-                      className="w-16 text-right border border-gray-200 rounded px-1.5 py-0.5 text-sm outline-none focus:border-primary-400"
+                      className="w-16 text-right border border-brand-border rounded px-1.5 py-0.5 text-sm outline-none focus:border-primary-400"
                     />
                   </td>
-                  <td className="py-1.5 text-right font-medium text-gray-800">
+                  <td className="py-1.5 text-right font-medium text-brand-text">
                     {fmt(Number(entry.part.unit_price) * Number(entry.quantity))}
                   </td>
                   <td className="py-1.5 text-right">
                     <button
                       type="button"
                       onClick={() => handleRemove(entry)}
-                      className="p-0.5 text-gray-300 hover:text-red-500 transition-colors"
+                      className="p-0.5 text-brand-text-secondary hover:text-red-500 transition-colors"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -229,9 +229,9 @@ export default function ComponentPartsEditor({ compositeId, onTotalsChange }: Pr
           </table>
 
           {/* Итоги */}
-          <div className="mt-2 pt-2 border-t border-gray-100 flex justify-between text-xs text-gray-500">
+          <div className="mt-2 pt-2 border-t border-brand-border flex justify-between text-xs text-brand-text-secondary">
             <span>{totalWeight > 0 ? `Вес: ${totalWeight.toFixed(3)} кг` : ''}</span>
-            <span className="font-semibold text-gray-800">
+            <span className="font-semibold text-brand-text">
               Итого: {fmt(totalPrice)}
             </span>
           </div>

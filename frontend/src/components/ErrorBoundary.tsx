@@ -43,8 +43,8 @@ class ErrorBoundary extends Component<Props, State> {
             <p className="text-brand-text-secondary mb-4">
               Произошла ошибка при загрузке страницы. Попробуйте обновить.
             </p>
-            {this.state.error && (
-              <p className="text-xs text-gray-400 mb-4 font-mono break-all">
+            {import.meta.env.DEV && this.state.error && (
+              <p className="text-xs text-brand-text-secondary mb-4 font-mono break-all">
                 {this.state.error.message}
               </p>
             )}

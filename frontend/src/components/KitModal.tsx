@@ -90,11 +90,11 @@ export default function KitModal({ kit, onClose, onSaved }: Props) {
             leaveTo="opacity-0 scale-95"
           >
             <Dialog.Panel className="modal-panel max-w-md">
-              <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">
+              <div className="flex items-center justify-between p-6 border-b border-brand-border">
+                <h2 className="text-lg font-semibold text-brand-text">
                   {isEdit ? 'Редактировать набор' : 'Новый набор'}
                 </h2>
-                <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <button onClick={onClose} className="text-brand-text-secondary hover:text-brand-text">
                   <X className="h-5 w-5" />
                 </button>
               </div>

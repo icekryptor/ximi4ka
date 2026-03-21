@@ -6,10 +6,12 @@ import { Plus, Edit2, Trash2, Package, Truck } from 'lucide-react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale/ru'
 import SupplyModal from '../components/SupplyModal'
-import { useToast } from '../App'
+import { useToast } from '../contexts/ToastContext'
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext'
 
 const Supplies = () => {
-  const { showToast } = useToast()
+  const toast = useToast()
+  const { confirm } = useConfirmDialog()
   const [supplies, setSupplies] = useState<Supply[]>([])
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -32,14 +34,20 @@ const Supplies = () => {
   }
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Удалить поставку? Связанные транзакции тоже будут удалены.')) return
+    const ok = await confirm({
+      title: 'Удалить поставку?',
+      message: 'Связанные транзакции тоже будут удалены. Это действие нельзя отменить.',
+      confirmText: 'Удалить',
+      variant: 'danger',
+    })
+    if (!ok) return
 
     try {
       await suppliesApi.delete(id)
       setSupplies(supplies.filter((s) => s.id !== id))
     } catch (error) {
       console.error('Ошибка удаления поставки:', error)
-      showToast('Не удалось удалить поставку', 'error')
+      toast.error('Не удалось удалить поставку')
     }
   }
 
@@ -68,9 +76,9 @@ const Supplies = () => {
   if (loading) {
     return (
       <div className="p-8">
-        <div className="space-y-4">
-          <div className="skeleton h-8 w-1/4"></div>
-          <div className="skeleton h-64"></div>
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-muted rounded w-1/4"></div>
+          <div className="h-64 bg-muted rounded"></div>
         </div>
       </div>
     )
@@ -115,8 +123,8 @@ const Supplies = () => {
       <div className="card">
         {supplies.length === 0 ? (
           <div className="text-center py-12">
-            <Package className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 text-lg">Поставок пока нет</p>
+            <Package className="h-12 w-12 text-brand-text-secondary mx-auto mb-3" />
+            <p className="text-brand-text-secondary text-lg">Поставок пока нет</p>
             <button onClick={handleAdd} className="btn btn-primary mt-4">
               Добавить первую поставку
             </button>
@@ -148,7 +156,7 @@ const Supplies = () => {
                       </td>
                       <td>
                         <div>
-                          {supply.supplier?.name || <span className="text-gray-400">—</span>}
+                          {supply.supplier?.name || <span className="text-brand-text-secondary">—</span>}
                         </div>
                         {supply.carrier && (
                           <div className="text-xs text-brand-text-secondary flex items-center mt-0.5">

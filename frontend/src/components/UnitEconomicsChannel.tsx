@@ -98,16 +98,16 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
       {/* ─── Левая колонка: доход + результат ─── */}
       <div className="lg:col-span-2 space-y-4">
         {/* Цена продавца */}
-        <div className="bg-gray-50 rounded-lg p-5">
+        <div className="bg-subtle rounded-lg p-5">
           {isWb ? (
             <>
               {/* ВБ: Стартовая цена + Скидка → вычисленная Цена продавца */}
-              <label className="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
+              <label className="block text-xs font-medium text-brand-text-secondary uppercase tracking-wider mb-3">
                 Ценообразование
               </label>
               <div className="space-y-3">
                 <div>
-                  <div className="text-xs text-gray-500 mb-1">Стартовая цена</div>
+                  <div className="text-xs text-brand-text-secondary mb-1">Стартовая цена</div>
                   <div className="flex items-baseline gap-2">
                     <input
                       type="number"
@@ -118,11 +118,11 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
                       min="0"
                       step="1"
                     />
-                    <span className="text-sm text-gray-400 shrink-0">₽</span>
+                    <span className="text-sm text-brand-text-secondary shrink-0">₽</span>
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs text-gray-500 mb-1">Скидка продавца</div>
+                  <div className="text-xs text-brand-text-secondary mb-1">Скидка продавца</div>
                   <div className="flex items-baseline gap-2">
                     <input
                       type="number"
@@ -134,12 +134,12 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
                       max="100"
                       step="1"
                     />
-                    <span className="text-sm text-gray-400 shrink-0">%</span>
+                    <span className="text-sm text-brand-text-secondary shrink-0">%</span>
                   </div>
                 </div>
-                <div className="pt-2 border-t border-gray-200">
-                  <div className="text-xs text-gray-400 mb-1">Цена продавца</div>
-                  <div className="text-2xl font-bold tabular-nums text-gray-900">
+                <div className="pt-2 border-t border-brand-border">
+                  <div className="text-xs text-brand-text-secondary mb-1">Цена продавца</div>
+                  <div className="text-2xl font-bold tabular-nums text-brand-text">
                     {fmt(channel.seller_price)} ₽
                   </div>
                 </div>
@@ -148,7 +148,7 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
           ) : (
             <>
               {/* Другие каналы: прямой ввод Цены продавца */}
-              <label className="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
+              <label className="block text-xs font-medium text-brand-text-secondary uppercase tracking-wider mb-3">
                 Цена продавца
               </label>
               <div className="flex items-baseline gap-2">
@@ -161,24 +161,24 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
                   min="0"
                   step="1"
                 />
-                <span className="text-lg text-gray-400 shrink-0">₽</span>
+                <span className="text-lg text-brand-text-secondary shrink-0">₽</span>
               </div>
             </>
           )}
         </div>
 
         {/* Результат */}
-        <div className={`rounded-lg p-5 border-2 ${profitPositive ? 'bg-green-50/50 border-green-200' : 'bg-red-50/50 border-red-200'}`}>
+        <div className={`rounded-lg p-5 border-2 ${profitPositive ? 'bg-green-50/50 dark:bg-green-950/40 border-green-200 dark:border-green-800' : 'bg-red-50/50 dark:bg-red-950/40 border-red-200 dark:border-red-800'}`}>
           <div className="space-y-3">
             <div>
-              <div className="text-xs text-gray-400 mb-1">Чистая прибыль</div>
-              <div className={`text-3xl font-bold tabular-nums ${profitPositive ? 'text-green-600' : 'text-red-600'}`}>
+              <div className="text-xs text-brand-text-secondary mb-1">Чистая прибыль</div>
+              <div className={`text-3xl font-bold tabular-nums ${profitPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                 {result.profit >= 0 ? '+' : ''}{fmt(result.profit)} ₽
               </div>
             </div>
             <div>
-              <div className="text-xs text-gray-400 mb-1">Маржинальность</div>
-              <div className={`text-2xl font-bold tabular-nums ${profitPositive ? 'text-green-600' : 'text-red-600'}`}>
+              <div className="text-xs text-brand-text-secondary mb-1">Маржинальность</div>
+              <div className={`text-2xl font-bold tabular-nums ${profitPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                 {result.margin.toFixed(1)}%
               </div>
             </div>
@@ -186,22 +186,22 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
 
           {/* Разбивка расходов */}
           {channel.seller_price > 0 && (
-            <div className="mt-4 pt-4 border-t border-gray-200 space-y-1.5 text-sm">
-              <div className="flex justify-between text-gray-500">
+            <div className="mt-4 pt-4 border-t border-brand-border space-y-1.5 text-sm">
+              <div className="flex justify-between text-brand-text-secondary">
                 <span>Себестоимость</span>
                 <span className="tabular-nums">{fmt(costPrice)} ₽</span>
               </div>
-              <div className="flex justify-between text-gray-500">
+              <div className="flex justify-between text-brand-text-secondary">
                 <span>Налог ({channel.tax_rate}%)</span>
                 <span className="tabular-nums">{fmt(result.taxAmount)} ₽</span>
               </div>
               {result.variableTotal > 0 && (
-                <div className="flex justify-between text-gray-500">
+                <div className="flex justify-between text-brand-text-secondary">
                   <span>Переменные</span>
                   <span className="tabular-nums">{fmt(result.variableTotal)} ₽</span>
                 </div>
               )}
-              <div className="flex justify-between font-semibold text-gray-700 pt-1 border-t border-gray-100">
+              <div className="flex justify-between font-semibold text-brand-text-secondary pt-1 border-t border-brand-border">
                 <span>Итого расходов</span>
                 <span className="tabular-nums">{fmt(result.totalExpenses)} ₽</span>
               </div>
@@ -212,15 +212,15 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
 
       {/* ─── Правая колонка: расходы ─── */}
       <div className="lg:col-span-3">
-        <div className="bg-gray-50 rounded-lg p-5">
-          <label className="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-4">
+        <div className="bg-subtle rounded-lg p-5">
+          <label className="block text-xs font-medium text-brand-text-secondary uppercase tracking-wider mb-4">
             Расходы
           </label>
 
           <div className="space-y-0">
             {/* Себестоимость */}
-            <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 py-2.5 border-b border-gray-100">
-              <span className="text-sm font-medium text-gray-700">Себестоимость</span>
+            <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 py-2.5 border-b border-brand-border">
+              <span className="text-sm font-medium text-brand-text-secondary">Себестоимость</span>
               <select
                 className="input text-sm w-36 py-1.5"
                 value={channel.cost_type}
@@ -229,14 +229,14 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
                 <option value="estimated">расчётная</option>
                 <option value="actual">фактическая</option>
               </select>
-              <span className="text-sm font-semibold text-gray-900 w-28 text-right tabular-nums">
+              <span className="text-sm font-semibold text-brand-text w-28 text-right tabular-nums">
                 {fmt(costPrice)} ₽
               </span>
             </div>
 
             {/* Налог */}
-            <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 py-2.5 border-b border-gray-100">
-              <span className="text-sm font-medium text-gray-700">Налоговая ставка</span>
+            <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 py-2.5 border-b border-brand-border">
+              <span className="text-sm font-medium text-brand-text-secondary">Налоговая ставка</span>
               <div className="flex items-center gap-1.5">
                 <input
                   type="number"
@@ -248,22 +248,22 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
                   max="100"
                   step="0.1"
                 />
-                <span className="text-xs text-gray-400">%</span>
+                <span className="text-xs text-brand-text-secondary">%</span>
               </div>
-              <span className="text-sm text-gray-500 w-28 text-right tabular-nums">
+              <span className="text-sm text-brand-text-secondary w-28 text-right tabular-nums">
                 {fmt(result.taxAmount)} ₽
               </span>
             </div>
 
             {/* Вариативные блоки */}
             {channel.variable_blocks.map((block, i) => (
-              <div key={i} className="grid grid-cols-[1fr_auto_auto] items-center gap-3 py-2.5 border-b border-gray-100 group">
+              <div key={i} className="grid grid-cols-[1fr_auto_auto] items-center gap-3 py-2.5 border-b border-brand-border group">
                 <div className="flex items-center gap-1.5 min-w-0">
                   {/* Стрелки перемещения */}
                   <div className="flex flex-col opacity-0 group-hover:opacity-100 transition-opacity -ml-1">
                     <button
                       type="button"
-                      className="text-gray-300 hover:text-gray-600 disabled:opacity-20"
+                      className="text-brand-text-secondary hover:text-brand-text disabled:opacity-20"
                       onClick={() => moveBlock(i, -1)}
                       disabled={i === 0}
                       title="Вверх"
@@ -272,7 +272,7 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
                     </button>
                     <button
                       type="button"
-                      className="text-gray-300 hover:text-gray-600 disabled:opacity-20 -mt-1"
+                      className="text-brand-text-secondary hover:text-brand-text disabled:opacity-20 -mt-1"
                       onClick={() => moveBlock(i, 1)}
                       disabled={i === channel.variable_blocks.length - 1}
                       title="Вниз"
@@ -280,7 +280,7 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
                       <ChevronDown className="h-3.5 w-3.5" />
                     </button>
                   </div>
-                  <span className="text-sm font-medium text-gray-700 truncate">{block.label}</span>
+                  <span className="text-sm font-medium text-brand-text-secondary truncate">{block.label}</span>
                 </div>
 
                 <div className="flex items-center gap-1.5">
@@ -297,8 +297,8 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
                     type="button"
                     className={`flex items-center justify-center w-7 h-7 rounded border text-xs transition-colors ${
                       block.value_type === 'percent'
-                        ? 'bg-primary-50 border-primary-200 text-primary-700'
-                        : 'bg-gray-50 border-gray-200 text-gray-500'
+                        ? 'bg-primary-50 dark:bg-primary-900/50 border-primary-200 dark:border-primary-700 text-primary-700 dark:text-primary-300'
+                        : 'bg-subtle border-brand-border text-brand-text-secondary'
                     }`}
                     onClick={() => updateBlock(i, { value_type: block.value_type === 'percent' ? 'fixed' : 'percent' })}
                     title={block.value_type === 'percent' ? 'Процент от цены' : 'Фиксированная сумма'}
@@ -307,7 +307,7 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
                   </button>
                   <button
                     type="button"
-                    className="text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                    className="text-brand-text-secondary hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
                     onClick={() => removeBlock(i)}
                     title="Удалить"
                   >
@@ -315,7 +315,7 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
                   </button>
                 </div>
 
-                <span className="text-sm text-gray-500 w-28 text-right tabular-nums">
+                <span className="text-sm text-brand-text-secondary w-28 text-right tabular-nums">
                   {fmt(blockAmounts[i])} ₽
                 </span>
               </div>
@@ -324,17 +324,17 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
 
           {/* Добавить расход */}
           {availableBlocks.length > 0 && (
-            <div className="relative mt-3 pt-3 border-t border-gray-100">
+            <div className="relative mt-3 pt-3 border-t border-brand-border">
               <button
                 type="button"
-                className="flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-700 transition-colors"
+                className="flex items-center gap-1.5 text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
                 onClick={() => setShowBlockMenu(!showBlockMenu)}
               >
                 <Plus className="h-4 w-4" />
                 <span>Добавить расход</span>
               </button>
               {showBlockMenu && (
-                <div className="absolute top-12 left-0 z-10 bg-white rounded-lg shadow-lg border border-brand-border py-1 min-w-[220px]">
+                <div className="absolute top-12 left-0 z-10 bg-card rounded-lg shadow-lg border border-brand-border py-1 min-w-[220px]">
                   {availableBlocks.map(option => (
                     <button
                       key={option.type}
@@ -352,9 +352,9 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
 
           {/* Итого расходов */}
           {channel.seller_price > 0 && (
-            <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
-              <span className="text-sm font-semibold text-gray-700">Итого расходов</span>
-              <span className="text-lg font-bold text-gray-900 tabular-nums">{fmt(result.totalExpenses)} ₽</span>
+            <div className="flex justify-between items-center mt-4 pt-4 border-t border-brand-border">
+              <span className="text-sm font-semibold text-brand-text-secondary">Итого расходов</span>
+              <span className="text-lg font-bold text-brand-text tabular-nums">{fmt(result.totalExpenses)} ₽</span>
             </div>
           )}
         </div>

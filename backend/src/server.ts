@@ -20,7 +20,11 @@ import marketplaceRoutes from './routes/marketplace.routes';
 import wbAdsRoutes from './routes/wb-ads.routes';
 import wbFinanceRoutes from './routes/wb-finance.routes';
 import unitEconomicsRoutes from './routes/unit-economics.routes';
+import authRoutes from './routes/auth';
 import salesReportRoutes from './routes/sales-report.routes';
+
+// Middleware
+import { authMiddleware } from './middleware/auth';
 
 dotenv.config();
 
@@ -30,6 +34,7 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   exposedHeaders: ['X-Total-Count', 'X-Page', 'X-Limit', 'X-Total-Pages'],
 }));
 app.use(morgan('dev'));
@@ -39,20 +44,23 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Статические файлы — загруженные изображения
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
-// Routes
-app.use('/api/transactions', transactionRoutes);
-app.use('/api/counterparties', counterpartyRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/reports', reportRoutes);
-app.use('/api/components', componentRoutes);
-app.use('/api/kits', kitRoutes);
-app.use('/api/supplies', supplyRoutes);
-app.use('/api/financial-reports', financialReportRoutes);
-app.use('/api/marketplace', marketplaceRoutes);
-app.use('/api/wb-ads', wbAdsRoutes);
-app.use('/api/wb-finance', wbFinanceRoutes);
-app.use('/api/unit-economics', unitEconomicsRoutes);
-app.use('/api/sales-report', salesReportRoutes);
+// Public routes (no auth required)
+app.use('/api/auth', authRoutes);
+
+// Protected routes (auth required)
+app.use('/api/transactions', authMiddleware, transactionRoutes);
+app.use('/api/counterparties', authMiddleware, counterpartyRoutes);
+app.use('/api/categories', authMiddleware, categoryRoutes);
+app.use('/api/reports', authMiddleware, reportRoutes);
+app.use('/api/components', authMiddleware, componentRoutes);
+app.use('/api/kits', authMiddleware, kitRoutes);
+app.use('/api/supplies', authMiddleware, supplyRoutes);
+app.use('/api/financial-reports', authMiddleware, financialReportRoutes);
+app.use('/api/marketplace', authMiddleware, marketplaceRoutes);
+app.use('/api/wb-ads', authMiddleware, wbAdsRoutes);
+app.use('/api/wb-finance', authMiddleware, wbFinanceRoutes);
+app.use('/api/unit-economics', authMiddleware, unitEconomicsRoutes);
+app.use('/api/sales-report', authMiddleware, salesReportRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -67,8 +75,9 @@ app.use((req, res) => {
 // Error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
+  const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
   res.status(err.status || 500).json({
-    error: err.message || 'Внутренняя ошибка сервера'
+    error: isDev ? err.message : 'Внутренняя ошибка сервера'
   });
 });
 

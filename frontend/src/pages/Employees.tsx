@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Plus, Edit2, Trash2, Search, UserCircle, Phone, Send, Eye, EyeOff, Clock } from 'lucide-react'
 import { employeesApi, Employee } from '../api/employees'
 import EmployeeModal from '../components/EmployeeModal'
-import { useToast } from '../App'
+import { useToast } from '../contexts/ToastContext'
 
 const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') ?? 'http://localhost:3001'
 
@@ -10,7 +10,7 @@ const fmt = (v: number) =>
   new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', minimumFractionDigits: 0 }).format(v)
 
 const Employees = () => {
-  const { showToast } = useToast()
+  const toast = useToast()
   const [employees, setEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -38,7 +38,7 @@ const Employees = () => {
       await employeesApi.delete(id)
       setEmployees(prev => prev.filter(e => e.id !== id))
     } catch {
-        showToast('Не удалось удалить сотрудника', 'error')
+        toast.error('Не удалось удалить сотрудника')
     }
   }
 
@@ -82,8 +82,8 @@ const Employees = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Сотрудники</h1>
-          <p className="text-gray-600 mt-1">Команда и ставки</p>
+          <h1 className="text-3xl font-bold text-brand-text">Сотрудники</h1>
+          <p className="text-brand-text-secondary mt-1">Команда и ставки</p>
         </div>
         <button onClick={handleAdd} className="btn btn-primary flex items-center space-x-2">
           <Plus className="h-5 w-5" />
@@ -94,7 +94,7 @@ const Employees = () => {
       {/* Search */}
       <div className="card mb-6">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-brand-text-secondary" />
           <input
             type="text"
             placeholder="Поиск по имени, телефону, должности…"
@@ -108,8 +108,8 @@ const Employees = () => {
       {/* Grid */}
       {filtered.length === 0 ? (
         <div className="card text-center py-12">
-          <UserCircle className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 text-lg mb-4">Сотрудники не найдены</p>
+          <UserCircle className="h-16 w-16 text-brand-text-secondary mx-auto mb-4" />
+          <p className="text-brand-text-secondary text-lg mb-4">Сотрудники не найдены</p>
           <button onClick={handleAdd} className="btn btn-primary">Добавить</button>
         </div>
       ) : (
@@ -132,20 +132,20 @@ const Employees = () => {
                   <img
                     src={`${API_BASE}${emp.photo_url}`}
                     alt={emp.name}
-                    className="h-14 w-14 rounded-full object-cover shrink-0 ring-2 ring-gray-100"
+                    className="h-14 w-14 rounded-full object-cover shrink-0 ring-2 ring-brand-border"
                   />
                 ) : (
-                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center shrink-0">
+                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-blue-100 dark:from-blue-900 to-blue-200 dark:to-blue-800 flex items-center justify-center shrink-0">
                     <UserCircle className="h-7 w-7 text-blue-500" />
                   </div>
                 )}
                 <div>
-                  <h3 className="font-semibold text-gray-900 leading-tight">{emp.name}</h3>
+                  <h3 className="font-semibold text-brand-text leading-tight">{emp.name}</h3>
                   {emp.position && (
-                    <p className="text-sm text-gray-500 mt-0.5">{emp.position}</p>
+                    <p className="text-sm text-brand-text-secondary mt-0.5">{emp.position}</p>
                   )}
                   {!emp.is_active && (
-                    <span className="inline-block mt-1 px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full">Неактивен</span>
+                    <span className="inline-block mt-1 px-2 py-0.5 bg-muted text-brand-text-secondary text-xs rounded-full">Неактивен</span>
                   )}
                 </div>
               </div>
@@ -153,22 +153,22 @@ const Employees = () => {
               {/* Info */}
               <div className="space-y-2 text-sm">
                 {/* Hourly rate */}
-                <div className="flex items-center gap-2 text-gray-700">
+                <div className="flex items-center gap-2 text-brand-text-secondary">
                   <Clock className="h-4 w-4 text-green-500 shrink-0" />
                   <span className="font-medium">{fmt(Number(emp.hourly_rate))}/час</span>
                 </div>
 
                 {/* Phone */}
                 {emp.phone && (
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Phone className="h-4 w-4 text-gray-400 shrink-0" />
+                  <div className="flex items-center gap-2 text-brand-text-secondary">
+                    <Phone className="h-4 w-4 text-brand-text-secondary shrink-0" />
                     <a href={`tel:${emp.phone}`} className="hover:text-blue-600 transition-colors">{emp.phone}</a>
                   </div>
                 )}
 
                 {/* Telegram */}
                 {emp.telegram && (
-                  <div className="flex items-center gap-2 text-gray-600">
+                  <div className="flex items-center gap-2 text-brand-text-secondary">
                     <Send className="h-4 w-4 text-sky-400 shrink-0" />
                     <a
                       href={`https://t.me/${emp.telegram.replace('@', '')}`}
@@ -183,16 +183,16 @@ const Employees = () => {
 
                 {/* Passport */}
                 {emp.passport_data && (
-                  <div className="mt-3 pt-3 border-t border-gray-100">
+                  <div className="mt-3 pt-3 border-t border-brand-border">
                     <button
                       onClick={() => togglePassport(emp.id)}
-                      className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                      className="flex items-center gap-1.5 text-xs text-brand-text-secondary hover:text-brand-text-secondary transition-colors"
                     >
                       {revealedPassports.has(emp.id) ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                       Паспортные данные
                     </button>
                     {revealedPassports.has(emp.id) && (
-                      <p className="mt-1.5 text-xs text-gray-500 bg-gray-50 rounded px-2 py-1.5 font-mono whitespace-pre-wrap">
+                      <p className="mt-1.5 text-xs text-brand-text-secondary bg-subtle rounded px-2 py-1.5 font-mono whitespace-pre-wrap">
                         {emp.passport_data}
                       </p>
                     )}

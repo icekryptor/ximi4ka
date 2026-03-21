@@ -3,10 +3,12 @@ import { counterpartiesApi } from '../api/counterparties'
 import { Counterparty, CounterpartyType } from '../api/types'
 import { Plus, Edit2, Trash2, Users, Search, Building2 } from 'lucide-react'
 import CounterpartyModal from '../components/CounterpartyModal'
-import { useToast } from '../App'
+import { useToast } from '../contexts/ToastContext'
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext'
 
 const Counterparties = () => {
-  const { showToast } = useToast()
+  const toast = useToast()
+  const { confirm } = useConfirmDialog()
   const [counterparties, setCounterparties] = useState<Counterparty[]>([])
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -30,16 +32,20 @@ const Counterparties = () => {
   }
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Вы уверены, что хотите удалить этого контрагента?')) {
-      return
-    }
+    const ok = await confirm({
+      title: 'Удалить контрагента?',
+      message: 'Вы уверены, что хотите удалить этого контрагента? Это действие нельзя отменить.',
+      confirmText: 'Удалить',
+      variant: 'danger',
+    })
+    if (!ok) return
 
     try {
       await counterpartiesApi.delete(id)
       setCounterparties(counterparties.filter(c => c.id !== id))
     } catch (error) {
       console.error('Ошибка удаления контрагента:', error)
-      showToast('Не удалось удалить контрагента', 'error')
+      toast.error('Не удалось удалить контрагента')
     }
   }
 
@@ -75,13 +81,13 @@ const Counterparties = () => {
   const getTypeBadgeColor = (type: CounterpartyType) => {
     switch (type) {
       case CounterpartyType.SUPPLIER:
-        return 'bg-orange-100 text-orange-700'
+        return 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300'
       case CounterpartyType.CUSTOMER:
         return 'bg-primary-100 text-primary-700'
       case CounterpartyType.BOTH:
         return 'bg-purple-100 text-purple-700'
       default:
-        return 'bg-gray-100 text-gray-700'
+        return 'bg-muted text-brand-text-secondary'
     }
   }
 
@@ -94,9 +100,9 @@ const Counterparties = () => {
   if (loading) {
     return (
       <div className="p-8">
-        <div className="space-y-4">
-          <div className="skeleton h-8 w-1/4"></div>
-          <div className="skeleton h-64"></div>
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-muted rounded w-1/4"></div>
+          <div className="h-64 bg-muted rounded"></div>
         </div>
       </div>
     )
@@ -106,8 +112,8 @@ const Counterparties = () => {
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Контрагенты</h1>
-          <p className="text-gray-600 mt-1">Управление поставщиками и клиентами</p>
+          <h1 className="text-3xl font-bold text-brand-text">Контрагенты</h1>
+          <p className="text-brand-text-secondary mt-1">Управление поставщиками и клиентами</p>
         </div>
         <button onClick={handleAdd} className="btn btn-primary flex items-center space-x-2">
           <Plus className="h-5 w-5" />
@@ -118,7 +124,7 @@ const Counterparties = () => {
       {/* Search */}
       <div className="card mb-6">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-brand-text-secondary" />
           <input
             type="text"
             placeholder="Поиск по названию, ИНН, контактному лицу..."
@@ -132,36 +138,36 @@ const Counterparties = () => {
       {/* Counterparties Grid */}
       {filteredCounterparties.length === 0 ? (
         <div className="card text-center py-12">
-          <Building2 className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 text-lg mb-4">Контрагенты не найдены</p>
+          <Building2 className="h-16 w-16 text-brand-text-secondary mx-auto mb-4" />
+          <p className="text-brand-text-secondary text-lg mb-4">Контрагенты не найдены</p>
           <button onClick={handleAdd} className="btn btn-primary">
             Добавить первого контрагента
           </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCounterparties.map((counterparty, index) => (
-            <div key={counterparty.id} className="card-hover stagger-item" style={{ animationDelay: `${index * 60}ms` }}>
+          {filteredCounterparties.map((counterparty) => (
+            <div key={counterparty.id} className="card hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <div className="bg-primary-100 p-3 rounded-full">
                     <Building2 className="h-6 w-6 text-primary-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">{counterparty.name}</h3>
+                    <h3 className="font-semibold text-brand-text">{counterparty.name}</h3>
                     <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${getTypeBadgeColor(counterparty.type)}`}>
                       {getTypeLabel(counterparty.type)}
                     </span>
                   </div>
                 </div>
                 {!counterparty.is_active && (
-                  <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                  <span className="px-2 py-1 bg-muted text-brand-text-secondary text-xs rounded-full">
                     Неактивен
                   </span>
                 )}
               </div>
 
-              <div className="space-y-2 text-sm text-gray-600">
+              <div className="space-y-2 text-sm text-brand-text-secondary">
                 {counterparty.inn && (
                   <div className="flex items-center">
                     <span className="font-medium w-24">ИНН:</span>
@@ -194,7 +200,7 @@ const Counterparties = () => {
                 )}
               </div>
 
-              <div className="flex justify-end space-x-2 mt-4 pt-4 border-t border-gray-200">
+              <div className="flex justify-end space-x-2 mt-4 pt-4 border-t border-brand-border">
                 <button
                   onClick={() => handleEdit(counterparty)}
                   className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"

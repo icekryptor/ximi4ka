@@ -1,7 +1,12 @@
-import { lazy, Suspense, createContext, useContext, useState, useCallback } from 'react'
+import { lazy, Suspense } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Layout from './components/Layout'
 import ErrorBoundary from './components/ErrorBoundary'
+import ProtectedRoute from './components/ProtectedRoute'
+import { AuthProvider } from './contexts/AuthContext'
+import { ToastProvider } from './contexts/ToastContext'
+import { ConfirmDialogProvider } from './contexts/ConfirmDialogContext'
+import { ThemeProvider } from './contexts/ThemeContext'
 
 // Lazy-load all pages for code splitting
 const Dashboard = lazy(() => import('./pages/Dashboard'))
@@ -17,45 +22,13 @@ const Marketplace = lazy(() => import('./pages/Marketplace'))
 const WbAdsAnalytics = lazy(() => import('./pages/WbAdsAnalytics'))
 const WbFinanceReports = lazy(() => import('./pages/WbFinanceReports'))
 const UnitEconomics = lazy(() => import('./pages/UnitEconomics'))
+const LoginPage = lazy(() => import('./pages/LoginPage'))
+const MarginMatrix = lazy(() => import('./pages/MarginMatrix'))
+const ProductionOrders = lazy(() => import('./pages/ProductionOrders'))
+const QualityControl = lazy(() => import('./pages/QualityControl'))
+const Employees = lazy(() => import('./pages/Employees'))
+const SalesChannels = lazy(() => import('./pages/SalesChannels'))
 const SalesReport = lazy(() => import('./pages/SalesReport'))
-
-// === Toast System ===
-type ToastType = 'success' | 'error'
-interface Toast { id: number; message: string; type: ToastType }
-
-const ToastContext = createContext<{
-  showToast: (message: string, type?: ToastType) => void
-}>({ showToast: () => {} })
-
-export const useToast = () => useContext(ToastContext)
-
-const ToastProvider = ({ children }: { children: React.ReactNode }) => {
-  const [toasts, setToasts] = useState<Toast[]>([])
-
-  const showToast = useCallback((message: string, type: ToastType = 'success') => {
-    const id = Date.now()
-    setToasts(prev => [...prev, { id, message, type }])
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id))
-    }, 3000)
-  }, [])
-
-  return (
-    <ToastContext.Provider value={{ showToast }}>
-      {children}
-      <div className="fixed bottom-6 right-6 z-[100] space-y-2">
-        {toasts.map(toast => (
-          <div
-            key={toast.id}
-            className={toast.type === 'success' ? 'toast-success' : 'toast-error'}
-          >
-            {toast.message}
-          </div>
-        ))}
-      </div>
-    </ToastContext.Provider>
-  )
-}
 
 // === Page Transition ===
 const PageTransition = ({ children }: { children: React.ReactNode }) => {
@@ -72,10 +45,7 @@ const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[400px]">
     <div className="text-center space-y-4">
       <div className="animate-spin h-10 w-10 border-4 border-primary-500 border-t-transparent rounded-full mx-auto" />
-      <div className="space-y-2">
-        <div className="skeleton h-4 w-32 mx-auto" />
-        <div className="skeleton h-3 w-24 mx-auto" />
-      </div>
+      <p className="text-brand-text-secondary">Загрузка...</p>
     </div>
   </div>
 )
@@ -94,33 +64,66 @@ const NotFound = () => (
 function App() {
   return (
     <ErrorBoundary>
-      <ToastProvider>
-        <Layout>
-          <Suspense fallback={<PageLoader />}>
-            <ErrorBoundary>
-              <PageTransition>
+      <ThemeProvider>
+      <AuthProvider>
+        <ToastProvider>
+          <ConfirmDialogProvider>
+            <Suspense fallback={<PageLoader />}>
+              <ErrorBoundary>
                 <Routes>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/cost-calculation" element={<CostCalculation />} />
-                  <Route path="/components" element={<ComponentsCatalog />} />
-                  <Route path="/supplies" element={<Supplies />} />
-                  <Route path="/transactions" element={<Transactions />} />
-                  <Route path="/counterparties" element={<Counterparties />} />
-                  <Route path="/categories" element={<Categories />} />
-                  <Route path="/reports" element={<Reports />} />
-                  <Route path="/financial-reports" element={<FinancialReports />} />
-                  <Route path="/marketplace" element={<Marketplace />} />
-                  <Route path="/wb-ads" element={<WbAdsAnalytics />} />
-                  <Route path="/wb-finance" element={<WbFinanceReports />} />
-                  <Route path="/unit-economics" element={<UnitEconomics />} />
-                  <Route path="/sales-report" element={<SalesReport />} />
-                  <Route path="*" element={<NotFound />} />
+                  {/* Public route */}
+                  <Route path="/login" element={<LoginPage />} />
+
+                  {/* Protected routes — wrapped in Layout */}
+                  <Route
+                    path="/*"
+                    element={
+                      <ProtectedRoute>
+                        <Layout>
+                          <Suspense fallback={<PageLoader />}>
+                            <PageTransition>
+                              <Routes>
+                                <Route path="/" element={<Dashboard />} />
+                                {/* Финансы */}
+                                <Route path="/transactions" element={<Transactions />} />
+                                <Route path="/categories" element={<Categories />} />
+                                <Route path="/counterparties" element={<Counterparties />} />
+                                <Route path="/reports" element={<Reports />} />
+                                <Route path="/financial-reports" element={<FinancialReports />} />
+                                {/* Себестоимость */}
+                                <Route path="/components" element={<ComponentsCatalog />} />
+                                <Route path="/cost-calculation" element={<CostCalculation />} />
+                                <Route path="/unit-economics" element={<UnitEconomics />} />
+                                <Route path="/margin-matrix" element={<MarginMatrix />} />
+                                {/* Закупки */}
+                                <Route path="/supplies" element={<Supplies />} />
+                                {/* Производство */}
+                                <Route path="/production-orders" element={<ProductionOrders />} />
+                                <Route path="/quality-control" element={<QualityControl />} />
+                                {/* Маркетплейсы */}
+                                <Route path="/marketplace" element={<Marketplace />} />
+                                <Route path="/wb-ads" element={<WbAdsAnalytics />} />
+                                <Route path="/wb-finance" element={<WbFinanceReports />} />
+                                {/* Продажи */}
+                                <Route path="/sales-report" element={<SalesReport />} />
+                                {/* Настройки */}
+                                <Route path="/employees" element={<Employees />} />
+                                <Route path="/sales-channels" element={<SalesChannels />} />
+                                <Route path="*" element={<NotFound />} />
+                              </Routes>
+                            </PageTransition>
+                          </Suspense>
+                        </Layout>
+                      </ProtectedRoute>
+                    }
+                  />
                 </Routes>
-              </PageTransition>
-            </ErrorBoundary>
-          </Suspense>
-        </Layout>
-      </ToastProvider>
+              </ErrorBoundary>
+            </Suspense>
+          </ConfirmDialogProvider>
+        </ToastProvider>
+      </AuthProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   )
 }

@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback } from 'react'
-import { useToast } from '../App'
 import { marketplaceApi } from '../api/marketplace'
 import {
   MarketplaceSale,
@@ -18,13 +17,16 @@ import {
   Package,
   X,
 } from 'lucide-react'
+import { useToast } from '../contexts/ToastContext'
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext'
 
 type Tab = 'wildberries' | 'website' | 'skus'
 
 const currentYear = new Date().getFullYear()
 
 const Marketplace = () => {
-  const { showToast } = useToast()
+  const toast = useToast()
+  const { confirm } = useConfirmDialog()
   const [tab, setTab] = useState<Tab>('wildberries')
   const [loading, setLoading] = useState(false)
 
@@ -74,22 +76,34 @@ const Marketplace = () => {
   }, [loadData])
 
   const handleDeleteSale = async (id: string) => {
-    if (!window.confirm('Удалить запись?')) return
+    const ok = await confirm({
+      title: 'Удалить запись?',
+      message: 'Вы уверены, что хотите удалить эту запись? Это действие нельзя отменить.',
+      confirmText: 'Удалить',
+      variant: 'danger',
+    })
+    if (!ok) return
     try {
       await marketplaceApi.deleteSale(id)
       loadData()
     } catch (error) {
-      showToast('Ошибка удаления', 'error')
+      toast.error('Ошибка удаления')
     }
   }
 
   const handleDeleteSku = async (id: string) => {
-    if (!window.confirm('Удалить артикул?')) return
+    const ok = await confirm({
+      title: 'Удалить артикул?',
+      message: 'Вы уверены, что хотите удалить этот артикул? Это действие нельзя отменить.',
+      confirmText: 'Удалить',
+      variant: 'danger',
+    })
+    if (!ok) return
     try {
       await marketplaceApi.deleteSkuMapping(id)
       setSkuMappings(skuMappings.filter((s) => s.id !== id))
     } catch (error) {
-      showToast('Ошибка удаления', 'error')
+      toast.error('Ошибка удаления')
     }
   }
 
@@ -148,32 +162,32 @@ const Marketplace = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {tab === 'wildberries' ? (
               <>
-                <div className="bg-amber-50 rounded-lg p-3 text-center">
-                  <p className="text-sm text-amber-600">Комиссия</p>
-                  <p className="text-lg font-bold text-amber-700">{formatCurrency(t.commission)}</p>
+                <div className="bg-amber-50 dark:bg-amber-950 rounded-lg p-3 text-center">
+                  <p className="text-sm text-amber-600 dark:text-amber-400">Комиссия</p>
+                  <p className="text-lg font-bold text-amber-700 dark:text-amber-300">{formatCurrency(t.commission)}</p>
                 </div>
-                <div className="bg-red-50 rounded-lg p-3 text-center">
-                  <p className="text-sm text-red-600">Логистика</p>
-                  <p className="text-lg font-bold text-red-700">{formatCurrency(t.logistics)}</p>
+                <div className="bg-red-50 dark:bg-red-950 rounded-lg p-3 text-center">
+                  <p className="text-sm text-red-600 dark:text-red-400">Логистика</p>
+                  <p className="text-lg font-bold text-red-700 dark:text-red-300">{formatCurrency(t.logistics)}</p>
                 </div>
-                <div className="bg-orange-50 rounded-lg p-3 text-center">
-                  <p className="text-sm text-orange-600">Хранение</p>
-                  <p className="text-lg font-bold text-orange-700">{formatCurrency(t.storage)}</p>
+                <div className="bg-orange-50 dark:bg-orange-950 rounded-lg p-3 text-center">
+                  <p className="text-sm text-orange-600 dark:text-orange-400">Хранение</p>
+                  <p className="text-lg font-bold text-orange-700 dark:text-orange-300">{formatCurrency(t.storage)}</p>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-3 text-center">
-                  <p className="text-sm text-gray-600">Прочее</p>
-                  <p className="text-lg font-bold text-gray-700">{formatCurrency(t.other)}</p>
+                <div className="bg-subtle rounded-lg p-3 text-center">
+                  <p className="text-sm text-brand-text-secondary">Прочее</p>
+                  <p className="text-lg font-bold text-brand-text">{formatCurrency(t.other)}</p>
                 </div>
               </>
             ) : (
               <>
-                <div className="bg-red-50 rounded-lg p-3 text-center">
-                  <p className="text-sm text-red-600">Логистика</p>
-                  <p className="text-lg font-bold text-red-700">{formatCurrency(t.logistics)}</p>
+                <div className="bg-red-50 dark:bg-red-950 rounded-lg p-3 text-center">
+                  <p className="text-sm text-red-600 dark:text-red-400">Логистика</p>
+                  <p className="text-lg font-bold text-red-700 dark:text-red-300">{formatCurrency(t.logistics)}</p>
                 </div>
-                <div className="bg-amber-50 rounded-lg p-3 text-center">
-                  <p className="text-sm text-amber-600">Эквайринг</p>
-                  <p className="text-lg font-bold text-amber-700">{formatCurrency(t.acquiring)}</p>
+                <div className="bg-amber-50 dark:bg-amber-950 rounded-lg p-3 text-center">
+                  <p className="text-sm text-amber-600 dark:text-amber-400">Эквайринг</p>
+                  <p className="text-lg font-bold text-amber-700 dark:text-amber-300">{formatCurrency(t.acquiring)}</p>
                 </div>
               </>
             )}
@@ -198,7 +212,7 @@ const Marketplace = () => {
                 </thead>
                 <tbody>
                   {analytics.bySku.map((row) => (
-                    <tr key={row.sku} className="border-t border-gray-100">
+                    <tr key={row.sku} className="border-t border-brand-border">
                       <td className="py-2 px-3 font-medium">{row.sku}</td>
                       <td className="py-2 px-3 text-brand-text-secondary">{row.product_name}</td>
                       <td className="py-2 px-3 text-right">{row.orders}</td>
@@ -232,7 +246,7 @@ const Marketplace = () => {
                 </thead>
                 <tbody>
                   {sales.map((sale) => (
-                    <tr key={sale.id} className="border-t border-gray-100 hover:bg-gray-50">
+                    <tr key={sale.id} className="border-t border-brand-border hover:bg-subtle">
                       <td className="py-2 px-3 whitespace-nowrap">{sale.date}</td>
                       <td className="py-2 px-3 font-medium">{sale.sku}</td>
                       <td className="py-2 px-3 text-right">{sale.orders_count}</td>
@@ -243,13 +257,13 @@ const Marketplace = () => {
                         <div className="flex justify-center space-x-1">
                           <button
                             onClick={() => { setEditingSale(sale); setIsSaleModalOpen(true) }}
-                            className="p-1 text-primary-600 hover:bg-primary-50 rounded"
+                            className="p-1 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950 rounded"
                           >
                             <Edit2 className="h-3.5 w-3.5" />
                           </button>
                           <button
                             onClick={() => handleDeleteSale(sale.id)}
-                            className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950 rounded"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
@@ -296,7 +310,7 @@ const Marketplace = () => {
             </thead>
             <tbody>
               {skuMappings.map((sku) => (
-                <tr key={sku.id} className="border-t border-gray-100">
+                <tr key={sku.id} className="border-t border-brand-border">
                   <td className="py-2 px-3 font-medium">{sku.marketplace_sku}</td>
                   <td className="py-2 px-3">{sku.product_name}</td>
                   <td className="py-2 px-3 text-brand-text-secondary">{sku.kit?.name || '—'}</td>
@@ -304,13 +318,13 @@ const Marketplace = () => {
                     <div className="flex justify-center space-x-1">
                       <button
                         onClick={() => { setEditingSku(sku); setIsSkuModalOpen(true) }}
-                        className="p-1 text-primary-600 hover:bg-primary-50 rounded"
+                        className="p-1 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950 rounded"
                       >
                         <Edit2 className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={() => handleDeleteSku(sku.id)}
-                        className="p-1 text-red-600 hover:bg-red-50 rounded"
+                        className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950 rounded"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -328,8 +342,8 @@ const Marketplace = () => {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Маркетплейсы</h1>
-        <p className="text-gray-600 mt-1">Аналитика продаж на площадках</p>
+        <h1 className="text-3xl font-bold text-brand-text">Маркетплейсы</h1>
+        <p className="text-brand-text-secondary mt-1">Аналитика продаж на площадках</p>
       </div>
 
       {/* Tabs */}
@@ -346,7 +360,7 @@ const Marketplace = () => {
               className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
                 tab === t.key
                   ? 'bg-primary-100 text-primary-700'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-muted text-brand-text-secondary hover:bg-subtle'
               }`}
             >
               <t.icon className="h-4 w-4" />
@@ -398,7 +412,7 @@ const SaleModal = ({
   marketplace: MarketplaceType;
   onClose: () => void;
 }) => {
-  const { showToast } = useToast()
+  const toast = useToast()
   const isWB = marketplace === MarketplaceType.WILDBERRIES
   const [formData, setFormData] = useState({
     marketplace,
@@ -425,7 +439,7 @@ const SaleModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.sku || !formData.date) {
-      showToast('Укажите артикул и дату', 'error')
+      toast.warning('Укажите артикул и дату')
       return
     }
     setSaving(true)
@@ -439,7 +453,7 @@ const SaleModal = ({
       onClose()
     } catch (error) {
       console.error('Ошибка:', error)
-      showToast('Ошибка сохранения', 'error')
+      toast.error('Ошибка сохранения')
     } finally {
       setSaving(false)
     }
@@ -451,7 +465,7 @@ const SaleModal = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-card rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-brand-border">
           <h2 className="text-xl font-bold text-brand-text">
             {sale ? 'Редактировать' : 'Новая запись'} — {isWB ? 'Wildberries' : 'Сайт'}
@@ -554,7 +568,7 @@ const SaleModal = ({
           </div>
 
           {/* Payout preview */}
-          <div className={`rounded-lg p-3 text-center ${payout >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
+          <div className={`rounded-lg p-3 text-center ${payout >= 0 ? 'bg-green-50 dark:bg-green-950' : 'bg-red-50 dark:bg-red-950'}`}>
             <p className="text-sm text-brand-text-secondary">К выплате</p>
             <p className={`text-xl font-bold ${payout >= 0 ? 'text-green-700' : 'text-red-700'}`}>
               {formatCurrency(payout)}
@@ -583,7 +597,7 @@ const SkuModal = ({
   sku: SkuMapping | null;
   onClose: () => void;
 }) => {
-  const { showToast } = useToast()
+  const toast = useToast()
   const [formData, setFormData] = useState({
     marketplace_sku: sku?.marketplace_sku || '',
     product_name: sku?.product_name || '',
@@ -594,7 +608,7 @@ const SkuModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.marketplace_sku || !formData.product_name) {
-      showToast('Укажите артикул и название', 'error')
+      toast.warning('Укажите артикул и название')
       return
     }
     setSaving(true)
@@ -608,7 +622,7 @@ const SkuModal = ({
       onClose()
     } catch (error) {
       console.error('Ошибка:', error)
-      showToast('Ошибка сохранения', 'error')
+      toast.error('Ошибка сохранения')
     } finally {
       setSaving(false)
     }
@@ -616,7 +630,7 @@ const SkuModal = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+      <div className="bg-card rounded-lg shadow-xl max-w-md w-full">
         <div className="flex items-center justify-between p-6 border-b border-brand-border">
           <h2 className="text-xl font-bold text-brand-text">
             {sku ? 'Редактировать артикул' : 'Новый артикул'}

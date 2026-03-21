@@ -78,7 +78,7 @@ const LoadCalculationModal = ({ isOpen, onClose, kitId, onLoad }: Props) => {
             <Dialog.Panel className="modal-panel max-w-2xl max-h-[80vh] flex flex-col">
               <div className="flex items-center justify-between p-4 border-b border-brand-border">
                 <h3 className="text-lg font-semibold text-brand-text">Загрузить расчёт</h3>
-                <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <button onClick={onClose} className="text-brand-text-secondary hover:text-brand-text">
                   <X className="h-5 w-5" />
                 </button>
               </div>
@@ -106,7 +106,7 @@ const LoadCalculationModal = ({ isOpen, onClose, kitId, onLoad }: Props) => {
                       {calculations.map(calc => (
                         <tr
                           key={calc.id}
-                          className="border-b border-gray-100 hover:bg-brand-surface transition-colors"
+                          className="border-b border-brand-border hover:bg-brand-surface transition-colors"
                         >
                           <td className="py-2 px-2 font-medium text-brand-text">{calc.name}</td>
                           <td className="py-2 px-2 text-brand-text-secondary">{calc.channel_name}</td>

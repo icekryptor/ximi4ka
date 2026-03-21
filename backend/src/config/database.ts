@@ -17,6 +17,7 @@ import { WbAdStat } from '../entities/WbAdStat';
 import { WbAdNote } from '../entities/WbAdNote';
 import { WbFinancialStat } from '../entities/WbFinancialStat';
 import { UnitEconomicsCalculation } from '../entities/UnitEconomicsCalculation';
+import { User } from '../entities/User';
 import { DailySales } from '../entities/DailySales';
 
 dotenv.config();
@@ -27,13 +28,15 @@ const databaseUrl = process.env.DATABASE_URL;
 
 const isDev = process.env.NODE_ENV === 'development';
 
+const allEntities = [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, User, DailySales];
+
 const dataSourceOptions = databaseUrl
   ? {
       type: 'postgres' as const,
       url: databaseUrl,
       synchronize: false,
       logging: isDev,
-      entities: [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, DailySales],
+      entities: allEntities,
       migrations: ['src/migrations/**/*.ts'],
       subscribers: [],
       ssl: { rejectUnauthorized: false },
@@ -53,7 +56,7 @@ const dataSourceOptions = databaseUrl
       database: process.env.DATABASE_NAME || 'ximfinance',
       synchronize: isDev,
       logging: isDev,
-      entities: [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, DailySales],
+      entities: allEntities,
       migrations: ['src/migrations/**/*.ts'],
       subscribers: [],
     };

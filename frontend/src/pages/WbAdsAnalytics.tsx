@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback } from 'react'
-import { useToast } from '../App'
 import { wbAdsApi } from '../api/wbAds'
 import { WbAdAnalytics, WbAdNote, WbAdArticle, WbAdSyncStatus, WbTokenStatus } from '../api/types'
 import { formatCurrency } from '../utils/format'
 import { RefreshCw, Megaphone, MessageSquare, X, Key, Eye, EyeOff, CheckCircle, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import { useToast } from '../contexts/ToastContext'
 
 interface MetricRow {
   key: string
@@ -64,7 +64,7 @@ const today = new Date().toISOString().split('T')[0]
 const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]
 
 const WbAdsAnalytics = () => {
-  const { showToast } = useToast()
+  const toast = useToast()
   const [loading, setLoading] = useState(false)
   const [syncing, setSyncing] = useState(false)
 
@@ -161,10 +161,10 @@ const WbAdsAnalytics = () => {
     setSyncing(true)
     try {
       const result = await wbAdsApi.syncStats(startDate, endDate)
-      showToast(`Синхронизация завершена: ${result.message}`)
+      toast.success(`Синхронизация завершена: ${result.message}`)
       await loadData()
     } catch (err: any) {
-      showToast('Ошибка синхронизации: ' + (err.response?.data?.error || err.message), 'error')
+      toast.error('Ошибка синхронизации: ' + (err.response?.data?.error || err.message))
     } finally {
       setSyncing(false)
     }
@@ -252,11 +252,11 @@ const WbAdsAnalytics = () => {
             <Key className="h-4 w-4 text-primary-500" />
             <span className="text-sm font-medium text-brand-text">API-токен Wildberries</span>
             {tokenStatus?.hasToken ? (
-              <span className="inline-flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+              <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950 px-2 py-0.5 rounded-full">
                 <CheckCircle className="h-3 w-3" /> Подключён
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+              <span className="inline-flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950 px-2 py-0.5 rounded-full">
                 <AlertCircle className="h-3 w-3" /> Не задан
               </span>
             )}
@@ -280,7 +280,7 @@ const WbAdsAnalytics = () => {
             <button
               type="button"
               onClick={() => setShowToken(!showToken)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-brand-text-secondary hover:text-brand-text"
             >
               {showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -327,7 +327,7 @@ const WbAdsAnalytics = () => {
                 <li>Остальные разрешения не требуются — оставьте их отключёнными</li>
                 <li>Нажмите <span className="font-medium text-brand-text">«Создать токен»</span> и скопируйте его</li>
               </ol>
-              <div className="mt-2 p-2 bg-amber-50 rounded-lg text-amber-700">
+              <div className="mt-2 p-2 bg-amber-50 dark:bg-amber-950 rounded-lg text-amber-700 dark:text-amber-300">
                 <span className="font-medium">Важно:</span> токен действителен 180 дней. После истечения создайте новый и обновите его здесь.
                 Токен хранится только в оперативной памяти сервера и сбрасывается при перезапуске.
               </div>
@@ -343,7 +343,7 @@ const WbAdsAnalytics = () => {
           className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
             selectedNmId === undefined
               ? 'bg-primary-500 text-white'
-              : 'bg-white border border-brand-border text-brand-text-secondary hover:bg-brand-surface'
+              : 'bg-card border border-brand-border text-brand-text-secondary hover:bg-brand-surface'
           }`}
         >
           Сводная
@@ -355,7 +355,7 @@ const WbAdsAnalytics = () => {
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
               selectedNmId === a.nm_id
                 ? 'bg-primary-500 text-white'
-                : 'bg-white border border-brand-border text-brand-text-secondary hover:bg-brand-surface'
+                : 'bg-card border border-brand-border text-brand-text-secondary hover:bg-brand-surface'
             }`}
           >
             {a.nm_id}
@@ -374,8 +374,8 @@ const WbAdsAnalytics = () => {
           <div className="overflow-x-auto pivot-scroll">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="bg-gray-50 border-b border-brand-border">
-                  <th className="text-left py-3 px-4 font-medium text-brand-text sticky left-0 bg-gray-50 z-20 min-w-[140px] border-r border-brand-border">
+                <tr className="bg-subtle border-b border-brand-border">
+                  <th className="text-left py-3 px-4 font-medium text-brand-text sticky left-0 bg-subtle z-20 min-w-[140px] border-r border-brand-border">
                     Метрика
                   </th>
                   <th className="text-left py-3 px-3 font-semibold text-brand-text sticky left-[140px] bg-primary-50 z-20 min-w-[100px] whitespace-nowrap ">
@@ -393,13 +393,13 @@ const WbAdsAnalytics = () => {
                   const values = analytics.metrics[metric.key] || []
                   const summary = computeSummary(values, metric.agg)
                   const isEven = idx % 2 === 0
-                  const stickyBg = isEven ? 'bg-white' : 'bg-[#fafafb]'
+                  const stickyBg = isEven ? 'bg-card' : 'bg-[#fafafb]'
                   const summaryBg = isEven ? 'bg-[#f3f0ff]' : 'bg-[#edeafc]'
 
                   return (
                     <tr
                       key={metric.key}
-                      className={`border-b border-gray-100 ${isEven ? '' : 'bg-[#fafafb]'} hover:bg-primary-50/30 transition-colors`}
+                      className={`border-b border-brand-border ${isEven ? '' : 'bg-[#fafafb]'} hover:bg-primary-50/30 transition-colors`}
                     >
                       <td className={`py-2.5 px-4 font-medium text-brand-text sticky left-0 z-20 ${stickyBg} border-r border-brand-border`}>
                         {metric.label}
@@ -449,7 +449,7 @@ const WbAdsAnalytics = () => {
                               </button>
                               <button
                                 onClick={() => { setEditingNoteDate(null); setNoteText('') }}
-                                className="text-xs text-gray-400 hover:text-gray-600"
+                                className="text-xs text-brand-text-secondary hover:text-brand-text"
                               >
                                 <X className="h-3 w-3" />
                               </button>
@@ -464,7 +464,7 @@ const WbAdsAnalytics = () => {
                             >
                               <MessageSquare className="h-4 w-4 mx-auto fill-amber-200" />
                             </button>
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-30 w-48 p-2 bg-white rounded-lg shadow-lg border text-xs text-left text-brand-text">
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-30 w-48 p-2 bg-card rounded-lg shadow-lg border text-xs text-left text-brand-text">
                               {note.content}
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleDeleteNote(note.id) }}
@@ -477,7 +477,7 @@ const WbAdsAnalytics = () => {
                         ) : (
                           <button
                             onClick={() => { setEditingNoteDate(date); setNoteText('') }}
-                            className="text-gray-300 hover:text-gray-500"
+                            className="text-brand-text-secondary hover:text-brand-text"
                           >
                             <MessageSquare className="h-4 w-4 mx-auto" />
                           </button>
@@ -492,7 +492,7 @@ const WbAdsAnalytics = () => {
         </div>
       ) : (
         <div className="card text-center py-12">
-          <Megaphone className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+          <Megaphone className="h-12 w-12 text-brand-text-secondary mx-auto mb-4" />
           <p className="text-brand-text-secondary">
             {analytics && analytics.dates.length === 0
               ? 'Нет данных за выбранный период. Нажмите «Синхронизация» для загрузки из WB.'

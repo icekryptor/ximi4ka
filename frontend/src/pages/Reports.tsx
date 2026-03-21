@@ -57,15 +57,15 @@ const Reports = () => {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Отчёты и аналитика</h1>
-        <p className="text-gray-600 mt-1">Финансовый анализ за выбранный период</p>
+        <h1 className="text-3xl font-bold text-brand-text">Отчёты и аналитика</h1>
+        <p className="text-brand-text-secondary mt-1">Финансовый анализ за выбранный период</p>
       </div>
 
       {/* Filters */}
       <div className="card mb-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 flex items-center space-x-4">
-            <Calendar className="h-5 w-5 text-gray-400" />
+            <Calendar className="h-5 w-5 text-brand-text-secondary" />
             <div className="flex items-center space-x-2">
               <input
                 type="date"
@@ -73,7 +73,7 @@ const Reports = () => {
                 value={dateRange.startDate}
                 onChange={(e) => setDateRange({ ...dateRange, startDate: e.target.value })}
               />
-              <span className="text-gray-500">—</span>
+              <span className="text-brand-text-secondary">—</span>
               <input
                 type="date"
                 className="input"
@@ -88,7 +88,7 @@ const Reports = () => {
               className={`px-4 py-2 rounded-xl font-medium transition-colors ${
                 reportType === 'all'
                   ? 'bg-primary-100 text-primary-700'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-muted text-brand-text-secondary hover:bg-subtle'
               }`}
             >
               Все
@@ -97,8 +97,8 @@ const Reports = () => {
               onClick={() => setReportType(TransactionType.INCOME)}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 reportType === TransactionType.INCOME
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                  : 'bg-muted text-brand-text-secondary hover:bg-subtle'
               }`}
             >
               Доходы
@@ -107,8 +107,8 @@ const Reports = () => {
               onClick={() => setReportType(TransactionType.EXPENSE)}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 reportType === TransactionType.EXPENSE
-                  ? 'bg-red-100 text-red-700'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
+                  : 'bg-muted text-brand-text-secondary hover:bg-subtle'
               }`}
             >
               Расходы
@@ -119,10 +119,10 @@ const Reports = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="card bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+        <div className="card bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-green-600">Доходы</p>
+              <p className="text-sm font-medium text-green-600 dark:text-green-400">Доходы</p>
               <p className="text-2xl font-bold text-green-900 mt-1">
                 {formatCurrency(summary?.income || 0)}
               </p>
@@ -133,10 +133,10 @@ const Reports = () => {
           </div>
         </div>
 
-        <div className="card bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+        <div className="card bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 border-red-200 dark:border-red-800">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-red-600">Расходы</p>
+              <p className="text-sm font-medium text-red-600 dark:text-red-400">Расходы</p>
               <p className="text-2xl font-bold text-red-900 mt-1">
                 {formatCurrency(summary?.expense || 0)}
               </p>
@@ -180,7 +180,7 @@ const Reports = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Category Bar Chart */}
         <div className="card">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">По категориям</h2>
+          <h2 className="text-xl font-bold text-brand-text mb-4">По категориям</h2>
           {categoryReport.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={categoryReport}>
@@ -192,13 +192,13 @@ const Reports = () => {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-center text-gray-500 py-12">Нет данных</p>
+            <p className="text-center text-brand-text-secondary py-12">Нет данных</p>
           )}
         </div>
 
         {/* Counterparty Pie Chart */}
         <div className="card">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">По контрагентам</h2>
+          <h2 className="text-xl font-bold text-brand-text mb-4">По контрагентам</h2>
           {counterpartyReport.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -219,7 +219,7 @@ const Reports = () => {
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-center text-gray-500 py-12">Нет данных</p>
+            <p className="text-center text-brand-text-secondary py-12">Нет данных</p>
           )}
         </div>
       </div>
@@ -228,63 +228,63 @@ const Reports = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Category Table */}
         <div className="card">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Топ категорий</h2>
+          <h2 className="text-xl font-bold text-brand-text mb-4">Топ категорий</h2>
           {categoryReport.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-2 font-medium text-gray-700">Категория</th>
-                    <th className="text-right py-2 font-medium text-gray-700">Сумма</th>
-                    <th className="text-right py-2 font-medium text-gray-700">Кол-во</th>
+                  <tr className="border-b border-brand-border">
+                    <th className="text-left py-2 font-medium text-brand-text-secondary">Категория</th>
+                    <th className="text-right py-2 font-medium text-brand-text-secondary">Сумма</th>
+                    <th className="text-right py-2 font-medium text-brand-text-secondary">Кол-во</th>
                   </tr>
                 </thead>
                 <tbody>
                   {categoryReport.map((item, index) => (
-                    <tr key={index} className="border-b border-gray-100">
-                      <td className="py-2 text-gray-900">{item.name}</td>
-                      <td className="py-2 text-right font-semibold text-gray-900">
+                    <tr key={index} className="border-b border-brand-border">
+                      <td className="py-2 text-brand-text">{item.name}</td>
+                      <td className="py-2 text-right font-semibold text-brand-text">
                         {formatCurrency(item.total)}
                       </td>
-                      <td className="py-2 text-right text-gray-600">{item.count}</td>
+                      <td className="py-2 text-right text-brand-text-secondary">{item.count}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           ) : (
-            <p className="text-center text-gray-500 py-8">Нет данных</p>
+            <p className="text-center text-brand-text-secondary py-8">Нет данных</p>
           )}
         </div>
 
         {/* Counterparty Table */}
         <div className="card">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Топ контрагентов</h2>
+          <h2 className="text-xl font-bold text-brand-text mb-4">Топ контрагентов</h2>
           {counterpartyReport.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-2 font-medium text-gray-700">Контрагент</th>
-                    <th className="text-right py-2 font-medium text-gray-700">Сумма</th>
-                    <th className="text-right py-2 font-medium text-gray-700">Кол-во</th>
+                  <tr className="border-b border-brand-border">
+                    <th className="text-left py-2 font-medium text-brand-text-secondary">Контрагент</th>
+                    <th className="text-right py-2 font-medium text-brand-text-secondary">Сумма</th>
+                    <th className="text-right py-2 font-medium text-brand-text-secondary">Кол-во</th>
                   </tr>
                 </thead>
                 <tbody>
                   {counterpartyReport.map((item, index) => (
-                    <tr key={index} className="border-b border-gray-100">
-                      <td className="py-2 text-gray-900">{item.name}</td>
-                      <td className="py-2 text-right font-semibold text-gray-900">
+                    <tr key={index} className="border-b border-brand-border">
+                      <td className="py-2 text-brand-text">{item.name}</td>
+                      <td className="py-2 text-right font-semibold text-brand-text">
                         {formatCurrency(item.total)}
                       </td>
-                      <td className="py-2 text-right text-gray-600">{item.count}</td>
+                      <td className="py-2 text-right text-brand-text-secondary">{item.count}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           ) : (
-            <p className="text-center text-gray-500 py-8">Нет данных</p>
+            <p className="text-center text-brand-text-secondary py-8">Нет данных</p>
           )}
         </div>
       </div>
