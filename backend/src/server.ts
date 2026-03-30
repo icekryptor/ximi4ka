@@ -36,6 +36,7 @@ app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 // CORS: allow Vercel frontend, localhost dev, and any extra origins from env
 const allowedOrigins = [
   'https://ximi4ka.vercel.app',
+  'https://erp.ximi4ka.ru',
   'http://localhost:5173',
   'http://localhost:5174',
   ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
