@@ -76,6 +76,7 @@ export default function CostCalculation() {
   const [editingComponent, setEditingComponent] = useState<Component | null>(null)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [kitModalOpen, setKitModalOpen] = useState(false)
+  const [editingKit, setEditingKit] = useState<Kit | null>(null)
   const [viewMode, setViewMode] = useState<'table' | 'tree'>('table')
 
   const [editingEstimated, setEditingEstimated] = useState(false)
@@ -378,18 +379,28 @@ export default function CostCalculation() {
       {/* Вкладки китов */}
       <div className="flex items-center gap-1 border-b border-brand-border mb-6">
         {kits.map(kit => (
-          <button
-            key={kit.id}
-            onClick={() => setActiveKitId(kit.id)}
-            className={`px-5 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px max-w-[180px] truncate ${
-              activeKitId === kit.id
-                ? 'border-brand-text text-brand-text'
-                : 'border-transparent text-brand-text-secondary hover:text-brand-text hover:border-brand-border'
-            }`}
-            title={kit.name}
-          >
-            {kit.name}
-          </button>
+          <div key={kit.id} className="flex items-center -mb-px">
+            <button
+              onClick={() => setActiveKitId(kit.id)}
+              className={`px-5 py-2.5 text-sm font-medium transition-colors border-b-2 max-w-[180px] truncate ${
+                activeKitId === kit.id
+                  ? 'border-brand-text text-brand-text'
+                  : 'border-transparent text-brand-text-secondary hover:text-brand-text hover:border-brand-border'
+              }`}
+              title={kit.name}
+            >
+              {kit.name}
+            </button>
+            {activeKitId === kit.id && (
+              <button
+                onClick={() => setEditingKit(kit)}
+                className="p-1 text-brand-text-secondary hover:text-primary-500 transition-colors rounded"
+                title="Редактировать набор"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
         ))}
         <button
           onClick={() => setKitModalOpen(true)}
@@ -691,6 +702,17 @@ export default function CostCalculation() {
             setKitModalOpen(false)
             await loadKits()
             setActiveKitId(kitId)
+          }}
+        />
+      )}
+
+      {editingKit && (
+        <KitModal
+          kit={editingKit}
+          onClose={() => setEditingKit(null)}
+          onSaved={async () => {
+            setEditingKit(null)
+            await loadKits()
           }}
         />
       )}

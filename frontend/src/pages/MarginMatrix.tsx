@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { RefreshCw, TrendingUp, TrendingDown, Minus } from 'lucide-react'
-import { economicsApi, MarginMatrixResponse } from '../api/economics'
+import { economicsApi, MarginMatrixResponse } from '../api/unitEconomics'
 
 const rub = (v: number) =>
   new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', minimumFractionDigits: 0 }).format(v)

@@ -6,12 +6,9 @@ import { WbAdStat } from '../entities/WbAdStat';
 import { SkuMapping } from '../entities/SkuMapping';
 import { Kit } from '../entities/Kit';
 import { UnitEconomicsCalculation } from '../entities/UnitEconomicsCalculation';
+import { round } from '../utils/math';
 
 const salesRepo = () => AppDataSource.getRepository(DailySales);
-
-function round(value: number, decimals = 2): number {
-  return Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals);
-}
 
 /**
  * GET /api/sales-report

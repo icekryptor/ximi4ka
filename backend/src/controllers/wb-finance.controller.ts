@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { AppDataSource } from '../config/database';
 import { WbFinancialStat } from '../entities/WbFinancialStat';
 import { wbApiService } from '../services/wb-api.service';
+import { round } from '../utils/math';
 
 const repo = () => AppDataSource.getRepository(WbFinancialStat);
 
@@ -373,8 +374,3 @@ export const saveToken = async (req: Request, res: Response) => {
   }
 };
 
-// ─── Helpers ───
-
-function round(value: number, decimals = 2): number {
-  return Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals);
-}

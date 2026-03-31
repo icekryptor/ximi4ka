@@ -22,6 +22,11 @@ import wbFinanceRoutes from './routes/wb-finance.routes';
 import unitEconomicsRoutes from './routes/unit-economics.routes';
 import authRoutes from './routes/auth';
 import salesReportRoutes from './routes/sales-report.routes';
+import employeeRoutes from './routes/employee.routes';
+import productionOrderRoutes from './routes/productionOrder.routes';
+import qcRoutes from './routes/qc.routes';
+import salesChannelRoutes from './routes/salesChannel.routes';
+import supplyDocumentRoutes from './routes/supplyDocument.routes';
 
 // Middleware
 import { authMiddleware } from './middleware/auth';
@@ -33,10 +38,24 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+// CORS: allow Vercel frontend, localhost dev, and any extra origins from env
+const allowedOrigins = [
+  'https://ximi4ka.vercel.app',
+  'https://erp.ximi4ka.ru',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+].map(o => o.replace(/\/$/, '')); // strip trailing slashes
+
 app.use(cors({
-  origin: process.env.VERCEL
-    ? true                                         // same-origin on Vercel — allow all
-    : (process.env.FRONTEND_URL || 'http://localhost:5173'),
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (mobile apps, curl, server-to-server)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    // Also allow any *.vercel.app preview deploys
+    if (/\.vercel\.app$/.test(origin)) return callback(null, true);
+    callback(new Error(`CORS: origin ${origin} not allowed`));
+  },
   credentials: true,
   exposedHeaders: ['X-Total-Count', 'X-Page', 'X-Limit', 'X-Total-Pages'],
 }));
@@ -64,6 +83,11 @@ app.use('/api/wb-ads', authMiddleware, wbAdsRoutes);
 app.use('/api/wb-finance', authMiddleware, wbFinanceRoutes);
 app.use('/api/unit-economics', authMiddleware, unitEconomicsRoutes);
 app.use('/api/sales-report', authMiddleware, salesReportRoutes);
+app.use('/api/employees', authMiddleware, employeeRoutes);
+app.use('/api/production-orders', authMiddleware, productionOrderRoutes);
+app.use('/api/qc', authMiddleware, qcRoutes);
+app.use('/api/sales-channels', authMiddleware, salesChannelRoutes);
+app.use('/api/supply-documents', authMiddleware, supplyDocumentRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

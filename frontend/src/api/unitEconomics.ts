@@ -101,6 +101,58 @@ export function createDefaultChannel(channelName: string): ChannelConfig {
   };
 }
 
+// Margin Matrix types (migrated from economics.ts)
+export interface MarginMatrixRow {
+  kit_id: string;
+  kit_name: string;
+  sku: string;
+  cost_price: number;
+  channels: Array<{
+    channel_id: string;
+    channel_name: string;
+    selling_price: number;
+    commission_amount: number;
+    logistics_cost: number;
+    storage_cost: number;
+    ad_spend_amount: number;
+    unit_margin: number;
+    margin_pct: number;
+  }>;
+}
+
+export interface MarginMatrixResponse {
+  channels: Array<{ id: string; name: string }>;
+  rows: MarginMatrixRow[];
+}
+
+// Economics API (margin matrix — migrated from economics.ts)
+export const economicsApi = {
+  getAll: async (params?: { kit_id?: string; channel_id?: string; period?: string }) => {
+    const response = await apiClient.get<UnitEconomicsCalculation[]>('/economics/unit', { params });
+    return response.data;
+  },
+
+  getById: async (id: string) => {
+    const response = await apiClient.get<UnitEconomicsCalculation>(`/economics/unit/${id}`);
+    return response.data;
+  },
+
+  calculate: async (data: Record<string, unknown>) => {
+    const response = await apiClient.post<UnitEconomicsCalculation>('/economics/unit/calculate', data);
+    return response.data;
+  },
+
+  delete: async (id: string) => {
+    const response = await apiClient.delete(`/economics/unit/${id}`);
+    return response.data;
+  },
+
+  marginMatrix: async (params?: { selling_prices?: Record<string, number> }) => {
+    const response = await apiClient.post<MarginMatrixResponse>('/economics/margin/matrix', params || {});
+    return response.data;
+  },
+};
+
 // API
 export const unitEconomicsApi = {
   getAll: async (kitId?: string) => {
