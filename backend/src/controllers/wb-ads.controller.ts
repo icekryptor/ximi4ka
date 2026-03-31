@@ -3,6 +3,7 @@ import { AppDataSource } from '../config/database';
 import { WbAdStat } from '../entities/WbAdStat';
 import { WbAdNote } from '../entities/WbAdNote';
 import { wbApiService } from '../services/wb-api.service';
+import { round } from '../utils/math';
 
 const statsRepo = () => AppDataSource.getRepository(WbAdStat);
 const notesRepo = () => AppDataSource.getRepository(WbAdNote);
@@ -403,8 +404,3 @@ export const saveToken = async (req: Request, res: Response) => {
   }
 };
 
-// ─── Helpers ───
-
-function round(value: number, decimals = 2): number {
-  return Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals);
-}

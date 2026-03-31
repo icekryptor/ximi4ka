@@ -22,6 +22,11 @@ import wbFinanceRoutes from './routes/wb-finance.routes';
 import unitEconomicsRoutes from './routes/unit-economics.routes';
 import authRoutes from './routes/auth';
 import salesReportRoutes from './routes/sales-report.routes';
+import employeeRoutes from './routes/employee.routes';
+import productionOrderRoutes from './routes/productionOrder.routes';
+import qcRoutes from './routes/qc.routes';
+import salesChannelRoutes from './routes/salesChannel.routes';
+import supplyDocumentRoutes from './routes/supplyDocument.routes';
 
 // Middleware
 import { authMiddleware } from './middleware/auth';
@@ -78,6 +83,11 @@ app.use('/api/wb-ads', authMiddleware, wbAdsRoutes);
 app.use('/api/wb-finance', authMiddleware, wbFinanceRoutes);
 app.use('/api/unit-economics', authMiddleware, unitEconomicsRoutes);
 app.use('/api/sales-report', authMiddleware, salesReportRoutes);
+app.use('/api/employees', authMiddleware, employeeRoutes);
+app.use('/api/production-orders', authMiddleware, productionOrderRoutes);
+app.use('/api/qc', authMiddleware, qcRoutes);
+app.use('/api/sales-channels', authMiddleware, salesChannelRoutes);
+app.use('/api/supply-documents', authMiddleware, supplyDocumentRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

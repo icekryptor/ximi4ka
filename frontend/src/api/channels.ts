@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { createCrudApi } from './crudFactory';
 
 export enum MarketplaceType {
   WILDBERRIES = 'wildberries',
@@ -31,29 +31,4 @@ export interface SalesChannel {
   updated_at: string;
 }
 
-export const channelsApi = {
-  getAll: async () => {
-    const response = await apiClient.get<SalesChannel[]>('/channels');
-    return response.data;
-  },
-
-  getById: async (id: string) => {
-    const response = await apiClient.get<SalesChannel>(`/channels/${id}`);
-    return response.data;
-  },
-
-  create: async (data: Partial<SalesChannel>) => {
-    const response = await apiClient.post<SalesChannel>('/channels', data);
-    return response.data;
-  },
-
-  update: async (id: string, data: Partial<SalesChannel>) => {
-    const response = await apiClient.put<SalesChannel>(`/channels/${id}`, data);
-    return response.data;
-  },
-
-  delete: async (id: string) => {
-    const response = await apiClient.delete(`/channels/${id}`);
-    return response.data;
-  },
-};
+export const channelsApi = createCrudApi<SalesChannel>('/channels');
