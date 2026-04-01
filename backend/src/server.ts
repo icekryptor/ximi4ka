@@ -27,6 +27,8 @@ import productionOrderRoutes from './routes/productionOrder.routes';
 import qcRoutes from './routes/qc.routes';
 import salesChannelRoutes from './routes/salesChannel.routes';
 import supplyDocumentRoutes from './routes/supplyDocument.routes';
+import boardRoutes from './routes/board.routes';
+import taskCommentRoutes from './routes/taskComment.routes';
 
 // Middleware
 import { authMiddleware } from './middleware/auth';
@@ -88,6 +90,8 @@ app.use('/api/production-orders', authMiddleware, productionOrderRoutes);
 app.use('/api/qc', authMiddleware, qcRoutes);
 app.use('/api/sales-channels', authMiddleware, salesChannelRoutes);
 app.use('/api/supply-documents', authMiddleware, supplyDocumentRoutes);
+app.use('/api/boards', authMiddleware, boardRoutes);
+app.use('/api/tasks', authMiddleware, taskCommentRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

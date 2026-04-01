@@ -22,6 +22,10 @@ import { DailySales } from '../entities/DailySales';
 import { Employee } from '../entities/Employee';
 import { SalesChannel } from '../entities/SalesChannel';
 import { QcChecklist } from '../entities/QcChecklist';
+import { Board } from '../entities/Board';
+import { Task } from '../entities/Task';
+import { TaskComment } from '../entities/TaskComment';
+import { TaskTag } from '../entities/TaskTag';
 
 dotenv.config();
 
@@ -31,7 +35,7 @@ const databaseUrl = process.env.DATABASE_URL;
 
 const isDev = process.env.NODE_ENV === 'development';
 
-const allEntities = [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, User, DailySales, Employee, SalesChannel, QcChecklist];
+const allEntities = [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, User, DailySales, Employee, SalesChannel, QcChecklist, Board, Task, TaskComment, TaskTag];
 
 const dataSourceOptions = databaseUrl
   ? {
