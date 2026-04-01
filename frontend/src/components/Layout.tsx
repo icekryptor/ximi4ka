@@ -108,6 +108,14 @@ const IconQualityControl = () => (
   </svg>
 )
 
+const IconPlanning = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <path d="M3 9h18" />
+    <path d="M9 3v18" />
+  </svg>
+)
+
 const IconMarketplace = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
@@ -279,6 +287,13 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { type: 'link', name: 'Заказы на производство', href: '/production-orders', icon: IconProductionOrders },
       { type: 'link', name: 'Контроль качества', href: '/quality-control', icon: IconQualityControl },
+    ],
+  },
+  {
+    id: 'planning',
+    label: 'Планирование',
+    items: [
+      { type: 'link', name: 'Канбан-доски', href: '/planning', icon: IconPlanning },
     ],
   },
   {
