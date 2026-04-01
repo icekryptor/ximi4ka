@@ -23,6 +23,7 @@ const WbAdsAnalytics = lazy(() => import('./pages/WbAdsAnalytics'))
 const WbFinanceReports = lazy(() => import('./pages/WbFinanceReports'))
 const UnitEconomics = lazy(() => import('./pages/UnitEconomics'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
+const RegisterPage = lazy(() => import('./pages/RegisterPage'))
 const MarginMatrix = lazy(() => import('./pages/MarginMatrix'))
 const ProductionOrders = lazy(() => import('./pages/ProductionOrders'))
 const QualityControl = lazy(() => import('./pages/QualityControl'))
@@ -72,8 +73,9 @@ function App() {
             <Suspense fallback={<PageLoader />}>
               <ErrorBoundary>
                 <Routes>
-                  {/* Public route */}
+                  {/* Public routes */}
                   <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
 
                   {/* Protected routes — wrapped in Layout */}
                   <Route
