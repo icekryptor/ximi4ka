@@ -3,12 +3,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Beaker } from 'lucide-react';
 
-export default function LoginPage() {
-  const { login } = useAuth();
+export default function RegisterPage() {
+  const { register } = useAuth();
   const navigate = useNavigate();
 
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -16,29 +18,53 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
 
-    if (!email.trim() || !password) {
-      setError('Введите email и пароль');
+    if (!name.trim() || !email.trim() || !password) {
+      setError('Заполните все поля');
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('Пароль должен содержать минимум 8 символов');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Пароли не совпадают');
       return;
     }
 
     setIsLoading(true);
     try {
-      await login({ email: email.trim(), password });
+      await register({ name: name.trim(), email: email.trim(), password });
       navigate('/', { replace: true });
     } catch (err: any) {
       const msg =
         err?.response?.data?.error ||
-        'Ошибка при входе. Проверьте данные и попробуйте снова.';
+        'Ошибка при регистрации. Попробуйте снова.';
       setError(msg);
     } finally {
       setIsLoading(false);
     }
   }
 
+  const inputStyle = {
+    border: '1px solid var(--color-border)',
+    color: 'var(--color-text-primary)',
+    background: 'var(--color-bg-card)',
+  };
+
+  function handleFocus(e: React.FocusEvent<HTMLInputElement>) {
+    e.currentTarget.style.borderColor = '#836efe';
+    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(131,110,254,0.15)';
+  }
+
+  function handleBlur(e: React.FocusEvent<HTMLInputElement>) {
+    e.currentTarget.style.borderColor = 'var(--color-border)';
+    e.currentTarget.style.boxShadow = 'none';
+  }
+
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4 bg-page"
-    >
+    <div className="min-h-screen flex items-center justify-center px-4 bg-page">
       <div
         className="w-full max-w-md"
         style={{
@@ -52,7 +78,7 @@ export default function LoginPage() {
         }}
       >
         {/* Logo */}
-        <div className="text-center mb-10">
+        <div className="text-center mb-8">
           <div
             className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
             style={{
@@ -70,20 +96,36 @@ export default function LoginPage() {
               backgroundClip: 'text',
             }}
           >
-            Ximi4ka
+            Регистрация
           </h1>
           <p className="text-sm text-brand-text-secondary">
-            Финансовая система управления
+            Создайте аккаунт в системе Ximi4ka
           </p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} noValidate>
-          <div className="mb-5">
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium mb-1.5 text-brand-text"
-            >
+          <div className="mb-4">
+            <label htmlFor="name" className="block text-sm font-medium mb-1.5 text-brand-text">
+              Имя
+            </label>
+            <input
+              id="name"
+              type="text"
+              autoComplete="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Иван Иванов"
+              disabled={isLoading}
+              className="w-full px-4 py-3 text-sm rounded-2xl transition-all outline-none"
+              style={inputStyle}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+            />
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="email" className="block text-sm font-medium mb-1.5 text-brand-text">
               Email
             </label>
             <input
@@ -95,51 +137,47 @@ export default function LoginPage() {
               placeholder="you@example.com"
               disabled={isLoading}
               className="w-full px-4 py-3 text-sm rounded-2xl transition-all outline-none"
-              style={{
-                border: '1px solid var(--color-border)',
-                color: 'var(--color-text-primary)',
-                background: 'var(--color-bg-card)',
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = '#836efe';
-                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(131,110,254,0.15)';
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = 'var(--color-border)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
+              style={inputStyle}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
             />
           </div>
 
-          <div className="mb-6">
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium mb-1.5 text-brand-text"
-            >
+          <div className="mb-4">
+            <label htmlFor="password" className="block text-sm font-medium mb-1.5 text-brand-text">
               Пароль
             </label>
             <input
               id="password"
               type="password"
-              autoComplete="current-password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Минимум 8 символов"
               disabled={isLoading}
               className="w-full px-4 py-3 text-sm rounded-2xl transition-all outline-none"
-              style={{
-                border: '1px solid var(--color-border)',
-                color: 'var(--color-text-primary)',
-                background: 'var(--color-bg-card)',
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = '#836efe';
-                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(131,110,254,0.15)';
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = 'var(--color-border)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
+              style={inputStyle}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+            />
+          </div>
+
+          <div className="mb-5">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1.5 text-brand-text">
+              Подтверждение пароля
+            </label>
+            <input
+              id="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Повторите пароль"
+              disabled={isLoading}
+              className="w-full px-4 py-3 text-sm rounded-2xl transition-all outline-none"
+              style={inputStyle}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
             />
           </div>
 
@@ -168,20 +206,18 @@ export default function LoginPage() {
           >
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">
-                <span
-                  className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"
-                />
-                Вход...
+                <span className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Регистрация...
               </span>
             ) : (
-              'Войти'
+              'Зарегистрироваться'
             )}
           </button>
 
           <p className="text-center text-sm text-brand-text-secondary mt-5">
-            Нет аккаунта?{' '}
-            <Link to="/register" className="font-medium text-primary-500 hover:text-primary-600">
-              Зарегистрироваться
+            Уже есть аккаунт?{' '}
+            <Link to="/login" className="font-medium text-primary-500 hover:text-primary-600">
+              Войти
             </Link>
           </p>
         </form>
