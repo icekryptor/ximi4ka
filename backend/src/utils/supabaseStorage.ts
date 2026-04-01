@@ -13,9 +13,10 @@ function getSupabase(): SupabaseClient {
 }
 
 export const BUCKETS = {
-  components:  'components',
-  employees:   'employees',
-  supplyDocs:  'supply-docs',
+  components:      'components',
+  employees:       'employees',
+  supplyDocs:      'supply-docs',
+  taskAttachments: 'task-attachments',
 } as const;
 
 /** Upload buffer to Supabase Storage, return public URL. */
