@@ -72,6 +72,7 @@ const UnitEconomics = () => {
             seller_price: Number(latest.seller_price),
             ...(latest.start_price != null && { start_price: Number(latest.start_price) }),
             ...(latest.seller_discount != null && { seller_discount: Number(latest.seller_discount) }),
+            ...(latest.marketplace_price != null && { marketplace_price: Number(latest.marketplace_price) }),
             cost_type: latest.cost_type,
             tax_rate: Number(latest.tax_rate),
             variable_blocks: latest.variable_blocks || [],
@@ -142,6 +143,7 @@ const UnitEconomics = () => {
         seller_price: ch.seller_price,
         start_price: ch.start_price,
         seller_discount: ch.seller_discount,
+        marketplace_price: ch.marketplace_price,
         cost_type: ch.cost_type,
         tax_rate: ch.tax_rate,
         variable_blocks: ch.variable_blocks,
@@ -163,6 +165,7 @@ const UnitEconomics = () => {
         seller_price: ch.seller_price,
         start_price: ch.start_price,
         seller_discount: ch.seller_discount,
+        marketplace_price: ch.marketplace_price,
         cost_type: ch.cost_type,
         tax_rate: ch.tax_rate,
         variable_blocks: ch.variable_blocks,
@@ -184,6 +187,7 @@ const UnitEconomics = () => {
         seller_price: ch.seller_price,
         start_price: ch.start_price,
         seller_discount: ch.seller_discount,
+        marketplace_price: ch.marketplace_price,
         cost_type: ch.cost_type,
         tax_rate: ch.tax_rate,
         variable_blocks: ch.variable_blocks,
@@ -281,29 +285,26 @@ const UnitEconomics = () => {
       {selectedKitId && channels.length > 0 && (
         <div className="flex items-end gap-0 flex-wrap">
           {channels.map((ch, i) => (
-            <div key={i} className="flex items-center shrink-0">
-              <button
-                className={`px-5 py-2.5 text-sm font-medium transition-colors border-t border-x rounded-t-lg ${
-                  activeChannelIdx === i
-                    ? 'bg-card text-primary-700 dark:text-primary-300 border-brand-border -mb-px z-10'
-                    : 'bg-subtle text-brand-text-secondary hover:text-brand-text border-transparent hover:bg-muted'
-                }`}
-                onClick={() => setActiveChannelIdx(i)}
-              >
-                {ch.channel_name}
-              </button>
+            <button
+              key={i}
+              className={`flex items-center gap-1.5 shrink-0 px-4 py-2.5 text-sm font-medium transition-colors border-t border-x rounded-t-lg ${
+                activeChannelIdx === i
+                  ? 'bg-card text-primary-700 dark:text-primary-300 border-brand-border -mb-px z-10'
+                  : 'bg-subtle text-brand-text-secondary hover:text-brand-text border-transparent hover:bg-muted'
+              }`}
+              onClick={() => setActiveChannelIdx(i)}
+            >
+              {ch.channel_name}
               {channels.length > 1 && (
-                <button
-                  className={`-ml-1 mr-1 transition-opacity ${
-                    activeChannelIdx === i ? 'text-brand-text-secondary hover:text-red-500' : 'text-brand-text-secondary hover:text-red-400'
-                  }`}
-                  onClick={() => removeChannel(i)}
+                <span
+                  className="ml-1 p-0.5 rounded hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-500 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); removeChannel(i) }}
                   title="Удалить канал"
                 >
-                  <X className="h-3.5 w-3.5" />
-                </button>
+                  <X className="h-3 w-3" />
+                </span>
               )}
-            </div>
+            </button>
           ))}
 
           {/* Add channel */}

@@ -7,6 +7,7 @@ import {
   VARIABLE_BLOCK_OPTIONS,
   calculateUnitEconomics,
   isWbChannel,
+  isMarketplaceChannel,
   computeSellerPrice,
 } from '../api/unitEconomics'
 import { Kit } from '../api/kits'
@@ -24,6 +25,8 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
   const [showBlockMenu, setShowBlockMenu] = useState(false)
 
   const isWb = isWbChannel(channel.channel_name)
+  const isMarketplace = isMarketplaceChannel(channel.channel_name)
+  const marketplacePrice = Number(channel.marketplace_price || 0)
 
   const costPrice =
     channel.cost_type === 'estimated'
@@ -143,26 +146,77 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
                     {fmt(channel.seller_price)} ₽
                   </div>
                 </div>
+                {/* Цена на площадке */}
+                <div className="pt-2 border-t border-brand-border">
+                  <div className="text-xs text-brand-text-secondary mb-1">Цена на площадке</div>
+                  <div className="flex items-baseline gap-2">
+                    <input
+                      type="number"
+                      className="input text-lg font-semibold w-full text-right tabular-nums"
+                      value={channel.marketplace_price || ''}
+                      onChange={e => updateField('marketplace_price', Number(e.target.value) || 0)}
+                      placeholder="0"
+                      min="0"
+                      step="1"
+                    />
+                    <span className="text-sm text-brand-text-secondary shrink-0">₽</span>
+                  </div>
+                </div>
               </div>
             </>
           ) : (
             <>
               {/* Другие каналы: прямой ввод Цены продавца */}
               <label className="block text-xs font-medium text-brand-text-secondary uppercase tracking-wider mb-3">
-                Цена продавца
+                {isMarketplace ? 'Ценообразование' : 'Цена продавца'}
               </label>
-              <div className="flex items-baseline gap-2">
-                <input
-                  type="number"
-                  className="input text-2xl font-bold w-full text-right tabular-nums"
-                  value={channel.seller_price || ''}
-                  onChange={e => updateField('seller_price', Number(e.target.value) || 0)}
-                  placeholder="0"
-                  min="0"
-                  step="1"
-                />
-                <span className="text-lg text-brand-text-secondary shrink-0">₽</span>
-              </div>
+              {isMarketplace ? (
+                <div className="space-y-3">
+                  <div>
+                    <div className="text-xs text-brand-text-secondary mb-1">Цена продавца</div>
+                    <div className="flex items-baseline gap-2">
+                      <input
+                        type="number"
+                        className="input text-lg font-semibold w-full text-right tabular-nums"
+                        value={channel.seller_price || ''}
+                        onChange={e => updateField('seller_price', Number(e.target.value) || 0)}
+                        placeholder="0"
+                        min="0"
+                        step="1"
+                      />
+                      <span className="text-sm text-brand-text-secondary shrink-0">₽</span>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-brand-border">
+                    <div className="text-xs text-brand-text-secondary mb-1">Цена на площадке</div>
+                    <div className="flex items-baseline gap-2">
+                      <input
+                        type="number"
+                        className="input text-lg font-semibold w-full text-right tabular-nums"
+                        value={channel.marketplace_price || ''}
+                        onChange={e => updateField('marketplace_price', Number(e.target.value) || 0)}
+                        placeholder="0"
+                        min="0"
+                        step="1"
+                      />
+                      <span className="text-sm text-brand-text-secondary shrink-0">₽</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-baseline gap-2">
+                  <input
+                    type="number"
+                    className="input text-2xl font-bold w-full text-right tabular-nums"
+                    value={channel.seller_price || ''}
+                    onChange={e => updateField('seller_price', Number(e.target.value) || 0)}
+                    placeholder="0"
+                    min="0"
+                    step="1"
+                  />
+                  <span className="text-lg text-brand-text-secondary shrink-0">₽</span>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -182,6 +236,22 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
                 {result.margin.toFixed(1)}%
               </div>
             </div>
+            {isMarketplace && marketplacePrice > 0 && (
+              <>
+                <div className="pt-3 mt-3 border-t border-brand-border">
+                  <div className="text-xs text-brand-text-secondary mb-1">Доля себестоимости от цены на площадке</div>
+                  <div className="text-xl font-bold tabular-nums text-brand-text">
+                    {(costPrice / marketplacePrice * 100).toFixed(1)}%
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-brand-text-secondary mb-1">Доля расходов от цены на площадке</div>
+                  <div className="text-xl font-bold tabular-nums text-brand-text">
+                    {(result.totalExpenses / marketplacePrice * 100).toFixed(1)}%
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Разбивка расходов */}
