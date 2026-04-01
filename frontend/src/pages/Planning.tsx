@@ -54,8 +54,8 @@ function TaskCard({ task, onClick, isDragging }: TaskCardProps) {
   return (
     <div
       onClick={onClick}
-      className={`bg-white rounded-2xl p-3 shadow-sm border border-gray-100 cursor-pointer
-        hover:shadow-md transition-shadow ${isDragging ? 'opacity-50' : ''}`}
+      className={`bg-white rounded-xl p-3 shadow-sm border border-gray-200/80 cursor-pointer
+        hover:shadow-md hover:border-primary-200 transition-all ${isDragging ? 'opacity-50' : ''}`}
     >
       {/* Tags */}
       {task.tags.length > 0 && (
@@ -192,7 +192,7 @@ function KanbanColumn({ column, tasks, onTaskClick, onQuickAdd }: KanbanColumnPr
   const sortedIds = useMemo(() => tasks.map(t => t.id), [tasks])
 
   return (
-    <div className="flex flex-col w-72 min-w-[288px] shrink-0">
+    <div className="flex flex-col min-w-[240px] flex-1">
       {/* Column header */}
       <div className="flex items-center gap-2 mb-3 px-1">
         <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLUMN_COLORS[column] }} />
@@ -201,7 +201,7 @@ function KanbanColumn({ column, tasks, onTaskClick, onQuickAdd }: KanbanColumnPr
       </div>
 
       {/* Cards area */}
-      <div className="flex-1 rounded-2xl bg-gray-50/70 p-2 space-y-2 min-h-[120px] overflow-y-auto max-h-[calc(100vh-280px)]">
+      <div className="flex-1 rounded-2xl bg-gray-100/80 border border-gray-200/60 p-2 space-y-2 min-h-[120px] overflow-y-auto max-h-[calc(100vh-280px)]">
         <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
           {tasks.map(task => (
             <SortableTaskCard key={task.id} task={task} onClick={() => onTaskClick(task)} />
@@ -842,7 +842,7 @@ export default function Planning() {
               onDragOver={handleDragOver}
               onDragEnd={handleDragEnd}
             >
-              <div className="flex gap-4 pb-4 min-w-max">
+              <div className="flex gap-3 pb-4">
                 {COLUMNS.map(column => (
                   <KanbanColumn
                     key={column}
@@ -856,7 +856,7 @@ export default function Planning() {
 
               <DragOverlay>
                 {activeTask && (
-                  <div className="w-72 rotate-2 opacity-90">
+                  <div className="w-60 rotate-2 opacity-90">
                     <TaskCard task={activeTask} onClick={() => {}} isDragging />
                   </div>
                 )}

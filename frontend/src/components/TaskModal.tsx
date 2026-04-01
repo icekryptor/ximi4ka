@@ -186,10 +186,10 @@ export default function TaskModal({
   const TAG_COLORS = ['#836efe', '#22c55e', '#f59e0b', '#ef4444', '#38bdf8', '#ec4899', '#94a3b8']
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-12 bg-black/30 overflow-y-auto" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center py-8 bg-black/30 overflow-y-auto" onClick={onClose}>
       <div
         onClick={e => e.stopPropagation()}
-        className="bg-white rounded-3xl shadow-xl w-full max-w-2xl mb-12 overflow-hidden"
+        className="bg-white rounded-3xl shadow-xl w-full max-w-2xl mx-4 my-auto max-h-[90vh] flex flex-col overflow-hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
@@ -202,7 +202,7 @@ export default function TaskModal({
           </button>
         </div>
 
-        <div className="p-5 space-y-4">
+        <div className="p-5 space-y-4 overflow-y-auto flex-1 min-h-0">
           {/* Title */}
           <input
             value={title}
