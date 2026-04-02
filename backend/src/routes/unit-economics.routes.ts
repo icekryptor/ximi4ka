@@ -3,6 +3,9 @@ import { unitEconomicsController } from '../controllers/unit-economics.controlle
 
 const router = Router();
 
+router.get('/groups', unitEconomicsController.getGroups);
+router.post('/batch', unitEconomicsController.batchSave);
+router.delete('/groups/:group_id', unitEconomicsController.deleteGroup);
 router.get('/', unitEconomicsController.getAll);
 router.get('/:id', unitEconomicsController.getById);
 router.post('/', unitEconomicsController.create);

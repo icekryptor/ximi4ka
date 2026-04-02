@@ -3,7 +3,6 @@ import { Save, FolderOpen, Plus, X, Calculator } from 'lucide-react'
 import { kitsApi, Kit } from '../api/kits'
 import {
   ChannelConfig,
-  UnitEconomicsCalculation,
   CHANNEL_PRESETS,
   createDefaultChannel,
   unitEconomicsApi,
@@ -22,9 +21,9 @@ const UnitEconomics = () => {
   const [channels, setChannels] = useState<ChannelConfig[]>([])
   const [activeChannelIdx, setActiveChannelIdx] = useState(0)
 
-  // Loaded calculation tracking
-  const [loadedCalcId, setLoadedCalcId] = useState<string | null>(null)
-  const [loadedCalcName, setLoadedCalcName] = useState('')
+  // Loaded group tracking
+  const [loadedGroupId, setLoadedGroupId] = useState<string | null>(null)
+  const [loadedGroupName, setLoadedGroupName] = useState('')
   const [hasChanges, setHasChanges] = useState(false)
 
   // Modals
@@ -50,52 +49,54 @@ const UnitEconomics = () => {
     fetchKits()
   }, [])
 
-  // Auto-load last calculation when kit changes
+  // Auto-load last group when kit changes
   useEffect(() => {
     if (!selectedKitId) {
       setChannels([])
       setActiveChannelIdx(0)
-      setLoadedCalcId(null)
-      setLoadedCalcName('')
+      setLoadedGroupId(null)
+      setLoadedGroupName('')
       setHasChanges(false)
       return
     }
 
     const autoLoad = async () => {
       try {
-        const calcs = await unitEconomicsApi.getAll(selectedKitId)
-        if (calcs.length > 0) {
-          // Load the most recent calculation (already sorted by updated_at DESC)
-          const latest = calcs[0]
-          const ch: ChannelConfig = {
-            channel_name: latest.channel_name,
-            seller_price: Number(latest.seller_price),
-            ...(latest.start_price != null && { start_price: Number(latest.start_price) }),
-            ...(latest.seller_discount != null && { seller_discount: Number(latest.seller_discount) }),
-            ...(latest.marketplace_price != null && { marketplace_price: Number(latest.marketplace_price) }),
-            cost_type: latest.cost_type,
-            tax_rate: Number(latest.tax_rate),
-            variable_blocks: latest.variable_blocks || [],
+        const groups = await unitEconomicsApi.getGroups(selectedKitId)
+        if (groups.length > 0) {
+          const latestGroup = groups[0]
+          const calcs = await unitEconomicsApi.getByGroup(latestGroup.group_id)
+          if (calcs.length > 0) {
+            const loadedChannels: ChannelConfig[] = calcs.map(calc => ({
+              channel_name: calc.channel_name,
+              seller_price: Number(calc.seller_price),
+              ...(calc.start_price != null && { start_price: Number(calc.start_price) }),
+              ...(calc.seller_discount != null && { seller_discount: Number(calc.seller_discount) }),
+              ...(calc.marketplace_price != null && { marketplace_price: Number(calc.marketplace_price) }),
+              cost_type: calc.cost_type,
+              tax_rate: Number(calc.tax_rate),
+              variable_blocks: calc.variable_blocks || [],
+            }))
+            setChannels(loadedChannels)
+            setActiveChannelIdx(0)
+            setLoadedGroupId(latestGroup.group_id)
+            setLoadedGroupName(latestGroup.name)
+            setHasChanges(false)
+            return
           }
-          setChannels([ch])
-          setActiveChannelIdx(0)
-          setLoadedCalcId(latest.id)
-          setLoadedCalcName(latest.name)
-          setHasChanges(false)
-        } else {
-          // No saved calculations — start fresh
-          setChannels([])
-          setActiveChannelIdx(0)
-          setLoadedCalcId(null)
-          setLoadedCalcName('')
-          setHasChanges(false)
         }
+        // No saved groups — start fresh
+        setChannels([])
+        setActiveChannelIdx(0)
+        setLoadedGroupId(null)
+        setLoadedGroupName('')
+        setHasChanges(false)
       } catch (err) {
         console.error('Ошибка автозагрузки расчёта:', err)
         setChannels([])
         setActiveChannelIdx(0)
-        setLoadedCalcId(null)
-        setLoadedCalcName('')
+        setLoadedGroupId(null)
+        setLoadedGroupName('')
         setHasChanges(false)
       }
     }
@@ -131,90 +132,64 @@ const UnitEconomics = () => {
     setHasChanges(true)
   }
 
-  // Save
+  // Save ALL channels as a new group
   const handleSave = async (name: string) => {
-    if (!selectedKitId || !channels[activeChannelIdx]) return
+    if (!selectedKitId || channels.length === 0) return
     try {
-      const ch = channels[activeChannelIdx]
-      const saved = await unitEconomicsApi.save({
+      const result = await unitEconomicsApi.batchSave({
         kit_id: selectedKitId,
         name,
-        channel_name: ch.channel_name,
-        seller_price: ch.seller_price,
-        start_price: ch.start_price,
-        seller_discount: ch.seller_discount,
-        marketplace_price: ch.marketplace_price,
-        cost_type: ch.cost_type,
-        tax_rate: ch.tax_rate,
-        variable_blocks: ch.variable_blocks,
+        channels,
       })
-      setLoadedCalcId(saved.id)
-      setLoadedCalcName(saved.name)
+      setLoadedGroupId(result.group_id)
+      setLoadedGroupName(result.name)
       setHasChanges(false)
     } catch (err) {
       console.error('Ошибка сохранения:', err)
     }
   }
 
+  // Overwrite ALL channels of the existing group
   const handleUpdate = async () => {
-    if (!loadedCalcId || !channels[activeChannelIdx]) return
+    if (!loadedGroupId || !selectedKitId || channels.length === 0) return
     try {
-      const ch = channels[activeChannelIdx]
-      await unitEconomicsApi.update(loadedCalcId, {
-        channel_name: ch.channel_name,
-        seller_price: ch.seller_price,
-        start_price: ch.start_price,
-        seller_discount: ch.seller_discount,
-        marketplace_price: ch.marketplace_price,
-        cost_type: ch.cost_type,
-        tax_rate: ch.tax_rate,
-        variable_blocks: ch.variable_blocks,
+      const result = await unitEconomicsApi.batchSave({
+        kit_id: selectedKitId,
+        name: loadedGroupName,
+        group_id: loadedGroupId,
+        channels,
       })
+      setLoadedGroupId(result.group_id)
+      setLoadedGroupName(result.name)
       setHasChanges(false)
     } catch (err) {
       console.error('Ошибка обновления:', err)
     }
   }
 
+  // Save ALL channels as a brand new group with a new name
   const handleSaveAsNew = async (name: string) => {
-    if (!loadedCalcId) return
+    if (!selectedKitId || channels.length === 0) return
     try {
-      const cloned = await unitEconomicsApi.clone(loadedCalcId, name)
-      // Now update the clone with current data
-      const ch = channels[activeChannelIdx]
-      const updated = await unitEconomicsApi.update(cloned.id, {
-        channel_name: ch.channel_name,
-        seller_price: ch.seller_price,
-        start_price: ch.start_price,
-        seller_discount: ch.seller_discount,
-        marketplace_price: ch.marketplace_price,
-        cost_type: ch.cost_type,
-        tax_rate: ch.tax_rate,
-        variable_blocks: ch.variable_blocks,
+      const result = await unitEconomicsApi.batchSave({
+        kit_id: selectedKitId,
+        name,
+        channels,
       })
-      setLoadedCalcId(updated.id)
-      setLoadedCalcName(updated.name)
+      setLoadedGroupId(result.group_id)
+      setLoadedGroupName(result.name)
       setHasChanges(false)
     } catch (err) {
       console.error('Ошибка сохранения как новый:', err)
     }
   }
 
-  // Load
-  const handleLoad = (calc: UnitEconomicsCalculation) => {
-    const ch: ChannelConfig = {
-      channel_name: calc.channel_name,
-      seller_price: Number(calc.seller_price),
-      ...(calc.start_price != null && { start_price: Number(calc.start_price) }),
-      ...(calc.seller_discount != null && { seller_discount: Number(calc.seller_discount) }),
-      cost_type: calc.cost_type,
-      tax_rate: Number(calc.tax_rate),
-      variable_blocks: calc.variable_blocks || [],
-    }
-    setChannels([ch])
+  // Load ALL channels from a group
+  const handleLoad = (loadedChannels: ChannelConfig[], groupId: string, groupName: string) => {
+    setChannels(loadedChannels)
     setActiveChannelIdx(0)
-    setLoadedCalcId(calc.id)
-    setLoadedCalcName(calc.name)
+    setLoadedGroupId(groupId)
+    setLoadedGroupName(groupName)
     setHasChanges(false)
   }
 
@@ -256,9 +231,9 @@ const UnitEconomics = () => {
           )}
         </div>
         <div className="flex items-center gap-2">
-          {loadedCalcId && (
+          {loadedGroupId && (
             <span className="text-xs text-brand-text-secondary hidden md:flex items-center gap-1">
-              📄 {loadedCalcName}
+              {loadedGroupName}
               {hasChanges && <span className="text-amber-600 font-medium">•</span>}
             </span>
           )}
@@ -394,8 +369,8 @@ const UnitEconomics = () => {
         onSave={handleSave}
         onUpdate={handleUpdate}
         onSaveAsNew={handleSaveAsNew}
-        loadedCalcId={loadedCalcId}
-        loadedCalcName={loadedCalcName}
+        loadedGroupId={loadedGroupId}
+        loadedGroupName={loadedGroupName}
         hasChanges={hasChanges}
       />
       <LoadCalculationModal

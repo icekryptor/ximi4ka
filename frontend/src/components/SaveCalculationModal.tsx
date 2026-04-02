@@ -8,8 +8,8 @@ interface Props {
   onSave: (name: string) => void
   onUpdate: () => void
   onSaveAsNew: (name: string) => void
-  loadedCalcId: string | null
-  loadedCalcName: string
+  loadedGroupId: string | null
+  loadedGroupName: string
   hasChanges: boolean
 }
 
@@ -19,21 +19,21 @@ const SaveCalculationModal = ({
   onSave,
   onUpdate,
   onSaveAsNew,
-  loadedCalcId,
-  loadedCalcName,
+  loadedGroupId,
+  loadedGroupName,
   hasChanges,
 }: Props) => {
   const [name, setName] = useState('')
   const [mode, setMode] = useState<'new' | 'update' | 'clone'>('new')
 
-  const isExisting = !!loadedCalcId
+  const isExisting = !!loadedGroupId
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (isExisting && mode === 'update') {
       onUpdate()
     } else if (isExisting && mode === 'clone') {
-      onSaveAsNew(name || `${loadedCalcName} (копия)`)
+      onSaveAsNew(name || `${loadedGroupName} (копия)`)
     } else {
       if (!name.trim()) return
       onSave(name.trim())
@@ -78,7 +78,7 @@ const SaveCalculationModal = ({
                 {isExisting && hasChanges ? (
                   <>
                     <p className="text-sm text-brand-text-secondary">
-                      Расчёт «{loadedCalcName}» был изменён.
+                      Расчёт «{loadedGroupName}» был изменён. Сохраняются все каналы.
                     </p>
                     <div className="space-y-2">
                       <label className="flex items-center space-x-2 cursor-pointer">
@@ -90,7 +90,7 @@ const SaveCalculationModal = ({
                           onChange={() => setMode('update')}
                           className="text-primary-600"
                         />
-                        <span className="text-sm">Обновить «{loadedCalcName}»</span>
+                        <span className="text-sm">Обновить «{loadedGroupName}»</span>
                       </label>
                       <label className="flex items-center space-x-2 cursor-pointer">
                         <input
@@ -117,6 +117,9 @@ const SaveCalculationModal = ({
                   </>
                 ) : (
                   <>
+                    <p className="text-sm text-brand-text-secondary">
+                      Будут сохранены все каналы текущего расчёта.
+                    </p>
                     <div>
                       <label className="block text-sm font-medium text-brand-text mb-1">
                         Название расчёта
@@ -124,7 +127,7 @@ const SaveCalculationModal = ({
                       <input
                         type="text"
                         className="input w-full"
-                        placeholder="Например: ВБ Химичка май 2026"
+                        placeholder="Например: Химичка май 2026"
                         value={name}
                         onChange={e => setName(e.target.value)}
                         autoFocus

@@ -16,6 +16,7 @@ export interface UnitEconomicsCalculation {
   kit_id: string;
   kit?: Kit;
   name: string;
+  group_id: string | null;
   channel_name: string;
   seller_price: number;
   start_price?: number | null;
@@ -31,6 +32,18 @@ export interface UnitEconomicsCalculation {
   margin: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface CalculationGroup {
+  group_id: string;
+  name: string;
+  channel_count: number;
+  updated_at: string;
+  channels: Array<{
+    channel_name: string;
+    profit: number;
+    margin: number;
+  }>;
 }
 
 // Channel configuration (local state, not saved)
@@ -208,6 +221,38 @@ export const unitEconomicsApi = {
 
   delete: async (id: string) => {
     const response = await apiClient.delete(`/unit-economics/${id}`);
+    return response.data;
+  },
+
+  batchSave: async (data: {
+    kit_id: string;
+    name: string;
+    group_id?: string;
+    channels: ChannelConfig[];
+  }) => {
+    const response = await apiClient.post<{ group_id: string; name: string; calculations: UnitEconomicsCalculation[] }>(
+      '/unit-economics/batch',
+      data
+    );
+    return response.data;
+  },
+
+  getGroups: async (kitId: string) => {
+    const response = await apiClient.get<CalculationGroup[]>('/unit-economics/groups', {
+      params: { kit_id: kitId },
+    });
+    return response.data;
+  },
+
+  getByGroup: async (groupId: string) => {
+    const response = await apiClient.get<UnitEconomicsCalculation[]>('/unit-economics', {
+      params: { group_id: groupId },
+    });
+    return response.data;
+  },
+
+  deleteGroup: async (groupId: string) => {
+    const response = await apiClient.delete(`/unit-economics/groups/${groupId}`);
     return response.data;
   },
 };
