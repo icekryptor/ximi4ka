@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { DeepPartial } from 'typeorm';
 import { AppDataSource } from '../config/database';
 import { UnitEconomicsCalculation, VariableBlock } from '../entities/UnitEconomicsCalculation';
 import { Kit } from '../entities/Kit';
@@ -32,12 +33,13 @@ function calculateResults(
 }
 
 export const unitEconomicsController = {
-  // Получить все расчёты (фильтр по kit_id)
+  // Получить все расчёты (фильтр по kit_id и/или group_id)
   async getAll(req: Request, res: Response) {
     try {
-      const { kit_id } = req.query;
+      const { kit_id, group_id } = req.query;
       const where: any = {};
       if (kit_id) where.kit_id = kit_id;
+      if (group_id) where.group_id = group_id;
 
       const calculations = await calcRepository.find({
         where,
@@ -268,6 +270,172 @@ export const unitEconomicsController = {
     } catch (error) {
       console.error('Ошибка при удалении расчёта:', error);
       res.status(500).json({ error: 'Ошибка при удалении расчёта' });
+    }
+  },
+
+  // Пакетное сохранение всех каналов одного расчёта (группы)
+  async batchSave(req: Request, res: Response) {
+    try {
+      const {
+        kit_id,
+        name,
+        group_id: existingGroupId,
+        channels,
+      } = req.body as {
+        kit_id: string;
+        name: string;
+        group_id?: string;
+        channels: Array<{
+          channel_name: string;
+          seller_price: number;
+          start_price?: number;
+          seller_discount?: number;
+          marketplace_price?: number;
+          cost_type: 'estimated' | 'actual';
+          tax_rate: number;
+          variable_blocks: VariableBlock[];
+        }>;
+      };
+
+      if (!kit_id || !name || !channels || !Array.isArray(channels) || channels.length === 0) {
+        return res.status(400).json({ error: 'Укажите kit_id, name и channels (непустой массив)' });
+      }
+
+      const kit = await kitRepository.findOne({ where: { id: kit_id } });
+      if (!kit) {
+        return res.status(404).json({ error: 'Набор не найден' });
+      }
+
+      // Генерируем новый group_id или используем существующий
+      const groupId: string = existingGroupId || crypto.randomUUID();
+
+      // Удаляем старые строки этой группы (при обновлении)
+      if (existingGroupId) {
+        await calcRepository
+          .createQueryBuilder()
+          .delete()
+          .where('group_id = :groupId', { groupId: existingGroupId })
+          .execute();
+      }
+
+      // Сохраняем каждый канал как отдельную строку с одинаковым group_id
+      const saved: UnitEconomicsCalculation[] = [];
+      for (const ch of channels) {
+        const costType = ch.cost_type || 'estimated';
+        const costPrice = costType === 'estimated'
+          ? Number(kit.estimated_cost || 0)
+          : Number(kit.total_cost || 0);
+
+        const results = calculateResults(
+          Number(ch.seller_price || 0),
+          costPrice,
+          Number(ch.tax_rate || 0),
+          ch.variable_blocks || []
+        );
+
+        const calcData: DeepPartial<UnitEconomicsCalculation> = {
+          kit_id,
+          name,
+          group_id: groupId,
+          channel_name: ch.channel_name,
+          seller_price: ch.seller_price || 0,
+          ...(ch.start_price !== undefined && { start_price: ch.start_price }),
+          ...(ch.seller_discount !== undefined && { seller_discount: ch.seller_discount }),
+          ...(ch.marketplace_price !== undefined && { marketplace_price: ch.marketplace_price }),
+          cost_type: costType,
+          tax_rate: ch.tax_rate || 0,
+          variable_blocks: ch.variable_blocks || [],
+          cost_price: costPrice,
+          ...results,
+        };
+        const calc = calcRepository.create(calcData);
+
+        const row = await calcRepository.save(calc) as UnitEconomicsCalculation;
+        saved.push(row);
+      }
+
+      res.status(201).json({ group_id: groupId, name, calculations: saved });
+    } catch (error) {
+      console.error('Ошибка при пакетном сохранении расчётов:', error);
+      res.status(500).json({ error: 'Ошибка при пакетном сохранении расчётов' });
+    }
+  },
+
+  // Получить список групп для артикула
+  async getGroups(req: Request, res: Response) {
+    try {
+      const { kit_id } = req.query;
+
+      if (!kit_id) {
+        return res.status(400).json({ error: 'Укажите kit_id' });
+      }
+
+      // Получаем все расчёты с group_id для этого артикула
+      const allCalcs = await calcRepository.find({
+        where: { kit_id: kit_id as string },
+        order: { updated_at: 'DESC' },
+      });
+
+      // Группируем по group_id
+      const groupMap = new Map<string, UnitEconomicsCalculation[]>();
+
+      for (const calc of allCalcs) {
+        if (!calc.group_id) continue;
+        const existing = groupMap.get(calc.group_id) || [];
+        existing.push(calc);
+        groupMap.set(calc.group_id, existing);
+      }
+
+      // Формируем ответ
+      const groups = Array.from(groupMap.entries()).map(([gid, calcs]) => {
+        // Берём updated_at самой свежей строки
+        const latestUpdated = calcs.reduce((latest, c) =>
+          new Date(c.updated_at) > new Date(latest) ? c.updated_at.toISOString() : latest,
+          calcs[0].updated_at.toISOString()
+        );
+
+        return {
+          group_id: gid,
+          name: calcs[0].name,
+          channel_count: calcs.length,
+          updated_at: latestUpdated,
+          channels: calcs.map(c => ({
+            channel_name: c.channel_name,
+            profit: Number(c.profit),
+            margin: Number(c.margin),
+          })),
+        };
+      });
+
+      // Сортируем по дате (свежие первые)
+      groups.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+
+      res.json(groups);
+    } catch (error) {
+      console.error('Ошибка при получении групп расчётов:', error);
+      res.status(500).json({ error: 'Ошибка при получении групп расчётов' });
+    }
+  },
+
+  // Удалить всю группу расчётов
+  async deleteGroup(req: Request, res: Response) {
+    try {
+      const { group_id } = req.params;
+
+      const result = await calcRepository
+        .createQueryBuilder()
+        .delete()
+        .where('group_id = :group_id', { group_id })
+        .execute();
+
+      if (result.affected === 0) {
+        return res.status(404).json({ error: 'Группа не найдена' });
+      }
+
+      res.json({ message: 'Группа расчётов удалена' });
+    } catch (error) {
+      console.error('Ошибка при удалении группы расчётов:', error);
+      res.status(500).json({ error: 'Ошибка при удалении группы расчётов' });
     }
   },
 };

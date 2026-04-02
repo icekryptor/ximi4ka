@@ -72,6 +72,9 @@ export class UnitEconomicsCalculation {
   @Column('decimal', { precision: 8, scale: 2, default: 0 })
   margin: number;
 
+  @Column({ type: 'uuid', nullable: true, default: null })
+  group_id: string | null;
+
   @CreateDateColumn()
   created_at: Date;
 
