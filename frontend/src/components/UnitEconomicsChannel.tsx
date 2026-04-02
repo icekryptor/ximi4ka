@@ -237,20 +237,12 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
               </div>
             </div>
             {isMarketplace && marketplacePrice > 0 && (
-              <>
-                <div className="pt-3 mt-3 border-t border-brand-border">
-                  <div className="text-xs text-brand-text-secondary mb-1">Доля себестоимости от цены на площадке</div>
-                  <div className="text-xl font-bold tabular-nums text-brand-text">
-                    {(costPrice / marketplacePrice * 100).toFixed(1)}%
-                  </div>
+              <div className="pt-3 mt-3 border-t border-brand-border">
+                <div className="text-xs text-brand-text-secondary mb-1">Маржа от цены на площадке</div>
+                <div className={`text-2xl font-bold tabular-nums ${profitPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {(result.profit / marketplacePrice * 100).toFixed(1)}%
                 </div>
-                <div>
-                  <div className="text-xs text-brand-text-secondary mb-1">Доля расходов от цены на площадке</div>
-                  <div className="text-xl font-bold tabular-nums text-brand-text">
-                    {(result.totalExpenses / marketplacePrice * 100).toFixed(1)}%
-                  </div>
-                </div>
-              </>
+              </div>
             )}
           </div>
 
