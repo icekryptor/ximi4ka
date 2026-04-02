@@ -16,12 +16,13 @@ interface Props {
   kit: Kit
   channel: ChannelConfig
   onChange: (channel: ChannelConfig) => void
+  presetBlocks?: VariableBlock[]
 }
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n)
 
-const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
+const UnitEconomicsChannel = ({ kit, channel, onChange, presetBlocks }: Props) => {
   const [showBlockMenu, setShowBlockMenu] = useState(false)
 
   const isWb = isWbChannel(channel.channel_name)
@@ -61,11 +62,15 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
   const addBlock = (type: string) => {
     const option = VARIABLE_BLOCK_OPTIONS.find(o => o.type === type)
     if (!option) return
+
+    // Use preset default value/type if available
+    const presetBlock = presetBlocks?.find(b => b.type === type)
+
     const block: VariableBlock = {
       type: option.type,
       label: option.label,
-      value_type: option.default_value_type,
-      value: 0,
+      value_type: presetBlock?.value_type || option.default_value_type,
+      value: presetBlock?.value || 0,
     }
     updateField('variable_blocks', [...channel.variable_blocks, block])
     setShowBlockMenu(false)
@@ -238,7 +243,7 @@ const UnitEconomicsChannel = ({ kit, channel, onChange }: Props) => {
             </div>
             {isMarketplace && marketplacePrice > 0 && (
               <div className="pt-3 mt-3 border-t border-brand-border">
-                <div className="text-xs text-brand-text-secondary mb-1">Маржа от цены на площадке</div>
+                <div className="text-xs text-brand-text-secondary mb-1">Маржинальность от цены на площадке</div>
                 <div className={`text-2xl font-bold tabular-nums ${profitPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                   {(result.profit / marketplacePrice * 100).toFixed(1)}%
                 </div>

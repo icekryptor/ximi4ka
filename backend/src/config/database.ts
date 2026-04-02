@@ -17,6 +17,7 @@ import { WbAdStat } from '../entities/WbAdStat';
 import { WbAdNote } from '../entities/WbAdNote';
 import { WbFinancialStat } from '../entities/WbFinancialStat';
 import { UnitEconomicsCalculation } from '../entities/UnitEconomicsCalculation';
+import { UnitEconomicsShare } from '../entities/UnitEconomicsShare';
 import { User } from '../entities/User';
 import { DailySales } from '../entities/DailySales';
 import { Employee } from '../entities/Employee';
@@ -26,6 +27,7 @@ import { Board } from '../entities/Board';
 import { Task } from '../entities/Task';
 import { TaskComment } from '../entities/TaskComment';
 import { TaskTag } from '../entities/TaskTag';
+import { ChannelPreset } from '../entities/ChannelPreset';
 
 dotenv.config();
 
@@ -35,7 +37,7 @@ const databaseUrl = process.env.DATABASE_URL;
 
 const isDev = process.env.NODE_ENV === 'development';
 
-const allEntities = [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, User, DailySales, Employee, SalesChannel, QcChecklist, Board, Task, TaskComment, TaskTag];
+const allEntities = [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, UnitEconomicsShare, User, DailySales, Employee, SalesChannel, QcChecklist, Board, Task, TaskComment, TaskTag, ChannelPreset];
 
 const dataSourceOptions = databaseUrl
   ? {

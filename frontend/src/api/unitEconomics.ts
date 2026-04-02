@@ -255,4 +255,14 @@ export const unitEconomicsApi = {
     const response = await apiClient.delete(`/unit-economics/groups/${groupId}`);
     return response.data;
   },
+
+  createShare: async (groupId: string) => {
+    const response = await apiClient.post<{ share_token: string; share_url: string }>('/unit-economics/share', { group_id: groupId });
+    return response.data;
+  },
+
+  getPublicShare: async (token: string) => {
+    const response = await apiClient.get<{ name: string; share_token: string; calculations: UnitEconomicsCalculation[]; kit: any }>(`/public/unit-economics/${token}`);
+    return response.data;
+  },
 };
