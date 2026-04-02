@@ -5,6 +5,7 @@ const router = Router();
 
 router.get('/groups', unitEconomicsController.getGroups);
 router.post('/batch', unitEconomicsController.batchSave);
+router.post('/share', unitEconomicsController.createShare);
 router.delete('/groups/:group_id', unitEconomicsController.deleteGroup);
 router.get('/', unitEconomicsController.getAll);
 router.get('/:id', unitEconomicsController.getById);

@@ -31,6 +31,7 @@ const Employees = lazy(() => import('./pages/Employees'))
 const SalesChannels = lazy(() => import('./pages/SalesChannels'))
 const SalesReport = lazy(() => import('./pages/SalesReport'))
 const Planning = lazy(() => import('./pages/Planning'))
+const PublicUnitEconomics = lazy(() => import('./pages/PublicUnitEconomics'))
 
 // === Page Transition ===
 const PageTransition = ({ children }: { children: React.ReactNode }) => {
@@ -76,6 +77,7 @@ function App() {
                   {/* Public routes */}
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/public/unit-economics/:token" element={<PublicUnitEconomics />} />
 
                   {/* Protected routes — wrapped in Layout */}
                   <Route

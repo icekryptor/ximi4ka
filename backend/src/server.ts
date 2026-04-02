@@ -29,6 +29,8 @@ import salesChannelRoutes from './routes/salesChannel.routes';
 import supplyDocumentRoutes from './routes/supplyDocument.routes';
 import boardRoutes from './routes/board.routes';
 import taskCommentRoutes from './routes/taskComment.routes';
+import channelPresetRoutes from './routes/channel-preset.routes';
+import { unitEconomicsController } from './controllers/unit-economics.controller';
 
 // Middleware
 import { authMiddleware } from './middleware/auth';
@@ -70,6 +72,7 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // Public routes (no auth required)
 app.use('/api/auth', authRoutes);
+app.get('/api/public/unit-economics/:token', unitEconomicsController.getPublicShare);
 
 // Protected routes (auth required)
 app.use('/api/transactions', authMiddleware, transactionRoutes);
@@ -92,6 +95,7 @@ app.use('/api/sales-channels', authMiddleware, salesChannelRoutes);
 app.use('/api/supply-documents', authMiddleware, supplyDocumentRoutes);
 app.use('/api/boards', authMiddleware, boardRoutes);
 app.use('/api/tasks', authMiddleware, taskCommentRoutes);
+app.use('/api/channel-presets', authMiddleware, channelPresetRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

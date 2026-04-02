@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Save, FolderOpen, Plus, X, Calculator } from 'lucide-react'
+import { Save, FolderOpen, Plus, X, Calculator, Share2, Copy, Check, Settings } from 'lucide-react'
 import { kitsApi, Kit } from '../api/kits'
 import {
   ChannelConfig,
@@ -7,9 +7,11 @@ import {
   createDefaultChannel,
   unitEconomicsApi,
 } from '../api/unitEconomics'
+import { channelPresetsApi, ChannelPreset } from '../api/channelPresets'
 import UnitEconomicsChannel from '../components/UnitEconomicsChannel'
 import SaveCalculationModal from '../components/SaveCalculationModal'
 import LoadCalculationModal from '../components/LoadCalculationModal'
+import ChannelPresetsModal from '../components/ChannelPresetsModal'
 
 const UnitEconomics = () => {
   // Data
@@ -26,10 +28,20 @@ const UnitEconomics = () => {
   const [loadedGroupName, setLoadedGroupName] = useState('')
   const [hasChanges, setHasChanges] = useState(false)
 
+  // Presets
+  const [presets, setPresets] = useState<ChannelPreset[]>([])
+
   // Modals
   const [showSaveModal, setShowSaveModal] = useState(false)
   const [showLoadModal, setShowLoadModal] = useState(false)
   const [showChannelMenu, setShowChannelMenu] = useState(false)
+  const [showPresetsModal, setShowPresetsModal] = useState(false)
+
+  // Share
+  const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [shareLoading, setShareLoading] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   // Load kits
   useEffect(() => {
@@ -47,6 +59,11 @@ const UnitEconomics = () => {
       }
     }
     fetchKits()
+  }, [])
+
+  // Load channel presets once on mount
+  useEffect(() => {
+    channelPresetsApi.getAll().then(setPresets).catch(console.error)
   }, [])
 
   // Auto-load last group when kit changes
@@ -116,7 +133,11 @@ const UnitEconomics = () => {
   }, [activeChannelIdx])
 
   const addChannel = (name: string) => {
+    const preset = presets.find(p => p.channel_name === name)
     const newChannel = createDefaultChannel(name)
+    if (preset && preset.variable_blocks.length > 0) {
+      newChannel.variable_blocks = preset.variable_blocks
+    }
     setChannels(prev => [...prev, newChannel])
     setActiveChannelIdx(channels.length)
     setShowChannelMenu(false)
@@ -193,6 +214,40 @@ const UnitEconomics = () => {
     setHasChanges(false)
   }
 
+  const handleShare = async () => {
+    if (!loadedGroupId) return
+    setShareLoading(true)
+    try {
+      const result = await unitEconomicsApi.createShare(loadedGroupId)
+      setShareUrl(result.share_url)
+      setShowShareModal(true)
+      setCopied(false)
+    } catch (err) {
+      console.error('Ошибка создания ссылки:', err)
+    } finally {
+      setShareLoading(false)
+    }
+  }
+
+  const handleCopyShareUrl = async () => {
+    if (!shareUrl) return
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // fallback for older browsers
+      const el = document.createElement('textarea')
+      el.value = shareUrl
+      document.body.appendChild(el)
+      el.select()
+      document.execCommand('copy')
+      document.body.removeChild(el)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -252,6 +307,25 @@ const UnitEconomics = () => {
           >
             <Save className="h-4 w-4" />
             <span className="hidden sm:inline">Сохранить</span>
+          </button>
+          {loadedGroupId && (
+            <button
+              className="btn btn-secondary flex items-center gap-1 text-sm py-1.5 px-3"
+              onClick={handleShare}
+              disabled={shareLoading}
+              title="Поделиться расчётом"
+            >
+              <Share2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Поделиться</span>
+            </button>
+          )}
+          <button
+            className="btn btn-secondary flex items-center gap-1 text-sm py-1.5 px-3"
+            onClick={() => setShowPresetsModal(true)}
+            title="Настройки расходов по умолчанию"
+          >
+            <Settings className="h-4 w-4" />
+            <span className="hidden sm:inline">Шаблоны</span>
           </button>
         </div>
       </div>
@@ -327,6 +401,7 @@ const UnitEconomics = () => {
             kit={selectedKit}
             channel={channels[activeChannelIdx]}
             onChange={updateChannel}
+            presetBlocks={presets.find(p => p.channel_name === channels[activeChannelIdx]?.channel_name)?.variable_blocks}
           />
         </div>
       )}
@@ -379,6 +454,61 @@ const UnitEconomics = () => {
         kitId={selectedKitId}
         onLoad={handleLoad}
       />
+      <ChannelPresetsModal
+        isOpen={showPresetsModal}
+        onClose={() => setShowPresetsModal(false)}
+        presets={presets}
+        onPresetsUpdated={setPresets}
+      />
+
+      {/* Share modal */}
+      {showShareModal && shareUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setShowShareModal(false)}
+          />
+          <div className="relative bg-card rounded-2xl shadow-xl border border-brand-border p-6 max-w-md w-full z-10">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-brand-text">Поделиться расчётом</h3>
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="text-brand-text-secondary hover:text-brand-text"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="text-sm text-brand-text-secondary mb-3">
+              Ссылка открывает публичный вид расчёта без возможности редактирования.
+            </p>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                readOnly
+                value={shareUrl}
+                className="input text-sm flex-1 min-w-0"
+                onFocus={e => e.target.select()}
+              />
+              <button
+                className="btn btn-primary flex items-center gap-1.5 text-sm py-2 px-3 shrink-0"
+                onClick={handleCopyShareUrl}
+              >
+                {copied ? (
+                  <>
+                    <Check className="h-4 w-4" />
+                    <span>Скопировано!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-4 w-4" />
+                    <span>Копировать</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

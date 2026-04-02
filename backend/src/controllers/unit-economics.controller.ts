@@ -1,11 +1,14 @@
+import crypto from 'crypto';
 import { Request, Response } from 'express';
 import { DeepPartial } from 'typeorm';
 import { AppDataSource } from '../config/database';
 import { UnitEconomicsCalculation, VariableBlock } from '../entities/UnitEconomicsCalculation';
+import { UnitEconomicsShare } from '../entities/UnitEconomicsShare';
 import { Kit } from '../entities/Kit';
 
 const calcRepository = AppDataSource.getRepository(UnitEconomicsCalculation);
 const kitRepository = AppDataSource.getRepository(Kit);
+const shareRepository = AppDataSource.getRepository(UnitEconomicsShare);
 
 function calculateResults(
   sellerPrice: number,
@@ -436,6 +439,88 @@ export const unitEconomicsController = {
     } catch (error) {
       console.error('Ошибка при удалении группы расчётов:', error);
       res.status(500).json({ error: 'Ошибка при удалении группы расчётов' });
+    }
+  },
+
+  // Создать публичную ссылку для группы расчётов
+  async createShare(req: Request, res: Response) {
+    try {
+      const { group_id } = req.body;
+
+      if (!group_id) {
+        return res.status(400).json({ error: 'Укажите group_id' });
+      }
+
+      // Проверяем, что расчёты с таким group_id существуют
+      const calculations = await calcRepository.find({
+        where: { group_id },
+        order: { created_at: 'ASC' },
+      });
+
+      if (calculations.length === 0) {
+        return res.status(404).json({ error: 'Расчёты для данной группы не найдены' });
+      }
+
+      // Проверяем, не существует ли уже ссылка для этой группы
+      const existing = await shareRepository.findOne({ where: { group_id } });
+      if (existing) {
+        return res.json({
+          share_token: existing.share_token,
+          share_url: `/public/unit-economics/${existing.share_token}`,
+        });
+      }
+
+      // Генерируем уникальный токен
+      const share_token = crypto.randomBytes(16).toString('hex');
+      const name = calculations[0].name;
+
+      const share = shareRepository.create({ group_id, name, share_token });
+      await shareRepository.save(share);
+
+      res.status(201).json({
+        share_token,
+        share_url: `/public/unit-economics/${share_token}`,
+      });
+    } catch (error) {
+      console.error('Ошибка при создании публичной ссылки:', error);
+      res.status(500).json({ error: 'Ошибка при создании публичной ссылки' });
+    }
+  },
+
+  // Получить публичную группу расчётов по токену (без авторизации)
+  async getPublicShare(req: Request, res: Response) {
+    try {
+      const { token } = req.params;
+
+      const share = await shareRepository.findOne({ where: { share_token: token } });
+      if (!share) {
+        return res.status(404).json({ error: 'Публичная ссылка не найдена' });
+      }
+
+      const calculations = await calcRepository.find({
+        where: { group_id: share.group_id },
+        relations: ['kit'],
+        order: { created_at: 'ASC' },
+      });
+
+      const kit = calculations.length > 0 ? calculations[0].kit : null;
+
+      res.json({
+        name: share.name,
+        share_token: share.share_token,
+        calculations,
+        kit: kit
+          ? {
+              name: kit.name,
+              seller_sku: kit.seller_sku,
+              estimated_cost: kit.estimated_cost,
+              total_cost: kit.total_cost,
+            }
+          : null,
+      });
+    } catch (error) {
+      console.error('Ошибка при получении публичных данных расчёта:', error);
+      res.status(500).json({ error: 'Ошибка при получении публичных данных расчёта' });
     }
   },
 };
