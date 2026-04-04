@@ -54,8 +54,8 @@ function TaskCard({ task, onClick, isDragging }: TaskCardProps) {
   return (
     <div
       onClick={onClick}
-      className={`bg-white rounded-xl p-3 shadow-sm border border-gray-200/80 cursor-pointer
-        hover:shadow-md hover:border-primary-200 transition-all ${isDragging ? 'opacity-50' : ''}`}
+      className={`bg-card rounded-xl p-3 shadow-sm border border-brand-border cursor-pointer
+        hover:shadow-md hover:border-primary-300 dark:hover:border-primary-600 transition-all ${isDragging ? 'opacity-50' : ''}`}
     >
       {/* Tags */}
       {task.tags.length > 0 && (
@@ -73,23 +73,23 @@ function TaskCard({ task, onClick, isDragging }: TaskCardProps) {
       )}
 
       {/* Title */}
-      <p className="text-sm font-semibold text-gray-800 mb-1 line-clamp-2">{task.title}</p>
+      <p className="text-sm font-semibold text-brand-text mb-1 line-clamp-2">{task.title}</p>
 
       {/* Assignee → Supervisor */}
       {(task.assignee || task.supervisor) && (
-        <div className="flex items-center gap-1 text-xs text-gray-500 mb-1.5">
+        <div className="flex items-center gap-1 text-xs text-brand-text-secondary mb-1.5">
           {task.assignee && (
             <span className="flex items-center gap-0.5">
-              <span className="w-4 h-4 rounded-full bg-primary-100 text-primary-700 text-[9px] flex items-center justify-center font-bold">
+              <span className="w-4 h-4 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 text-[9px] flex items-center justify-center font-bold">
                 {task.assignee.name.charAt(0)}
               </span>
               {task.assignee.name.split(' ')[0]}
             </span>
           )}
-          {task.assignee && task.supervisor && <span className="text-gray-300">→</span>}
+          {task.assignee && task.supervisor && <span className="text-brand-border">→</span>}
           {task.supervisor && (
-            <span className="flex items-center gap-0.5 text-gray-400">
-              <span className="w-4 h-4 rounded-full bg-gray-100 text-gray-500 text-[9px] flex items-center justify-center font-bold">
+            <span className="flex items-center gap-0.5 text-brand-text-secondary">
+              <span className="w-4 h-4 rounded-full bg-muted text-brand-text-secondary text-[9px] flex items-center justify-center font-bold">
                 {task.supervisor.name.charAt(0)}
               </span>
               {task.supervisor.name.split(' ')[0]}
@@ -99,9 +99,9 @@ function TaskCard({ task, onClick, isDragging }: TaskCardProps) {
       )}
 
       {/* Meta row */}
-      <div className="flex items-center gap-2 text-[11px] text-gray-400">
+      <div className="flex items-center gap-2 text-[11px] text-brand-text-secondary">
         {task.due_date && (
-          <span className={`flex items-center gap-0.5 ${isOverdue ? 'text-red-500 font-medium' : ''}`}>
+          <span className={`flex items-center gap-0.5 ${isOverdue ? 'text-red-500 dark:text-red-400 font-medium' : ''}`}>
             <Calendar size={11} />
             {new Date(task.due_date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
           </span>
@@ -115,10 +115,10 @@ function TaskCard({ task, onClick, isDragging }: TaskCardProps) {
         <span
           className={`ml-auto px-1.5 py-0.5 rounded text-[10px] font-medium ${
             task.priority === 'high'
-              ? 'bg-red-50 text-red-600'
+              ? 'bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400'
               : task.priority === 'low'
-              ? 'bg-blue-50 text-blue-600'
-              : 'bg-amber-50 text-amber-600'
+              ? 'bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400'
+              : 'bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400'
           }`}
         >
           {PRIORITY_LABELS[task.priority]}
@@ -153,7 +153,7 @@ function SortableTaskCard({ task, onClick }: SortableTaskCardProps) {
         {...attributes}
         {...listeners}
         className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 opacity-0 group-hover:opacity-60
-          cursor-grab active:cursor-grabbing p-0.5 text-gray-400"
+          cursor-grab active:cursor-grabbing p-0.5 text-brand-text-secondary"
       >
         <GripVertical size={14} />
       </div>
@@ -196,12 +196,12 @@ function KanbanColumn({ column, tasks, onTaskClick, onQuickAdd }: KanbanColumnPr
       {/* Column header */}
       <div className="flex items-center gap-2 mb-3 px-1">
         <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLUMN_COLORS[column] }} />
-        <h3 className="text-sm font-semibold text-gray-700">{COLUMN_LABELS[column]}</h3>
-        <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">{tasks.length}</span>
+        <h3 className="text-sm font-semibold text-brand-text">{COLUMN_LABELS[column]}</h3>
+        <span className="text-xs text-brand-text-secondary bg-muted px-1.5 py-0.5 rounded-full">{tasks.length}</span>
       </div>
 
       {/* Cards area */}
-      <div className="flex-1 rounded-2xl bg-gray-100/80 border border-gray-200/60 p-2 space-y-2 min-h-[120px] overflow-y-auto max-h-[calc(100vh-280px)]">
+      <div className="flex-1 rounded-2xl bg-subtle border border-brand-border p-2 space-y-2 min-h-[120px] overflow-y-auto max-h-[calc(100vh-280px)]">
         <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
           {tasks.map(task => (
             <SortableTaskCard key={task.id} task={task} onClick={() => onTaskClick(task)} />
@@ -210,7 +210,7 @@ function KanbanColumn({ column, tasks, onTaskClick, onQuickAdd }: KanbanColumnPr
 
         {/* Quick add */}
         {adding ? (
-          <div className="bg-white rounded-xl p-2 shadow-sm border border-gray-100">
+          <div className="bg-card rounded-xl p-2 shadow-sm border border-brand-border">
             <input
               ref={inputRef}
               value={newTitle}
@@ -220,15 +220,15 @@ function KanbanColumn({ column, tasks, onTaskClick, onQuickAdd }: KanbanColumnPr
                 if (e.key === 'Escape') { setAdding(false); setNewTitle('') }
               }}
               onBlur={handleSubmit}
-              className="w-full text-sm border-none outline-none bg-transparent placeholder:text-gray-400"
+              className="w-full text-sm border-none outline-none bg-transparent text-brand-text placeholder:text-brand-text-secondary"
               placeholder="Название задачи..."
             />
           </div>
         ) : (
           <button
             onClick={() => setAdding(true)}
-            className="flex items-center gap-1 w-full px-2 py-1.5 text-xs text-gray-400 hover:text-primary-600
-              hover:bg-white/80 rounded-xl transition-colors"
+            className="flex items-center gap-1 w-full px-2 py-1.5 text-xs text-brand-text-secondary hover:text-primary-600 dark:hover:text-primary-400
+              hover:bg-surface-hover rounded-xl transition-colors"
           >
             <Plus size={14} />
             Задача
@@ -270,7 +270,7 @@ function BoardTabs({ boards, activeId, onSelect, onCreate, onRename, onArchive, 
       {boards.map(board => (
         <div key={board.id} className="relative flex-shrink-0">
           {editing === board.id ? (
-            <div className="flex items-center bg-white rounded-xl px-2 py-1 border border-primary-300">
+            <div className="flex items-center bg-card rounded-xl px-2 py-1 border border-primary-300 dark:border-primary-600">
               <input
                 autoFocus
                 value={editName}
@@ -286,9 +286,9 @@ function BoardTabs({ boards, activeId, onSelect, onCreate, onRename, onArchive, 
                   onRename(board.id, editName.trim() || board.name)
                   setEditing(null)
                 }}
-                className="text-sm w-32 border-none outline-none bg-transparent"
+                className="text-sm w-32 border-none outline-none bg-transparent text-brand-text"
               />
-              <Check size={14} className="text-primary-600 cursor-pointer" onClick={() => {
+              <Check size={14} className="text-primary-600 dark:text-primary-400 cursor-pointer" onClick={() => {
                 onRename(board.id, editName.trim() || board.name)
                 setEditing(null)
               }} />
@@ -298,8 +298,8 @@ function BoardTabs({ boards, activeId, onSelect, onCreate, onRename, onArchive, 
               onClick={() => onSelect(board.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors whitespace-nowrap ${
                 activeId === board.id
-                  ? 'bg-primary-100 text-primary-700'
-                  : 'text-gray-500 hover:bg-gray-100'
+                  ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300'
+                  : 'text-brand-text-secondary hover:bg-surface-hover'
               }`}
             >
               {board.color && (
@@ -309,7 +309,7 @@ function BoardTabs({ boards, activeId, onSelect, onCreate, onRename, onArchive, 
               {canManage && (
                 <span
                   onClick={e => { e.stopPropagation(); setMenuOpen(menuOpen === board.id ? null : board.id) }}
-                  className="ml-1 p-0.5 rounded hover:bg-gray-200/60 transition-colors"
+                  className="ml-1 p-0.5 rounded hover:bg-surface-hover transition-colors"
                 >
                   <MoreHorizontal size={14} />
                 </span>
@@ -321,17 +321,17 @@ function BoardTabs({ boards, activeId, onSelect, onCreate, onRename, onArchive, 
           {menuOpen === board.id && (
             <div
               ref={menuRef}
-              className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50 min-w-[140px]"
+              className="absolute top-full left-0 mt-1 bg-card rounded-xl shadow-lg border border-brand-border py-1 z-50 min-w-[140px]"
             >
               <button
                 onClick={() => { setEditing(board.id); setEditName(board.name); setMenuOpen(null) }}
-                className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-brand-text hover:bg-surface-hover"
               >
                 <Pencil size={14} /> Переименовать
               </button>
               <button
                 onClick={() => { onArchive(board.id); setMenuOpen(null) }}
-                className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+                className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950"
               >
                 <Archive size={14} /> Архивировать
               </button>
@@ -343,7 +343,7 @@ function BoardTabs({ boards, activeId, onSelect, onCreate, onRename, onArchive, 
       {canManage && (
         <button
           onClick={onCreate}
-          className="flex items-center gap-1 px-3 py-2 text-sm text-primary-600 hover:bg-primary-50 rounded-xl
+          className="flex items-center gap-1 px-3 py-2 text-sm text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-950 rounded-xl
             transition-colors whitespace-nowrap flex-shrink-0"
         >
           <Plus size={14} /> Доска
@@ -379,16 +379,17 @@ function FilterBar({
     <div className="flex items-center gap-3 flex-wrap">
       {/* Search */}
       <div className="relative">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-text-secondary" />
         <input
           value={search}
           onChange={e => onSearchChange(e.target.value)}
           placeholder="Поиск..."
-          className="pl-9 pr-3 py-1.5 text-sm rounded-xl border border-gray-200 bg-white focus:border-primary-400
-            focus:ring-1 focus:ring-primary-200 outline-none w-52 transition-colors"
+          className="pl-9 pr-3 py-1.5 text-sm rounded-xl border border-brand-border bg-card text-brand-text
+            focus:border-primary-400 focus:ring-1 focus:ring-primary-200 dark:focus:ring-primary-800 outline-none w-52 transition-colors
+            placeholder:text-brand-text-secondary"
         />
         {search && (
-          <button onClick={() => onSearchChange('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+          <button onClick={() => onSearchChange('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-brand-text-secondary hover:text-brand-text">
             <X size={14} />
           </button>
         )}
@@ -398,7 +399,7 @@ function FilterBar({
       <select
         value={assigneeId}
         onChange={e => onAssigneeChange(e.target.value)}
-        className="text-sm rounded-xl border border-gray-200 bg-white px-3 py-1.5 outline-none
+        className="text-sm rounded-xl border border-brand-border bg-card text-brand-text px-3 py-1.5 outline-none
           focus:border-primary-400 transition-colors"
       >
         <option value="">Все исполнители</option>
@@ -411,7 +412,7 @@ function FilterBar({
       <select
         value={tagId}
         onChange={e => onTagChange(e.target.value)}
-        className="text-sm rounded-xl border border-gray-200 bg-white px-3 py-1.5 outline-none
+        className="text-sm rounded-xl border border-brand-border bg-card text-brand-text px-3 py-1.5 outline-none
           focus:border-primary-400 transition-colors"
       >
         <option value="">Все теги</option>
@@ -425,8 +426,8 @@ function FilterBar({
         onClick={() => onMyTasksChange(!myTasks)}
         className={`px-3 py-1.5 text-sm rounded-xl border transition-colors ${
           myTasks
-            ? 'bg-primary-100 border-primary-300 text-primary-700'
-            : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
+            ? 'bg-primary-100 dark:bg-primary-900/40 border-primary-300 dark:border-primary-600 text-primary-700 dark:text-primary-300'
+            : 'bg-card border-brand-border text-brand-text-secondary hover:border-primary-300 dark:hover:border-primary-600'
         }`}
       >
         Мои задачи
@@ -451,30 +452,31 @@ function NewBoardModal({ open, onClose, onSave }: NewBoardModalProps) {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} className="bg-white rounded-3xl p-6 shadow-xl w-96">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Новая доска</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 dark:bg-black/50" onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} className="bg-card rounded-3xl p-6 shadow-xl w-96 border border-brand-border">
+        <h3 className="text-lg font-semibold text-brand-text mb-4">Новая доска</h3>
         <input
           autoFocus
           value={name}
           onChange={e => setName(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && name.trim()) { onSave(name.trim(), color); setName('') } }}
           placeholder="Название доски..."
-          className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none
-            focus:border-primary-400 focus:ring-1 focus:ring-primary-200 mb-3"
+          className="w-full px-4 py-2.5 rounded-xl border border-brand-border bg-subtle text-brand-text text-sm outline-none
+            focus:border-primary-400 focus:ring-1 focus:ring-primary-200 dark:focus:ring-primary-800 mb-3
+            placeholder:text-brand-text-secondary"
         />
         <div className="flex gap-2 mb-4">
           {colors.map(c => (
             <button
               key={c}
               onClick={() => setColor(c)}
-              className={`w-7 h-7 rounded-full transition-transform ${color === c ? 'ring-2 ring-offset-2 ring-primary-400 scale-110' : ''}`}
+              className={`w-7 h-7 rounded-full transition-transform ${color === c ? 'ring-2 ring-offset-2 ring-primary-400 scale-110 dark:ring-offset-gray-800' : ''}`}
               style={{ backgroundColor: c }}
             />
           ))}
         </div>
         <div className="flex justify-end gap-2">
-          <button onClick={onClose} className="px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-xl">
+          <button onClick={onClose} className="px-4 py-2 text-sm text-brand-text-secondary hover:bg-surface-hover rounded-xl">
             Отмена
           </button>
           <button
@@ -790,7 +792,7 @@ export default function Planning() {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="mb-4">
-        <h1 className="text-xl font-bold text-gray-800 mb-3">Планирование</h1>
+        <h1 className="text-xl font-bold text-brand-text mb-3">Планирование</h1>
 
         {/* Board tabs */}
         <BoardTabs
@@ -807,7 +809,7 @@ export default function Planning() {
       {boards.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <p className="text-gray-400 mb-3">Нет досок</p>
+            <p className="text-brand-text-secondary mb-3">Нет досок</p>
             {canManage && (
               <button
                 onClick={() => setShowNewBoard(true)}
