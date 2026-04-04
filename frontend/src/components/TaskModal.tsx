@@ -186,18 +186,18 @@ export default function TaskModal({
   const TAG_COLORS = ['#836efe', '#22c55e', '#f59e0b', '#ef4444', '#38bdf8', '#ec4899', '#94a3b8']
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center py-8 bg-black/30 overflow-y-auto" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center py-8 bg-black/30 dark:bg-black/50 overflow-y-auto" onClick={onClose}>
       <div
         onClick={e => e.stopPropagation()}
-        className="bg-white rounded-3xl shadow-xl w-full max-w-2xl mx-4 my-auto max-h-[90vh] flex flex-col overflow-hidden"
+        className="bg-card rounded-3xl shadow-xl w-full max-w-2xl mx-4 my-auto max-h-[90vh] flex flex-col overflow-hidden border border-brand-border"
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+        <div className="flex items-center justify-between p-4 border-b border-brand-border">
           <div className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLUMN_COLORS[task.column] }} />
-            <span className="text-xs text-gray-400">{COLUMN_LABELS[task.column]}</span>
+            <span className="text-xs text-brand-text-secondary">{COLUMN_LABELS[task.column]}</span>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 text-gray-400">
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-surface-hover text-brand-text-secondary">
             <X size={18} />
           </button>
         </div>
@@ -208,8 +208,8 @@ export default function TaskModal({
             value={title}
             onChange={e => setTitle(e.target.value)}
             disabled={!canEdit}
-            className="w-full text-lg font-bold text-gray-800 border-none outline-none bg-transparent
-              placeholder:text-gray-400 disabled:text-gray-800"
+            className="w-full text-lg font-bold text-brand-text border-none outline-none bg-transparent
+              placeholder:text-brand-text-secondary disabled:text-brand-text"
             placeholder="Название задачи..."
           />
 
@@ -219,21 +219,22 @@ export default function TaskModal({
             onChange={e => setDescription(e.target.value)}
             disabled={!canEdit}
             rows={3}
-            className="w-full text-sm text-gray-600 border border-gray-200 rounded-xl p-3 outline-none
-              focus:border-primary-400 resize-none disabled:bg-gray-50 disabled:text-gray-600"
+            className="w-full text-sm text-brand-text border border-brand-border rounded-xl p-3 outline-none bg-subtle
+              focus:border-primary-400 resize-none disabled:bg-muted disabled:text-brand-text-secondary
+              placeholder:text-brand-text-secondary"
             placeholder="Описание..."
           />
 
           {/* Column + Priority + Due date */}
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Статус</label>
+              <label className="text-xs text-brand-text-secondary mb-1 block">Статус</label>
               <select
                 value={column}
                 onChange={e => setColumn(e.target.value as TaskColumn)}
                 disabled={!canEdit}
-                className="w-full text-sm rounded-xl border border-gray-200 px-3 py-2 outline-none
-                  focus:border-primary-400 disabled:bg-gray-50"
+                className="w-full text-sm rounded-xl border border-brand-border bg-subtle text-brand-text px-3 py-2 outline-none
+                  focus:border-primary-400 disabled:bg-muted disabled:text-brand-text-secondary"
               >
                 {COLUMNS.map(c => (
                   <option key={c} value={c}>{COLUMN_LABELS[c]}</option>
@@ -241,13 +242,13 @@ export default function TaskModal({
               </select>
             </div>
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Приоритет</label>
+              <label className="text-xs text-brand-text-secondary mb-1 block">Приоритет</label>
               <select
                 value={priority}
                 onChange={e => setPriority(e.target.value as TaskPriority)}
                 disabled={!canEdit}
-                className="w-full text-sm rounded-xl border border-gray-200 px-3 py-2 outline-none
-                  focus:border-primary-400 disabled:bg-gray-50"
+                className="w-full text-sm rounded-xl border border-brand-border bg-subtle text-brand-text px-3 py-2 outline-none
+                  focus:border-primary-400 disabled:bg-muted disabled:text-brand-text-secondary"
               >
                 {(['high', 'medium', 'low'] as TaskPriority[]).map(p => (
                   <option key={p} value={p}>{PRIORITY_LABELS[p]}</option>
@@ -255,16 +256,16 @@ export default function TaskModal({
               </select>
             </div>
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Срок</label>
+              <label className="text-xs text-brand-text-secondary mb-1 block">Срок</label>
               <div className="relative">
-                <Calendar size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Calendar size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-text-secondary" />
                 <input
                   type="date"
                   value={dueDate}
                   onChange={e => setDueDate(e.target.value)}
                   disabled={!canEdit}
-                  className="w-full text-sm rounded-xl border border-gray-200 pl-9 pr-3 py-2 outline-none
-                    focus:border-primary-400 disabled:bg-gray-50"
+                  className="w-full text-sm rounded-xl border border-brand-border bg-subtle text-brand-text pl-9 pr-3 py-2 outline-none
+                    focus:border-primary-400 disabled:bg-muted disabled:text-brand-text-secondary"
                 />
               </div>
             </div>
@@ -273,13 +274,13 @@ export default function TaskModal({
           {/* Assignee + Supervisor */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Исполнитель</label>
+              <label className="text-xs text-brand-text-secondary mb-1 block">Исполнитель</label>
               <select
                 value={assigneeId}
                 onChange={e => setAssigneeId(e.target.value)}
                 disabled={!canEdit}
-                className="w-full text-sm rounded-xl border border-gray-200 px-3 py-2 outline-none
-                  focus:border-primary-400 disabled:bg-gray-50"
+                className="w-full text-sm rounded-xl border border-brand-border bg-subtle text-brand-text px-3 py-2 outline-none
+                  focus:border-primary-400 disabled:bg-muted disabled:text-brand-text-secondary"
               >
                 <option value="">Не назначен</option>
                 {employees.filter(e => e.is_active).map(emp => (
@@ -288,13 +289,13 @@ export default function TaskModal({
               </select>
             </div>
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Супервайзер</label>
+              <label className="text-xs text-brand-text-secondary mb-1 block">Супервайзер</label>
               <select
                 value={supervisorId}
                 onChange={e => setSupervisorId(e.target.value)}
                 disabled={!canEdit}
-                className="w-full text-sm rounded-xl border border-gray-200 px-3 py-2 outline-none
-                  focus:border-primary-400 disabled:bg-gray-50"
+                className="w-full text-sm rounded-xl border border-brand-border bg-subtle text-brand-text px-3 py-2 outline-none
+                  focus:border-primary-400 disabled:bg-muted disabled:text-brand-text-secondary"
               >
                 <option value="">Не назначен</option>
                 {employees.filter(e => e.is_active).map(emp => (
@@ -306,7 +307,7 @@ export default function TaskModal({
 
           {/* Tags */}
           <div>
-            <label className="text-xs text-gray-500 mb-2 block">Теги</label>
+            <label className="text-xs text-brand-text-secondary mb-2 block">Теги</label>
             <div className="flex flex-wrap gap-1.5">
               {tags.map(tag => (
                 <button
@@ -314,7 +315,7 @@ export default function TaskModal({
                   onClick={() => canEdit && toggleTag(tag.id)}
                   className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
                     selectedTagIds.includes(tag.id)
-                      ? 'text-white ring-2 ring-offset-1'
+                      ? 'text-white ring-2 ring-offset-1 dark:ring-offset-gray-800'
                       : 'text-white opacity-40 hover:opacity-70'
                   }`}
                   style={{
@@ -328,8 +329,8 @@ export default function TaskModal({
               {canEdit && !showNewTag && (
                 <button
                   onClick={() => setShowNewTag(true)}
-                  className="px-2.5 py-1 rounded-full text-xs text-gray-400 border border-dashed border-gray-300
-                    hover:border-primary-400 hover:text-primary-600 transition-colors"
+                  className="px-2.5 py-1 rounded-full text-xs text-brand-text-secondary border border-dashed border-brand-border
+                    hover:border-primary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                 >
                   + Тег
                 </button>
@@ -345,22 +346,23 @@ export default function TaskModal({
                   onChange={e => setNewTagName(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') handleCreateTag(); if (e.key === 'Escape') setShowNewTag(false) }}
                   placeholder="Название тега..."
-                  className="flex-1 text-sm border border-gray-200 rounded-lg px-2 py-1 outline-none focus:border-primary-400"
+                  className="flex-1 text-sm border border-brand-border bg-subtle text-brand-text rounded-lg px-2 py-1 outline-none
+                    focus:border-primary-400 placeholder:text-brand-text-secondary"
                 />
                 <div className="flex gap-1">
                   {TAG_COLORS.map(c => (
                     <button
                       key={c}
                       onClick={() => setNewTagColor(c)}
-                      className={`w-5 h-5 rounded-full ${newTagColor === c ? 'ring-2 ring-offset-1 ring-primary-400' : ''}`}
+                      className={`w-5 h-5 rounded-full ${newTagColor === c ? 'ring-2 ring-offset-1 ring-primary-400 dark:ring-offset-gray-800' : ''}`}
                       style={{ backgroundColor: c }}
                     />
                   ))}
                 </div>
-                <button onClick={handleCreateTag} className="text-xs text-primary-600 font-medium hover:underline">
+                <button onClick={handleCreateTag} className="text-xs text-primary-600 dark:text-primary-400 font-medium hover:underline">
                   OK
                 </button>
-                <button onClick={() => setShowNewTag(false)} className="text-xs text-gray-400 hover:text-gray-600">
+                <button onClick={() => setShowNewTag(false)} className="text-brand-text-secondary hover:text-brand-text">
                   <X size={14} />
                 </button>
               </div>
@@ -368,30 +370,30 @@ export default function TaskModal({
           </div>
 
           {/* Divider */}
-          <div className="border-t border-gray-100" />
+          <div className="border-t border-brand-border" />
 
           {/* Comments */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-700 mb-3">
-              Комментарии {comments.length > 0 && <span className="text-gray-400 font-normal">({comments.length})</span>}
+            <h4 className="text-sm font-semibold text-brand-text mb-3">
+              Комментарии {comments.length > 0 && <span className="text-brand-text-secondary font-normal">({comments.length})</span>}
             </h4>
 
             <div className="space-y-3 max-h-64 overflow-y-auto mb-3">
               {loadingComments ? (
-                <p className="text-xs text-gray-400 text-center py-4">Загрузка...</p>
+                <p className="text-xs text-brand-text-secondary text-center py-4">Загрузка...</p>
               ) : comments.length === 0 ? (
-                <p className="text-xs text-gray-400 text-center py-4">Нет комментариев</p>
+                <p className="text-xs text-brand-text-secondary text-center py-4">Нет комментариев</p>
               ) : (
                 comments.map(comment => (
-                  <div key={comment.id} className="bg-gray-50 rounded-xl p-3">
+                  <div key={comment.id} className="bg-subtle rounded-xl p-3">
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-full bg-primary-100 text-primary-700 text-[10px]
+                        <span className="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 text-[10px]
                           flex items-center justify-center font-bold">
                           {comment.author_name.charAt(0)}
                         </span>
-                        <span className="text-xs font-medium text-gray-700">{comment.author_name}</span>
-                        <span className="text-[10px] text-gray-400">
+                        <span className="text-xs font-medium text-brand-text">{comment.author_name}</span>
+                        <span className="text-[10px] text-brand-text-secondary">
                           {new Date(comment.created_at).toLocaleString('ru-RU', {
                             day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
                           })}
@@ -400,19 +402,19 @@ export default function TaskModal({
                       {user && comment.author_id === user.id && (
                         <button
                           onClick={() => handleDeleteComment(comment.id)}
-                          className="text-gray-300 hover:text-red-500 transition-colors"
+                          className="text-brand-text-secondary hover:text-red-500 dark:hover:text-red-400 transition-colors"
                         >
                           <Trash2 size={13} />
                         </button>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 ml-8">{comment.text}</p>
+                    <p className="text-sm text-brand-text ml-8">{comment.text}</p>
                     {comment.attachment_url && (
                       <a
                         href={comment.attachment_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-xs text-primary-600 hover:underline ml-8 mt-1"
+                        className="flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 hover:underline ml-8 mt-1"
                       >
                         <Download size={12} />
                         {comment.attachment_name || 'Файл'}
@@ -435,12 +437,12 @@ export default function TaskModal({
                   }}
                   rows={1}
                   placeholder="Написать комментарий..."
-                  className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 pr-10 outline-none
-                    focus:border-primary-400 resize-none"
+                  className="w-full text-sm border border-brand-border bg-subtle text-brand-text rounded-xl px-3 py-2 pr-10 outline-none
+                    focus:border-primary-400 resize-none placeholder:text-brand-text-secondary"
                 />
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="absolute right-2 bottom-2 text-gray-400 hover:text-primary-600 transition-colors"
+                  className="absolute right-2 bottom-2 text-brand-text-secondary hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                 >
                   <Paperclip size={16} />
                 </button>
@@ -467,10 +469,10 @@ export default function TaskModal({
 
             {/* Attached file indicator */}
             {commentFile && (
-              <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+              <div className="flex items-center gap-2 mt-1 text-xs text-brand-text-secondary">
                 <Paperclip size={12} />
                 <span className="truncate max-w-[200px]">{commentFile.name}</span>
-                <button onClick={() => setCommentFile(null)} className="text-gray-400 hover:text-red-500">
+                <button onClick={() => setCommentFile(null)} className="text-brand-text-secondary hover:text-red-500 dark:hover:text-red-400">
                   <X size={12} />
                 </button>
               </div>
@@ -479,12 +481,12 @@ export default function TaskModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-4 border-t border-gray-100 bg-gray-50/50">
+        <div className="flex items-center justify-between p-4 border-t border-brand-border bg-subtle">
           {canEdit ? (
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="flex items-center gap-1 text-sm text-red-500 hover:text-red-700 transition-colors
+              className="flex items-center gap-1 text-sm text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors
                 disabled:opacity-40"
             >
               <Trash2 size={15} />
@@ -494,7 +496,7 @@ export default function TaskModal({
             <div />
           )}
           <div className="flex gap-2">
-            <button onClick={onClose} className="px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-xl">
+            <button onClick={onClose} className="px-4 py-2 text-sm text-brand-text-secondary hover:bg-surface-hover rounded-xl">
               Закрыть
             </button>
             {canEdit && (
