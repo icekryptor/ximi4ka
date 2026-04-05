@@ -6,6 +6,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  useDroppable,
   DragStartEvent,
   DragEndEvent,
   DragOverEvent,
@@ -23,6 +24,7 @@ import {
   Archive,
   Pencil,
   Check,
+  Trash2,
 } from 'lucide-react'
 import { boardsApi, Board } from '../api/boards'
 import {
@@ -169,6 +171,7 @@ interface KanbanColumnProps {
 }
 
 function KanbanColumn({ column, tasks, onTaskClick, onQuickAdd }: KanbanColumnProps) {
+  const { setNodeRef: setDropRef, isOver } = useDroppable({ id: column })
   const [adding, setAdding] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -198,7 +201,12 @@ function KanbanColumn({ column, tasks, onTaskClick, onQuickAdd }: KanbanColumnPr
       </div>
 
       {/* Cards area */}
-      <div className="flex-1 rounded-2xl bg-subtle border border-brand-border p-2 space-y-2 min-h-[120px] overflow-y-auto max-h-[calc(100vh-280px)]">
+      <div
+        ref={setDropRef}
+        className={`flex-1 rounded-2xl bg-subtle border p-2 space-y-2 min-h-[120px] overflow-y-auto max-h-[calc(100vh-280px)] transition-colors ${
+          isOver ? 'border-primary-400 bg-primary-50/30 dark:bg-primary-950/30' : 'border-brand-border'
+        }`}
+      >
         <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
           {tasks.map(task => (
             <SortableTaskCard key={task.id} task={task} onClick={() => onTaskClick(task)} />
@@ -490,6 +498,28 @@ function NewBoardModal({ open, onClose, onSave }: NewBoardModalProps) {
   )
 }
 
+// ─── Delete Drop Zone ────────────────────────────────────────────────────
+
+function DeleteDropZone() {
+  const { setNodeRef, isOver } = useDroppable({ id: 'delete-zone' })
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`mt-4 flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-dashed transition-all ${
+        isOver
+          ? 'border-red-500 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 scale-[1.02]'
+          : 'border-brand-border text-brand-text-secondary'
+      }`}
+    >
+      <Trash2 size={18} />
+      <span className="text-sm font-medium">
+        {isOver ? 'Отпустите для удаления' : 'Перетащите сюда для удаления'}
+      </span>
+    </div>
+  )
+}
+
 // ─── Main Planning Page ──────────────────────────────────────────────────
 
 export default function Planning() {
@@ -678,12 +708,29 @@ export default function Planning() {
 
     const activeId = active.id as string
     const overId = over.id as string
+
+    // Handle drop on delete zone
+    if (overId === 'delete-zone') {
+      const taskToDelete = tasks.find(t => t.id === activeId)
+      if (!taskToDelete) return
+      // Optimistic delete
+      setTasks(prev => prev.filter(t => t.id !== activeId))
+      try {
+        await tasksApi.delete(activeBoardId, activeId)
+        toast.success('Задача удалена')
+      } catch {
+        toast.error('Ошибка удаления')
+        loadTasks(activeBoardId)
+      }
+      return
+    }
+
     const task = tasks.find(t => t.id === activeId)
     if (!task) return
 
     // Determine target column and position
     const overTask = tasks.find(t => t.id === overId)
-    const targetColumn = overTask ? overTask.column : task.column
+    const targetColumn = overTask ? overTask.column : (COLUMNS.includes(overId as TaskColumn) ? overId as TaskColumn : task.column)
 
     // Calculate new sort_order
     const columnTasks = tasks
@@ -852,6 +899,9 @@ export default function Planning() {
                   />
                 ))}
               </div>
+
+              {/* Delete drop zone — visible only while dragging */}
+              {activeTask && <DeleteDropZone />}
 
               <DragOverlay>
                 {activeTask && (
