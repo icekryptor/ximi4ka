@@ -19,7 +19,6 @@ import {
   Calendar,
   MessageSquare,
   Paperclip,
-  GripVertical,
   X,
   Archive,
   Pencil,
@@ -148,15 +147,13 @@ function SortableTaskCard({ task, onClick }: SortableTaskCardProps) {
   }
 
   return (
-    <div ref={setNodeRef} style={style} className="relative group">
-      <div
-        {...attributes}
-        {...listeners}
-        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 opacity-0 group-hover:opacity-60
-          cursor-grab active:cursor-grabbing p-0.5 text-brand-text-secondary"
-      >
-        <GripVertical size={14} />
-      </div>
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="cursor-grab active:cursor-grabbing"
+    >
       <TaskCard task={task} onClick={onClick} isDragging={isDragging} />
     </div>
   )
@@ -789,7 +786,7 @@ export default function Planning() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full p-8">
       {/* Header */}
       <div className="mb-4">
         <h1 className="text-xl font-bold text-brand-text mb-3">Планирование</h1>
