@@ -30,6 +30,7 @@ import supplyDocumentRoutes from './routes/supplyDocument.routes';
 import boardRoutes from './routes/board.routes';
 import taskCommentRoutes from './routes/taskComment.routes';
 import channelPresetRoutes from './routes/channel-preset.routes';
+import contentUnitRoutes from './routes/content-unit.routes';
 import { unitEconomicsController } from './controllers/unit-economics.controller';
 
 // Middleware
@@ -94,6 +95,7 @@ app.use('/api/qc', authMiddleware, qcRoutes);
 app.use('/api/sales-channels', authMiddleware, salesChannelRoutes);
 app.use('/api/supply-documents', authMiddleware, supplyDocumentRoutes);
 app.use('/api/boards', authMiddleware, boardRoutes);
+app.use('/api/content-units', authMiddleware, contentUnitRoutes);
 app.use('/api/tasks', authMiddleware, taskCommentRoutes);
 app.use('/api/channel-presets', authMiddleware, channelPresetRoutes);
 
