@@ -32,10 +32,12 @@ import taskCommentRoutes from './routes/taskComment.routes';
 import channelPresetRoutes from './routes/channel-preset.routes';
 import contentUnitRoutes from './routes/content-unit.routes';
 import youtubeRoutes from './routes/youtube.routes';
+import n8nRoutes from './routes/n8n.routes';
 import { unitEconomicsController } from './controllers/unit-economics.controller';
 
 // Middleware
 import { authMiddleware } from './middleware/auth';
+import { apiKeyAuth } from './middleware/apiKeyAuth';
 
 dotenv.config();
 
@@ -91,6 +93,9 @@ app.get('/api/youtube/callback', async (req, res) => {
     res.redirect(`${frontendUrl}/content-units?youtube_error=${encodeURIComponent(error.message)}`)
   }
 })
+
+// n8n API — API key auth (no JWT)
+app.use('/api/n8n', apiKeyAuth, n8nRoutes);
 
 // Protected routes (auth required)
 app.use('/api/transactions', authMiddleware, transactionRoutes);
