@@ -1,7 +1,9 @@
 import { Request, Response } from 'express'
+import { In } from 'typeorm'
 import { AppDataSource } from '../config/database'
 import { ContentUnit } from '../entities/ContentUnit'
 import { Not, IsNull } from 'typeorm'
+import { appendToSheet, readSheetColumn } from '../services/google-sheets.service'
 
 const repo = () => AppDataSource.getRepository(ContentUnit)
 
@@ -188,6 +190,84 @@ export const contentUnitController = {
     } catch (error) {
       console.error('Error syncing from Yandex Disk:', error)
       res.status(500).json({ error: 'Ошибка синхронизации с Яндекс.Диском' })
+    }
+  },
+
+  async exportToSheets(req: Request, res: Response) {
+    try {
+      const { ids, platforms } = req.body as {
+        ids: string[]
+        platforms: ('youtube' | 'instagram' | 'tiktok')[]
+      }
+
+      if (!ids?.length) return res.status(400).json({ error: 'ids обязателен' })
+      if (!platforms?.length) return res.status(400).json({ error: 'platforms обязателен' })
+
+      const spreadsheetId = process.env.GOOGLE_SHEET_ID
+      if (!spreadsheetId) return res.status(500).json({ error: 'GOOGLE_SHEET_ID не настроен' })
+
+      const items = await repo().find({ where: { id: In(ids) } })
+      if (items.length === 0) return res.status(404).json({ error: 'Карточки не найдены' })
+
+      const results: Record<string, { exported: number; skipped: number }> = {}
+
+      // Sheet name mapping
+      const sheetNames: Record<string, string> = {
+        youtube: 'YouTube',
+        instagram: 'Instagram',
+        tiktok: 'TikTok',
+      }
+
+      for (const platform of platforms) {
+        const sheetName = sheetNames[platform]
+        const dateField = `${platform}_date` as keyof ContentUnit
+        const publishedField = `${platform}_published` as keyof ContentUnit
+
+        // Get existing video_urls from the sheet for deduplication
+        let existingUrls: Set<string> = new Set()
+        try {
+          const urls = await readSheetColumn(spreadsheetId, sheetName, 'B')
+          existingUrls = new Set(urls.filter(u => u && u !== 'video_url'))
+        } catch {
+          // Sheet might not exist yet or be empty — proceed without dedup
+        }
+
+        const rows: string[][] = []
+        let skipped = 0
+
+        for (const item of items) {
+          const date = item[dateField] as string | null
+          if (!date) continue // Skip if no date set for this platform
+          if (item[publishedField]) continue // Skip already published
+
+          const videoUrl = item.material_url || ''
+          if (existingUrls.has(videoUrl)) {
+            skipped++
+            continue
+          }
+
+          // Format: publish_date, video_url, caption, tags
+          rows.push([
+            date,
+            videoUrl,
+            item.description || item.title,
+            item.tags || '',
+            'pending', // status for n8n
+          ])
+        }
+
+        let exported = 0
+        if (rows.length > 0) {
+          exported = await appendToSheet(spreadsheetId, sheetName, rows)
+        }
+
+        results[platform] = { exported, skipped }
+      }
+
+      res.json({ success: true, results })
+    } catch (error: any) {
+      console.error('Error exporting to Google Sheets:', error)
+      res.status(500).json({ error: error.message || 'Ошибка выгрузки в таблицу' })
     }
   },
 }

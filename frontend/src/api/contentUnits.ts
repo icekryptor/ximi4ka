@@ -11,6 +11,7 @@ export interface ContentUnit {
   youtube_published: boolean
   instagram_published: boolean
   tiktok_published: boolean
+  tags: string | null
   created_by: string
   created_at: string
   updated_at: string
@@ -41,6 +42,14 @@ export const contentUnitsApi = {
 
   delete: async (id: string): Promise<void> => {
     await api.delete(`/content-units/${id}`)
+  },
+
+  exportToSheets: async (ids: string[], platforms: ('youtube' | 'instagram' | 'tiktok')[]): Promise<{
+    success: boolean
+    results: Record<string, { exported: number; skipped: number }>
+  }> => {
+    const { data } = await api.post('/content-units/export-sheets', { ids, platforms })
+    return data
   },
 
   syncYaDisk: async (publicUrl: string): Promise<{
