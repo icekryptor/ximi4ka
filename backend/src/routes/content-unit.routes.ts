@@ -4,6 +4,7 @@ import { contentUnitController } from '../controllers/content-unit.controller'
 const router = Router()
 
 router.get('/', contentUnitController.getAll)
+router.post('/sync-yadisk', contentUnitController.syncYaDisk)
 router.get('/:id', contentUnitController.getOne)
 router.post('/', contentUnitController.create)
 router.put('/:id', contentUnitController.update)
