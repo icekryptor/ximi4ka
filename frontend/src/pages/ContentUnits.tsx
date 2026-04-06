@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, ExternalLink, X, Trash2, Pencil, Youtube, Instagram, Calendar, Check, Link as LinkIcon, Download, Loader2, Upload, Hash } from 'lucide-react'
+import { Plus, ExternalLink, X, Trash2, Pencil, Youtube, Instagram, Calendar, Check, Link as LinkIcon, Download, Loader2, Upload, Hash, Settings } from 'lucide-react'
 import { contentUnitsApi, ContentUnit } from '../api/contentUnits'
 import { useToast } from '../contexts/ToastContext'
 
@@ -331,7 +331,7 @@ export default function ContentUnits() {
   const [saving, setSaving] = useState(false)
   const [filter, setFilter] = useState<'all' | 'published' | 'partial' | 'unpublished'>('all')
   const [syncModalOpen, setSyncModalOpen] = useState(false)
-  const [syncUrl, setSyncUrl] = useState('')
+  const [syncUrl, setSyncUrl] = useState(() => localStorage.getItem('yadisk_folder_url') || '')
   const [syncing, setSyncing] = useState(false)
   const [exportModalOpen, setExportModalOpen] = useState(false)
   const [exporting, setExporting] = useState(false)
@@ -394,11 +394,17 @@ export default function ContentUnits() {
     }
   }, [toast, loadItems])
 
-  const handleSync = useCallback(async () => {
-    if (!syncUrl.trim()) return
+  const handleSync = useCallback(async (url?: string) => {
+    const targetUrl = (url || syncUrl).trim()
+    if (!targetUrl) {
+      setSyncModalOpen(true)
+      return
+    }
     setSyncing(true)
     try {
-      const result = await contentUnitsApi.syncYaDisk(syncUrl.trim())
+      localStorage.setItem('yadisk_folder_url', targetUrl)
+      setSyncUrl(targetUrl)
+      const result = await contentUnitsApi.syncYaDisk(targetUrl)
       if (result.created > 0) {
         setItems(prev => [...result.items, ...prev])
         toast.success(`Загружено ${result.created} новых единиц контента`)
@@ -475,14 +481,27 @@ export default function ContentUnits() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold text-brand-text">Единицы контента</h1>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setSyncModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-card border border-brand-border text-brand-text text-sm rounded-xl
-              hover:border-primary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-          >
-            <Download size={16} />
-            Загрузить с Я.Диска
-          </button>
+          <div className="flex items-center">
+            <button
+              onClick={() => handleSync()}
+              disabled={syncing}
+              className="flex items-center gap-2 px-4 py-2.5 bg-card border border-brand-border text-brand-text text-sm rounded-l-xl
+                hover:border-primary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors
+                disabled:opacity-50 disabled:cursor-not-allowed"
+              title={syncUrl ? `Папка: ${syncUrl}` : 'Нажмите для настройки'}
+            >
+              {syncing ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+              {syncing ? 'Загрузка...' : 'Загрузить с Я.Диска'}
+            </button>
+            <button
+              onClick={() => setSyncModalOpen(true)}
+              className="px-2 py-2.5 bg-card border border-l-0 border-brand-border text-brand-text-secondary text-sm rounded-r-xl
+                hover:border-primary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+              title="Изменить папку"
+            >
+              <Settings size={14} />
+            </button>
+          </div>
           <button
             onClick={() => setExportModalOpen(true)}
             className="flex items-center gap-2 px-4 py-2.5 bg-card border border-brand-border text-brand-text text-sm rounded-xl
@@ -628,19 +647,19 @@ export default function ContentUnits() {
         </div>
       )}
 
-      {/* Sync Modal */}
+      {/* Sync Modal — folder URL setup */}
       {syncModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 dark:bg-black/50" onClick={() => !syncing && setSyncModalOpen(false)}>
           <div onClick={e => e.stopPropagation()} className="bg-card rounded-3xl shadow-xl w-full max-w-md mx-4 border border-brand-border">
             <div className="flex items-center justify-between p-4 border-b border-brand-border">
-              <h3 className="text-base font-semibold text-brand-text">Загрузить с Яндекс.Диска</h3>
+              <h3 className="text-base font-semibold text-brand-text">Папка Яндекс.Диска</h3>
               <button onClick={() => !syncing && setSyncModalOpen(false)} className="p-1 rounded-lg hover:bg-surface-hover text-brand-text-secondary">
                 <X size={18} />
               </button>
             </div>
             <div className="p-5 space-y-3">
               <p className="text-xs text-brand-text-secondary">
-                Вставьте ссылку на публичную папку или файл Яндекс.Диска. Для каждого файла будет создана карточка. Дубликаты пропускаются.
+                Укажите ссылку на публичную папку Яндекс.Диска с файлами контента. Все файлы из папки будут загружены как карточки. Уже существующие пропускаются.
               </p>
               <div className="relative">
                 <LinkIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-text-secondary" />
@@ -663,13 +682,13 @@ export default function ContentUnits() {
                 Отмена
               </button>
               <button
-                onClick={handleSync}
+                onClick={() => handleSync(syncUrl)}
                 disabled={!syncUrl.trim() || syncing}
                 className="flex items-center gap-2 px-5 py-2 text-sm bg-primary-600 text-white rounded-xl hover:bg-primary-700
                   disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 {syncing && <Loader2 size={14} className="animate-spin" />}
-                {syncing ? 'Загрузка...' : 'Загрузить'}
+                {syncing ? 'Загрузка...' : 'Сохранить и загрузить'}
               </button>
             </div>
           </div>
