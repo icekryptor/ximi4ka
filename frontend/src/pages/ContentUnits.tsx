@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, ExternalLink, X, Trash2, Pencil, Youtube, Instagram, Calendar, Check, Link as LinkIcon } from 'lucide-react'
+import { Plus, ExternalLink, X, Trash2, Pencil, Youtube, Instagram, Calendar, Check, Link as LinkIcon, Download, Loader2 } from 'lucide-react'
 import { contentUnitsApi, ContentUnit } from '../api/contentUnits'
 import { useToast } from '../contexts/ToastContext'
 
@@ -305,6 +305,9 @@ export default function ContentUnits() {
   const [modalItem, setModalItem] = useState<Partial<ContentUnit> | null>(null)
   const [saving, setSaving] = useState(false)
   const [filter, setFilter] = useState<'all' | 'published' | 'partial' | 'unpublished'>('all')
+  const [syncModalOpen, setSyncModalOpen] = useState(false)
+  const [syncUrl, setSyncUrl] = useState('')
+  const [syncing, setSyncing] = useState(false)
 
   const loadItems = useCallback(async () => {
     try {
@@ -363,6 +366,27 @@ export default function ContentUnits() {
     }
   }, [toast, loadItems])
 
+  const handleSync = useCallback(async () => {
+    if (!syncUrl.trim()) return
+    setSyncing(true)
+    try {
+      const result = await contentUnitsApi.syncYaDisk(syncUrl.trim())
+      if (result.created > 0) {
+        setItems(prev => [...result.items, ...prev])
+        toast.success(`Загружено ${result.created} новых единиц контента`)
+      } else {
+        toast.success('Новых файлов не найдено')
+      }
+      if (result.skipped > 0) {
+        toast.success(`Пропущено дубликатов: ${result.skipped}`)
+      }
+      setSyncModalOpen(false)
+    } catch {
+      toast.error('Ошибка загрузки с Яндекс.Диска')
+    }
+    setSyncing(false)
+  }, [syncUrl, toast])
+
   const filtered = items.filter(item => {
     if (filter === 'all') return true
     const all = item.youtube_published && item.instagram_published && item.tiktok_published
@@ -385,14 +409,24 @@ export default function ContentUnits() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold text-brand-text">Единицы контента</h1>
-        <button
-          onClick={() => setModalItem({})}
-          className="flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white text-sm rounded-xl
-            hover:bg-primary-700 transition-colors"
-        >
-          <Plus size={16} />
-          Добавить
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setSyncModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-card border border-brand-border text-brand-text text-sm rounded-xl
+              hover:border-primary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+          >
+            <Download size={16} />
+            Загрузить с Я.Диска
+          </button>
+          <button
+            onClick={() => setModalItem({})}
+            className="flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white text-sm rounded-xl
+              hover:bg-primary-700 transition-colors"
+          >
+            <Plus size={16} />
+            Добавить
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -454,6 +488,54 @@ export default function ContentUnits() {
           onSave={handleSave}
           saving={saving}
         />
+      )}
+
+      {/* Sync Modal */}
+      {syncModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 dark:bg-black/50" onClick={() => !syncing && setSyncModalOpen(false)}>
+          <div onClick={e => e.stopPropagation()} className="bg-card rounded-3xl shadow-xl w-full max-w-md mx-4 border border-brand-border">
+            <div className="flex items-center justify-between p-4 border-b border-brand-border">
+              <h3 className="text-base font-semibold text-brand-text">Загрузить с Яндекс.Диска</h3>
+              <button onClick={() => !syncing && setSyncModalOpen(false)} className="p-1 rounded-lg hover:bg-surface-hover text-brand-text-secondary">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-5 space-y-3">
+              <p className="text-xs text-brand-text-secondary">
+                Вставьте ссылку на публичную папку или файл Яндекс.Диска. Для каждого файла будет создана карточка. Дубликаты пропускаются.
+              </p>
+              <div className="relative">
+                <LinkIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-text-secondary" />
+                <input
+                  autoFocus
+                  value={syncUrl}
+                  onChange={e => setSyncUrl(e.target.value)}
+                  placeholder="https://disk.yandex.ru/d/..."
+                  className="w-full text-sm rounded-xl border border-brand-border bg-subtle text-brand-text pl-9 pr-3 py-2.5 outline-none
+                    focus:border-primary-400 placeholder:text-brand-text-secondary"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 p-4 border-t border-brand-border">
+              <button
+                onClick={() => !syncing && setSyncModalOpen(false)}
+                className="px-4 py-2 text-sm text-brand-text-secondary hover:bg-surface-hover rounded-xl"
+                disabled={syncing}
+              >
+                Отмена
+              </button>
+              <button
+                onClick={handleSync}
+                disabled={!syncUrl.trim() || syncing}
+                className="flex items-center gap-2 px-5 py-2 text-sm bg-primary-600 text-white rounded-xl hover:bg-primary-700
+                  disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                {syncing && <Loader2 size={14} className="animate-spin" />}
+                {syncing ? 'Загрузка...' : 'Загрузить'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

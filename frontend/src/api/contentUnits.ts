@@ -42,4 +42,14 @@ export const contentUnitsApi = {
   delete: async (id: string): Promise<void> => {
     await api.delete(`/content-units/${id}`)
   },
+
+  syncYaDisk: async (publicUrl: string): Promise<{
+    created: number
+    skipped: number
+    total_files: number
+    items: ContentUnit[]
+  }> => {
+    const { data } = await api.post('/content-units/sync-yadisk', { public_url: publicUrl })
+    return data
+  },
 }
