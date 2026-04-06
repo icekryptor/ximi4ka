@@ -17,9 +17,12 @@ interface ContentCardProps {
   onEdit: (item: ContentUnit) => void
   onDateChange: (item: ContentUnit, platform: 'youtube' | 'instagram' | 'tiktok', date: string | null) => void
   onDelete: (id: string) => void
+  onPublishYouTube: (item: ContentUnit) => void
+  ytConnected: boolean
+  publishing: boolean
 }
 
-function ContentCard({ item, onEdit, onDateChange, onDelete }: ContentCardProps) {
+function ContentCard({ item, onEdit, onDateChange, onDelete, onPublishYouTube, ytConnected, publishing }: ContentCardProps) {
   const allDates = item.youtube_date && item.instagram_date && item.tiktok_date
   const someDates = item.youtube_date || item.instagram_date || item.tiktok_date
 
@@ -58,9 +61,28 @@ function ContentCard({ item, onEdit, onDateChange, onDelete }: ContentCardProps)
           </div>
         </div>
 
-        {/* Description */}
-        {item.description && (
-          <p className="text-xs text-brand-text-secondary mb-3 line-clamp-2">{item.description}</p>
+        {/* Description preview (2-3 lines) */}
+        <div className="mb-3">
+          {item.description ? (
+            <p className="text-xs text-brand-text-secondary line-clamp-3 leading-relaxed">{item.description}</p>
+          ) : (
+            <p className="text-xs text-brand-text-secondary/40 italic">Нет описания</p>
+          )}
+        </div>
+
+        {/* Tags as colored badges */}
+        {item.tags && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {item.tags.split(/[\s,]+/).filter(Boolean).map((tag, i) => (
+              <span
+                key={i}
+                className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium
+                  bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300"
+              >
+                {tag.startsWith('#') ? tag : `#${tag}`}
+              </span>
+            ))}
+          </div>
         )}
 
         {/* Material link */}
@@ -71,37 +93,83 @@ function ContentCard({ item, onEdit, onDateChange, onDelete }: ContentCardProps)
           </div>
         )}
 
-        {/* Tags */}
-        {item.tags && (
-          <div className="flex items-center gap-1.5 text-xs text-brand-text-secondary mb-3">
-            <Hash size={12} className="shrink-0" />
-            <span className="truncate">{item.tags}</span>
-          </div>
-        )}
-
         {/* Platform date pickers */}
         <div className="space-y-2">
-          <PlatformDateRow
-            icon={<Youtube size={14} />}
-            label="YT"
-            date={item.youtube_date}
-            onChange={d => onDateChange(item, 'youtube', d)}
-            colorClass="text-red-500"
-          />
-          <PlatformDateRow
-            icon={<Instagram size={14} />}
-            label="IG"
-            date={item.instagram_date}
-            onChange={d => onDateChange(item, 'instagram', d)}
-            colorClass="text-pink-500"
-          />
-          <PlatformDateRow
-            icon={<IconTikTok />}
-            label="TT"
-            date={item.tiktok_date}
-            onChange={d => onDateChange(item, 'tiktok', d)}
-            colorClass="text-brand-text"
-          />
+          <div className="space-y-1">
+            <PlatformDateRow
+              icon={<Youtube size={14} />}
+              label="YT"
+              date={item.youtube_date}
+              onChange={d => onDateChange(item, 'youtube', d)}
+              colorClass="text-red-500"
+            />
+            {item.youtube_date && !item.youtube_published && ytConnected && (
+              <button
+                onClick={() => onPublishYouTube(item)}
+                disabled={publishing}
+                className="ml-7 flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-medium rounded-lg
+                  bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400
+                  hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors
+                  disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {publishing ? <Loader2 size={10} className="animate-spin" /> : <Upload size={10} />}
+                {publishing ? 'Загрузка на YT...' : 'Опубликовать на YT'}
+              </button>
+            )}
+            {item.youtube_published && (
+              <div className="ml-7 flex items-center gap-1.5 text-[10px] text-green-600 dark:text-green-400">
+                <span>✓</span>
+                {item.youtube_published_url ? (
+                  <a href={item.youtube_published_url} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                    {item.publish_status === 'scheduled' ? 'Запланировано' : 'Опубликовано'}
+                  </a>
+                ) : (
+                  <span>{item.publish_status === 'scheduled' ? 'Запланировано' : 'Опубликовано'}</span>
+                )}
+              </div>
+            )}
+            {item.publish_status === 'error' && item.publish_error && (
+              <p className="ml-7 text-[10px] text-red-500 truncate" title={item.publish_error}>Ошибка: {item.publish_error}</p>
+            )}
+          </div>
+          <div className="space-y-1">
+            <PlatformDateRow
+              icon={<Instagram size={14} />}
+              label="IG"
+              date={item.instagram_date}
+              onChange={d => onDateChange(item, 'instagram', d)}
+              colorClass="text-pink-500"
+            />
+            {item.instagram_published ? (
+              <div className="ml-7 flex items-center gap-1.5 text-[10px] text-green-600 dark:text-green-400">
+                <span>✓</span>
+                {item.instagram_published_url ? (
+                  <a href={item.instagram_published_url} target="_blank" rel="noopener noreferrer" className="hover:underline">Опубликовано</a>
+                ) : <span>Опубликовано</span>}
+              </div>
+            ) : item.instagram_date ? (
+              <p className="ml-7 text-[10px] text-brand-text-secondary">Ожидает автопостинга</p>
+            ) : null}
+          </div>
+          <div className="space-y-1">
+            <PlatformDateRow
+              icon={<IconTikTok />}
+              label="TT"
+              date={item.tiktok_date}
+              onChange={d => onDateChange(item, 'tiktok', d)}
+              colorClass="text-brand-text"
+            />
+            {item.tiktok_published ? (
+              <div className="ml-7 flex items-center gap-1.5 text-[10px] text-green-600 dark:text-green-400">
+                <span>✓</span>
+                {item.tiktok_published_url ? (
+                  <a href={item.tiktok_published_url} target="_blank" rel="noopener noreferrer" className="hover:underline">Опубликовано</a>
+                ) : <span>Опубликовано</span>}
+              </div>
+            ) : item.tiktok_date ? (
+              <p className="ml-7 text-[10px] text-brand-text-secondary">Ожидает автопостинга</p>
+            ) : null}
+          </div>
         </div>
       </div>
 
@@ -334,6 +402,9 @@ export default function ContentUnits() {
   const [exportModalOpen, setExportModalOpen] = useState(false)
   const [exporting, setExporting] = useState(false)
   const [exportPlatforms, setExportPlatforms] = useState<Record<string, boolean>>({ youtube: true, instagram: true, tiktok: true })
+  const [ytConnected, setYtConnected] = useState(false)
+  const [ytChannelName, setYtChannelName] = useState<string | null>(null)
+  const [publishing, setPublishing] = useState<string | null>(null)
 
   const loadItems = useCallback(async () => {
     try {
@@ -346,6 +417,26 @@ export default function ContentUnits() {
   }, [toast])
 
   useEffect(() => { loadItems() }, [loadItems])
+
+  useEffect(() => {
+    contentUnitsApi.getYouTubeStatus().then(s => {
+      setYtConnected(s.connected)
+      setYtChannelName(s.channelName)
+    }).catch(() => {})
+
+    // Handle OAuth callback params
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('youtube_connected') === 'true') {
+      setYtConnected(true)
+      setYtChannelName(params.get('channel') || 'YouTube')
+      toast.success(`YouTube подключён: ${params.get('channel') || ''}`)
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+    if (params.get('youtube_error')) {
+      toast.error(`Ошибка YouTube: ${params.get('youtube_error')}`)
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  }, [])
 
   const handleSave = useCallback(async (data: Partial<ContentUnit>) => {
     setSaving(true)
@@ -390,6 +481,39 @@ export default function ContentUnits() {
       toast.error('Ошибка удаления')
       loadItems()
     }
+  }, [toast, loadItems])
+
+  const handleYouTubeConnect = useCallback(async () => {
+    try {
+      const url = await contentUnitsApi.getYouTubeAuthUrl()
+      window.location.href = url
+    } catch {
+      toast.error('Ошибка получения ссылки авторизации YouTube')
+    }
+  }, [toast])
+
+  const handlePublishYouTube = useCallback(async (item: ContentUnit) => {
+    if (!confirm(`Опубликовать "${item.title}" на YouTube?`)) return
+    setPublishing(item.id)
+    try {
+      const result = await contentUnitsApi.publishYouTube(item.id)
+      setItems(prev => prev.map(i => i.id === item.id ? {
+        ...i,
+        youtube_published: true,
+        youtube_video_id: result.videoId,
+        youtube_published_url: result.videoUrl,
+        publish_status: result.status,
+      } : i))
+      toast.success(result.status === 'scheduled'
+        ? `Запланировано на YouTube: ${item.youtube_date}`
+        : 'Опубликовано на YouTube!'
+      )
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || 'Ошибка публикации'
+      toast.error(msg)
+      loadItems()
+    }
+    setPublishing(null)
   }, [toast, loadItems])
 
   const handleSync = useCallback(async (url?: string) => {
@@ -450,8 +574,9 @@ export default function ContentUnits() {
       }
       toast.success(msgs.length > 0 ? `Выгружено: ${msgs.join(', ')}` : 'Нет новых записей для выгрузки')
       setExportModalOpen(false)
-    } catch {
-      toast.error('Ошибка выгрузки в таблицу')
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || err?.message || 'Неизвестная ошибка'
+      toast.error(`Ошибка выгрузки: ${msg}`)
     }
     setExporting(false)
   }, [items, exportPlatforms, toast])
@@ -508,6 +633,21 @@ export default function ContentUnits() {
             <Upload size={16} />
             Выгрузить в таблицу
           </button>
+          {ytConnected ? (
+            <div className="flex items-center gap-1.5 px-3 py-2.5 text-sm text-green-600 dark:text-green-400 bg-card border border-green-300 dark:border-green-700 rounded-xl">
+              <Youtube size={16} />
+              <span className="text-xs">{ytChannelName || 'YouTube'}</span>
+              <span className="text-[10px]">✓</span>
+            </div>
+          ) : (
+            <button
+              onClick={handleYouTubeConnect}
+              className="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white text-sm rounded-xl hover:bg-red-700 transition-colors"
+            >
+              <Youtube size={16} />
+              Подключить YouTube
+            </button>
+          )}
           <button
             onClick={() => setModalItem({})}
             className="flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white text-sm rounded-xl
@@ -565,6 +705,9 @@ export default function ContentUnits() {
               onEdit={setModalItem}
               onDateChange={handleDateChange}
               onDelete={handleDelete}
+              onPublishYouTube={handlePublishYouTube}
+              ytConnected={ytConnected}
+              publishing={publishing === item.id}
             />
           ))}
         </div>

@@ -29,6 +29,7 @@ import { TaskComment } from '../entities/TaskComment';
 import { TaskTag } from '../entities/TaskTag';
 import { ChannelPreset } from '../entities/ChannelPreset';
 import { ContentUnit } from '../entities/ContentUnit';
+import { OAuthToken } from '../entities/OAuthToken';
 
 dotenv.config();
 
@@ -38,7 +39,7 @@ const databaseUrl = process.env.DATABASE_URL;
 
 const isDev = process.env.NODE_ENV === 'development';
 
-const allEntities = [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, UnitEconomicsShare, User, DailySales, Employee, SalesChannel, QcChecklist, Board, Task, TaskComment, TaskTag, ChannelPreset, ContentUnit];
+const allEntities = [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, UnitEconomicsShare, User, DailySales, Employee, SalesChannel, QcChecklist, Board, Task, TaskComment, TaskTag, ChannelPreset, ContentUnit, OAuthToken];
 
 const dataSourceOptions = databaseUrl
   ? {
