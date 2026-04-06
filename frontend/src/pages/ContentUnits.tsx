@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, ExternalLink, X, Trash2, Pencil, Youtube, Instagram, Calendar, Check, Link as LinkIcon, Download, Loader2, Upload, Hash, Settings } from 'lucide-react'
+import { Plus, ExternalLink, X, Trash2, Pencil, Youtube, Instagram, Link as LinkIcon, Download, Loader2, Upload, Hash, Settings } from 'lucide-react'
 import { contentUnitsApi, ContentUnit } from '../api/contentUnits'
 import { useToast } from '../contexts/ToastContext'
 
@@ -15,17 +15,17 @@ const IconTikTok = () => (
 interface ContentCardProps {
   item: ContentUnit
   onEdit: (item: ContentUnit) => void
-  onToggle: (item: ContentUnit, platform: 'youtube' | 'instagram' | 'tiktok') => void
+  onDateChange: (item: ContentUnit, platform: 'youtube' | 'instagram' | 'tiktok', date: string | null) => void
   onDelete: (id: string) => void
 }
 
-function ContentCard({ item, onEdit, onToggle, onDelete }: ContentCardProps) {
-  const allPublished = item.youtube_published && item.instagram_published && item.tiktok_published
-  const somePublished = item.youtube_published || item.instagram_published || item.tiktok_published
+function ContentCard({ item, onEdit, onDateChange, onDelete }: ContentCardProps) {
+  const allDates = item.youtube_date && item.instagram_date && item.tiktok_date
+  const someDates = item.youtube_date || item.instagram_date || item.tiktok_date
 
   return (
     <div className={`bg-card rounded-2xl border transition-all hover:shadow-md ${
-      allPublished ? 'border-green-300 dark:border-green-700' : 'border-brand-border'
+      allDates ? 'border-green-300 dark:border-green-700' : 'border-brand-border'
     }`}>
       <div className="p-4">
         {/* Header: title + actions */}
@@ -79,30 +79,27 @@ function ContentCard({ item, onEdit, onToggle, onDelete }: ContentCardProps) {
           </div>
         )}
 
-        {/* Platform rows */}
+        {/* Platform date pickers */}
         <div className="space-y-2">
-          <PlatformRow
-            icon={<Youtube size={16} />}
-            label="YouTube"
+          <PlatformDateRow
+            icon={<Youtube size={14} />}
+            label="YT"
             date={item.youtube_date}
-            published={item.youtube_published}
-            onToggle={() => onToggle(item, 'youtube')}
+            onChange={d => onDateChange(item, 'youtube', d)}
             colorClass="text-red-500"
           />
-          <PlatformRow
-            icon={<Instagram size={16} />}
-            label="Instagram"
+          <PlatformDateRow
+            icon={<Instagram size={14} />}
+            label="IG"
             date={item.instagram_date}
-            published={item.instagram_published}
-            onToggle={() => onToggle(item, 'instagram')}
+            onChange={d => onDateChange(item, 'instagram', d)}
             colorClass="text-pink-500"
           />
-          <PlatformRow
+          <PlatformDateRow
             icon={<IconTikTok />}
-            label="TikTok"
+            label="TT"
             date={item.tiktok_date}
-            published={item.tiktok_published}
-            onToggle={() => onToggle(item, 'tiktok')}
+            onChange={d => onDateChange(item, 'tiktok', d)}
             colorClass="text-brand-text"
           />
         </div>
@@ -110,49 +107,50 @@ function ContentCard({ item, onEdit, onToggle, onDelete }: ContentCardProps) {
 
       {/* Status bar */}
       <div className={`px-4 py-2 rounded-b-2xl text-[11px] font-medium ${
-        allPublished
+        allDates
           ? 'bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400'
-          : somePublished
+          : someDates
           ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400'
           : 'bg-subtle text-brand-text-secondary'
       }`}>
-        {allPublished ? 'Опубликовано везде' : somePublished ? 'Частично опубликовано' : 'Не опубликовано'}
+        {allDates ? 'Запланировано везде' : someDates ? 'Частично запланировано' : 'Даты не назначены'}
       </div>
     </div>
   )
 }
 
-// ─── Platform Row ────────────────────────────────────────────────────────
+// ─── Platform Date Row ──────────────────────────────────────────────────
 
-interface PlatformRowProps {
+interface PlatformDateRowProps {
   icon: React.ReactNode
   label: string
   date: string | null
-  published: boolean
-  onToggle: () => void
+  onChange: (date: string | null) => void
   colorClass: string
 }
 
-function PlatformRow({ icon, label, date, published, onToggle, colorClass }: PlatformRowProps) {
+function PlatformDateRow({ icon, label, date, onChange, colorClass }: PlatformDateRowProps) {
   return (
     <div className="flex items-center gap-2">
-      <button
-        onClick={onToggle}
-        className={`flex items-center justify-center w-6 h-6 rounded-lg border-2 transition-all ${
-          published
-            ? 'bg-green-500 border-green-500 text-white'
-            : 'border-brand-border text-transparent hover:border-green-400'
-        }`}
-      >
-        <Check size={14} />
-      </button>
       <span className={`${colorClass} shrink-0`}>{icon}</span>
-      <span className="text-xs text-brand-text font-medium flex-1">{label}</span>
+      <span className="text-[11px] text-brand-text font-medium w-5 shrink-0">{label}</span>
+      <input
+        type="date"
+        value={date || ''}
+        onChange={e => onChange(e.target.value || null)}
+        className={`flex-1 text-[11px] rounded-lg border px-2 py-1 outline-none transition-colors
+          bg-subtle border-brand-border text-brand-text
+          focus:border-primary-400
+          ${date ? 'text-brand-text' : 'text-brand-text-secondary'}`}
+      />
       {date && (
-        <span className="flex items-center gap-1 text-[11px] text-brand-text-secondary">
-          <Calendar size={11} />
-          {new Date(date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
-        </span>
+        <button
+          onClick={() => onChange(null)}
+          className="p-0.5 rounded text-brand-text-secondary hover:text-red-500 transition-colors"
+          title="Убрать дату"
+        >
+          <X size={12} />
+        </button>
       )}
     </div>
   )
@@ -368,16 +366,16 @@ export default function ContentUnits() {
     setSaving(false)
   }, [modalItem, toast])
 
-  const handleToggle = useCallback(async (item: ContentUnit, platform: 'youtube' | 'instagram' | 'tiktok') => {
-    const key = `${platform}_published` as keyof ContentUnit
-    const newVal = !item[key]
+  const handleDateChange = useCallback(async (item: ContentUnit, platform: 'youtube' | 'instagram' | 'tiktok', date: string | null) => {
+    const key = `${platform}_date` as keyof ContentUnit
+    const oldVal = item[key]
     // Optimistic
-    setItems(prev => prev.map(i => i.id === item.id ? { ...i, [key]: newVal } : i))
+    setItems(prev => prev.map(i => i.id === item.id ? { ...i, [key]: date } : i))
     try {
-      await contentUnitsApi.update(item.id, { [key]: newVal } as any)
+      await contentUnitsApi.update(item.id, { [key]: date } as any)
     } catch {
       // Rollback
-      setItems(prev => prev.map(i => i.id === item.id ? { ...i, [key]: !newVal } : i))
+      setItems(prev => prev.map(i => i.id === item.id ? { ...i, [key]: oldVal } : i))
       toast.error('Ошибка обновления')
     }
   }, [toast])
@@ -460,8 +458,8 @@ export default function ContentUnits() {
 
   const filtered = items.filter(item => {
     if (filter === 'all') return true
-    const all = item.youtube_published && item.instagram_published && item.tiktok_published
-    const some = item.youtube_published || item.instagram_published || item.tiktok_published
+    const all = item.youtube_date && item.instagram_date && item.tiktok_date
+    const some = item.youtube_date || item.instagram_date || item.tiktok_date
     if (filter === 'published') return all
     if (filter === 'partial') return some && !all
     return !some
@@ -525,9 +523,9 @@ export default function ContentUnits() {
       <div className="flex items-center gap-2 mb-6">
         {([
           ['all', 'Все'],
-          ['unpublished', 'Не опубликовано'],
+          ['unpublished', 'Без дат'],
           ['partial', 'Частично'],
-          ['published', 'Опубликовано'],
+          ['published', 'Запланировано'],
         ] as const).map(([key, label]) => (
           <button
             key={key}
@@ -565,7 +563,7 @@ export default function ContentUnits() {
               key={item.id}
               item={item}
               onEdit={setModalItem}
-              onToggle={handleToggle}
+              onDateChange={handleDateChange}
               onDelete={handleDelete}
             />
           ))}
