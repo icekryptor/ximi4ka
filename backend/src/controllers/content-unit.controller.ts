@@ -4,6 +4,8 @@ import { AppDataSource } from '../config/database'
 import { ContentUnit } from '../entities/ContentUnit'
 import { Not, IsNull } from 'typeorm'
 import { appendToSheet, readSheetColumn } from '../services/google-sheets.service'
+import { downloadFromYaDisk, cleanupTempFile } from '../services/yadisk-download.service'
+import { uploadVideo as youtubeUpload } from '../services/youtube.service'
 
 const repo = () => AppDataSource.getRepository(ContentUnit)
 
@@ -193,6 +195,71 @@ export const contentUnitController = {
     }
   },
 
+  async getPending(req: Request, res: Response) {
+    try {
+      const platform = req.query.platform as string
+      if (!platform || !['youtube', 'instagram', 'tiktok'].includes(platform)) {
+        return res.status(400).json({ error: 'platform query param required: youtube|instagram|tiktok' })
+      }
+
+      const dateField = `${platform}_date`
+      const publishedField = `${platform}_published`
+
+      const today = new Date().toISOString().split('T')[0]
+
+      const items = await repo()
+        .createQueryBuilder('cu')
+        .where(`cu.${dateField} IS NOT NULL`)
+        .andWhere(`cu.${dateField} <= :today`, { today })
+        .andWhere(`cu.${publishedField} = false`)
+        .andWhere('cu.material_url IS NOT NULL')
+        .orderBy(`cu.${dateField}`, 'ASC')
+        .getMany()
+
+      res.json(items)
+    } catch (error: any) {
+      console.error('Error fetching pending content units:', error)
+      res.status(500).json({ error: error.message || 'Internal error' })
+    }
+  },
+
+  async markPublished(req: Request, res: Response) {
+    try {
+      const { platform, published_url } = req.body as {
+        platform: 'youtube' | 'instagram' | 'tiktok'
+        published_url?: string
+      }
+
+      if (!platform || !['youtube', 'instagram', 'tiktok'].includes(platform)) {
+        return res.status(400).json({ error: 'platform required: youtube|instagram|tiktok' })
+      }
+
+      const item = await repo().findOne({ where: { id: req.params.id } })
+      if (!item) return res.status(404).json({ error: 'Not found' })
+
+      const publishedField = `${platform}_published` as keyof ContentUnit
+      const urlField = `${platform}_published_url` as keyof ContentUnit
+
+      ;(item as any)[publishedField] = true
+      if (published_url) (item as any)[urlField] = published_url
+
+      // Update publish_status: check if all platforms with dates are now published
+      const platforms = ['youtube', 'instagram', 'tiktok'] as const
+      const allPublished = platforms.every(p => {
+        const df = `${p}_date` as keyof ContentUnit
+        const pf = `${p}_published` as keyof ContentUnit
+        return !item[df] || item[pf]
+      })
+      item.publish_status = allPublished ? 'published' : item.publish_status
+
+      await repo().save(item)
+      res.json({ success: true })
+    } catch (error: any) {
+      console.error('Error marking content unit published:', error)
+      res.status(500).json({ error: error.message || 'Internal error' })
+    }
+  },
+
   async exportToSheets(req: Request, res: Response) {
     try {
       const { ids, platforms } = req.body as {
@@ -204,7 +271,11 @@ export const contentUnitController = {
       if (!platforms?.length) return res.status(400).json({ error: 'platforms обязателен' })
 
       const spreadsheetId = process.env.GOOGLE_SHEET_ID
-      if (!spreadsheetId) return res.status(500).json({ error: 'GOOGLE_SHEET_ID не настроен' })
+      if (!spreadsheetId) return res.status(500).json({ error: 'GOOGLE_SHEET_ID не настроен в переменных окружения сервера' })
+
+      if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+        return res.status(500).json({ error: 'GOOGLE_SERVICE_ACCOUNT_JSON не настроен в переменных окружения сервера' })
+      }
 
       const items = await repo().find({ where: { id: In(ids) } })
       if (items.length === 0) return res.status(404).json({ error: 'Карточки не найдены' })
@@ -268,6 +339,76 @@ export const contentUnitController = {
     } catch (error: any) {
       console.error('Error exporting to Google Sheets:', error)
       res.status(500).json({ error: error.message || 'Ошибка выгрузки в таблицу' })
+    }
+  },
+
+  async publishYouTube(req: Request, res: Response) {
+    let tempFile: string | null = null
+    try {
+      const item = await repo().findOne({ where: { id: req.params.id } })
+      if (!item) return res.status(404).json({ error: 'Карточка не найдена' })
+
+      if (!item.material_url) {
+        return res.status(400).json({ error: 'Нет ссылки на материал (material_url)' })
+      }
+      if (!item.youtube_date) {
+        return res.status(400).json({ error: 'Не задана дата публикации на YouTube' })
+      }
+      if (item.youtube_published) {
+        return res.status(400).json({ error: 'Уже опубликовано на YouTube' })
+      }
+
+      // Mark as uploading
+      item.publish_status = 'uploading'
+      item.publish_error = null
+      await repo().save(item)
+
+      // Download from Yandex Disk
+      tempFile = await downloadFromYaDisk(item.material_url, item.title)
+
+      // Upload to YouTube
+      const result = await youtubeUpload({
+        filePath: tempFile,
+        title: item.title,
+        description: item.description || item.title,
+        tags: item.tags,
+        publishAt: item.youtube_date,
+      })
+
+      // Update record
+      item.youtube_video_id = result.videoId
+      item.youtube_published_url = result.videoUrl
+      item.youtube_published = true
+
+      const now = new Date()
+      const pubDate = new Date(item.youtube_date)
+      item.publish_status = pubDate > now ? 'scheduled' : 'published'
+      item.publish_error = null
+
+      await repo().save(item)
+
+      res.json({
+        success: true,
+        videoId: result.videoId,
+        videoUrl: result.videoUrl,
+        status: item.publish_status,
+      })
+    } catch (error: any) {
+      console.error('YouTube publish error:', error)
+
+      // Update status to error
+      try {
+        const item = await repo().findOne({ where: { id: req.params.id } })
+        if (item) {
+          item.publish_status = 'error'
+          item.publish_error = error.message || 'Unknown error'
+          await repo().save(item)
+        }
+      } catch {}
+
+      res.status(500).json({ error: error.message || 'Ошибка публикации на YouTube' })
+    } finally {
+      if (tempFile) cleanupTempFile(tempFile)
     }
   },
 }

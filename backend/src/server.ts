@@ -31,6 +31,7 @@ import boardRoutes from './routes/board.routes';
 import taskCommentRoutes from './routes/taskComment.routes';
 import channelPresetRoutes from './routes/channel-preset.routes';
 import contentUnitRoutes from './routes/content-unit.routes';
+import youtubeRoutes from './routes/youtube.routes';
 import { unitEconomicsController } from './controllers/unit-economics.controller';
 
 // Middleware
@@ -75,6 +76,22 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 app.use('/api/auth', authRoutes);
 app.get('/api/public/unit-economics/:token', unitEconomicsController.getPublicShare);
 
+// YouTube OAuth callback (must be public — Google redirects here)
+app.get('/api/youtube/callback', async (req, res) => {
+  try {
+    const { handleCallback } = await import('./services/youtube.service')
+    const code = req.query.code as string
+    if (!code) return res.status(400).json({ error: 'Missing code' })
+    const result = await handleCallback(code)
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
+    res.redirect(`${frontendUrl}/content-units?youtube_connected=true&channel=${encodeURIComponent(result.channelName)}`)
+  } catch (error: any) {
+    console.error('YouTube OAuth callback error:', error)
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
+    res.redirect(`${frontendUrl}/content-units?youtube_error=${encodeURIComponent(error.message)}`)
+  }
+})
+
 // Protected routes (auth required)
 app.use('/api/transactions', authMiddleware, transactionRoutes);
 app.use('/api/counterparties', authMiddleware, counterpartyRoutes);
@@ -96,6 +113,7 @@ app.use('/api/sales-channels', authMiddleware, salesChannelRoutes);
 app.use('/api/supply-documents', authMiddleware, supplyDocumentRoutes);
 app.use('/api/boards', authMiddleware, boardRoutes);
 app.use('/api/content-units', authMiddleware, contentUnitRoutes);
+app.use('/api/youtube', authMiddleware, youtubeRoutes);
 app.use('/api/tasks', authMiddleware, taskCommentRoutes);
 app.use('/api/channel-presets', authMiddleware, channelPresetRoutes);
 
