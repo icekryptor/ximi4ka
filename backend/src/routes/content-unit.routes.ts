@@ -5,6 +5,7 @@ const router = Router()
 
 router.get('/', contentUnitController.getAll)
 router.post('/sync-yadisk', contentUnitController.syncYaDisk)
+router.post('/export-sheets', contentUnitController.exportToSheets)
 router.get('/:id', contentUnitController.getOne)
 router.post('/', contentUnitController.create)
 router.put('/:id', contentUnitController.update)

@@ -38,6 +38,9 @@ export class ContentUnit {
   @Column({ type: 'boolean', default: false })
   tiktok_published: boolean
 
+  @Column({ type: 'text', nullable: true })
+  tags: string | null
+
   @Column({ type: 'uuid' })
   created_by: string
 

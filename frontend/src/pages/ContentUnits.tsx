@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, ExternalLink, X, Trash2, Pencil, Youtube, Instagram, Calendar, Check, Link as LinkIcon, Download, Loader2 } from 'lucide-react'
+import { Plus, ExternalLink, X, Trash2, Pencil, Youtube, Instagram, Calendar, Check, Link as LinkIcon, Download, Loader2, Upload, Hash } from 'lucide-react'
 import { contentUnitsApi, ContentUnit } from '../api/contentUnits'
 import { useToast } from '../contexts/ToastContext'
 
@@ -68,6 +68,14 @@ function ContentCard({ item, onEdit, onToggle, onDelete }: ContentCardProps) {
           <div className="flex items-center gap-1.5 text-xs text-primary-600 dark:text-primary-400 mb-3 truncate">
             <LinkIcon size={12} className="shrink-0" />
             <span className="truncate">{item.material_url}</span>
+          </div>
+        )}
+
+        {/* Tags */}
+        {item.tags && (
+          <div className="flex items-center gap-1.5 text-xs text-brand-text-secondary mb-3">
+            <Hash size={12} className="shrink-0" />
+            <span className="truncate">{item.tags}</span>
           </div>
         )}
 
@@ -166,6 +174,7 @@ function ContentUnitModal({ item, onClose, onSave, saving }: ModalProps) {
   const [youtubeDate, setYoutubeDate] = useState(item?.youtube_date || '')
   const [instagramDate, setInstagramDate] = useState(item?.instagram_date || '')
   const [tiktokDate, setTiktokDate] = useState(item?.tiktok_date || '')
+  const [tags, setTags] = useState(item?.tags || '')
 
   const isNew = !item?.id
 
@@ -178,6 +187,7 @@ function ContentUnitModal({ item, onClose, onSave, saving }: ModalProps) {
       youtube_date: youtubeDate || null,
       instagram_date: instagramDate || null,
       tiktok_date: tiktokDate || null,
+      tags: tags.trim() || null,
     })
   }
 
@@ -230,6 +240,21 @@ function ContentUnitModal({ item, onClose, onSave, saving }: ModalProps) {
                 value={materialUrl}
                 onChange={e => setMaterialUrl(e.target.value)}
                 placeholder="https://..."
+                className="w-full text-sm rounded-xl border border-brand-border bg-subtle text-brand-text pl-9 pr-3 py-2.5 outline-none
+                  focus:border-primary-400 placeholder:text-brand-text-secondary"
+              />
+            </div>
+          </div>
+
+          {/* Tags */}
+          <div>
+            <label className="text-xs text-brand-text-secondary mb-1 block">Хэштеги</label>
+            <div className="relative">
+              <Hash size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-text-secondary" />
+              <input
+                value={tags}
+                onChange={e => setTags(e.target.value)}
+                placeholder="#химия #эксперимент #наука"
                 className="w-full text-sm rounded-xl border border-brand-border bg-subtle text-brand-text pl-9 pr-3 py-2.5 outline-none
                   focus:border-primary-400 placeholder:text-brand-text-secondary"
               />
@@ -308,6 +333,9 @@ export default function ContentUnits() {
   const [syncModalOpen, setSyncModalOpen] = useState(false)
   const [syncUrl, setSyncUrl] = useState('')
   const [syncing, setSyncing] = useState(false)
+  const [exportModalOpen, setExportModalOpen] = useState(false)
+  const [exporting, setExporting] = useState(false)
+  const [exportPlatforms, setExportPlatforms] = useState<Record<string, boolean>>({ youtube: true, instagram: true, tiktok: true })
 
   const loadItems = useCallback(async () => {
     try {
@@ -387,6 +415,43 @@ export default function ContentUnits() {
     setSyncing(false)
   }, [syncUrl, toast])
 
+  const handleExport = useCallback(async () => {
+    const selectedPlatforms = Object.entries(exportPlatforms)
+      .filter(([, v]) => v)
+      .map(([k]) => k) as ('youtube' | 'instagram' | 'tiktok')[]
+    if (selectedPlatforms.length === 0) return
+
+    // Export items that have dates set for selected platforms and aren't published yet
+    const exportableIds = items
+      .filter(item => selectedPlatforms.some(p => {
+        const dateKey = `${p}_date` as keyof ContentUnit
+        const pubKey = `${p}_published` as keyof ContentUnit
+        return item[dateKey] && !item[pubKey]
+      }))
+      .map(item => item.id)
+
+    if (exportableIds.length === 0) {
+      toast.error('Нет карточек для выгрузки (нужны даты и контент не должен быть опубликован)')
+      return
+    }
+
+    setExporting(true)
+    try {
+      const result = await contentUnitsApi.exportToSheets(exportableIds, selectedPlatforms)
+      const msgs: string[] = []
+      for (const [platform, r] of Object.entries(result.results)) {
+        const name = platform === 'youtube' ? 'YouTube' : platform === 'instagram' ? 'Instagram' : 'TikTok'
+        if (r.exported > 0) msgs.push(`${name}: ${r.exported}`)
+        if (r.skipped > 0) msgs.push(`${name} (пропущено): ${r.skipped}`)
+      }
+      toast.success(msgs.length > 0 ? `Выгружено: ${msgs.join(', ')}` : 'Нет новых записей для выгрузки')
+      setExportModalOpen(false)
+    } catch {
+      toast.error('Ошибка выгрузки в таблицу')
+    }
+    setExporting(false)
+  }, [items, exportPlatforms, toast])
+
   const filtered = items.filter(item => {
     if (filter === 'all') return true
     const all = item.youtube_published && item.instagram_published && item.tiktok_published
@@ -417,6 +482,14 @@ export default function ContentUnits() {
           >
             <Download size={16} />
             Загрузить с Я.Диска
+          </button>
+          <button
+            onClick={() => setExportModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-card border border-brand-border text-brand-text text-sm rounded-xl
+              hover:border-green-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+          >
+            <Upload size={16} />
+            Выгрузить в таблицу
           </button>
           <button
             onClick={() => setModalItem({})}
@@ -488,6 +561,71 @@ export default function ContentUnits() {
           onSave={handleSave}
           saving={saving}
         />
+      )}
+
+      {/* Export Modal */}
+      {exportModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 dark:bg-black/50" onClick={() => !exporting && setExportModalOpen(false)}>
+          <div onClick={e => e.stopPropagation()} className="bg-card rounded-3xl shadow-xl w-full max-w-md mx-4 border border-brand-border">
+            <div className="flex items-center justify-between p-4 border-b border-brand-border">
+              <h3 className="text-base font-semibold text-brand-text">Выгрузить в Google Таблицу</h3>
+              <button onClick={() => !exporting && setExportModalOpen(false)} className="p-1 rounded-lg hover:bg-surface-hover text-brand-text-secondary">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-5 space-y-4">
+              <p className="text-xs text-brand-text-secondary">
+                Неопубликованные карточки с заданными датами будут выгружены в таблицу для автопостинга через n8n. Дубликаты пропускаются.
+              </p>
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-brand-text">Платформы:</p>
+                {([
+                  ['youtube', 'YouTube', 'text-red-500'],
+                  ['instagram', 'Instagram', 'text-pink-500'],
+                  ['tiktok', 'TikTok', 'text-brand-text'],
+                ] as const).map(([key, label, color]) => (
+                  <label key={key} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={exportPlatforms[key]}
+                      onChange={e => setExportPlatforms(prev => ({ ...prev, [key]: e.target.checked }))}
+                      className="rounded border-brand-border text-primary-600 focus:ring-primary-500"
+                    />
+                    <span className={`text-sm ${color}`}>{label}</span>
+                  </label>
+                ))}
+              </div>
+              <div className="bg-subtle rounded-xl p-3 text-xs text-brand-text-secondary">
+                К выгрузке: {items.filter(item => {
+                  const platforms = Object.entries(exportPlatforms).filter(([, v]) => v).map(([k]) => k)
+                  return platforms.some(p => {
+                    const dk = `${p}_date` as keyof ContentUnit
+                    const pk = `${p}_published` as keyof ContentUnit
+                    return item[dk] && !item[pk]
+                  })
+                }).length} карточек
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 p-4 border-t border-brand-border">
+              <button
+                onClick={() => !exporting && setExportModalOpen(false)}
+                className="px-4 py-2 text-sm text-brand-text-secondary hover:bg-surface-hover rounded-xl"
+                disabled={exporting}
+              >
+                Отмена
+              </button>
+              <button
+                onClick={handleExport}
+                disabled={exporting || !Object.values(exportPlatforms).some(v => v)}
+                className="flex items-center gap-2 px-5 py-2 text-sm bg-green-600 text-white rounded-xl hover:bg-green-700
+                  disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                {exporting && <Loader2 size={14} className="animate-spin" />}
+                {exporting ? 'Выгрузка...' : 'Выгрузить'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Sync Modal */}
