@@ -11,6 +11,12 @@ export interface ContentUnit {
   youtube_published: boolean
   instagram_published: boolean
   tiktok_published: boolean
+  youtube_video_id: string | null
+  youtube_published_url: string | null
+  instagram_published_url: string | null
+  tiktok_published_url: string | null
+  publish_status: string
+  publish_error: string | null
   tags: string | null
   created_by: string
   created_at: string
@@ -60,5 +66,20 @@ export const contentUnitsApi = {
   }> => {
     const { data } = await api.post('/content-units/sync-yadisk', { public_url: publicUrl })
     return data
+  },
+
+  publishYouTube: async (id: string): Promise<{ success: boolean; videoId: string; videoUrl: string; status: string }> => {
+    const { data } = await api.post(`/content-units/${id}/publish-youtube`)
+    return data
+  },
+
+  getYouTubeStatus: async (): Promise<{ connected: boolean; channelName: string | null }> => {
+    const { data } = await api.get('/youtube/status')
+    return data
+  },
+
+  getYouTubeAuthUrl: async (): Promise<string> => {
+    const { data } = await api.get('/youtube/auth-url')
+    return data.url
   },
 }
