@@ -53,7 +53,7 @@ export default function RegisterPage() {
     return (
       <Card glass>
         <h1 className="text-2xl font-bold text-center mb-4">Проверьте почту</h1>
-        <p className="text-text-secondary text-center">
+        <p className="text-gray-400 text-center">
           Мы отправили ссылку для подтверждения на <strong>{email}</strong>
         </p>
       </Card>
@@ -73,7 +73,7 @@ export default function RegisterPage() {
           {loading ? "Регистрация..." : "Зарегистрироваться"}
         </Button>
       </form>
-      <div className="mt-4 text-center text-sm text-text-secondary">
+      <div className="mt-4 text-center text-sm text-gray-400">
         Уже есть аккаунт?{" "}
         <Link href="/login" className="text-primary hover:underline">Войти</Link>
       </div>

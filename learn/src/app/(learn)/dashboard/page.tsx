@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { PixelIcon } from "@/components/ui/PixelIcon";
 import { getUserStats } from "@/lib/queries/progress";
 import Link from "next/link";
 
@@ -21,30 +22,34 @@ export default async function DashboardPage() {
 
       {/* Stats row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <Card className="text-center">
-          <p className="text-3xl font-bold text-primary">{stats.totalXp}</p>
-          <p className="text-sm text-text-secondary">XP</p>
+        <Card neon="cyan" className="text-center">
+          <PixelIcon name="star" size={24} className="text-neon-cyan mx-auto mb-1" />
+          <p className="text-3xl font-bold font-mono text-neon-cyan text-glow-cyan">{stats.totalXp}</p>
+          <p className="text-sm text-gray-400">XP</p>
         </Card>
-        <Card className="text-center">
-          <p className="text-3xl font-bold text-orange-500">{stats.streak.current_streak}</p>
-          <p className="text-sm text-text-secondary">дней подряд</p>
+        <Card neon="lime" className="text-center">
+          <PixelIcon name="fire" size={24} className="text-neon-orange mx-auto mb-1 animate-streak-fire" />
+          <p className="text-3xl font-bold font-mono text-neon-lime text-glow-lime">{stats.streak.current_streak}</p>
+          <p className="text-sm text-gray-400">дней подряд</p>
         </Card>
-        <Card className="text-center">
-          <p className="text-3xl font-bold text-green-600">{stats.correctAttempts}</p>
-          <p className="text-sm text-text-secondary">решено задач</p>
+        <Card neon="purple" className="text-center">
+          <PixelIcon name="potion" size={24} className="text-primary mx-auto mb-1" />
+          <p className="text-3xl font-bold font-mono text-primary text-glow-purple">{stats.correctAttempts}</p>
+          <p className="text-sm text-gray-400">решено задач</p>
         </Card>
-        <Card className="text-center">
-          <p className="text-3xl font-bold text-text-dark">{accuracy}%</p>
-          <p className="text-sm text-text-secondary">точность</p>
+        <Card neon="magenta" className="text-center">
+          <PixelIcon name="shield" size={24} className="text-neon-magenta mx-auto mb-1" />
+          <p className="text-3xl font-bold font-mono text-neon-magenta text-glow-magenta">{accuracy}%</p>
+          <p className="text-sm text-gray-400">точность</p>
         </Card>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
         {/* Recent achievements */}
-        <Card>
+        <Card glass>
           <h2 className="text-lg font-bold mb-4">Последние достижения</h2>
           {stats.recentAchievements.length === 0 ? (
-            <p className="text-text-secondary text-sm">Пока нет достижений. Решайте задачи!</p>
+            <p className="text-gray-400 text-sm">Пока нет достижений. Решайте задачи!</p>
           ) : (
             <div className="space-y-3">
               {stats.recentAchievements.map((ua: any) => (
@@ -52,7 +57,7 @@ export default async function DashboardPage() {
                   <span className="text-2xl">{ua.achievements?.icon_url || "\uD83C\uDFC6"}</span>
                   <div>
                     <p className="font-medium text-sm">{ua.achievements?.title}</p>
-                    <p className="text-xs text-text-secondary">{ua.achievements?.description}</p>
+                    <p className="text-xs text-gray-400">{ua.achievements?.description}</p>
                   </div>
                 </div>
               ))}
@@ -64,10 +69,10 @@ export default async function DashboardPage() {
         </Card>
 
         {/* Continue learning */}
-        <Card>
+        <Card glass>
           <h2 className="text-lg font-bold mb-4">Продолжить</h2>
           {stats.recentProgress.length === 0 ? (
-            <p className="text-text-secondary text-sm">
+            <p className="text-gray-400 text-sm">
               Начните с{" "}
               <Link href="/modules" className="text-primary hover:underline">каталога модулей</Link>
             </p>
@@ -80,7 +85,7 @@ export default async function DashboardPage() {
                   className="block p-3 rounded-xl hover:bg-bg-light transition-colors"
                 >
                   <p className="font-medium text-sm">{lp.lessons?.title}</p>
-                  <p className="text-xs text-text-secondary">{lp.lessons?.modules?.title}</p>
+                  <p className="text-xs text-gray-400">{lp.lessons?.modules?.title}</p>
                   <Badge variant={lp.status === "done" ? "xp" : "base"} className="mt-1">
                     {lp.status === "done" ? "Пройден" : "В процессе"}
                   </Badge>

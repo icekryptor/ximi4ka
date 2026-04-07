@@ -144,7 +144,7 @@ export const getReport = async (req: Request, res: Response) => {
     res.json({ dates, metrics, totals, kits, channels });
   } catch (error: any) {
     console.error('Sales report error:', error);
-    res.status(500).json({ error: error.message || 'Ошибка получения отчёта' });
+    res.status(500).json({ error: 'Ошибка получения отчёта' });
   }
 };
 
@@ -185,7 +185,8 @@ export const getSummary = async (req: Request, res: Response) => {
 
     res.json({ channels, period: { startDate, endDate } });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    console.error('Sales summary error:', error);
+    res.status(500).json({ error: 'Ошибка получения сводки' });
   }
 };
 
@@ -310,7 +311,7 @@ export const syncFromWb = async (req: Request, res: Response) => {
       record.total_revenue += Number(stat.buyouts_sum) || 0;
       record.logistics_cost += Number(stat.logistics_cost) || 0;
       record.storage_cost += Number(stat.storage_cost) || 0;
-      record.other_costs += Number(stat.other_costs) + Number(stat.acceptance_cost) || 0;
+      record.other_costs += (Number(stat.other_costs) || 0) + (Number(stat.acceptance_cost) || 0);
 
       // Ad spend per nm_id per date
       const adKey = `${dateStr}_${stat.nm_id}`;
@@ -392,7 +393,7 @@ export const syncFromWb = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error('Sales report WB sync error:', error);
-    res.status(500).json({ error: error.message || 'Ошибка синхронизации' });
+    res.status(500).json({ error: 'Ошибка синхронизации' });
   }
 };
 
@@ -504,7 +505,7 @@ export const createOrUpdate = async (req: Request, res: Response) => {
     res.status(201).json(full);
   } catch (error: any) {
     console.error('Sales report create error:', error);
-    res.status(500).json({ error: error.message || 'Ошибка создания записи' });
+    res.status(500).json({ error: 'Ошибка создания записи' });
   }
 };
 
@@ -522,7 +523,8 @@ export const deleteEntry = async (req: Request, res: Response) => {
 
     res.json({ message: 'Запись удалена' });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    console.error('Sales report delete error:', error);
+    res.status(500).json({ error: 'Ошибка удаления записи' });
   }
 };
 
@@ -551,6 +553,7 @@ export const getEntries = async (req: Request, res: Response) => {
     const entries = await qb.getMany();
     res.json(entries);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    console.error('Sales report entries error:', error);
+    res.status(500).json({ error: 'Ошибка получения записей' });
   }
 };

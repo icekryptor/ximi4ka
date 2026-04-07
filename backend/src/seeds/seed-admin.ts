@@ -33,8 +33,16 @@ async function seedAdmin() {
     if (existing) {
       console.log('⚠️  Admin user already exists, skipping...');
     } else {
-      const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
-      const password_hash = await bcrypt.hash(adminPassword, 10);
+      const adminPassword = process.env.ADMIN_PASSWORD;
+      if (!adminPassword) {
+        const isProduction = process.env.NODE_ENV === 'production';
+        if (isProduction) {
+          console.error('❌ ADMIN_PASSWORD env var is required in production!');
+          process.exit(1);
+        }
+        console.warn('⚠️  ADMIN_PASSWORD не задан — используется пароль по умолчанию. НЕ ИСПОЛЬЗУЙТЕ В PRODUCTION!');
+      }
+      const password_hash = await bcrypt.hash(adminPassword || 'admin123', 12);
       const admin = userRepo.create({
         email: 'admin@ximi4ka.ru',
         password_hash,

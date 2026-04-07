@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route, useLocation, Link } from 'react-router-dom'
 import Layout from './components/Layout'
 import ErrorBoundary from './components/ErrorBoundary'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -60,7 +60,7 @@ const NotFound = () => (
       <p className="text-6xl font-bold text-primary-200 mb-4">404</p>
       <h2 className="text-xl font-bold text-brand-text mb-2">Страница не найдена</h2>
       <p className="text-brand-text-secondary mb-4">Запрошенная страница не существует</p>
-      <a href="/" className="btn btn-primary">На главную</a>
+      <Link to="/" className="btn btn-primary">На главную</Link>
     </div>
   </div>
 )

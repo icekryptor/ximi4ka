@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { XPPopup } from "@/components/ui/XPPopup";
+import confetti from "canvas-confetti";
 import type { Task, TaskOption } from "@/lib/types";
 
 interface TaskBlockProps {
@@ -15,6 +17,7 @@ export function TaskBlock({ task }: TaskBlockProps) {
   const [submitted, setSubmitted] = useState(false);
   const [result, setResult] = useState<{ is_correct: boolean; points_earned: number } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [shaking, setShaking] = useState(false);
 
   async function handleSubmit() {
     setLoading(true);
@@ -35,6 +38,12 @@ export function TaskBlock({ task }: TaskBlockProps) {
     const data = await res.json();
     setResult(data);
     setSubmitted(true);
+    if (data.is_correct) {
+      confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
+    } else {
+      setShaking(true);
+      setTimeout(() => setShaking(false), 300);
+    }
     setLoading(false);
   }
 
@@ -51,7 +60,7 @@ export function TaskBlock({ task }: TaskBlockProps) {
   const difficultyStars = "\u2605".repeat(task.difficulty) + "\u2606".repeat(5 - task.difficulty);
 
   return (
-    <Card className="my-6 border-primary/20 bg-primary/5">
+    <Card className={`my-6 border-primary/20 bg-primary/5 ${shaking ? "animate-shake" : ""}`}>
       <div className="flex items-center justify-between mb-3">
         <span className="text-xs font-medium text-primary">Задача &bull; {task.points} XP</span>
         <span className="text-xs text-text-secondary">{difficultyStars}</span>
@@ -116,6 +125,9 @@ export function TaskBlock({ task }: TaskBlockProps) {
           <p className="font-medium">
             {result.is_correct ? `\u2713 Правильно! +${result.points_earned} XP` : "\u2717 Неправильно"}
           </p>
+          {result.is_correct && (
+            <XPPopup points={result.points_earned} trigger={result.is_correct} />
+          )}
           {task.explanation && (
             <p className="text-sm text-text-secondary mt-2">{task.explanation}</p>
           )}

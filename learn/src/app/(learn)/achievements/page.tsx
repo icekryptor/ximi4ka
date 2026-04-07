@@ -24,8 +24,8 @@ export default async function AchievementsPage() {
             <Card key={a.id} className={`text-center ${earned ? "" : "opacity-40 grayscale"}`}>
               <div className="text-3xl mb-2">{a.icon_url || "🏆"}</div>
               <h3 className="font-bold text-sm">{a.title}</h3>
-              <p className="text-xs text-text-secondary mt-1">{a.description}</p>
-              <p className="text-xs text-primary mt-2">{a.points} XP</p>
+              <p className="text-xs text-gray-400 mt-1">{a.description}</p>
+              <p className="text-xs text-neon-cyan mt-2">{a.points} XP</p>
             </Card>
           );
         })}

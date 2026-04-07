@@ -16,6 +16,13 @@
       "port": 5173,
       "autoPort": false,
       "cwd": "frontend"
+    },
+    {
+      "name": "learn",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000,
+      "cwd": "learn"
     }
   ]
 }

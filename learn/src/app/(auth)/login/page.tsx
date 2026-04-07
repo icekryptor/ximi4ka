@@ -46,7 +46,7 @@ function LoginForm() {
           {loading ? "Входим..." : "Войти"}
         </Button>
       </form>
-      <div className="mt-4 text-center text-sm text-text-secondary">
+      <div className="mt-4 text-center text-sm text-gray-400">
         <Link href="/forgot-password" className="hover:text-primary transition-colors">Забыли пароль?</Link>
         <span className="mx-2">|</span>
         <Link href="/register" className="hover:text-primary transition-colors">Регистрация</Link>
@@ -57,7 +57,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="text-center text-text-secondary">Загрузка...</div>}>
+    <Suspense fallback={<div className="text-center text-gray-400">Загрузка...</div>}>
       <LoginForm />
     </Suspense>
   );

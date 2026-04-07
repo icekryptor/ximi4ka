@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { PixelIcon } from "@/components/ui/PixelIcon";
 
 export default async function LeaderboardPage() {
   const supabase = await createClient();
@@ -21,10 +22,22 @@ export default async function LeaderboardPage() {
       <div className="space-y-2">
         {weekly?.map((entry, i) => {
           const isMe = entry.user_id === user.id;
+          const neonColor = i === 0 ? "magenta" as const : i === 1 ? "cyan" as const : i === 2 ? "lime" as const : undefined;
+
           return (
-            <Card key={entry.user_id} className={`flex items-center gap-4 py-3 ${isMe ? "border-primary border-2" : ""}`}>
-              <span className={`text-lg font-bold w-8 text-center ${i < 3 ? "text-primary" : "text-text-secondary"}`}>
-                {i + 1}
+            <Card
+              key={entry.user_id}
+              neon={isMe ? "purple" : neonColor}
+              glass={i < 3}
+              className={`flex items-center gap-4 py-3 ${i < 3 ? "scale-[1.01]" : ""}`}
+            >
+              <span className={`text-lg font-bold font-mono w-8 text-center ${
+                i === 0 ? "text-neon-magenta text-glow-magenta" :
+                i === 1 ? "text-neon-cyan text-glow-cyan" :
+                i === 2 ? "text-neon-lime text-glow-lime" :
+                "text-gray-400"
+              }`}>
+                {i < 3 ? <PixelIcon name="trophy" size={20} className="mx-auto" /> : i + 1}
               </span>
               <div className="flex-1">
                 <p className="font-medium text-sm">
@@ -37,7 +50,7 @@ export default async function LeaderboardPage() {
           );
         })}
         {(!weekly || weekly.length === 0) && (
-          <p className="text-text-secondary text-center py-8">Пока нет данных. Будьте первым!</p>
+          <p className="text-gray-400 text-center py-8">Пока нет данных. Будьте первым!</p>
         )}
       </div>
     </div>

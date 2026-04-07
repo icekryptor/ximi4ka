@@ -1,10 +1,12 @@
 import 'reflect-metadata';
+import dotenv from 'dotenv';
+dotenv.config();
+
 import path from 'path';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import dotenv from 'dotenv';
 import { AppDataSource } from './config/database';
 
 // Routes
@@ -39,8 +41,6 @@ import { unitEconomicsController } from './controllers/unit-economics.controller
 import { authMiddleware } from './middleware/auth';
 import { apiKeyAuth } from './middleware/apiKeyAuth';
 
-dotenv.config();
-
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -67,7 +67,8 @@ app.use(cors({
   credentials: true,
   exposedHeaders: ['X-Total-Count', 'X-Page', 'X-Limit', 'X-Total-Pages'],
 }));
-app.use(morgan('dev'));
+const isDev = process.env.NODE_ENV !== 'production';
+app.use(morgan(isDev ? 'dev' : 'combined'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -135,7 +136,6 @@ app.use((req, res) => {
 // Error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
-  const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
   res.status(err.status || 500).json({
     error: isDev ? err.message : 'Внутренняя ошибка сервера'
   });

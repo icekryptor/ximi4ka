@@ -24,7 +24,7 @@ export default async function ModulesPage() {
         ))}
       </div>
       {(!modules || modules.length === 0) && (
-        <p className="text-text-secondary text-center py-12">
+        <p className="text-gray-400 text-center py-12">
           Модули скоро появятся. Следите за обновлениями!
         </p>
       )}

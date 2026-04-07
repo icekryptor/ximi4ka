@@ -70,7 +70,7 @@ export default function ProfilePage() {
     router.refresh();
   }
 
-  if (loading) return <div className="max-w-2xl mx-auto px-4 py-8"><p className="text-text-secondary">Загрузка...</p></div>;
+  if (loading) return <div className="max-w-2xl mx-auto px-4 py-8"><p className="text-gray-400">Загрузка...</p></div>;
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
@@ -92,17 +92,17 @@ export default function ProfilePage() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <Badge variant="xp">Активна</Badge>
-              <span className="text-sm text-text-secondary">
+              <span className="text-sm text-gray-400">
                 План: {subscription.plan === "base_promo" ? "499 ₽/мес (промо)" : "999 ₽/мес"}
               </span>
             </div>
-            <p className="text-sm text-text-secondary">
+            <p className="text-sm text-gray-400">
               Действует до: {new Date(subscription.expires_at).toLocaleDateString("ru-RU")}
             </p>
           </div>
         ) : (
           <div>
-            <p className="text-text-secondary text-sm mb-4">У вас нет активной подписки</p>
+            <p className="text-gray-400 text-sm mb-4">У вас нет активной подписки</p>
             <div className="flex items-end gap-3">
               <Input
                 id="promo"

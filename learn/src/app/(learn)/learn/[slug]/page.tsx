@@ -46,7 +46,7 @@ export default async function LearnModulePage({ params }: Props) {
       <h1 className="text-2xl font-bold mb-2">{module.title}</h1>
       <div className="flex items-center gap-3 mb-6">
         <ProgressBar value={progressPercent} className="flex-1" />
-        <span className="text-sm text-text-secondary">{progressPercent}%</span>
+        <span className="text-sm text-gray-400">{progressPercent}%</span>
       </div>
 
       <div className="space-y-3">
@@ -55,13 +55,13 @@ export default async function LearnModulePage({ params }: Props) {
           return (
             <Link key={lesson.id} href={`/learn/${params.slug}/${lesson.slug}`}>
               <Card className="hover:shadow-md transition-shadow cursor-pointer flex items-center gap-4">
-                <span className={`text-2xl font-bold ${status === "done" ? "text-green-500" : "text-primary/30"}`}>
+                <span className={`text-2xl font-bold ${status === "done" ? "text-green-500" : "text-primary/40"}`}>
                   {status === "done" ? "\u2713" : i + 1}
                 </span>
                 <div className="flex-1">
                   <h3 className="font-medium">{lesson.title}</h3>
                   {lesson.duration_minutes && (
-                    <p className="text-sm text-text-secondary">{lesson.duration_minutes} мин</p>
+                    <p className="text-sm text-gray-400">{lesson.duration_minutes} мин</p>
                   )}
                 </div>
                 <Badge variant={status === "done" ? "xp" : status === "in_progress" ? "base" : "streak"}>

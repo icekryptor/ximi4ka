@@ -40,14 +40,14 @@ export default async function LessonPage({ params }: Props) {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <p className="text-sm text-text-secondary mb-2">
+      <p className="text-sm text-gray-400 mb-2">
         <Link href={`/learn/${params.slug}`} className="hover:text-primary">
           &larr; {lessonModule.title}
         </Link>
       </p>
       <h1 className="text-2xl font-bold mb-8">{lesson.title}</h1>
 
-      <div className="space-y-6">
+      <div className="bg-white/95 rounded-3xl p-6 md:p-8 text-text-dark space-y-6">
         {blocks.map((block) => {
           if (block.type === "task" && block.tasks?.[0]) {
             const task = block.tasks[0];

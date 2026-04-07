@@ -22,16 +22,16 @@ export default async function PricingPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold text-center mb-2">Тарифы</h1>
-      <p className="text-text-secondary text-center mb-12">Выберите подходящий вариант</p>
+      <p className="text-gray-400 text-center mb-12">Выберите подходящий вариант</p>
 
       {/* Subscription tiers */}
       <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto mb-16">
         <Card className="text-left">
           <h3 className="text-xl font-bold mb-2">Подписка</h3>
           <p className="text-4xl font-bold text-primary mb-1">
-            999 ₽<span className="text-lg text-text-secondary font-normal">/мес</span>
+            999 ₽<span className="text-lg text-gray-400 font-normal">/мес</span>
           </p>
-          <p className="text-sm text-text-secondary mb-6">Все базовые модули</p>
+          <p className="text-sm text-gray-400 mb-6">Все базовые модули</p>
           <ul className="space-y-3 text-sm mb-8">
             <li className="flex gap-2"><span className="text-green-500">✓</span> Все базовые модули</li>
             <li className="flex gap-2"><span className="text-green-500">✓</span> Интерактивные задачи</li>
@@ -43,15 +43,15 @@ export default async function PricingPage() {
           </Link>
         </Card>
 
-        <Card className="text-left border-primary border-2 relative">
+        <Card className="text-left border-primary/50 border-2 relative">
           <div className="absolute -top-3 left-6">
             <Badge variant="premium">С набором Ximi4ka</Badge>
           </div>
           <h3 className="text-xl font-bold mb-2 mt-2">Подписка со скидкой</h3>
           <p className="text-4xl font-bold text-primary mb-1">
-            499 ₽<span className="text-lg text-text-secondary font-normal">/мес</span>
+            499 ₽<span className="text-lg text-gray-400 font-normal">/мес</span>
           </p>
-          <p className="text-sm text-text-secondary mb-6">Промокод в каждом наборе</p>
+          <p className="text-sm text-gray-400 mb-6">Промокод в каждом наборе</p>
           <ul className="space-y-3 text-sm mb-8">
             <li className="flex gap-2"><span className="text-green-500">✓</span> Всё из обычной подписки</li>
             <li className="flex gap-2"><span className="text-green-500">✓</span> 1 месяц бесплатно</li>
@@ -71,7 +71,7 @@ export default async function PricingPage() {
             {(premiumModules as Module[]).map((m) => (
               <Card key={m.id}>
                 <h3 className="font-bold mb-1">{m.title}</h3>
-                <p className="text-sm text-text-secondary mb-4 line-clamp-2">{m.description}</p>
+                <p className="text-sm text-gray-400 mb-4 line-clamp-2">{m.description}</p>
                 <div className="flex items-center justify-between">
                   <p className="text-xl font-bold text-primary">{m.price} ₽</p>
                   <Link href={`/checkout/module/${m.id}`}>

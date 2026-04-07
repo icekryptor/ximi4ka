@@ -4,22 +4,23 @@ import { ButtonHTMLAttributes, forwardRef } from "react";
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "ghost";
   size?: "sm" | "md" | "lg";
+  glow?: boolean;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "primary", size = "md", children, ...props }, ref) => {
+  ({ className, variant = "primary", size = "md", glow, children, ...props }, ref) => {
     return (
       <button
         ref={ref}
         className={clsx(
-          "inline-flex items-center justify-center font-medium transition-all",
+          "inline-flex items-center justify-center font-medium transition-all active:scale-[0.98]",
           "disabled:opacity-50 disabled:cursor-not-allowed",
           {
-            "bg-gradient-to-r from-primary-gradient-start to-primary-gradient-end text-white hover:opacity-90":
+            "bg-gradient-to-r from-primary-gradient-start to-primary-gradient-end text-white hover:shadow-glow-purple hover:scale-[1.02]":
               variant === "primary",
-            "bg-bg-light text-text-dark border border-border hover:bg-gray-100":
+            "bg-white/10 backdrop-blur-sm text-gray-100 border border-white/10 hover:bg-white/20 hover:shadow-glass hover:scale-[1.02]":
               variant === "secondary",
-            "text-text-secondary hover:text-text-dark hover:bg-bg-light":
+            "text-gray-400 hover:text-gray-100 hover:bg-white/10":
               variant === "ghost",
           },
           {
@@ -27,6 +28,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             "text-base px-6 py-3 rounded-2xl": size === "md",
             "text-lg px-8 py-4 rounded-3xl": size === "lg",
           },
+          glow && "animate-pulse-glow",
           className
         )}
         {...props}

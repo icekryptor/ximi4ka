@@ -10,9 +10,13 @@ interface ModuleCardProps {
 export function ModuleCard({ module }: ModuleCardProps) {
   return (
     <Link href={`/modules/${module.slug}`}>
-      <Card className="hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer h-full">
+      <Card
+        glass
+        neon={module.tier === "premium" ? "magenta" : undefined}
+        className="hover:-translate-y-1 cursor-pointer h-full"
+      >
         {module.cover_image_url && (
-          <div className="aspect-video rounded-2xl overflow-hidden mb-4 bg-bg-light">
+          <div className="aspect-video rounded-2xl overflow-hidden mb-4 bg-white/20">
             <img src={module.cover_image_url} alt={module.title} className="w-full h-full object-cover" />
           </div>
         )}
@@ -21,11 +25,11 @@ export function ModuleCard({ module }: ModuleCardProps) {
             {module.tier === "premium" ? "Продвинутый" : "Базовый"}
           </Badge>
           {module.tier === "premium" && module.price && (
-            <span className="text-sm text-text-secondary">{module.price} ₽</span>
+            <span className="text-sm font-mono text-gray-400">{module.price} ₽</span>
           )}
         </div>
         <h3 className="text-lg font-bold mb-1">{module.title}</h3>
-        <p className="text-sm text-text-secondary line-clamp-2">{module.description}</p>
+        <p className="text-sm text-gray-400 line-clamp-2">{module.description}</p>
       </Card>
     </Link>
   );

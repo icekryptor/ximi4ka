@@ -47,7 +47,7 @@ export default async function ModuleDetailPage({ params }: Props) {
           {m.tier === "premium" ? "Продвинутый" : "Базовый"}
         </Badge>
         <h1 className="text-3xl font-bold mb-4">{m.title}</h1>
-        <p className="text-text-secondary text-lg">{m.description}</p>
+        <p className="text-gray-400 text-lg">{m.description}</p>
       </div>
 
       <div className="space-y-3 mb-8">
@@ -59,7 +59,7 @@ export default async function ModuleDetailPage({ params }: Props) {
               <div>
                 <h3 className="font-medium">{lesson.title}</h3>
                 {lesson.duration_minutes && (
-                  <p className="text-sm text-text-secondary">{lesson.duration_minutes} мин</p>
+                  <p className="text-sm text-gray-400">{lesson.duration_minutes} мин</p>
                 )}
               </div>
             </Card>

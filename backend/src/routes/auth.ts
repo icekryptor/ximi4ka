@@ -28,9 +28,16 @@ function sanitizeUser(user: User) {
   };
 }
 
-// POST /api/auth/register
-router.post('/register', async (req: Request, res: Response) => {
+// POST /api/auth/register — requires admin authentication
+router.post('/register', authMiddleware, async (req: Request, res: Response) => {
   try {
+    // Only admins can create new users
+    const userRepo = AppDataSource.getRepository(User);
+    const requestingUser = await userRepo.findOne({ where: { id: req.user!.userId } });
+    if (!requestingUser || requestingUser.role !== UserRole.ADMIN) {
+      return res.status(403).json({ error: 'Только администратор может создавать пользователей' });
+    }
+
     const { email, password, name } = req.body;
 
     if (!email || !password || !name) {
@@ -47,8 +54,6 @@ router.post('/register', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Некорректный формат email' });
     }
 
-    const userRepo = AppDataSource.getRepository(User);
-
     const existing = await userRepo.findOne({ where: { email: email.toLowerCase().trim() } });
     if (existing) {
       return res.status(409).json({ error: 'Пользователь с таким email уже существует' });
@@ -56,7 +61,7 @@ router.post('/register', async (req: Request, res: Response) => {
 
     const password_hash = await bcrypt.hash(password, 12);
 
-    // SECURITY: Never accept role from client — always assign MANAGER for self-registration
+    // SECURITY: Never accept role from client — always assign MANAGER
     const user = userRepo.create({
       email: email.toLowerCase().trim(),
       password_hash,

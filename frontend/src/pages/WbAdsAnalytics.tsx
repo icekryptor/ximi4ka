@@ -60,16 +60,19 @@ function formatShortDate(dateStr: string): string {
   return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })
 }
 
-const today = new Date().toISOString().split('T')[0]
-const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]
+function getDefaultDates() {
+  const today = new Date().toISOString().split('T')[0]
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]
+  return { today, thirtyDaysAgo }
+}
 
 const WbAdsAnalytics = () => {
   const toast = useToast()
   const [loading, setLoading] = useState(false)
   const [syncing, setSyncing] = useState(false)
 
-  const [startDate, setStartDate] = useState(thirtyDaysAgo)
-  const [endDate, setEndDate] = useState(today)
+  const [startDate, setStartDate] = useState(() => getDefaultDates().thirtyDaysAgo)
+  const [endDate, setEndDate] = useState(() => getDefaultDates().today)
 
   const [analytics, setAnalytics] = useState<WbAdAnalytics | null>(null)
   const [articles, setArticles] = useState<WbAdArticle[]>([])
@@ -125,20 +128,25 @@ const WbAdsAnalytics = () => {
   const loadData = useCallback(async () => {
     setLoading(true)
     try {
-      const [analyticsData, notesData, statusData] = await Promise.all([
+      const [analyticsResult, notesResult, statusResult] = await Promise.allSettled([
         wbAdsApi.getAnalytics({ startDate, endDate, nmId: selectedNmId }),
         wbAdsApi.getNotes({ startDate, endDate }),
         wbAdsApi.getSyncStatus(),
       ])
-      setAnalytics(analyticsData)
-      setNotes(notesData)
-      setSyncStatus(statusData)
-    } catch (err) {
-      console.error('Failed to load WB ads data:', err)
+      if (analyticsResult.status === 'fulfilled') setAnalytics(analyticsResult.value)
+      else console.error('Failed to load analytics:', analyticsResult.reason)
+      if (notesResult.status === 'fulfilled') setNotes(notesResult.value)
+      else console.error('Failed to load notes:', notesResult.reason)
+      if (statusResult.status === 'fulfilled') setSyncStatus(statusResult.value)
+      else console.error('Failed to load sync status:', statusResult.reason)
+
+      if (analyticsResult.status === 'rejected') {
+        toast.error('Не удалось загрузить аналитику рекламы')
+      }
     } finally {
       setLoading(false)
     }
-  }, [startDate, endDate, selectedNmId])
+  }, [startDate, endDate, selectedNmId, toast])
 
   const loadArticles = useCallback(async () => {
     try {

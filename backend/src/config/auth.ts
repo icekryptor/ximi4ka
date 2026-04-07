@@ -1,6 +1,6 @@
 // Shared JWT configuration — single source of truth
 
-const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+const isDev = process.env.NODE_ENV !== 'production';
 
 let _jwtSecret: string | null = null;
 
