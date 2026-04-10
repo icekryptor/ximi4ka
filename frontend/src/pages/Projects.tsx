@@ -82,26 +82,26 @@ export default function Projects() {
       {showCreate && (
         <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 space-y-4">
           <h2 className="text-lg font-semibold text-brand-text">Новый проект</h2>
-          <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Название проекта" className="w-full px-4 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text" />
+          <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Название проекта" className="w-full px-4 py-2 rounded-xl border border-brand-border bg-card text-brand-text" />
           <div className="grid grid-cols-2 gap-4">
-            <select value={form.department_id} onChange={e => setForm({ ...form, department_id: e.target.value })} className="px-3 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text">
+            <select value={form.department_id} onChange={e => setForm({ ...form, department_id: e.target.value })} className="px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text">
               <option value="">Направление...</option>
               {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select>
-            <input value={form.budget} onChange={e => setForm({ ...form, budget: e.target.value })} placeholder="Бюджет, ₽" type="number" className="px-3 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text" />
+            <input value={form.budget} onChange={e => setForm({ ...form, budget: e.target.value })} placeholder="Бюджет, ₽" type="number" className="px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-xs text-brand-text-secondary">Начало</label>
-              <input value={form.start_date} onChange={e => setForm({ ...form, start_date: e.target.value })} type="date" className="w-full px-3 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text" />
+              <input value={form.start_date} onChange={e => setForm({ ...form, start_date: e.target.value })} type="date" className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text" />
             </div>
             <div>
               <label className="text-xs text-brand-text-secondary">Окончание</label>
-              <input value={form.end_date} onChange={e => setForm({ ...form, end_date: e.target.value })} type="date" className="w-full px-3 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text" />
+              <input value={form.end_date} onChange={e => setForm({ ...form, end_date: e.target.value })} type="date" className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text" />
             </div>
           </div>
-          <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Описание" rows={2} className="w-full px-4 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text" />
-          <textarea value={form.deliverables} onChange={e => setForm({ ...form, deliverables: e.target.value })} placeholder="Результаты / deliverables" rows={2} className="w-full px-4 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text" />
+          <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Описание" rows={2} className="w-full px-4 py-2 rounded-xl border border-brand-border bg-card text-brand-text" />
+          <textarea value={form.deliverables} onChange={e => setForm({ ...form, deliverables: e.target.value })} placeholder="Результаты / deliverables" rows={2} className="w-full px-4 py-2 rounded-xl border border-brand-border bg-card text-brand-text" />
           <div className="flex gap-3 justify-end">
             <button onClick={() => setShowCreate(false)} className="px-4 py-2 text-brand-text-secondary hover:text-brand-text transition-colors">Отмена</button>
             <button onClick={handleCreate} className="px-4 py-2 bg-primary-500 text-white rounded-xl text-sm font-medium hover:bg-primary-600 transition-colors">Создать</button>
@@ -133,7 +133,7 @@ export default function Projects() {
                   <span className="text-brand-text-secondary">{p.task_count} задач</span>
                   <span className="text-brand-text font-medium">{p.avg_progress}%</span>
                 </div>
-                <div className="w-full bg-brand-bg rounded-full h-2">
+                <div className="w-full bg-card rounded-full h-2">
                   <div className="bg-primary-500 h-2 rounded-full transition-all" style={{ width: `${p.avg_progress}%` }} />
                 </div>
                 {p.end_date && (

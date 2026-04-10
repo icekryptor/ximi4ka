@@ -96,7 +96,7 @@ export default function RecurringTaskDetail() {
               {showInstruction ? 'Скрыть инструкцию' : 'Показать инструкцию'}
             </button>
             {showInstruction && (
-              <div className="mt-3 p-4 bg-brand-bg rounded-xl text-sm text-brand-text whitespace-pre-wrap">
+              <div className="mt-3 p-4 bg-card rounded-xl text-sm text-brand-text whitespace-pre-wrap">
                 {task.instruction}
               </div>
             )}
@@ -111,7 +111,7 @@ export default function RecurringTaskDetail() {
           onChange={e => setReportText(e.target.value)}
           placeholder="Текст отчёта..."
           rows={4}
-          className="w-full px-4 py-3 rounded-xl border border-brand-border bg-brand-bg text-brand-text resize-y"
+          className="w-full px-4 py-3 rounded-xl border border-brand-border bg-card text-brand-text resize-y"
         />
         <div className="flex justify-end mt-3">
           <button

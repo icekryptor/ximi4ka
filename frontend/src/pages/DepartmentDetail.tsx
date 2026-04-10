@@ -61,7 +61,7 @@ export default function DepartmentDetail() {
         <h1 className="text-2xl font-bold text-brand-text">{dept.name}</h1>
       </div>
 
-      <div className="flex gap-1 bg-brand-bg p-1 rounded-xl w-fit">
+      <div className="flex gap-1 bg-card p-1 rounded-xl w-fit">
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -171,7 +171,7 @@ export default function DepartmentDetail() {
                   <div className="text-brand-text font-medium">{p.name}</div>
                   <span className="text-xs text-brand-text-secondary">{p.task_count} задач</span>
                 </div>
-                <div className="w-full bg-brand-bg rounded-full h-1.5">
+                <div className="w-full bg-card rounded-full h-1.5">
                   <div className="bg-primary-500 h-1.5 rounded-full" style={{ width: `${p.avg_progress}%` }} />
                 </div>
               </div>
