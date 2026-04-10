@@ -68,6 +68,14 @@ export const contentUnitsApi = {
     return data
   },
 
+  markPublished: async (id: string, platform: 'youtube' | 'instagram' | 'tiktok', publishedUrl?: string): Promise<ContentUnit> => {
+    const { data } = await api.put(`/content-units/${id}/mark-published`, {
+      platform,
+      published_url: publishedUrl,
+    })
+    return data
+  },
+
   publishYouTube: async (id: string): Promise<{ success: boolean; videoId: string; videoUrl: string; status: string }> => {
     const { data } = await api.post(`/content-units/${id}/publish-youtube`)
     return data
