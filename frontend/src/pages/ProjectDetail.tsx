@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { projectsApi, ProjectDetail as ProjDetail, ProjectTask, ChecklistItem, TaskCommentItem } from '../api/projects'
+import { projectsApi, ProjectDetail as ProjDetail, ProjectTask, ChecklistItem, TaskCommentItem, ProjectMember } from '../api/projects'
 import { employeesApi, Employee } from '../api/employees'
 import GanttChart from '../components/GanttChart'
 import Portal from '../components/Portal'
@@ -30,6 +30,12 @@ export default function ProjectDetail() {
   const [newComment, setNewComment] = useState('')
   const [newCommentLink, setNewCommentLink] = useState('')
   const [showLinkInput, setShowLinkInput] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [settingsForm, setSettingsForm] = useState({
+    name: '', description: '', budget: 0, start_date: '', end_date: '', status: '', responsible_id: '', deliverables: ''
+  })
+  const [members, setMembers] = useState<ProjectMember[]>([])
+  const [newMemberId, setNewMemberId] = useState('')
 
   const load = () => {
     if (!id) return
@@ -200,6 +206,48 @@ export default function ProjectDetail() {
     } catch (err) { console.error(err) }
   }
 
+  const handleSettingsSave = async () => {
+    if (!id) return
+    try {
+      await projectsApi.update(id, {
+        name: settingsForm.name,
+        description: settingsForm.description || undefined,
+        budget: settingsForm.budget,
+        start_date: settingsForm.start_date || undefined,
+        end_date: settingsForm.end_date || undefined,
+        status: settingsForm.status,
+        responsible_id: settingsForm.responsible_id || undefined,
+        deliverables: settingsForm.deliverables || undefined,
+      })
+      setShowSettings(false)
+      load()
+    } catch (err) { console.error(err) }
+  }
+
+  const handleAddMember = async () => {
+    if (!id || !newMemberId) return
+    try {
+      await projectsApi.addMember(id, newMemberId)
+      setNewMemberId('')
+      const freshMembers = await projectsApi.getMembers(id)
+      setMembers(freshMembers)
+      load()
+    } catch (err) { console.error(err) }
+  }
+
+  const handleRemoveMember = async (memberId: string) => {
+    if (!id) return
+    try {
+      await projectsApi.removeMember(id, memberId)
+      const freshMembers = await projectsApi.getMembers(id)
+      setMembers(freshMembers)
+      load()
+    } catch (err) { console.error(err) }
+  }
+
+  const getMemberInitials = (name: string) =>
+    name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
+
   if (loading || !project) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -236,6 +284,25 @@ export default function ProjectDetail() {
         >
           ⬇ JSON
         </button>
+        <button
+          onClick={() => {
+            setSettingsForm({
+              name: project.name,
+              description: project.description || '',
+              budget: Number(project.budget),
+              start_date: project.start_date || '',
+              end_date: project.end_date || '',
+              status: project.status,
+              responsible_id: project.responsible_id || '',
+              deliverables: project.deliverables || '',
+            })
+            setMembers(project.members || [])
+            setShowSettings(true)
+          }}
+          className="px-4 py-2 border border-brand-border text-brand-text rounded-xl text-sm font-medium hover:bg-brand-surface transition-colors"
+        >
+          ⚙ Настройки
+        </button>
       </div>
 
       {/* Info cards */}
@@ -262,10 +329,8 @@ export default function ProjectDetail() {
           </div>
         </div>
         <div className="bg-brand-surface border border-brand-border rounded-xl p-4">
-          <div className="text-xs text-brand-text-secondary mb-1">Ответственный</div>
-          <div className="text-xl font-bold text-brand-text truncate">
-            {project.responsible?.name || '—'}
-          </div>
+          <div className="text-xs text-brand-text-secondary mb-1">Команда</div>
+          <div className="text-xl font-bold text-brand-text">{(project.members || []).length} чел.</div>
         </div>
       </div>
 
@@ -362,6 +427,186 @@ export default function ProjectDetail() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* ── Settings modal ───────────────────────────────────────────────── */}
+      {showSettings && (
+        <Portal>
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" style={{ zIndex: 9999 }} onClick={() => setShowSettings(false)}>
+            <div className="bg-card border border-brand-border rounded-2xl w-full max-w-2xl shadow-2xl" onClick={e => e.stopPropagation()} style={{ boxShadow: '0 20px 60px rgba(131,110,254,0.15), 0 4px 16px rgba(0,0,0,0.08)' }}>
+              {/* Modal header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-brand-border">
+                <h2 className="text-lg font-semibold text-brand-text">Настройки проекта</h2>
+                <button onClick={() => setShowSettings(false)} className="text-brand-text-secondary hover:text-brand-text transition-colors text-xl leading-none">&times;</button>
+              </div>
+
+              {/* Modal body */}
+              <div className="px-6 py-5 space-y-4 max-h-[80vh] overflow-y-auto">
+                {/* Name */}
+                <div>
+                  <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Название</label>
+                  <input
+                    value={settingsForm.name}
+                    onChange={e => setSettingsForm({ ...settingsForm, name: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400"
+                  />
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Описание</label>
+                  <textarea
+                    value={settingsForm.description}
+                    onChange={e => setSettingsForm({ ...settingsForm, description: e.target.value })}
+                    rows={2}
+                    className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400 resize-none"
+                  />
+                </div>
+
+                {/* Dates row */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Начало</label>
+                    <input
+                      type="date"
+                      value={settingsForm.start_date}
+                      onChange={e => setSettingsForm({ ...settingsForm, start_date: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Окончание</label>
+                    <input
+                      type="date"
+                      value={settingsForm.end_date}
+                      onChange={e => setSettingsForm({ ...settingsForm, end_date: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400"
+                    />
+                  </div>
+                </div>
+
+                {/* Budget & Status row */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Бюджет (₽)</label>
+                    <input
+                      type="number"
+                      step="1000"
+                      value={settingsForm.budget}
+                      onChange={e => setSettingsForm({ ...settingsForm, budget: Number(e.target.value) })}
+                      className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Статус</label>
+                    <select
+                      value={settingsForm.status}
+                      onChange={e => setSettingsForm({ ...settingsForm, status: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400"
+                    >
+                      <option value="draft">Черновик</option>
+                      <option value="active">Активный</option>
+                      <option value="on_hold">На паузе</option>
+                      <option value="completed">Завершён</option>
+                      <option value="cancelled">Отменён</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Responsible */}
+                <div>
+                  <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Ответственный</label>
+                  <select
+                    value={settingsForm.responsible_id}
+                    onChange={e => setSettingsForm({ ...settingsForm, responsible_id: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400"
+                  >
+                    <option value="">Не назначен</option>
+                    {employees.filter(e => e.is_active).map(e => (
+                      <option key={e.id} value={e.id}>{e.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Deliverables */}
+                <div>
+                  <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Результаты</label>
+                  <textarea
+                    value={settingsForm.deliverables}
+                    onChange={e => setSettingsForm({ ...settingsForm, deliverables: e.target.value })}
+                    rows={2}
+                    className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400 resize-none"
+                  />
+                </div>
+
+                {/* Team section */}
+                <div className="border-t border-brand-border pt-4 mt-2">
+                  <div className="text-sm font-semibold text-brand-text mb-3">Команда проекта</div>
+
+                  {/* Member list */}
+                  {members.length === 0 ? (
+                    <p className="text-xs text-brand-text-secondary mb-3">Участников пока нет</p>
+                  ) : (
+                    <div className="space-y-2 mb-3">
+                      {members.map(member => (
+                        <div key={member.id} className="flex items-center gap-3 py-2 px-3 rounded-xl bg-brand-surface border border-brand-border">
+                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-500 text-white text-xs font-bold flex items-center justify-center">
+                            {getMemberInitials(member.employee.name)}
+                          </div>
+                          <span className="flex-1 text-sm text-brand-text">{member.employee.name}</span>
+                          {member.role && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-card border border-brand-border text-brand-text-secondary">{member.role}</span>
+                          )}
+                          <button
+                            onClick={() => handleRemoveMember(member.id)}
+                            className="text-brand-text-secondary hover:text-red-500 transition-colors text-lg leading-none flex-shrink-0"
+                            title="Удалить из команды"
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Add member row */}
+                  <div className="flex gap-2">
+                    <select
+                      value={newMemberId}
+                      onChange={e => setNewMemberId(e.target.value)}
+                      className="flex-1 px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400"
+                    >
+                      <option value="">Выберите сотрудника...</option>
+                      {employees
+                        .filter(e => e.is_active && !members.some(m => m.employee_id === e.id))
+                        .map(e => (
+                          <option key={e.id} value={e.id}>{e.name}</option>
+                        ))
+                      }
+                    </select>
+                    <button
+                      onClick={handleAddMember}
+                      disabled={!newMemberId}
+                      className="px-4 py-2 bg-primary-500 text-white rounded-xl text-sm font-medium hover:bg-primary-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      + Добавить
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal footer */}
+              <div className="flex justify-end gap-3 px-6 py-4 border-t border-brand-border">
+                <button onClick={() => setShowSettings(false)} className="px-4 py-2 text-sm text-brand-text-secondary hover:text-brand-text transition-colors">
+                  Отмена
+                </button>
+                <button onClick={handleSettingsSave} className="px-5 py-2 bg-primary-500 text-white rounded-xl text-sm font-medium hover:bg-primary-600 transition-colors active:scale-[0.97]">
+                  Сохранить
+                </button>
+              </div>
+            </div>
+          </div>
+        </Portal>
       )}
 
       {/* ── Task edit modal ───────────────────────────────────────────────── */}
