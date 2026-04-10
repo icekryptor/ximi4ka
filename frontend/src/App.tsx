@@ -34,6 +34,8 @@ const Planning = lazy(() => import('./pages/Planning'))
 const Departments = lazy(() => import('./pages/Departments'))
 const DepartmentDetail = lazy(() => import('./pages/DepartmentDetail'))
 const PublicUnitEconomics = lazy(() => import('./pages/PublicUnitEconomics'))
+const RecurringTasks = lazy(() => import('./pages/RecurringTasks'))
+const RecurringTaskDetail = lazy(() => import('./pages/RecurringTaskDetail'))
 const ContentUnits = lazy(() => import('./pages/ContentUnits'))
 
 // === Page Transition ===
@@ -111,6 +113,8 @@ function App() {
                                 <Route path="/planning" element={<Planning />} />
                                 <Route path="/planning/departments" element={<Departments />} />
                                 <Route path="/planning/departments/:id" element={<DepartmentDetail />} />
+                                <Route path="/planning/recurring" element={<RecurringTasks />} />
+                                <Route path="/planning/recurring/:id" element={<RecurringTaskDetail />} />
                                 <Route path="/content-units" element={<ContentUnits />} />
                                 {/* Маркетплейсы */}
                                 <Route path="/marketplace" element={<Marketplace />} />
