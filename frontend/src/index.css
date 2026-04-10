@@ -41,6 +41,30 @@
 @tailwind components;
 @tailwind utilities;
 
+/* === Gantt chart dark theme overrides === */
+.dark ._2dZTy { fill: #1a1721; }
+.dark ._2dZTy:nth-child(even) { fill: #1e1b26; }
+.dark ._3rUKi { stroke: #2d2a36; }
+.dark ._RuwuK { stroke: #2d2a36; }
+.dark ._1rLuZ { stroke: #2d2a36; }
+.dark ._9w8d5 { fill: #e8e5ef; }
+.dark ._2q1Kt { fill: #9f95b0; }
+.dark ._3KcaM { fill: #e8e5ef; }
+.dark ._35nLX { fill: rgba(131, 110, 254, 0.15); stroke: #836efe; }
+.dark ._3_ygE { border-color: #2d2a36; background: #1a1721; }
+.dark ._3ZbQT { border-color: #2d2a36; background: #1a1721; }
+.dark ._34SS0:nth-of-type(even) { background-color: #1e1b26; }
+.dark ._34SS0 { color: #e8e5ef; }
+.dark ._WuQ0f { color: #e8e5ef; }
+.dark ._3lLk3 { color: #e8e5ef; }
+.dark ._3T42e { background: #1e1b26; color: #e8e5ef; box-shadow: 0 3px 12px rgba(0,0,0,0.4); }
+.dark ._29NTg { color: #9f95b0; }
+.dark ._2QjE6 { color: #9f95b0; }
+.dark ._2TfEi { color: #9f95b0; }
+.dark ._3w_5u { fill: #524667; }
+.dark ._2k9Ys::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
+.dark ._1eT-t::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
+
 /* Toast progress bar animation */
 @keyframes toast-progress {
   from { width: 100%; }
