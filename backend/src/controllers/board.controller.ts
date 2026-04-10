@@ -7,8 +7,12 @@ const repo = () => AppDataSource.getRepository(Board);
 export const boardController = {
   async getAll(req: Request, res: Response) {
     try {
+      const where: any = { is_archived: false };
+      if (req.query.department_id) {
+        where.department_id = req.query.department_id;
+      }
       const boards = await repo().find({
-        where: { is_archived: false },
+        where,
         order: { sort_order: 'ASC', created_at: 'ASC' },
       });
       res.json(boards);
@@ -20,7 +24,7 @@ export const boardController = {
 
   async create(req: Request, res: Response) {
     try {
-      const { name, description, color } = req.body;
+      const { name, description, color, department_id } = req.body;
       if (!name) return res.status(400).json({ error: 'Название обязательно' });
 
       const maxSort = await repo()
@@ -32,6 +36,7 @@ export const boardController = {
         name,
         description: description || null,
         color: color || null,
+        department_id: department_id || null,
         sort_order: (maxSort?.max || 0) + 1,
         created_by: req.user!.userId,
       });

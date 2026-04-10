@@ -31,6 +31,8 @@ const Employees = lazy(() => import('./pages/Employees'))
 const SalesChannels = lazy(() => import('./pages/SalesChannels'))
 const SalesReport = lazy(() => import('./pages/SalesReport'))
 const Planning = lazy(() => import('./pages/Planning'))
+const Departments = lazy(() => import('./pages/Departments'))
+const DepartmentDetail = lazy(() => import('./pages/DepartmentDetail'))
 const PublicUnitEconomics = lazy(() => import('./pages/PublicUnitEconomics'))
 const ContentUnits = lazy(() => import('./pages/ContentUnits'))
 
@@ -107,6 +109,8 @@ function App() {
                                 <Route path="/production-orders" element={<ProductionOrders />} />
                                 <Route path="/quality-control" element={<QualityControl />} />
                                 <Route path="/planning" element={<Planning />} />
+                                <Route path="/planning/departments" element={<Departments />} />
+                                <Route path="/planning/departments/:id" element={<DepartmentDetail />} />
                                 <Route path="/content-units" element={<ContentUnits />} />
                                 {/* Маркетплейсы */}
                                 <Route path="/marketplace" element={<Marketplace />} />
