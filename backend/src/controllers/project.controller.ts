@@ -1,12 +1,25 @@
 import { Request, Response } from 'express';
+import { In } from 'typeorm';
 import { AppDataSource } from '../config/database';
 import { Project } from '../entities/Project';
 import { Task } from '../entities/Task';
 import { TaskDependency } from '../entities/TaskDependency';
+import { TaskChecklistItem } from '../entities/TaskChecklistItem';
+import { TaskComment } from '../entities/TaskComment';
 
 const projectRepo = () => AppDataSource.getRepository(Project);
 const taskRepo = () => AppDataSource.getRepository(Task);
 const depRepo = () => AppDataSource.getRepository(TaskDependency);
+const checklistRepo = () => AppDataSource.getRepository(TaskChecklistItem);
+const commentRepo = () => AppDataSource.getRepository(TaskComment);
+
+async function recalcProgress(taskId: string): Promise<void> {
+  const items = await checklistRepo().find({ where: { task_id: taskId } });
+  if (items.length === 0) return;
+  const checked = items.filter(i => i.is_checked).length;
+  const progress = Math.round((checked / items.length) * 100);
+  await taskRepo().update(taskId, { progress });
+}
 
 export const projectController = {
   async getAll(req: Request, res: Response) {
@@ -65,7 +78,28 @@ export const projectController = {
           .getMany();
       }
 
-      res.json({ ...project, tasks, dependencies });
+      // Fetch checklist items for all tasks in one query
+      const checklistItems = taskIds.length > 0
+        ? await checklistRepo().find({
+            where: { task_id: In(taskIds) },
+            order: { sort_order: 'ASC', created_at: 'ASC' },
+          })
+        : [];
+
+      // Group checklist items by task_id
+      const checklistByTask = new Map<string, TaskChecklistItem[]>();
+      checklistItems.forEach(item => {
+        const list = checklistByTask.get(item.task_id) || [];
+        list.push(item);
+        checklistByTask.set(item.task_id, list);
+      });
+
+      const tasksWithChecklist = tasks.map(t => ({
+        ...t,
+        checklist: checklistByTask.get(t.id) || [],
+      }));
+
+      res.json({ ...project, tasks: tasksWithChecklist, dependencies });
     } catch (error) {
       console.error('Ошибка при получении проекта:', error);
       res.status(500).json({ error: 'Ошибка при получении проекта' });
@@ -360,6 +394,126 @@ export const projectController = {
     res.setHeader('Content-Disposition', 'attachment; filename="project_template.json"');
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.json(template);
+  },
+
+  // ---- Checklist ----
+
+  async addChecklistItem(req: Request, res: Response) {
+    try {
+      const { taskId } = req.params;
+      const task = await taskRepo().findOne({ where: { id: taskId } });
+      if (!task) return res.status(404).json({ error: 'Задача не найдена' });
+
+      const { title, sort_order } = req.body;
+      if (!title) return res.status(400).json({ error: 'title обязателен' });
+
+      const item = checklistRepo().create({
+        task_id: taskId,
+        title,
+        is_checked: false,
+        sort_order: sort_order ?? 0,
+      });
+      const saved = await checklistRepo().save(item);
+      await recalcProgress(taskId);
+      res.status(201).json(saved);
+    } catch (error) {
+      console.error('Ошибка при добавлении пункта чеклиста:', error);
+      res.status(500).json({ error: 'Ошибка при добавлении пункта чеклиста' });
+    }
+  },
+
+  async updateChecklistItem(req: Request, res: Response) {
+    try {
+      const { itemId, taskId } = req.params;
+      const item = await checklistRepo().findOne({ where: { id: itemId, task_id: taskId } });
+      if (!item) return res.status(404).json({ error: 'Пункт чеклиста не найден' });
+
+      const { title, is_checked, sort_order } = req.body;
+      if (title !== undefined) item.title = title;
+      if (is_checked !== undefined) item.is_checked = is_checked;
+      if (sort_order !== undefined) item.sort_order = sort_order;
+
+      const saved = await checklistRepo().save(item);
+      await recalcProgress(taskId);
+      res.json(saved);
+    } catch (error) {
+      console.error('Ошибка при обновлении пункта чеклиста:', error);
+      res.status(500).json({ error: 'Ошибка при обновлении пункта чеклиста' });
+    }
+  },
+
+  async deleteChecklistItem(req: Request, res: Response) {
+    try {
+      const { itemId, taskId } = req.params;
+      const result = await checklistRepo().delete({ id: itemId, task_id: taskId });
+      if (result.affected === 0) return res.status(404).json({ error: 'Пункт чеклиста не найден' });
+      await recalcProgress(taskId);
+      res.json({ message: 'Пункт чеклиста удалён' });
+    } catch (error) {
+      console.error('Ошибка при удалении пункта чеклиста:', error);
+      res.status(500).json({ error: 'Ошибка при удалении пункта чеклиста' });
+    }
+  },
+
+  // ---- Comments ----
+
+  async getComments(req: Request, res: Response) {
+    try {
+      const { taskId } = req.params;
+      const task = await taskRepo().findOne({ where: { id: taskId } });
+      if (!task) return res.status(404).json({ error: 'Задача не найдена' });
+
+      const comments = await commentRepo().find({
+        where: { task_id: taskId },
+        order: { created_at: 'ASC' },
+      });
+      res.json(comments);
+    } catch (error) {
+      console.error('Ошибка при получении комментариев:', error);
+      res.status(500).json({ error: 'Ошибка при получении комментариев' });
+    }
+  },
+
+  async addComment(req: Request, res: Response) {
+    try {
+      const { taskId } = req.params;
+      const task = await taskRepo().findOne({ where: { id: taskId } });
+      if (!task) return res.status(404).json({ error: 'Задача не найдена' });
+
+      const { text, attachment_url, attachment_name } = req.body;
+      if (!text) return res.status(400).json({ error: 'text обязателен' });
+
+      const comment = commentRepo().create({
+        task_id: taskId,
+        author_id: (req as any).user.userId,
+        text,
+        attachment_url: attachment_url || null,
+        attachment_name: attachment_name || null,
+      });
+      const saved = await commentRepo().save(comment);
+      res.status(201).json(saved);
+    } catch (error) {
+      console.error('Ошибка при добавлении комментария:', error);
+      res.status(500).json({ error: 'Ошибка при добавлении комментария' });
+    }
+  },
+
+  async deleteComment(req: Request, res: Response) {
+    try {
+      const { commentId, taskId } = req.params;
+      const comment = await commentRepo().findOne({ where: { id: commentId, task_id: taskId } });
+      if (!comment) return res.status(404).json({ error: 'Комментарий не найден' });
+
+      if (comment.author_id !== (req as any).user.userId) {
+        return res.status(403).json({ error: 'Нет прав для удаления этого комментария' });
+      }
+
+      await commentRepo().delete(commentId);
+      res.json({ message: 'Комментарий удалён' });
+    } catch (error) {
+      console.error('Ошибка при удалении комментария:', error);
+      res.status(500).json({ error: 'Ошибка при удалении комментария' });
+    }
   },
 
   async importProject(req: Request, res: Response) {

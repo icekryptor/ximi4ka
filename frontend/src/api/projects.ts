@@ -20,6 +20,25 @@ export interface Project {
   avg_progress: number
 }
 
+export interface ChecklistItem {
+  id: string
+  task_id: string
+  title: string
+  is_checked: boolean
+  sort_order: number
+  created_at: string
+}
+
+export interface TaskCommentItem {
+  id: string
+  task_id: string
+  author_id: string
+  text: string
+  attachment_url: string | null
+  attachment_name: string | null
+  created_at: string
+}
+
 export interface ProjectTask {
   id: string
   project_id: string
@@ -36,6 +55,7 @@ export interface ProjectTask {
   progress: number
   sort_order: number
   created_at: string
+  checklist?: ChecklistItem[]
 }
 
 export interface TaskDependency {
@@ -161,5 +181,31 @@ export const projectsApi = {
       data: jsonData,
     })
     return data
+  },
+
+  // Checklist
+  addChecklistItem: async (projectId: string, taskId: string, title: string): Promise<ChecklistItem> => {
+    const { data } = await api.post(`/projects/${projectId}/tasks/${taskId}/checklist`, { title })
+    return data
+  },
+  updateChecklistItem: async (projectId: string, taskId: string, itemId: string, payload: Partial<{ title: string; is_checked: boolean }>): Promise<ChecklistItem> => {
+    const { data } = await api.put(`/projects/${projectId}/tasks/${taskId}/checklist/${itemId}`, payload)
+    return data
+  },
+  deleteChecklistItem: async (projectId: string, taskId: string, itemId: string): Promise<void> => {
+    await api.delete(`/projects/${projectId}/tasks/${taskId}/checklist/${itemId}`)
+  },
+
+  // Comments
+  getComments: async (projectId: string, taskId: string): Promise<TaskCommentItem[]> => {
+    const { data } = await api.get(`/projects/${projectId}/tasks/${taskId}/comments`)
+    return data
+  },
+  addComment: async (projectId: string, taskId: string, payload: { text: string; attachment_url?: string; attachment_name?: string }): Promise<TaskCommentItem> => {
+    const { data } = await api.post(`/projects/${projectId}/tasks/${taskId}/comments`, payload)
+    return data
+  },
+  deleteComment: async (projectId: string, taskId: string, commentId: string): Promise<void> => {
+    await api.delete(`/projects/${projectId}/tasks/${taskId}/comments/${commentId}`)
   },
 }

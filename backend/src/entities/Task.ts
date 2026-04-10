@@ -15,6 +15,7 @@ import { Board } from './Board';
 import { Employee } from './Employee';
 import { Project } from './Project';
 import { TaskComment } from './TaskComment';
+import { TaskChecklistItem } from './TaskChecklistItem';
 import { TaskTag } from './TaskTag';
 
 export enum TaskColumn {
@@ -121,6 +122,9 @@ export class Task {
 
   @OneToMany(() => TaskComment, comment => comment.task)
   comments: TaskComment[];
+
+  @OneToMany(() => TaskChecklistItem, item => item.task)
+  checklist: TaskChecklistItem[];
 
   @CreateDateColumn()
   created_at: Date;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { projectsApi, ProjectDetail as ProjDetail, ProjectTask } from '../api/projects'
+import { projectsApi, ProjectDetail as ProjDetail, ProjectTask, ChecklistItem, TaskCommentItem } from '../api/projects'
 import { employeesApi, Employee } from '../api/employees'
 import GanttChart from '../components/GanttChart'
 import Portal from '../components/Portal'
@@ -24,6 +24,12 @@ export default function ProjectDetail() {
   const [employees, setEmployees] = useState<Employee[]>([])
   const [editingTask, setEditingTask] = useState<ProjectTask | null>(null)
   const [editForm, setEditForm] = useState({ title: '', start_date: '', due_date: '', assignee_id: '', progress: 0, priority: 'medium', description: '' })
+  const [checklist, setChecklist] = useState<ChecklistItem[]>([])
+  const [newChecklistTitle, setNewChecklistTitle] = useState('')
+  const [comments, setComments] = useState<TaskCommentItem[]>([])
+  const [newComment, setNewComment] = useState('')
+  const [newCommentLink, setNewCommentLink] = useState('')
+  const [showLinkInput, setShowLinkInput] = useState(false)
 
   const load = () => {
     if (!id) return
@@ -82,6 +88,99 @@ export default function ProjectDetail() {
       priority: task.priority || 'medium',
       description: task.description || '',
     })
+    setChecklist(task.checklist || [])
+    setNewChecklistTitle('')
+    setComments([])
+    setNewComment('')
+    setNewCommentLink('')
+    setShowLinkInput(false)
+    if (id) {
+      projectsApi.getComments(id, task.id).then(setComments).catch(console.error)
+    }
+  }
+
+  const handleAddChecklistItem = async () => {
+    if (!id || !editingTask || !newChecklistTitle.trim()) return
+    try {
+      await projectsApi.addChecklistItem(id, editingTask.id, newChecklistTitle.trim())
+      setNewChecklistTitle('')
+      const fresh = await projectsApi.getOne(id)
+      setProject(fresh)
+      const refreshed = fresh.tasks.find(t => t.id === editingTask.id)
+      if (refreshed) {
+        setEditingTask(refreshed)
+        setChecklist(refreshed.checklist || [])
+      }
+    } catch (err) { console.error(err) }
+  }
+
+  const handleToggleChecklistItem = async (item: ChecklistItem) => {
+    if (!id || !editingTask) return
+    try {
+      await projectsApi.updateChecklistItem(id, editingTask.id, item.id, { is_checked: !item.is_checked })
+      const fresh = await projectsApi.getOne(id)
+      setProject(fresh)
+      const refreshed = fresh.tasks.find(t => t.id === editingTask.id)
+      if (refreshed) {
+        setEditingTask(refreshed)
+        setChecklist(refreshed.checklist || [])
+      }
+    } catch (err) { console.error(err) }
+  }
+
+  const handleDeleteChecklistItem = async (itemId: string) => {
+    if (!id || !editingTask) return
+    try {
+      await projectsApi.deleteChecklistItem(id, editingTask.id, itemId)
+      const fresh = await projectsApi.getOne(id)
+      setProject(fresh)
+      const refreshed = fresh.tasks.find(t => t.id === editingTask.id)
+      if (refreshed) {
+        setEditingTask(refreshed)
+        setChecklist(refreshed.checklist || [])
+      }
+    } catch (err) { console.error(err) }
+  }
+
+  const handleAddComment = async () => {
+    if (!id || !editingTask || !newComment.trim()) return
+    try {
+      const payload: { text: string; attachment_url?: string; attachment_name?: string } = {
+        text: newComment.trim(),
+      }
+      if (newCommentLink.trim()) {
+        payload.attachment_url = newCommentLink.trim()
+        try {
+          payload.attachment_name = new URL(newCommentLink.trim()).hostname
+        } catch {
+          payload.attachment_name = newCommentLink.trim()
+        }
+      }
+      await projectsApi.addComment(id, editingTask.id, payload)
+      setNewComment('')
+      setNewCommentLink('')
+      setShowLinkInput(false)
+      const updated = await projectsApi.getComments(id, editingTask.id)
+      setComments(updated)
+    } catch (err) { console.error(err) }
+  }
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!id || !editingTask) return
+    try {
+      await projectsApi.deleteComment(id, editingTask.id, commentId)
+      const updated = await projectsApi.getComments(id, editingTask.id)
+      setComments(updated)
+    } catch (err) { console.error(err) }
+  }
+
+  const formatCommentDate = (dateStr: string) => {
+    const d = new Date(dateStr)
+    return d.toLocaleString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  }
+
+  const getInitials = (authorId: string) => {
+    return authorId.slice(0, 2).toUpperCase()
   }
 
   const handleEditSave = async () => {
@@ -277,7 +376,7 @@ export default function ProjectDetail() {
             </div>
 
             {/* Modal body */}
-            <div className="px-6 py-5 space-y-4">
+            <div className="px-6 py-5 space-y-4 max-h-[80vh] overflow-y-auto">
               {/* Title */}
               <div>
                 <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Название</label>
@@ -348,26 +447,200 @@ export default function ProjectDetail() {
                 </div>
               </div>
 
-              {/* Progress slider */}
-              <div>
-                <label className="text-xs font-medium text-brand-text-secondary mb-1 block">
-                  Прогресс: <span className="text-primary-500 font-bold">{editForm.progress}%</span>
-                </label>
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={5}
-                  value={editForm.progress}
-                  onChange={e => setEditForm({ ...editForm, progress: Number(e.target.value) })}
-                  className="w-full accent-primary-500"
-                />
-                <div className="flex justify-between text-[10px] text-brand-text-secondary mt-0.5">
-                  <span>0%</span>
-                  <span>25%</span>
-                  <span>50%</span>
-                  <span>75%</span>
-                  <span>100%</span>
+              {/* Progress: slider if no checklist, auto-calculated if checklist exists */}
+              {checklist.length === 0 ? (
+                <div>
+                  <label className="text-xs font-medium text-brand-text-secondary mb-1 block">
+                    Прогресс: <span className="text-primary-500 font-bold">{editForm.progress}%</span>
+                  </label>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={5}
+                    value={editForm.progress}
+                    onChange={e => setEditForm({ ...editForm, progress: Number(e.target.value) })}
+                    className="w-full accent-primary-500"
+                  />
+                  <div className="flex justify-between text-[10px] text-brand-text-secondary mt-0.5">
+                    <span>0%</span>
+                    <span>25%</span>
+                    <span>50%</span>
+                    <span>75%</span>
+                    <span>100%</span>
+                  </div>
+                </div>
+              ) : null}
+
+              {/* ── Checklist section ─────────────────────────────────────── */}
+              <div className="border-t border-brand-border pt-4 mt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-semibold text-brand-text">Чек-лист</span>
+                  {checklist.length > 0 && (
+                    <span className="text-xs text-brand-text-secondary">
+                      {checklist.filter(i => i.is_checked).length} из {checklist.length}
+                    </span>
+                  )}
+                </div>
+
+                {checklist.length > 0 && (() => {
+                  const checked = checklist.filter(i => i.is_checked).length
+                  const total = checklist.length
+                  const pct = Math.round((checked / total) * 100)
+                  return (
+                    <div className="mb-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="flex-1 bg-brand-surface rounded-full h-2 overflow-hidden border border-brand-border">
+                          <div
+                            className="h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${pct}%`, background: 'linear-gradient(90deg, rgba(141,103,255,1) 0%, rgba(200,86,255,1) 100%)' }}
+                          />
+                        </div>
+                        <span className="text-xs font-medium text-primary-500 w-8 text-right">{pct}%</span>
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                <div className="space-y-1.5">
+                  {checklist.map(item => (
+                    <div key={item.id} className="flex items-center gap-2 group">
+                      <input
+                        type="checkbox"
+                        checked={item.is_checked}
+                        onChange={() => handleToggleChecklistItem(item)}
+                        className="w-4 h-4 rounded accent-primary-500 flex-shrink-0 cursor-pointer"
+                      />
+                      <span className={`flex-1 text-sm ${item.is_checked ? 'line-through text-brand-text-secondary' : 'text-brand-text'}`}>
+                        {item.title}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteChecklistItem(item.id)}
+                        className="opacity-0 group-hover:opacity-100 text-brand-text-secondary hover:text-red-500 transition-all text-base leading-none flex-shrink-0"
+                        title="Удалить пункт"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M1.75 3.5h10.5M5.25 3.5V2.333a.583.583 0 0 1 .583-.583h2.334a.583.583 0 0 1 .583.583V3.5M11.083 3.5l-.583 7.583a.583.583 0 0 1-.583.584H4.083a.583.583 0 0 1-.583-.584L2.917 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Add checklist item */}
+                <div className="flex gap-2 mt-3">
+                  <input
+                    value={newChecklistTitle}
+                    onChange={e => setNewChecklistTitle(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddChecklistItem() } }}
+                    placeholder="Добавить пункт..."
+                    className="flex-1 px-3 py-1.5 rounded-xl border border-brand-border bg-card text-brand-text text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400 placeholder:text-brand-text-secondary"
+                  />
+                  <button
+                    onClick={handleAddChecklistItem}
+                    disabled={!newChecklistTitle.trim()}
+                    className="px-3 py-1.5 bg-primary-500 text-white rounded-xl text-sm font-medium hover:bg-primary-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* ── Comments section ──────────────────────────────────────── */}
+              <div className="border-t border-brand-border pt-4 mt-4">
+                <div className="text-sm font-semibold text-brand-text mb-3">Комментарии</div>
+
+                {comments.length === 0 && (
+                  <p className="text-xs text-brand-text-secondary mb-3">Комментариев пока нет</p>
+                )}
+
+                <div className="space-y-3 mb-3">
+                  {comments.map(comment => (
+                    <div key={comment.id} className="flex gap-2.5 group">
+                      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-primary-500 text-white text-[10px] font-bold flex items-center justify-center">
+                        {getInitials(comment.author_id)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-brand-text leading-snug">{comment.text}</p>
+                        {comment.attachment_url && (
+                          <a
+                            href={comment.attachment_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-lg bg-brand-surface border border-brand-border text-xs text-primary-500 hover:text-primary-600 hover:border-primary-300 transition-colors max-w-full"
+                          >
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
+                              <path d="M4.167 2.5H2.5A.833.833 0 0 0 1.667 3.333v4.167A.833.833 0 0 0 2.5 8.333h4.167A.833.833 0 0 0 7.5 7.5V5.833M6.25 1.667H8.333M8.333 1.667v2.083M8.333 1.667 4.583 5.417" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            <span className="truncate">{comment.attachment_name || comment.attachment_url}</span>
+                          </a>
+                        )}
+                        <div className="text-[10px] text-brand-text-secondary mt-1">{formatCommentDate(comment.created_at)}</div>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteComment(comment.id)}
+                        className="opacity-0 group-hover:opacity-100 text-brand-text-secondary hover:text-red-500 transition-all flex-shrink-0 self-start mt-0.5"
+                        title="Удалить комментарий"
+                      >
+                        <svg width="13" height="13" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M1.75 3.5h10.5M5.25 3.5V2.333a.583.583 0 0 1 .583-.583h2.334a.583.583 0 0 1 .583.583V3.5M11.083 3.5l-.583 7.583a.583.583 0 0 1-.583.584H4.083a.583.583 0 0 1-.583-.584L2.917 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* New comment input */}
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <textarea
+                      value={newComment}
+                      onChange={e => setNewComment(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAddComment() } }}
+                      placeholder="Написать комментарий..."
+                      rows={2}
+                      className="flex-1 px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400 resize-none placeholder:text-brand-text-secondary"
+                    />
+                    <div className="flex flex-col gap-1.5">
+                      <button
+                        onClick={() => setShowLinkInput(v => !v)}
+                        className={`px-2.5 py-2 rounded-xl border text-sm transition-colors ${showLinkInput ? 'bg-primary-500 border-primary-500 text-white' : 'border-brand-border text-brand-text-secondary hover:text-primary-500 hover:border-primary-300 bg-card'}`}
+                        title="Прикрепить ссылку"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M5.25 8.75a3.5 3.5 0 0 0 5.071 0l1.75-1.75a3.5 3.5 0 0 0-4.95-4.95l-1.002 1.002M8.75 5.25a3.5 3.5 0 0 0-5.07 0L1.929 7a3.5 3.5 0 0 0 4.95 4.95L7.88 10.95" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                      <button
+                        onClick={handleAddComment}
+                        disabled={!newComment.trim()}
+                        className="px-2.5 py-2 bg-primary-500 text-white rounded-xl text-sm font-medium hover:bg-primary-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        title="Отправить"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M12.833 1.167 6.417 7.583M12.833 1.167l-4.083 11.666-2.333-5.25M12.833 1.167 1.167 5.25l5.25 2.333" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  {showLinkInput && (
+                    <div className="flex gap-2">
+                      <input
+                        value={newCommentLink}
+                        onChange={e => setNewCommentLink(e.target.value)}
+                        placeholder="https://..."
+                        className="flex-1 px-3 py-1.5 rounded-xl border border-brand-border bg-card text-brand-text text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400 placeholder:text-brand-text-secondary"
+                      />
+                      {newCommentLink && (
+                        <button
+                          onClick={() => { setNewCommentLink(''); setShowLinkInput(false) }}
+                          className="text-brand-text-secondary hover:text-brand-text text-sm px-2"
+                        >
+                          &times;
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

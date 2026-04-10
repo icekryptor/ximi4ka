@@ -14,6 +14,16 @@ router.delete('/:id', projectController.delete);
 router.post('/:id/tasks', projectController.addTask);
 router.put('/:id/tasks/:taskId', projectController.updateTask);
 
+// Checklist
+router.post('/:id/tasks/:taskId/checklist', projectController.addChecklistItem);
+router.put('/:id/tasks/:taskId/checklist/:itemId', projectController.updateChecklistItem);
+router.delete('/:id/tasks/:taskId/checklist/:itemId', projectController.deleteChecklistItem);
+
+// Comments
+router.get('/:id/tasks/:taskId/comments', projectController.getComments);
+router.post('/:id/tasks/:taskId/comments', projectController.addComment);
+router.delete('/:id/tasks/:taskId/comments/:commentId', projectController.deleteComment);
+
 router.post('/:id/dependencies', projectController.addDependency);
 router.delete('/:id/dependencies/:depId', projectController.removeDependency);
 

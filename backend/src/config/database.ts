@@ -36,6 +36,7 @@ import { RecurringTask } from '../entities/RecurringTask';
 import { RecurringTaskReport } from '../entities/RecurringTaskReport';
 import { Project } from '../entities/Project';
 import { TaskDependency } from '../entities/TaskDependency';
+import { TaskChecklistItem } from '../entities/TaskChecklistItem';
 
 dotenv.config();
 
@@ -45,7 +46,7 @@ const databaseUrl = process.env.DATABASE_URL;
 
 const isDev = process.env.NODE_ENV === 'development';
 
-const allEntities = [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, UnitEconomicsShare, User, DailySales, Employee, SalesChannel, QcChecklist, Board, Task, TaskComment, TaskTag, ChannelPreset, ContentUnit, OAuthToken, Department, DepartmentRole, RecurringTask, RecurringTaskReport, Project, TaskDependency];
+const allEntities = [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, UnitEconomicsShare, User, DailySales, Employee, SalesChannel, QcChecklist, Board, Task, TaskComment, TaskTag, ChannelPreset, ContentUnit, OAuthToken, Department, DepartmentRole, RecurringTask, RecurringTaskReport, Project, TaskDependency, TaskChecklistItem];
 
 const dataSourceOptions = databaseUrl
   ? {
