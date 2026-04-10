@@ -18,6 +18,10 @@ export default function Projects() {
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
   const [form, setForm] = useState({ name: '', department_id: '', description: '', budget: '', start_date: '', end_date: '', deliverables: '' })
+  const [showImport, setShowImport] = useState(false)
+  const [importFile, setImportFile] = useState<any>(null)
+  const [importDept, setImportDept] = useState('')
+  const [importFileName, setImportFileName] = useState('')
   const navigate = useNavigate()
 
   const load = () => {
@@ -49,6 +53,36 @@ export default function Projects() {
     } catch (err) { console.error(err) }
   }
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImportFileName(file.name)
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      try {
+        const json = JSON.parse(ev.target?.result as string)
+        setImportFile(json)
+      } catch {
+        alert('Ошибка: файл не является валидным JSON')
+        setImportFile(null)
+        setImportFileName('')
+      }
+    }
+    reader.readAsText(file)
+  }
+
+  const handleImport = async () => {
+    if (!importFile || !importDept) return
+    try {
+      const result = await projectsApi.importProject(importDept, importFile)
+      setShowImport(false)
+      setImportFile(null)
+      setImportDept('')
+      setImportFileName('')
+      navigate(`/planning/projects/${result.id}`)
+    } catch (err) { console.error(err) }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -71,6 +105,18 @@ export default function Projects() {
             {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select>
           <button
+            onClick={() => projectsApi.downloadTemplate()}
+            className="px-4 py-2 border border-brand-border text-brand-text rounded-xl text-sm font-medium hover:bg-brand-surface transition-colors"
+          >
+            Шаблон
+          </button>
+          <button
+            onClick={() => setShowImport(true)}
+            className="px-4 py-2 border border-brand-border text-brand-text rounded-xl text-sm font-medium hover:bg-brand-surface transition-colors"
+          >
+            Импорт
+          </button>
+          <button
             onClick={() => setShowCreate(true)}
             className="px-4 py-2 bg-primary-500 text-white rounded-xl text-sm font-medium hover:bg-primary-600 transition-colors"
           >
@@ -82,29 +128,59 @@ export default function Projects() {
       {showCreate && (
         <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 space-y-4">
           <h2 className="text-lg font-semibold text-brand-text">Новый проект</h2>
-          <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Название проекта" className="w-full px-4 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text" />
+          <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Название проекта" className="w-full px-4 py-2 rounded-xl border border-brand-border bg-card text-brand-text" />
           <div className="grid grid-cols-2 gap-4">
-            <select value={form.department_id} onChange={e => setForm({ ...form, department_id: e.target.value })} className="px-3 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text">
+            <select value={form.department_id} onChange={e => setForm({ ...form, department_id: e.target.value })} className="px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text">
               <option value="">Направление...</option>
               {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select>
-            <input value={form.budget} onChange={e => setForm({ ...form, budget: e.target.value })} placeholder="Бюджет, ₽" type="number" className="px-3 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text" />
+            <input value={form.budget} onChange={e => setForm({ ...form, budget: e.target.value })} placeholder="Бюджет, ₽" type="number" className="px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-xs text-brand-text-secondary">Начало</label>
-              <input value={form.start_date} onChange={e => setForm({ ...form, start_date: e.target.value })} type="date" className="w-full px-3 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text" />
+              <input value={form.start_date} onChange={e => setForm({ ...form, start_date: e.target.value })} type="date" className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text" />
             </div>
             <div>
               <label className="text-xs text-brand-text-secondary">Окончание</label>
-              <input value={form.end_date} onChange={e => setForm({ ...form, end_date: e.target.value })} type="date" className="w-full px-3 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text" />
+              <input value={form.end_date} onChange={e => setForm({ ...form, end_date: e.target.value })} type="date" className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text" />
             </div>
           </div>
-          <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Описание" rows={2} className="w-full px-4 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text" />
-          <textarea value={form.deliverables} onChange={e => setForm({ ...form, deliverables: e.target.value })} placeholder="Результаты / deliverables" rows={2} className="w-full px-4 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text" />
+          <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Описание" rows={2} className="w-full px-4 py-2 rounded-xl border border-brand-border bg-card text-brand-text" />
+          <textarea value={form.deliverables} onChange={e => setForm({ ...form, deliverables: e.target.value })} placeholder="Результаты / deliverables" rows={2} className="w-full px-4 py-2 rounded-xl border border-brand-border bg-card text-brand-text" />
           <div className="flex gap-3 justify-end">
             <button onClick={() => setShowCreate(false)} className="px-4 py-2 text-brand-text-secondary hover:text-brand-text transition-colors">Отмена</button>
             <button onClick={handleCreate} className="px-4 py-2 bg-primary-500 text-white rounded-xl text-sm font-medium hover:bg-primary-600 transition-colors">Создать</button>
+          </div>
+        </div>
+      )}
+
+      {showImport && (
+        <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 space-y-4">
+          <h2 className="text-lg font-semibold text-brand-text">Импорт проекта из JSON</h2>
+          <div>
+            <label className="block text-sm text-brand-text-secondary mb-2">Файл JSON</label>
+            <label className="flex items-center gap-3 px-4 py-3 rounded-xl border border-brand-border bg-card cursor-pointer hover:border-primary-400 transition-colors">
+              <span className="text-sm text-brand-text">{importFileName || 'Выберите файл...'}</span>
+              <input type="file" accept=".json" onChange={handleFileSelect} className="hidden" />
+            </label>
+          </div>
+          <div>
+            <label className="block text-sm text-brand-text-secondary mb-2">Направление</label>
+            <select value={importDept} onChange={e => setImportDept(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text">
+              <option value="">Выберите направление...</option>
+              {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+            </select>
+          </div>
+          {importFile && (
+            <div className="text-sm text-brand-text-secondary">
+              Проект: <span className="text-brand-text font-medium">{importFile.name}</span>
+              {importFile.tasks && <> · {importFile.tasks.length} задач</>}
+            </div>
+          )}
+          <div className="flex gap-3 justify-end">
+            <button onClick={() => { setShowImport(false); setImportFile(null); setImportDept(''); setImportFileName('') }} className="px-4 py-2 text-brand-text-secondary hover:text-brand-text transition-colors">Отмена</button>
+            <button onClick={handleImport} disabled={!importFile || !importDept} className="px-4 py-2 bg-primary-500 text-white rounded-xl text-sm font-medium hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Импортировать</button>
           </div>
         </div>
       )}
@@ -133,7 +209,7 @@ export default function Projects() {
                   <span className="text-brand-text-secondary">{p.task_count} задач</span>
                   <span className="text-brand-text font-medium">{p.avg_progress}%</span>
                 </div>
-                <div className="w-full bg-brand-bg rounded-full h-2">
+                <div className="w-full bg-card rounded-full h-2">
                   <div className="bg-primary-500 h-2 rounded-full transition-all" style={{ width: `${p.avg_progress}%` }} />
                 </div>
                 {p.end_date && (

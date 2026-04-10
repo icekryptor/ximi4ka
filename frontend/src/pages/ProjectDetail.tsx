@@ -115,6 +115,12 @@ export default function ProjectDetail() {
         </button>
         <h1 className="text-2xl font-bold text-brand-text">{project.name}</h1>
         <span className={`text-xs px-3 py-1 rounded-full font-medium ${st.className}`}>{st.label}</span>
+        <button
+          onClick={() => projectsApi.exportProject(id!)}
+          className="ml-auto px-4 py-2 border border-brand-border text-brand-text rounded-xl text-sm font-medium hover:bg-brand-surface transition-colors"
+        >
+          ⬇ JSON
+        </button>
       </div>
 
       {/* Info cards */}
@@ -122,7 +128,7 @@ export default function ProjectDetail() {
         <div className="bg-brand-surface border border-brand-border rounded-xl p-4">
           <div className="text-xs text-brand-text-secondary mb-1">Прогресс</div>
           <div className="text-xl font-bold text-brand-text">{avgProgress}%</div>
-          <div className="w-full bg-brand-bg rounded-full h-1.5 mt-2">
+          <div className="w-full bg-card rounded-full h-1.5 mt-2">
             <div className="bg-primary-500 h-1.5 rounded-full" style={{ width: `${avgProgress}%` }} />
           </div>
         </div>
@@ -144,7 +150,7 @@ export default function ProjectDetail() {
 
       {/* Gantt toolbar */}
       <div className="flex items-center justify-between">
-        <div className="flex gap-1 bg-brand-bg p-1 rounded-xl">
+        <div className="flex gap-1 bg-card p-1 rounded-xl">
           {[
             { mode: ViewMode.Day, label: 'День' },
             { mode: ViewMode.Week, label: 'Неделя' },
@@ -175,19 +181,19 @@ export default function ProjectDetail() {
       {showAddTask && (
         <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 space-y-4">
           <h2 className="text-lg font-semibold text-brand-text">Новая задача</h2>
-          <input value={taskForm.title} onChange={e => setTaskForm({ ...taskForm, title: e.target.value })} placeholder="Название задачи" className="w-full px-4 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text" />
+          <input value={taskForm.title} onChange={e => setTaskForm({ ...taskForm, title: e.target.value })} placeholder="Название задачи" className="w-full px-4 py-2 rounded-xl border border-brand-border bg-card text-brand-text" />
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-xs text-brand-text-secondary">Начало</label>
-              <input value={taskForm.start_date} onChange={e => setTaskForm({ ...taskForm, start_date: e.target.value })} type="date" className="w-full px-3 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text" />
+              <input value={taskForm.start_date} onChange={e => setTaskForm({ ...taskForm, start_date: e.target.value })} type="date" className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text" />
             </div>
             <div>
               <label className="text-xs text-brand-text-secondary">Окончание</label>
-              <input value={taskForm.due_date} onChange={e => setTaskForm({ ...taskForm, due_date: e.target.value })} type="date" className="w-full px-3 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text" />
+              <input value={taskForm.due_date} onChange={e => setTaskForm({ ...taskForm, due_date: e.target.value })} type="date" className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text" />
             </div>
           </div>
           {project.tasks.length > 0 && (
-            <select value={taskForm.parent_id} onChange={e => setTaskForm({ ...taskForm, parent_id: e.target.value })} className="w-full px-3 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text">
+            <select value={taskForm.parent_id} onChange={e => setTaskForm({ ...taskForm, parent_id: e.target.value })} className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text">
               <option value="">Без родительской задачи</option>
               {project.tasks.filter(t => !t.parent_id).map(t => (
                 <option key={t.id} value={t.id}>{t.title}</option>

@@ -129,4 +129,34 @@ export const projectsApi = {
   removeDependency: async (projectId: string, depId: string): Promise<void> => {
     await api.delete(`/projects/${projectId}/dependencies/${depId}`)
   },
+
+  exportProject: async (id: string): Promise<void> => {
+    const { data } = await api.get(`/projects/${id}/export`)
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${data.name || 'project'}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  },
+
+  downloadTemplate: async (): Promise<void> => {
+    const { data } = await api.get('/projects/template')
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'project_template.json'
+    a.click()
+    URL.revokeObjectURL(url)
+  },
+
+  importProject: async (departmentId: string, jsonData: any): Promise<{ id: string }> => {
+    const { data } = await api.post('/projects/import', {
+      department_id: departmentId,
+      data: jsonData,
+    })
+    return data
+  },
 }

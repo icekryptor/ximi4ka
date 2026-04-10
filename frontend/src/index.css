@@ -115,7 +115,7 @@
   }
 
   .input-date {
-    @apply px-2.5 py-1.5 text-sm border border-brand-border rounded-xl bg-white
+    @apply px-2.5 py-1.5 text-sm border border-brand-border rounded-xl bg-card
            focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400
            text-brand-text w-[140px];
   }

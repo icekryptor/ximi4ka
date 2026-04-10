@@ -107,13 +107,13 @@ export default function RecurringTasks() {
             value={form.title}
             onChange={e => setForm({ ...form, title: e.target.value })}
             placeholder="Название задачи"
-            className="w-full px-4 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text"
+            className="w-full px-4 py-2 rounded-xl border border-brand-border bg-card text-brand-text"
           />
           <div className="grid grid-cols-2 gap-4">
             <select
               value={form.department_id}
               onChange={e => setForm({ ...form, department_id: e.target.value })}
-              className="px-3 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text"
+              className="px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text"
             >
               <option value="">Направление...</option>
               {departments.map(d => (
@@ -123,7 +123,7 @@ export default function RecurringTasks() {
             <select
               value={form.frequency}
               onChange={e => setForm({ ...form, frequency: e.target.value })}
-              className="px-3 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text"
+              className="px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text"
             >
               <option value="daily">Ежедневно</option>
               <option value="weekly">Еженедельно</option>
@@ -145,7 +145,7 @@ export default function RecurringTasks() {
                   className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${
                     form.frequency_days.includes(d)
                       ? 'bg-primary-500 text-white'
-                      : 'bg-brand-bg text-brand-text-secondary border border-brand-border'
+                      : 'bg-card text-brand-text-secondary border border-brand-border'
                   }`}
                 >
                   {dayLabels[d]}
@@ -158,7 +158,7 @@ export default function RecurringTasks() {
             onChange={e => setForm({ ...form, instruction: e.target.value })}
             placeholder="Инструкция к отчёту (необязательно, неизменяемая)"
             rows={3}
-            className="w-full px-4 py-2 rounded-xl border border-brand-border bg-brand-bg text-brand-text"
+            className="w-full px-4 py-2 rounded-xl border border-brand-border bg-card text-brand-text"
           />
           <div className="flex gap-3 justify-end">
             <button onClick={() => setShowCreate(false)} className="px-4 py-2 text-brand-text-secondary hover:text-brand-text transition-colors">Отмена</button>
@@ -192,7 +192,7 @@ export default function RecurringTasks() {
                   <tr
                     key={task.id}
                     onClick={() => navigate(`/planning/recurring/${task.id}`)}
-                    className="border-b border-brand-border last:border-0 hover:bg-brand-bg cursor-pointer transition-colors"
+                    className="border-b border-brand-border last:border-0 hover:bg-card cursor-pointer transition-colors"
                   >
                     <td className="px-6 py-4 text-brand-text font-medium">{task.title}</td>
                     <td className="px-6 py-4">

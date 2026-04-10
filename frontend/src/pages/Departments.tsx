@@ -44,19 +44,19 @@ export default function Departments() {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="text-center p-3 bg-brand-bg rounded-xl">
+              <div className="text-center p-3 bg-card rounded-xl">
                 <div className="text-2xl font-bold text-brand-text">{dept.board_count}</div>
                 <div className="text-xs text-brand-text-secondary">Досок</div>
               </div>
-              <div className="text-center p-3 bg-brand-bg rounded-xl">
+              <div className="text-center p-3 bg-card rounded-xl">
                 <div className="text-2xl font-bold text-brand-text">{dept.member_count}</div>
                 <div className="text-xs text-brand-text-secondary">Участников</div>
               </div>
-              <div className="text-center p-3 bg-brand-bg rounded-xl">
+              <div className="text-center p-3 bg-card rounded-xl">
                 <div className="text-2xl font-bold text-brand-text">{dept.project_count}</div>
                 <div className="text-xs text-brand-text-secondary">Проектов</div>
               </div>
-              <div className="text-center p-3 bg-brand-bg rounded-xl">
+              <div className="text-center p-3 bg-card rounded-xl">
                 <div className="text-2xl font-bold text-brand-text">{dept.recurring_task_count}</div>
                 <div className="text-xs text-brand-text-secondary">Регулярных</div>
               </div>
