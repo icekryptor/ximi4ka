@@ -34,6 +34,16 @@ interface TooltipState {
   y: number
 }
 
+interface DragState {
+  taskId: string
+  edge: 'left' | 'right' | 'move'
+  startMouseX: number
+  origStartDate: Date
+  origEndDate: Date
+  currentStartDate: Date
+  currentEndDate: Date
+}
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const SIDEBAR_WIDTH = 280
@@ -250,6 +260,8 @@ export default function GanttChart({
   const [hoveredRow, setHoveredRow] = useState<string | null>(null)
   const [tooltip, setTooltip] = useState<TooltipState | null>(null)
   const [sortBy, setSortBy] = useState<'default' | 'name' | 'priority'>('default')
+  const [drag, setDrag] = useState<DragState | null>(null)
+  const dragRef = useRef<DragState | null>(null)
 
   // ── Compute tasks with hierarchy level ──────────────────────────────────────
   const computedTasks = useMemo<ComputedTask[]>(() => {
@@ -422,6 +434,92 @@ export default function GanttChart({
     const scrollTarget = Math.max(0, todayX - 200)
     timelineRef.current.scrollLeft = scrollTarget
   }, [todayX, columns])
+
+  // ── Drag-to-resize logic ──────────────────────────────────────────────────────
+
+  const handleDragStart = useCallback(
+    (taskId: string, edge: 'left' | 'right' | 'move', e: React.MouseEvent) => {
+      e.stopPropagation()
+      e.preventDefault()
+      const task = tasks.find(t => t.id === taskId)
+      if (!task) return
+      const origStart = parseDate(task.start_date)
+      const origEnd = parseDate(task.due_date)
+      if (!origStart || !origEnd) return
+
+      const state: DragState = {
+        taskId,
+        edge,
+        startMouseX: e.clientX,
+        origStartDate: origStart,
+        origEndDate: origEnd,
+        currentStartDate: origStart,
+        currentEndDate: origEnd,
+      }
+      dragRef.current = state
+      setDrag(state)
+      setTooltip(null)
+    },
+    [tasks]
+  )
+
+  useEffect(() => {
+    if (!drag) return
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!dragRef.current || !timelineRef.current) return
+      const d = dragRef.current
+      const deltaX = e.clientX - d.startMouseX
+
+      // Convert pixel delta to day delta based on column width
+      const colWidth = columns[0]?.widthPx || DAY_WIDTH
+      const msPerPx = (columns[0]?.endDate.getTime() - columns[0]?.startDate.getTime()) / colWidth
+      const deltaMs = deltaX * msPerPx
+      const deltaDays = Math.round(deltaMs / 86_400_000)
+
+      let newStart = d.origStartDate
+      let newEnd = d.origEndDate
+
+      if (d.edge === 'left') {
+        newStart = addDays(d.origStartDate, deltaDays)
+        if (newStart >= newEnd) newStart = addDays(newEnd, -1)
+      } else if (d.edge === 'right') {
+        newEnd = addDays(d.origEndDate, deltaDays)
+        if (newEnd <= newStart) newEnd = addDays(newStart, 1)
+      } else {
+        // move
+        newStart = addDays(d.origStartDate, deltaDays)
+        newEnd = addDays(d.origEndDate, deltaDays)
+      }
+
+      const updated = { ...d, currentStartDate: newStart, currentEndDate: newEnd }
+      dragRef.current = updated
+      setDrag(updated)
+    }
+
+    const handleMouseUp = () => {
+      if (!dragRef.current) return
+      const d = dragRef.current
+      const startStr = d.currentStartDate.toISOString().split('T')[0]
+      const endStr = d.currentEndDate.toISOString().split('T')[0]
+      const origStartStr = d.origStartDate.toISOString().split('T')[0]
+      const origEndStr = d.origEndDate.toISOString().split('T')[0]
+
+      if (startStr !== origStartStr || endStr !== origEndStr) {
+        _onDateChange?.(d.taskId, startStr, endStr)
+      }
+
+      dragRef.current = null
+      setDrag(null)
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseup', handleMouseUp)
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [drag, columns, _onDateChange])
 
   // ── Empty state check ─────────────────────────────────────────────────────────
   const hasDatedTasks = useMemo(
@@ -866,8 +964,10 @@ export default function GanttChart({
 
             {/* ── Task bars ─────────────────────────────────────────────────── */}
             {computedTasks.map((task, rowIdx) => {
-              const start = parseDate(task.start_date)
-              const end = parseDate(task.due_date)
+              // Use drag state if this task is being dragged
+              const isDragging = drag?.taskId === task.id
+              const start = isDragging ? drag.currentStartDate : parseDate(task.start_date)
+              const end = isDragging ? drag.currentEndDate : parseDate(task.due_date)
 
               if (!start || !end) return null
 
@@ -884,18 +984,23 @@ export default function GanttChart({
               const isCompleted = task.progress >= 100
               const progress = Math.max(0, Math.min(100, task.progress || 0))
 
-              const barBg = isCompleted
-                ? 'linear-gradient(90deg, #10b981, #059669)'
-                : 'linear-gradient(90deg, rgba(141,103,255,1), rgba(200,86,255,1))'
+              const barBg = isDragging
+                ? 'linear-gradient(90deg, rgba(141,103,255,0.85), rgba(200,86,255,0.85))'
+                : isCompleted
+                  ? 'linear-gradient(90deg, #10b981, #059669)'
+                  : 'linear-gradient(90deg, rgba(141,103,255,1), rgba(200,86,255,1))'
 
               const progressFill = isCompleted
                 ? 'rgba(255,255,255,0.25)'
                 : 'rgba(255,255,255,0.2)'
 
+              const isHovered = hoveredRow === task.id && !isDragging
+
               return (
                 <div
                   key={`bar-${task.id}`}
                   onMouseEnter={e => {
+                    if (drag) return
                     setHoveredRow(task.id)
                     const rect = (e.target as HTMLElement)
                       .closest('[data-gantt-bar]')
@@ -912,8 +1017,16 @@ export default function GanttChart({
                     }
                   }}
                   onMouseLeave={() => {
+                    if (drag) return
                     setHoveredRow(null)
                     setTooltip(null)
+                  }}
+                  onClick={e => {
+                    if (drag) return
+                    // Don't trigger click if clicking resize handles
+                    const target = e.target as HTMLElement
+                    if (target.dataset.resizeHandle) return
+                    onTaskClick?.(task)
                   }}
                   data-gantt-bar=""
                   style={{
@@ -924,20 +1037,23 @@ export default function GanttChart({
                     height: 28,
                     borderRadius: isMilestone ? '4px' : 8,
                     background: barBg,
-                    boxShadow:
-                      hoveredRow === task.id
+                    boxShadow: isDragging
+                      ? '0 6px 24px rgba(131,110,254,0.55), 0 2px 8px rgba(0,0,0,0.2)'
+                      : isHovered
                         ? '0 4px 16px rgba(131,110,254,0.45), 0 2px 6px rgba(0,0,0,0.15)'
                         : '0 2px 8px rgba(131,110,254,0.2), 0 1px 3px rgba(0,0,0,0.1)',
-                    zIndex: 8,
-                    cursor: 'pointer',
+                    zIndex: isDragging ? 20 : 8,
+                    cursor: isDragging ? 'grabbing' : 'pointer',
                     transform: isMilestone
                       ? 'rotate(45deg)'
-                      : hoveredRow === task.id
-                        ? 'scaleY(1.06)'
-                        : 'scaleY(1)',
+                      : isDragging
+                        ? 'scaleY(1.1)'
+                        : isHovered
+                          ? 'scaleY(1.06)'
+                          : 'scaleY(1)',
                     transformOrigin: 'center',
-                    transition: 'transform 0.15s, box-shadow 0.15s',
-                    overflow: 'hidden',
+                    transition: isDragging ? 'none' : 'transform 0.15s, box-shadow 0.15s',
+                    overflow: 'visible',
                   }}
                 >
                   {/* Progress fill */}
@@ -951,7 +1067,8 @@ export default function GanttChart({
                         width: `${progress}%`,
                         background: progressFill,
                         borderRadius: '8px 0 0 8px',
-                        transition: 'width 0.3s ease',
+                        transition: isDragging ? 'none' : 'width 0.3s ease',
+                        overflow: 'hidden',
                       }}
                     />
                   )}
@@ -960,7 +1077,8 @@ export default function GanttChart({
                     <span
                       style={{
                         position: 'absolute',
-                        left: 8,
+                        left: 14,
+                        right: 14,
                         top: '50%',
                         transform: 'translateY(-50%)',
                         fontSize: 11,
@@ -969,13 +1087,90 @@ export default function GanttChart({
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        maxWidth: barWidth - 16,
                         pointerEvents: 'none',
                         letterSpacing: '-0.01em',
                       }}
                     >
                       {task.title}
                     </span>
+                  )}
+                  {/* ── Resize handles ──────────────────────────────── */}
+                  {!isMilestone && !isDragging && (
+                    <>
+                      {/* Left resize handle */}
+                      <div
+                        data-resize-handle="left"
+                        onMouseDown={e => handleDragStart(task.id, 'left', e)}
+                        style={{
+                          position: 'absolute',
+                          left: -2,
+                          top: 0,
+                          width: 10,
+                          height: '100%',
+                          cursor: 'col-resize',
+                          zIndex: 2,
+                          borderRadius: '8px 0 0 8px',
+                          background: isHovered ? 'rgba(255,255,255,0.25)' : 'transparent',
+                          transition: 'background 0.15s',
+                        }}
+                      />
+                      {/* Right resize handle */}
+                      <div
+                        data-resize-handle="right"
+                        onMouseDown={e => handleDragStart(task.id, 'right', e)}
+                        style={{
+                          position: 'absolute',
+                          right: -2,
+                          top: 0,
+                          width: 10,
+                          height: '100%',
+                          cursor: 'col-resize',
+                          zIndex: 2,
+                          borderRadius: '0 8px 8px 0',
+                          background: isHovered ? 'rgba(255,255,255,0.25)' : 'transparent',
+                          transition: 'background 0.15s',
+                        }}
+                      />
+                      {/* Move handle (center area) */}
+                      <div
+                        onMouseDown={e => handleDragStart(task.id, 'move', e)}
+                        style={{
+                          position: 'absolute',
+                          left: 10,
+                          right: 10,
+                          top: 0,
+                          height: '100%',
+                          cursor: 'grab',
+                          zIndex: 1,
+                        }}
+                      />
+                    </>
+                  )}
+                  {/* Date preview while dragging */}
+                  {isDragging && !isMilestone && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: -24,
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        background: 'var(--color-bg-card)',
+                        border: '1px solid var(--color-border)',
+                        borderRadius: 6,
+                        padding: '2px 8px',
+                        fontSize: 10,
+                        fontWeight: 600,
+                        color: '#836efe',
+                        whiteSpace: 'nowrap',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+                        pointerEvents: 'none',
+                        zIndex: 30,
+                      }}
+                    >
+                      {drag.currentStartDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
+                      {' — '}
+                      {drag.currentEndDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
+                    </div>
                   )}
                 </div>
               )
