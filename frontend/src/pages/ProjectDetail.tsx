@@ -21,6 +21,8 @@ export default function ProjectDetail() {
   const [showAddTask, setShowAddTask] = useState(false)
   const [taskForm, setTaskForm] = useState({ title: '', start_date: '', due_date: '', assignee_id: '', parent_id: '' })
   const [employees, setEmployees] = useState<Employee[]>([])
+  const [editingTask, setEditingTask] = useState<ProjectTask | null>(null)
+  const [editForm, setEditForm] = useState({ title: '', start_date: '', due_date: '', assignee_id: '', progress: 0, priority: 'medium', description: '' })
 
   const load = () => {
     if (!id) return
@@ -69,8 +71,33 @@ export default function ProjectDetail() {
   }
 
   const handleTaskClick = (task: ProjectTask) => {
-    // Open task detail or navigate — for now just log
-    console.log('Task clicked:', task)
+    setEditingTask(task)
+    setEditForm({
+      title: task.title,
+      start_date: task.start_date || '',
+      due_date: task.due_date || '',
+      assignee_id: task.assignee_id || '',
+      progress: task.progress || 0,
+      priority: task.priority || 'medium',
+      description: task.description || '',
+    })
+  }
+
+  const handleEditSave = async () => {
+    if (!id || !editingTask) return
+    try {
+      await projectsApi.updateTask(id, editingTask.id, {
+        title: editForm.title,
+        start_date: editForm.start_date || undefined,
+        due_date: editForm.due_date || undefined,
+        assignee_id: editForm.assignee_id || undefined,
+        progress: editForm.progress,
+        priority: editForm.priority,
+        description: editForm.description || undefined,
+      })
+      setEditingTask(null)
+      load()
+    } catch (err) { console.error(err) }
   }
 
   if (loading || !project) {
@@ -214,7 +241,11 @@ export default function ProjectDetail() {
         <div className="space-y-2">
           <h3 className="text-sm font-medium text-brand-text-secondary">Задачи без дат (не на Ганте)</h3>
           {project.tasks.filter(t => !t.start_date || !t.due_date).map(t => (
-            <div key={t.id} className="bg-brand-surface border border-brand-border rounded-xl p-3 flex items-center justify-between">
+            <div
+              key={t.id}
+              onClick={() => handleTaskClick(t)}
+              className="bg-brand-surface border border-brand-border rounded-xl p-3 flex items-center justify-between cursor-pointer hover:border-primary-300 dark:hover:border-primary-700 transition-colors"
+            >
               <div>
                 <span className="text-brand-text text-sm">{t.title}</span>
                 {t.assignee && <span className="text-xs text-brand-text-secondary ml-2">· {t.assignee.name}</span>}
@@ -222,6 +253,125 @@ export default function ProjectDetail() {
               <span className="text-xs text-brand-text-secondary">{t.progress}%</span>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* ── Task edit modal ───────────────────────────────────────────────── */}
+      {editingTask && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setEditingTask(null)}>
+          <div className="bg-card border border-brand-border rounded-2xl w-full max-w-lg shadow-2xl" onClick={e => e.stopPropagation()} style={{ boxShadow: '0 20px 60px rgba(131,110,254,0.15), 0 4px 16px rgba(0,0,0,0.08)' }}>
+            {/* Modal header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-brand-border">
+              <h2 className="text-lg font-semibold text-brand-text">Редактирование задачи</h2>
+              <button onClick={() => setEditingTask(null)} className="text-brand-text-secondary hover:text-brand-text transition-colors text-xl leading-none">&times;</button>
+            </div>
+
+            {/* Modal body */}
+            <div className="px-6 py-5 space-y-4">
+              {/* Title */}
+              <div>
+                <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Название</label>
+                <input
+                  value={editForm.title}
+                  onChange={e => setEditForm({ ...editForm, title: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Описание</label>
+                <textarea
+                  value={editForm.description}
+                  onChange={e => setEditForm({ ...editForm, description: e.target.value })}
+                  rows={2}
+                  className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400 resize-none"
+                />
+              </div>
+
+              {/* Dates row */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Начало</label>
+                  <input
+                    type="date"
+                    value={editForm.start_date}
+                    onChange={e => setEditForm({ ...editForm, start_date: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Окончание</label>
+                  <input
+                    type="date"
+                    value={editForm.due_date}
+                    onChange={e => setEditForm({ ...editForm, due_date: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400"
+                  />
+                </div>
+              </div>
+
+              {/* Assignee & Priority row */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Исполнитель</label>
+                  <select
+                    value={editForm.assignee_id}
+                    onChange={e => setEditForm({ ...editForm, assignee_id: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400"
+                  >
+                    <option value="">Не назначен</option>
+                    {employees.filter(e => e.is_active).map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Приоритет</label>
+                  <select
+                    value={editForm.priority}
+                    onChange={e => setEditForm({ ...editForm, priority: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400"
+                  >
+                    <option value="high">Высокий</option>
+                    <option value="medium">Средний</option>
+                    <option value="low">Низкий</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Progress slider */}
+              <div>
+                <label className="text-xs font-medium text-brand-text-secondary mb-1 block">
+                  Прогресс: <span className="text-primary-500 font-bold">{editForm.progress}%</span>
+                </label>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={editForm.progress}
+                  onChange={e => setEditForm({ ...editForm, progress: Number(e.target.value) })}
+                  className="w-full accent-primary-500"
+                />
+                <div className="flex justify-between text-[10px] text-brand-text-secondary mt-0.5">
+                  <span>0%</span>
+                  <span>25%</span>
+                  <span>50%</span>
+                  <span>75%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal footer */}
+            <div className="flex justify-end gap-3 px-6 py-4 border-t border-brand-border">
+              <button onClick={() => setEditingTask(null)} className="px-4 py-2 text-sm text-brand-text-secondary hover:text-brand-text transition-colors">
+                Отмена
+              </button>
+              <button onClick={handleEditSave} className="px-5 py-2 bg-primary-500 text-white rounded-xl text-sm font-medium hover:bg-primary-600 transition-colors active:scale-[0.97]">
+                Сохранить
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
