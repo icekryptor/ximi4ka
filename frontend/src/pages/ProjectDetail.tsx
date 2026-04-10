@@ -107,45 +107,52 @@ export default function ProjectDetail() {
 
   const handleAddChecklistItem = async () => {
     if (!id || !editingTask || !newChecklistTitle.trim()) return
+    const title = newChecklistTitle.trim()
+    // Optimistic: add fake item immediately
+    const tempId = `temp-${Date.now()}`
+    const optimistic: ChecklistItem = { id: tempId, task_id: editingTask.id, title, is_checked: false, sort_order: checklist.length, created_at: new Date().toISOString() }
+    setChecklist(prev => [...prev, optimistic])
+    setNewChecklistTitle('')
     try {
-      await projectsApi.addChecklistItem(id, editingTask.id, newChecklistTitle.trim())
-      setNewChecklistTitle('')
-      const fresh = await projectsApi.getOne(id)
-      setProject(fresh)
-      const refreshed = fresh.tasks.find(t => t.id === editingTask.id)
-      if (refreshed) {
-        setEditingTask(refreshed)
-        setChecklist(refreshed.checklist || [])
-      }
-    } catch (err) { console.error(err) }
+      const created = await projectsApi.addChecklistItem(id, editingTask.id, title)
+      setChecklist(prev => prev.map(i => i.id === tempId ? created : i))
+      // Background refresh for progress sync
+      projectsApi.getOne(id).then(setProject).catch(() => {})
+    } catch (err) {
+      console.error(err)
+      setChecklist(prev => prev.filter(i => i.id !== tempId))
+    }
   }
 
   const handleToggleChecklistItem = async (item: ChecklistItem) => {
     if (!id || !editingTask) return
+    // Optimistic: toggle immediately
+    const toggled = !item.is_checked
+    setChecklist(prev => prev.map(i => i.id === item.id ? { ...i, is_checked: toggled } : i))
     try {
-      await projectsApi.updateChecklistItem(id, editingTask.id, item.id, { is_checked: !item.is_checked })
-      const fresh = await projectsApi.getOne(id)
-      setProject(fresh)
-      const refreshed = fresh.tasks.find(t => t.id === editingTask.id)
-      if (refreshed) {
-        setEditingTask(refreshed)
-        setChecklist(refreshed.checklist || [])
-      }
-    } catch (err) { console.error(err) }
+      await projectsApi.updateChecklistItem(id, editingTask.id, item.id, { is_checked: toggled })
+      // Background refresh for progress sync
+      projectsApi.getOne(id).then(setProject).catch(() => {})
+    } catch (err) {
+      console.error(err)
+      // Rollback
+      setChecklist(prev => prev.map(i => i.id === item.id ? { ...i, is_checked: !toggled } : i))
+    }
   }
 
   const handleDeleteChecklistItem = async (itemId: string) => {
     if (!id || !editingTask) return
+    // Optimistic: remove immediately
+    const backup = checklist
+    setChecklist(prev => prev.filter(i => i.id !== itemId))
     try {
       await projectsApi.deleteChecklistItem(id, editingTask.id, itemId)
-      const fresh = await projectsApi.getOne(id)
-      setProject(fresh)
-      const refreshed = fresh.tasks.find(t => t.id === editingTask.id)
-      if (refreshed) {
-        setEditingTask(refreshed)
-        setChecklist(refreshed.checklist || [])
-      }
-    } catch (err) { console.error(err) }
+      // Background refresh for progress sync
+      projectsApi.getOne(id).then(setProject).catch(() => {})
+    } catch (err) {
+      console.error(err)
+      setChecklist(backup)
+    }
   }
 
   const handleAddComment = async () => {
