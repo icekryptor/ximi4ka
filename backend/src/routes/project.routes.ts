@@ -27,6 +27,11 @@ router.delete('/:id/tasks/:taskId/comments/:commentId', projectController.delete
 router.post('/:id/dependencies', projectController.addDependency);
 router.delete('/:id/dependencies/:depId', projectController.removeDependency);
 
+// Team members
+router.get('/:id/members', projectController.getMembers);
+router.post('/:id/members', projectController.addMember);
+router.delete('/:id/members/:memberId', projectController.removeMember);
+
 router.get('/:id/export', projectController.exportProject);
 
 export default router;

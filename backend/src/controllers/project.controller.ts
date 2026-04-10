@@ -2,12 +2,14 @@ import { Request, Response } from 'express';
 import { In } from 'typeorm';
 import { AppDataSource } from '../config/database';
 import { Project } from '../entities/Project';
+import { ProjectMember } from '../entities/ProjectMember';
 import { Task } from '../entities/Task';
 import { TaskDependency } from '../entities/TaskDependency';
 import { TaskChecklistItem } from '../entities/TaskChecklistItem';
 import { TaskComment } from '../entities/TaskComment';
 
 const projectRepo = () => AppDataSource.getRepository(Project);
+const memberRepo = () => AppDataSource.getRepository(ProjectMember);
 const taskRepo = () => AppDataSource.getRepository(Task);
 const depRepo = () => AppDataSource.getRepository(TaskDependency);
 const checklistRepo = () => AppDataSource.getRepository(TaskChecklistItem);
@@ -99,7 +101,13 @@ export const projectController = {
         checklist: checklistByTask.get(t.id) || [],
       }));
 
-      res.json({ ...project, tasks: tasksWithChecklist, dependencies });
+      const members = await memberRepo().find({
+        where: { project_id: id },
+        relations: ['employee'],
+        order: { created_at: 'ASC' },
+      });
+
+      res.json({ ...project, tasks: tasksWithChecklist, dependencies, members });
     } catch (error) {
       console.error('Ошибка при получении проекта:', error);
       res.status(500).json({ error: 'Ошибка при получении проекта' });
@@ -513,6 +521,64 @@ export const projectController = {
     } catch (error) {
       console.error('Ошибка при удалении комментария:', error);
       res.status(500).json({ error: 'Ошибка при удалении комментария' });
+    }
+  },
+
+  // ---- Team Members ----
+
+  async getMembers(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const members = await memberRepo().find({
+        where: { project_id: id },
+        relations: ['employee'],
+        order: { created_at: 'ASC' },
+      });
+      res.json(members);
+    } catch (error) {
+      console.error('Ошибка при получении участников проекта:', error);
+      res.status(500).json({ error: 'Ошибка при получении участников проекта' });
+    }
+  },
+
+  async addMember(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { employee_id, role } = req.body;
+      if (!employee_id) return res.status(400).json({ error: 'employee_id обязателен' });
+
+      const project = await projectRepo().findOne({ where: { id } });
+      if (!project) return res.status(404).json({ error: 'Проект не найден' });
+
+      const existing = await memberRepo().findOne({ where: { project_id: id, employee_id } });
+      if (existing) return res.status(409).json({ error: 'Сотрудник уже является участником проекта' });
+
+      const member = memberRepo().create({
+        project_id: id,
+        employee_id,
+        role: role || null,
+      });
+      const saved = await memberRepo().save(member);
+      const withEmployee = await memberRepo().findOne({
+        where: { id: saved.id },
+        relations: ['employee'],
+      });
+      res.status(201).json(withEmployee);
+    } catch (error) {
+      console.error('Ошибка при добавлении участника проекта:', error);
+      res.status(500).json({ error: 'Ошибка при добавлении участника проекта' });
+    }
+  },
+
+  async removeMember(req: Request, res: Response) {
+    try {
+      const { memberId } = req.params;
+      const result = await memberRepo().delete(memberId);
+      if (result.affected === 0) return res.status(404).json({ error: 'Участник не найден' });
+      res.json({ message: 'Участник удалён из проекта' });
+    } catch (error) {
+      console.error('Ошибка при удалении участника проекта:', error);
+      res.status(500).json({ error: 'Ошибка при удалении участника проекта' });
     }
   },
 

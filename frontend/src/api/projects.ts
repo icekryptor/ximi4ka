@@ -66,9 +66,19 @@ export interface TaskDependency {
   is_blocking: boolean
 }
 
+export interface ProjectMember {
+  id: string
+  project_id: string
+  employee_id: string
+  employee: { id: string; name: string }
+  role: string | null
+  created_at: string
+}
+
 export interface ProjectDetail extends Project {
   tasks: ProjectTask[]
   dependencies: TaskDependency[]
+  members?: ProjectMember[]
 }
 
 export interface ProjectCreate {
@@ -207,5 +217,18 @@ export const projectsApi = {
   },
   deleteComment: async (projectId: string, taskId: string, commentId: string): Promise<void> => {
     await api.delete(`/projects/${projectId}/tasks/${taskId}/comments/${commentId}`)
+  },
+
+  // Members
+  getMembers: async (projectId: string): Promise<ProjectMember[]> => {
+    const { data } = await api.get(`/projects/${projectId}/members`)
+    return data
+  },
+  addMember: async (projectId: string, employeeId: string, role?: string): Promise<ProjectMember> => {
+    const { data } = await api.post(`/projects/${projectId}/members`, { employee_id: employeeId, role })
+    return data
+  },
+  removeMember: async (projectId: string, memberId: string): Promise<void> => {
+    await api.delete(`/projects/${projectId}/members/${memberId}`)
   },
 }
