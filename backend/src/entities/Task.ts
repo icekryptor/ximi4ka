@@ -37,11 +37,11 @@ export class Task {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => Board, board => board.tasks, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Board, board => board.tasks, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'board_id' })
   board: Board;
 
-  @Column({ type: 'uuid', comment: 'ID доски' })
+  @Column({ type: 'uuid', nullable: true, comment: 'ID доски' })
   board_id: string;
 
   @Column({ type: 'varchar', length: 500, comment: 'Заголовок задачи' })

@@ -8,6 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Department } from './Department';
+import { Employee } from './Employee';
 
 @Entity('projects')
 export class Project {
@@ -41,6 +42,13 @@ export class Project {
 
   @Column({ type: 'varchar', length: 20, default: 'draft', comment: 'Статус: draft/active/on_hold/completed/cancelled' })
   status: string;
+
+  @ManyToOne(() => Employee, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'responsible_id' })
+  responsible: Employee;
+
+  @Column({ type: 'uuid', nullable: true, comment: 'Ответственный за проект' })
+  responsible_id: string;
 
   @Column({ type: 'uuid', comment: 'Кто создал' })
   created_by: string;
