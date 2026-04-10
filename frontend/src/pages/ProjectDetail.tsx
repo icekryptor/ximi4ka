@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Gantt, Task as GanttTask, ViewMode } from 'gantt-task-react'
-import 'gantt-task-react/dist/index.css'
 import { projectsApi, ProjectDetail as ProjDetail, ProjectTask } from '../api/projects'
 import { employeesApi, Employee } from '../api/employees'
+import GanttChart from '../components/GanttChart'
 
 const statusLabels: Record<string, { label: string; className: string }> = {
   draft: { label: 'Черновик', className: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
@@ -13,38 +12,12 @@ const statusLabels: Record<string, { label: string; className: string }> = {
   cancelled: { label: 'Отменён', className: 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-300' },
 }
 
-function toGanttTasks(tasks: ProjectTask[], dependencies: ProjDetail['dependencies']): GanttTask[] {
-  const depMap = new Map<string, string[]>()
-  dependencies.forEach(d => {
-    const existing = depMap.get(d.successor_id) || []
-    existing.push(d.predecessor_id)
-    depMap.set(d.successor_id, existing)
-  })
-
-  return tasks
-    .filter(t => t.start_date && t.due_date)
-    .map(t => ({
-      id: t.id,
-      name: t.title,
-      start: new Date(t.start_date!),
-      end: new Date(t.due_date!),
-      progress: t.progress || 0,
-      type: 'task' as const,
-      project: t.parent_id || undefined,
-      dependencies: depMap.get(t.id) || [],
-      styles: {
-        progressColor: '#836efe',
-        progressSelectedColor: '#6703ff',
-      },
-    }))
-}
-
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [project, setProject] = useState<ProjDetail | null>(null)
   const [loading, setLoading] = useState(true)
-  const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.Week)
+  const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('week')
   const [showAddTask, setShowAddTask] = useState(false)
   const [taskForm, setTaskForm] = useState({ title: '', start_date: '', due_date: '', assignee_id: '', parent_id: '' })
   const [employees, setEmployees] = useState<Employee[]>([])
@@ -76,23 +49,28 @@ export default function ProjectDetail() {
     } catch (err) { console.error(err) }
   }
 
-  const handleProgressChange = async (task: GanttTask) => {
+  const handleProgressChange = async (taskId: string, progress: number) => {
     if (!id) return
     try {
-      await projectsApi.updateTask(id, task.id, { progress: task.progress })
+      await projectsApi.updateTask(id, taskId, { progress })
       load()
     } catch (err) { console.error(err) }
   }
 
-  const handleDateChange = async (task: GanttTask) => {
+  const handleDateChange = async (taskId: string, startDate: string, endDate: string) => {
     if (!id) return
     try {
-      await projectsApi.updateTask(id, task.id, {
-        start_date: task.start.toISOString().split('T')[0],
-        due_date: task.end.toISOString().split('T')[0],
+      await projectsApi.updateTask(id, taskId, {
+        start_date: startDate,
+        due_date: endDate,
       })
       load()
     } catch (err) { console.error(err) }
+  }
+
+  const handleTaskClick = (task: ProjectTask) => {
+    // Open task detail or navigate — for now just log
+    console.log('Task clicked:', task)
   }
 
   if (loading || !project) {
@@ -104,7 +82,6 @@ export default function ProjectDetail() {
   }
 
   const st = statusLabels[project.status] || statusLabels.draft
-  const ganttTasks = toGanttTasks(project.tasks, project.dependencies)
   const avgProgress = project.tasks.length > 0
     ? Math.round(project.tasks.reduce((s, t) => s + (t.progress || 0), 0) / project.tasks.length)
     : 0
@@ -159,12 +136,12 @@ export default function ProjectDetail() {
 
       {/* Gantt toolbar */}
       <div className="flex items-center justify-between">
-        <div className="flex gap-1 bg-card p-1 rounded-xl">
-          {[
-            { mode: ViewMode.Day, label: 'День' },
-            { mode: ViewMode.Week, label: 'Неделя' },
-            { mode: ViewMode.Month, label: 'Месяц' },
-          ].map(v => (
+        <div className="flex gap-1 bg-card p-1 rounded-xl border border-brand-border">
+          {([
+            { mode: 'day' as const, label: 'День' },
+            { mode: 'week' as const, label: 'Неделя' },
+            { mode: 'month' as const, label: 'Месяц' },
+          ]).map(v => (
             <button
               key={v.label}
               onClick={() => setViewMode(v.mode)}
@@ -221,27 +198,16 @@ export default function ProjectDetail() {
       )}
 
       {/* Gantt chart */}
-      {ganttTasks.length > 0 ? (
-        <div className="bg-brand-surface border border-brand-border rounded-2xl p-4 overflow-x-auto">
-          <Gantt
-            tasks={ganttTasks}
-            viewMode={viewMode}
-            onDateChange={handleDateChange}
-            onProgressChange={handleProgressChange}
-            listCellWidth="155px"
-            columnWidth={viewMode === ViewMode.Month ? 300 : viewMode === ViewMode.Week ? 250 : 65}
-            barFill={60}
-            fontSize="12px"
-            headerHeight={50}
-            rowHeight={40}
-          />
-        </div>
-      ) : (
-        <div className="bg-brand-surface border border-brand-border rounded-2xl p-8 text-center">
-          <p className="text-brand-text-secondary italic">Нет задач с датами для отображения на диаграмме Ганта</p>
-          <p className="text-sm text-brand-text-secondary mt-2">Создайте задачи с датами начала и окончания</p>
-        </div>
-      )}
+      <div data-gantt-root="" className="relative">
+        <GanttChart
+          tasks={project.tasks}
+          dependencies={project.dependencies}
+          viewMode={viewMode}
+          onTaskClick={handleTaskClick}
+          onProgressChange={handleProgressChange}
+          onDateChange={handleDateChange}
+        />
+      </div>
 
       {/* Task list (for tasks without dates) */}
       {project.tasks.filter(t => !t.start_date || !t.due_date).length > 0 && (
