@@ -1,18 +1,22 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { departmentsApi, DepartmentDetail as DeptDetail } from '../api/departments'
+import { recurringTasksApi, RecurringTask } from '../api/recurringTasks'
 
 export default function DepartmentDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [dept, setDept] = useState<DeptDetail | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'boards' | 'members'>('boards')
+  const [activeTab, setActiveTab] = useState<'boards' | 'members' | 'recurring'>('boards')
+  const [recurringTasks, setRecurringTasks] = useState<RecurringTask[]>([])
 
   useEffect(() => {
     if (!id) return
-    departmentsApi.getOne(id)
-      .then(setDept)
+    Promise.all([
+      departmentsApi.getOne(id).then(setDept),
+      recurringTasksApi.getAll(id).then(setRecurringTasks),
+    ])
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [id])
@@ -28,6 +32,7 @@ export default function DepartmentDetail() {
   const tabs = [
     { key: 'boards' as const, label: 'Доски', count: dept.boards.length },
     { key: 'members' as const, label: 'Участники', count: dept.members.length },
+    { key: 'recurring' as const, label: 'Регулярные задачи', count: recurringTasks.length },
   ]
 
   const roleLabels: Record<string, string> = {
@@ -112,6 +117,34 @@ export default function DepartmentDetail() {
                     : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
                 }`}>
                   {roleLabels[m.role] || m.role}
+                </span>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {activeTab === 'recurring' && (
+        <div className="space-y-3">
+          {recurringTasks.length === 0 ? (
+            <p className="text-brand-text-secondary italic">Нет регулярных задач</p>
+          ) : (
+            recurringTasks.map((task) => (
+              <div
+                key={task.id}
+                onClick={() => navigate(`/planning/recurring/${task.id}`)}
+                className="bg-brand-surface border border-brand-border rounded-xl p-4 cursor-pointer hover:shadow-md transition-shadow flex items-center justify-between"
+              >
+                <div>
+                  <div className="text-brand-text font-medium">{task.title}</div>
+                  <div className="text-sm text-brand-text-secondary">{task.assignee?.name || 'Без исполнителя'}</div>
+                </div>
+                <span className={`text-sm font-medium ${
+                  !task.is_due_today ? 'text-brand-text-secondary' :
+                  task.today_report ? 'text-green-600 dark:text-green-400' :
+                  'text-amber-600 dark:text-amber-400'
+                }`}>
+                  {!task.is_due_today ? '—' : task.today_report ? 'Сдан' : 'Ожидает'}
                 </span>
               </div>
             ))
