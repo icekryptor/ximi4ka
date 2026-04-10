@@ -18,11 +18,12 @@ interface ContentCardProps {
   onDateChange: (item: ContentUnit, platform: 'youtube' | 'instagram' | 'tiktok', date: string | null) => void
   onDelete: (id: string) => void
   onPublishYouTube: (item: ContentUnit) => void
+  onMarkPublished: (item: ContentUnit, platform: 'youtube' | 'instagram' | 'tiktok') => void
   ytConnected: boolean
   publishing: boolean
 }
 
-function ContentCard({ item, onEdit, onDateChange, onDelete, onPublishYouTube, ytConnected, publishing }: ContentCardProps) {
+function ContentCard({ item, onEdit, onDateChange, onDelete, onPublishYouTube, onMarkPublished, ytConnected, publishing }: ContentCardProps) {
   const allDates = item.youtube_date && item.instagram_date && item.tiktok_date
   const someDates = item.youtube_date || item.instagram_date || item.tiktok_date
 
@@ -148,7 +149,14 @@ function ContentCard({ item, onEdit, onDateChange, onDelete, onPublishYouTube, y
                 ) : <span>Опубликовано</span>}
               </div>
             ) : item.instagram_date ? (
-              <p className="ml-7 text-[10px] text-brand-text-secondary">Ожидает автопостинга</p>
+              <button
+                onClick={() => onMarkPublished(item, 'instagram')}
+                className="ml-7 flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-medium rounded-lg
+                  bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400
+                  hover:bg-pink-100 dark:hover:bg-pink-900/40 transition-colors"
+              >
+                Отметить опубл.
+              </button>
             ) : null}
           </div>
           <div className="space-y-1">
@@ -167,7 +175,14 @@ function ContentCard({ item, onEdit, onDateChange, onDelete, onPublishYouTube, y
                 ) : <span>Опубликовано</span>}
               </div>
             ) : item.tiktok_date ? (
-              <p className="ml-7 text-[10px] text-brand-text-secondary">Ожидает автопостинга</p>
+              <button
+                onClick={() => onMarkPublished(item, 'tiktok')}
+                className="ml-7 flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-medium rounded-lg
+                  bg-gray-100 dark:bg-gray-900/40 text-brand-text-secondary
+                  hover:bg-gray-200 dark:hover:bg-gray-800/40 transition-colors"
+              >
+                Отметить опубл.
+              </button>
             ) : null}
           </div>
         </div>
@@ -387,6 +402,163 @@ function ContentUnitModal({ item, onClose, onSave, saving }: ModalProps) {
   )
 }
 
+// ─── Platform Cell (for table view) ─────────────────────────────────────
+
+interface PlatformCellProps {
+  date: string | null
+  published: boolean
+  publishedUrl: string | null
+  onDateChange: (date: string | null) => void
+  onTogglePublished: () => void
+  colorClass: string
+}
+
+function PlatformCell({ date, published, publishedUrl, onDateChange, onTogglePublished }: PlatformCellProps) {
+  if (!date) {
+    return (
+      <input
+        type="date"
+        value=""
+        onChange={e => onDateChange(e.target.value || null)}
+        className="text-[11px] w-[120px] rounded-lg border border-brand-border bg-card px-2 py-1 text-brand-text-secondary outline-none focus:border-primary-400"
+      />
+    )
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <input
+        type="date"
+        value={date}
+        onChange={e => onDateChange(e.target.value || null)}
+        className="text-[11px] w-[120px] rounded-lg border border-brand-border bg-card px-2 py-1 text-brand-text outline-none focus:border-primary-400"
+      />
+      <button
+        onClick={onTogglePublished}
+        className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors ${
+          published
+            ? 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 border border-green-300 dark:border-green-700'
+            : 'bg-card text-brand-text-secondary border border-brand-border hover:border-primary-400 hover:text-primary-600'
+        }`}
+      >
+        {published ? '✓ Опубликовано' : 'Отметить'}
+      </button>
+      {published && publishedUrl && (
+        <a href={publishedUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary-500 hover:underline">
+          Ссылка ↗
+        </a>
+      )}
+    </div>
+  )
+}
+
+// ─── Content Table ────────────────────────────────────────────────────────
+
+interface ContentTableProps {
+  items: ContentUnit[]
+  onEdit: (item: ContentUnit) => void
+  onDelete: (id: string) => void
+  onDateChange: (item: ContentUnit, platform: 'youtube' | 'instagram' | 'tiktok', date: string | null) => void
+  onMarkPublished: (item: ContentUnit, platform: 'youtube' | 'instagram' | 'tiktok') => void
+  onPublishYouTube: (item: ContentUnit) => void
+  ytConnected: boolean
+  publishing: boolean
+}
+
+function ContentTable({ items, onEdit, onDelete, onDateChange, onMarkPublished }: ContentTableProps) {
+  return (
+    <div className="bg-card rounded-2xl border border-brand-border overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-brand-border">
+              <th className="text-left px-4 py-3 text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">Название</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-brand-text-secondary uppercase tracking-wider min-w-[200px]">Описание</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">Теги</th>
+              <th className="text-center px-3 py-3 text-xs font-semibold text-red-500 uppercase tracking-wider">
+                <div className="flex items-center justify-center gap-1"><Youtube size={12} /> YT</div>
+              </th>
+              <th className="text-center px-3 py-3 text-xs font-semibold text-pink-500 uppercase tracking-wider">
+                <div className="flex items-center justify-center gap-1"><Instagram size={12} /> IG</div>
+              </th>
+              <th className="text-center px-3 py-3 text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">
+                <div className="flex items-center justify-center gap-1"><IconTikTok /> TT</div>
+              </th>
+              <th className="w-20"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map(item => (
+              <tr key={item.id} className="border-b border-brand-border/50 hover:bg-brand-surface transition-colors">
+                <td className="px-4 py-3">
+                  <div className="font-medium text-brand-text text-sm max-w-[250px] truncate">{item.title}</div>
+                  {item.material_url && (
+                    <a href={item.material_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary-500 hover:underline truncate block max-w-[250px]">
+                      {item.material_url}
+                    </a>
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  <p className="text-xs text-brand-text-secondary line-clamp-2 max-w-[300px]">{item.description || '—'}</p>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex flex-wrap gap-1 max-w-[200px]">
+                    {item.tags?.split(/[\s,]+/).filter(Boolean).slice(0, 3).map((tag, i) => (
+                      <span key={i} className="px-1.5 py-0.5 rounded-full text-[10px] bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300">
+                        {tag.startsWith('#') ? tag : `#${tag}`}
+                      </span>
+                    ))}
+                  </div>
+                </td>
+                <td className="px-3 py-3 text-center">
+                  <PlatformCell
+                    date={item.youtube_date}
+                    published={item.youtube_published}
+                    publishedUrl={item.youtube_published_url}
+                    onDateChange={d => onDateChange(item, 'youtube', d)}
+                    onTogglePublished={() => onMarkPublished(item, 'youtube')}
+                    colorClass="text-red-500"
+                  />
+                </td>
+                <td className="px-3 py-3 text-center">
+                  <PlatformCell
+                    date={item.instagram_date}
+                    published={item.instagram_published}
+                    publishedUrl={item.instagram_published_url}
+                    onDateChange={d => onDateChange(item, 'instagram', d)}
+                    onTogglePublished={() => onMarkPublished(item, 'instagram')}
+                    colorClass="text-pink-500"
+                  />
+                </td>
+                <td className="px-3 py-3 text-center">
+                  <PlatformCell
+                    date={item.tiktok_date}
+                    published={item.tiktok_published}
+                    publishedUrl={item.tiktok_published_url}
+                    onDateChange={d => onDateChange(item, 'tiktok', d)}
+                    onTogglePublished={() => onMarkPublished(item, 'tiktok')}
+                    colorClass="text-brand-text"
+                  />
+                </td>
+                <td className="px-3 py-3">
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => onEdit(item)} className="p-1.5 rounded-lg text-brand-text-secondary hover:text-primary-600 hover:bg-brand-surface transition-colors">
+                      <Pencil size={14} />
+                    </button>
+                    <button onClick={() => onDelete(item.id)} className="p-1.5 rounded-lg text-brand-text-secondary hover:text-red-500 hover:bg-brand-surface transition-colors">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 // ─── Main Page ───────────────────────────────────────────────────────────
 
 export default function ContentUnits() {
@@ -405,6 +577,7 @@ export default function ContentUnits() {
   const [ytConnected, setYtConnected] = useState(false)
   const [ytChannelName, setYtChannelName] = useState<string | null>(null)
   const [publishing, setPublishing] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('table')
 
   const loadItems = useCallback(async () => {
     try {
@@ -514,6 +687,35 @@ export default function ContentUnits() {
       loadItems()
     }
     setPublishing(null)
+  }, [toast, loadItems])
+
+  const handleMarkPublished = useCallback(async (item: ContentUnit, platform: 'youtube' | 'instagram' | 'tiktok') => {
+    const publishedKey = `${platform}_published` as keyof ContentUnit
+    const isCurrentlyPublished = item[publishedKey]
+
+    if (isCurrentlyPublished) {
+      // Already published — unpublish by updating the field to false
+      const optimistic = { ...item, [publishedKey]: false, [`${platform}_published_url`]: null }
+      setItems(prev => prev.map(i => i.id === item.id ? { ...i, ...optimistic } : i))
+      try {
+        await contentUnitsApi.update(item.id, { [publishedKey]: false, [`${platform}_published_url`]: null } as any)
+      } catch {
+        toast.error('Ошибка обновления')
+        loadItems()
+      }
+    } else {
+      // Not published — mark as published
+      const optimistic = { ...item, [publishedKey]: true }
+      setItems(prev => prev.map(i => i.id === item.id ? { ...i, ...optimistic } : i))
+      try {
+        const updated = await contentUnitsApi.markPublished(item.id, platform)
+        setItems(prev => prev.map(i => i.id === item.id ? updated : i))
+        toast.success('Отмечено как опубликованное')
+      } catch {
+        toast.error('Ошибка обновления')
+        loadItems()
+      }
+    }
   }, [toast, loadItems])
 
   const handleSync = useCallback(async (url?: string) => {
@@ -679,10 +881,26 @@ export default function ContentUnits() {
             {label}
           </button>
         ))}
-        <span className="text-xs text-brand-text-secondary ml-2">{filtered.length} из {items.length}</span>
+        <div className="flex items-center gap-1 ml-auto">
+          <button
+            onClick={() => setViewMode('cards')}
+            className={`p-1.5 rounded-lg transition-colors ${viewMode === 'cards' ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-600' : 'text-brand-text-secondary hover:text-brand-text'}`}
+            title="Карточки"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.5"/></svg>
+          </button>
+          <button
+            onClick={() => setViewMode('table')}
+            className={`p-1.5 rounded-lg transition-colors ${viewMode === 'table' ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-600' : 'text-brand-text-secondary hover:text-brand-text'}`}
+            title="Таблица"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><line x1="1" y1="3" x2="15" y2="3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><line x1="1" y1="8" x2="15" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><line x1="1" y1="13" x2="15" y2="13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          </button>
+          <span className="text-xs text-brand-text-secondary ml-2">{filtered.length} из {items.length}</span>
+        </div>
       </div>
 
-      {/* Cards grid */}
+      {/* Cards/Table view */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-brand-text-secondary">
           <p className="mb-3">{items.length === 0 ? 'Нет единиц контента' : 'Нет результатов по фильтру'}</p>
@@ -696,7 +914,7 @@ export default function ContentUnits() {
             </button>
           )}
         </div>
-      ) : (
+      ) : viewMode === 'cards' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filtered.map(item => (
             <ContentCard
@@ -706,11 +924,23 @@ export default function ContentUnits() {
               onDateChange={handleDateChange}
               onDelete={handleDelete}
               onPublishYouTube={handlePublishYouTube}
+              onMarkPublished={handleMarkPublished}
               ytConnected={ytConnected}
               publishing={publishing === item.id}
             />
           ))}
         </div>
+      ) : (
+        <ContentTable
+          items={filtered}
+          onEdit={setModalItem}
+          onDelete={handleDelete}
+          onDateChange={handleDateChange}
+          onMarkPublished={handleMarkPublished}
+          onPublishYouTube={handlePublishYouTube}
+          ytConnected={ytConnected}
+          publishing={publishing !== null}
+        />
       )}
 
       {/* Modal */}
