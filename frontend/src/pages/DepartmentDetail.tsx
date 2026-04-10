@@ -2,20 +2,23 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { departmentsApi, DepartmentDetail as DeptDetail } from '../api/departments'
 import { recurringTasksApi, RecurringTask } from '../api/recurringTasks'
+import { projectsApi, Project } from '../api/projects'
 
 export default function DepartmentDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [dept, setDept] = useState<DeptDetail | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'boards' | 'members' | 'recurring'>('boards')
+  const [activeTab, setActiveTab] = useState<'boards' | 'members' | 'recurring' | 'projects'>('boards')
   const [recurringTasks, setRecurringTasks] = useState<RecurringTask[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
 
   useEffect(() => {
     if (!id) return
     Promise.all([
       departmentsApi.getOne(id).then(setDept),
       recurringTasksApi.getAll(id).then(setRecurringTasks),
+      projectsApi.getAll(id).then(setProjects),
     ])
       .catch(console.error)
       .finally(() => setLoading(false))
@@ -33,6 +36,7 @@ export default function DepartmentDetail() {
     { key: 'boards' as const, label: 'Доски', count: dept.boards.length },
     { key: 'members' as const, label: 'Участники', count: dept.members.length },
     { key: 'recurring' as const, label: 'Регулярные задачи', count: recurringTasks.length },
+    { key: 'projects' as const, label: 'Проекты', count: projects.length },
   ]
 
   const roleLabels: Record<string, string> = {
@@ -146,6 +150,30 @@ export default function DepartmentDetail() {
                 }`}>
                   {!task.is_due_today ? '—' : task.today_report ? 'Сдан' : 'Ожидает'}
                 </span>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {activeTab === 'projects' && (
+        <div className="space-y-3">
+          {projects.length === 0 ? (
+            <p className="text-brand-text-secondary italic">Нет проектов</p>
+          ) : (
+            projects.map((p) => (
+              <div
+                key={p.id}
+                onClick={() => navigate(`/planning/projects/${p.id}`)}
+                className="bg-brand-surface border border-brand-border rounded-xl p-4 cursor-pointer hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-brand-text font-medium">{p.name}</div>
+                  <span className="text-xs text-brand-text-secondary">{p.task_count} задач</span>
+                </div>
+                <div className="w-full bg-brand-bg rounded-full h-1.5">
+                  <div className="bg-primary-500 h-1.5 rounded-full" style={{ width: `${p.avg_progress}%` }} />
+                </div>
               </div>
             ))
           )}

@@ -13,6 +13,7 @@ import {
 } from 'typeorm';
 import { Board } from './Board';
 import { Employee } from './Employee';
+import { Project } from './Project';
 import { TaskComment } from './TaskComment';
 import { TaskTag } from './TaskTag';
 
@@ -86,6 +87,26 @@ export class Task {
 
   @Column({ type: 'int', default: 0, comment: 'Порядок сортировки (шаг 1000)' })
   sort_order: number;
+
+  @ManyToOne(() => Task, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'parent_id' })
+  parent: Task;
+
+  @Column({ type: 'uuid', nullable: true, comment: 'Родительская задача' })
+  parent_id: string;
+
+  @ManyToOne(() => Project, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'project_id' })
+  project: Project;
+
+  @Column({ type: 'uuid', nullable: true, comment: 'ID проекта' })
+  project_id: string;
+
+  @Column({ type: 'date', nullable: true, comment: 'Дата начала (для Ганта)' })
+  start_date: string;
+
+  @Column({ type: 'int', default: 0, comment: 'Прогресс 0-100' })
+  progress: number;
 
   @Column({ type: 'uuid', comment: 'Кто создал' })
   created_by: string;
