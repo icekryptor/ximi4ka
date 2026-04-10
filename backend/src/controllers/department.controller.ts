@@ -3,10 +3,12 @@ import { AppDataSource } from '../config/database';
 import { Department } from '../entities/Department';
 import { DepartmentRole } from '../entities/DepartmentRole';
 import { Board } from '../entities/Board';
+import { RecurringTask } from '../entities/RecurringTask';
 
 const deptRepo = () => AppDataSource.getRepository(Department);
 const roleRepo = () => AppDataSource.getRepository(DepartmentRole);
 const boardRepo = () => AppDataSource.getRepository(Board);
+const recurringRepo = () => AppDataSource.getRepository(RecurringTask);
 
 export const departmentController = {
   async getAll(req: Request, res: Response) {
@@ -23,12 +25,15 @@ export const departmentController = {
           const memberCount = await roleRepo().count({
             where: { department_id: dept.id },
           });
+          const recurringCount = await recurringRepo().count({
+            where: { department_id: dept.id, is_active: true },
+          });
           return {
             ...dept,
             board_count: boardCount,
             member_count: memberCount,
             project_count: 0,
-            recurring_task_count: 0,
+            recurring_task_count: recurringCount,
           };
         })
       );
