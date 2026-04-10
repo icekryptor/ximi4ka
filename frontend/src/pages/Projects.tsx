@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { projectsApi, Project } from '../api/projects'
 import { departmentsApi, Department } from '../api/departments'
+import { employeesApi, Employee } from '../api/employees'
 
 const statusLabels: Record<string, { label: string; className: string }> = {
   draft: { label: 'Черновик', className: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
@@ -14,10 +15,11 @@ const statusLabels: Record<string, { label: string; className: string }> = {
 export default function Projects() {
   const [projects, setProjects] = useState<Project[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
+  const [employees, setEmployees] = useState<Employee[]>([])
   const [selectedDept, setSelectedDept] = useState('')
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
-  const [form, setForm] = useState({ name: '', department_id: '', description: '', budget: '', start_date: '', end_date: '', deliverables: '' })
+  const [form, setForm] = useState({ name: '', department_id: '', description: '', budget: '', start_date: '', end_date: '', deliverables: '', responsible_id: '' })
   const [showImport, setShowImport] = useState(false)
   const [importFile, setImportFile] = useState<any>(null)
   const [importDept, setImportDept] = useState('')
@@ -33,7 +35,10 @@ export default function Projects() {
   }
 
   useEffect(() => { load() }, [selectedDept])
-  useEffect(() => { departmentsApi.getAll().then(setDepartments).catch(console.error) }, [])
+  useEffect(() => {
+    departmentsApi.getAll().then(setDepartments).catch(console.error)
+    employeesApi.getAll().then(setEmployees).catch(console.error)
+  }, [])
 
   const handleCreate = async () => {
     if (!form.name || !form.department_id) return
@@ -46,9 +51,10 @@ export default function Projects() {
         start_date: form.start_date || undefined,
         end_date: form.end_date || undefined,
         deliverables: form.deliverables || undefined,
+        responsible_id: form.responsible_id || undefined,
       })
       setShowCreate(false)
-      setForm({ name: '', department_id: '', description: '', budget: '', start_date: '', end_date: '', deliverables: '' })
+      setForm({ name: '', department_id: '', description: '', budget: '', start_date: '', end_date: '', deliverables: '', responsible_id: '' })
       load()
     } catch (err) { console.error(err) }
   }
@@ -136,6 +142,10 @@ export default function Projects() {
             </select>
             <input value={form.budget} onChange={e => setForm({ ...form, budget: e.target.value })} placeholder="Бюджет, ₽" type="number" className="px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text" />
           </div>
+          <select value={form.responsible_id} onChange={e => setForm({ ...form, responsible_id: e.target.value })} className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text">
+            <option value="">Ответственный...</option>
+            {employees.filter(e => e.is_active).map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+          </select>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-xs text-brand-text-secondary">Начало</label>
@@ -205,6 +215,11 @@ export default function Projects() {
                   <span className="w-2 h-2 rounded-full" style={{ backgroundColor: p.department?.color || '#836efe' }} />
                   {p.department?.name}
                 </div>
+                {p.responsible && (
+                  <div className="text-sm text-brand-text-secondary">
+                    Ответственный: {p.responsible.name}
+                  </div>
+                )}
                 <div className="flex items-center justify-between text-sm mb-2">
                   <span className="text-brand-text-secondary">{p.task_count} задач</span>
                   <span className="text-brand-text font-medium">{p.avg_progress}%</span>
