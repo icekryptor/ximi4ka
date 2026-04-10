@@ -302,6 +302,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { type: 'link', name: 'Направления', href: '/planning/departments', icon: IconPlanning },
       { type: 'link', name: 'Регулярные задачи', href: '/planning/recurring', icon: IconPlanning },
+      { type: 'link', name: 'Проекты', href: '/planning/projects', icon: IconPlanning },
       { type: 'link', name: 'Канбан-доски', href: '/planning', icon: IconPlanning },
       { type: 'link', name: 'Единицы контента', href: '/content-units', icon: IconContent },
     ],
