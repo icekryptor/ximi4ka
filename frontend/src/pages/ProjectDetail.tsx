@@ -248,6 +248,142 @@ export default function ProjectDetail() {
   const getMemberInitials = (name: string) =>
     name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
 
+  const [copied, setCopied] = useState(false)
+
+  const handleShareLink = () => {
+    navigator.clipboard.writeText(window.location.href)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleExportPdf = () => {
+    if (!project) return
+
+    const avgProg = project.tasks.length > 0
+      ? Math.round(project.tasks.reduce((s, t) => s + (t.progress || 0), 0) / project.tasks.length)
+      : 0
+
+    const statusLabel = statusLabels[project.status]?.label || project.status
+
+    const tasksHtml = project.tasks.map(t => `
+      <tr>
+        <td style="padding: 8px 12px; border-bottom: 1px solid #e8e5ef;">${t.title}</td>
+        <td style="padding: 8px 12px; border-bottom: 1px solid #e8e5ef;">${t.assignee?.name || '—'}</td>
+        <td style="padding: 8px 12px; border-bottom: 1px solid #e8e5ef;">${t.start_date ? new Date(t.start_date).toLocaleDateString('ru-RU') : '—'}</td>
+        <td style="padding: 8px 12px; border-bottom: 1px solid #e8e5ef;">${t.due_date ? new Date(t.due_date).toLocaleDateString('ru-RU') : '—'}</td>
+        <td style="padding: 8px 12px; border-bottom: 1px solid #e8e5ef;">${t.progress}%</td>
+        <td style="padding: 8px 12px; border-bottom: 1px solid #e8e5ef;">${
+          t.priority === 'high' ? 'Высокий' : t.priority === 'low' ? 'Низкий' : 'Средний'
+        }</td>
+      </tr>
+    `).join('')
+
+    const membersHtml = (project.members || []).map(m => `
+      <span style="display: inline-block; padding: 4px 12px; margin: 2px 4px; border-radius: 20px; background: #f3f0ff; color: #836efe; font-size: 13px;">
+        ${m.employee?.name || m.employee_id}${m.role ? ` · ${m.role}` : ''}
+      </span>
+    `).join('')
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>${project.name} — Отчёт по проекту</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; color: #1c1528; padding: 40px; max-width: 900px; margin: 0 auto; }
+          h1 { font-size: 24px; margin-bottom: 4px; }
+          h2 { font-size: 16px; color: #836efe; margin: 24px 0 12px; padding-bottom: 6px; border-bottom: 2px solid #836efe; }
+          .meta { color: #524667; font-size: 13px; margin-bottom: 24px; }
+          .badge { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+          .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 8px; }
+          .card { border: 1px solid #e8e5ef; border-radius: 12px; padding: 12px 16px; }
+          .card-label { font-size: 11px; color: #524667; margin-bottom: 4px; }
+          .card-value { font-size: 20px; font-weight: 700; }
+          table { width: 100%; border-collapse: collapse; font-size: 13px; }
+          th { text-align: left; padding: 8px 12px; border-bottom: 2px solid #e8e5ef; font-size: 12px; color: #524667; text-transform: uppercase; letter-spacing: 0.05em; }
+          .progress-bar { width: 100%; height: 6px; background: #e8e5ef; border-radius: 3px; overflow: hidden; margin-top: 6px; }
+          .progress-fill { height: 100%; background: linear-gradient(90deg, #836efe, #c856ff); border-radius: 3px; }
+          .description { color: #524667; font-size: 14px; line-height: 1.6; margin-bottom: 8px; }
+          @media print { body { padding: 20px; } }
+        </style>
+      </head>
+      <body>
+        <h1>${project.name}</h1>
+        <div class="meta">
+          <span class="badge" style="background: #f3f0ff; color: #836efe;">${statusLabel}</span>
+          ${project.responsible ? `<span style="margin-left: 12px;">Ответственный: <strong>${project.responsible.name}</strong></span>` : ''}
+          <span style="margin-left: 12px;">Дата: ${new Date().toLocaleDateString('ru-RU')}</span>
+        </div>
+
+        ${project.description ? `<p class="description">${project.description}</p>` : ''}
+
+        <div class="cards">
+          <div class="card">
+            <div class="card-label">Прогресс</div>
+            <div class="card-value">${avgProg}%</div>
+            <div class="progress-bar"><div class="progress-fill" style="width: ${avgProg}%"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-label">Бюджет</div>
+            <div class="card-value">${Number(project.budget).toLocaleString('ru-RU')} ₽</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Задач</div>
+            <div class="card-value">${project.tasks.length}</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Дедлайн</div>
+            <div class="card-value" style="font-size: 16px;">${project.end_date ? new Date(project.end_date).toLocaleDateString('ru-RU') : '—'}</div>
+          </div>
+        </div>
+
+        ${(project.members || []).length > 0 ? `
+          <h2>Команда</h2>
+          <div style="margin-bottom: 16px;">${membersHtml}</div>
+        ` : ''}
+
+        ${project.tasks.length > 0 ? `
+          <h2>Задачи</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Задача</th>
+                <th>Исполнитель</th>
+                <th>Начало</th>
+                <th>Окончание</th>
+                <th>Прогресс</th>
+                <th>Приоритет</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tasksHtml}
+            </tbody>
+          </table>
+        ` : '<p style="color: #524667; font-style: italic;">Нет задач</p>'}
+
+        ${project.deliverables ? `
+          <h2>Результаты</h2>
+          <p class="description">${project.deliverables}</p>
+        ` : ''}
+      </body>
+      </html>
+    `
+
+    const printWindow = window.open('', '_blank')
+    if (printWindow) {
+      printWindow.document.write(html)
+      printWindow.document.close()
+      printWindow.onload = () => {
+        printWindow.print()
+      }
+      setTimeout(() => {
+        printWindow.print()
+      }, 500)
+    }
+  }
+
   if (loading || !project) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -278,31 +414,45 @@ export default function ProjectDetail() {
             {project.responsible.name}
           </span>
         )}
-        <button
-          onClick={() => projectsApi.exportProject(id!)}
-          className="ml-auto px-4 py-2 border border-brand-border text-brand-text rounded-xl text-sm font-medium hover:bg-brand-surface transition-colors"
-        >
-          ⬇ JSON
-        </button>
-        <button
-          onClick={() => {
-            setSettingsForm({
-              name: project.name,
-              description: project.description || '',
-              budget: Number(project.budget),
-              start_date: project.start_date || '',
-              end_date: project.end_date || '',
-              status: project.status,
-              responsible_id: project.responsible_id || '',
-              deliverables: project.deliverables || '',
-            })
-            setMembers(project.members || [])
-            setShowSettings(true)
-          }}
-          className="px-4 py-2 border border-brand-border text-brand-text rounded-xl text-sm font-medium hover:bg-brand-surface transition-colors"
-        >
-          ⚙ Настройки
-        </button>
+        <div className="flex gap-2 ml-auto">
+          <button
+            onClick={handleShareLink}
+            className="px-4 py-2 border border-brand-border text-brand-text rounded-xl text-sm font-medium hover:bg-brand-surface transition-colors"
+          >
+            {copied ? '✓ Скопировано' : '🔗 Поделиться'}
+          </button>
+          <button
+            onClick={handleExportPdf}
+            className="px-4 py-2 border border-brand-border text-brand-text rounded-xl text-sm font-medium hover:bg-brand-surface transition-colors"
+          >
+            📄 PDF
+          </button>
+          <button
+            onClick={() => projectsApi.exportProject(id!)}
+            className="px-4 py-2 border border-brand-border text-brand-text rounded-xl text-sm font-medium hover:bg-brand-surface transition-colors"
+          >
+            ⬇ JSON
+          </button>
+          <button
+            onClick={() => {
+              setSettingsForm({
+                name: project.name,
+                description: project.description || '',
+                budget: Number(project.budget),
+                start_date: project.start_date || '',
+                end_date: project.end_date || '',
+                status: project.status,
+                responsible_id: project.responsible_id || '',
+                deliverables: project.deliverables || '',
+              })
+              setMembers(project.members || [])
+              setShowSettings(true)
+            }}
+            className="px-4 py-2 border border-brand-border text-brand-text rounded-xl text-sm font-medium hover:bg-brand-surface transition-colors"
+          >
+            ⚙ Настройки
+          </button>
+        </div>
       </div>
 
       {/* Info cards */}
