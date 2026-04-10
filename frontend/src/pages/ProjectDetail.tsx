@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { projectsApi, ProjectDetail as ProjDetail, ProjectTask } from '../api/projects'
 import { employeesApi, Employee } from '../api/employees'
 import GanttChart from '../components/GanttChart'
+import Portal from '../components/Portal'
 
 const statusLabels: Record<string, { label: string; className: string }> = {
   draft: { label: 'Черновик', className: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
@@ -122,6 +123,14 @@ export default function ProjectDetail() {
         </button>
         <h1 className="text-2xl font-bold text-brand-text">{project.name}</h1>
         <span className={`text-xs px-3 py-1 rounded-full font-medium ${st.className}`}>{st.label}</span>
+        {project.responsible && (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 border border-primary-200 dark:border-primary-800">
+            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary-500 text-white text-[10px] font-bold flex-shrink-0">
+              {project.responsible.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()}
+            </span>
+            {project.responsible.name}
+          </span>
+        )}
         <button
           onClick={() => projectsApi.exportProject(id!)}
           className="ml-auto px-4 py-2 border border-brand-border text-brand-text rounded-xl text-sm font-medium hover:bg-brand-surface transition-colors"
@@ -258,7 +267,8 @@ export default function ProjectDetail() {
 
       {/* ── Task edit modal ───────────────────────────────────────────────── */}
       {editingTask && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setEditingTask(null)}>
+        <Portal>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" style={{ zIndex: 9999 }} onClick={() => setEditingTask(null)}>
           <div className="bg-card border border-brand-border rounded-2xl w-full max-w-lg shadow-2xl" onClick={e => e.stopPropagation()} style={{ boxShadow: '0 20px 60px rgba(131,110,254,0.15), 0 4px 16px rgba(0,0,0,0.08)' }}>
             {/* Modal header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-brand-border">
@@ -373,6 +383,7 @@ export default function ProjectDetail() {
             </div>
           </div>
         </div>
+        </Portal>
       )}
     </div>
   )
