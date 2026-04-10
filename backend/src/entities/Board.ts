@@ -5,9 +5,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Task } from './Task';
 import { TaskTag } from './TaskTag';
+import { Department } from './Department';
 
 @Entity('boards')
 export class Board {
@@ -31,6 +34,13 @@ export class Board {
 
   @Column({ type: 'boolean', default: false, comment: 'Архивирована' })
   is_archived: boolean;
+
+  @ManyToOne(() => Department, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'department_id' })
+  department: Department;
+
+  @Column({ type: 'uuid', nullable: true, comment: 'ID направления' })
+  department_id: string;
 
   @OneToMany(() => Task, task => task.board)
   tasks: Task[];
