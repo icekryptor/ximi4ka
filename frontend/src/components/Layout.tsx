@@ -645,7 +645,7 @@ const Layout = ({ children }: LayoutProps) => {
 
       {/* ── Main content ── */}
       <main
-        className="flex-1 overflow-auto bg-page"
+        className="flex-1 overflow-auto bg-page p-6"
         style={{ minWidth: 0 }}
       >
         {children}
