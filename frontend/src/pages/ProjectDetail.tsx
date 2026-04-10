@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Gantt, Task as GanttTask, ViewMode } from 'gantt-task-react'
 import 'gantt-task-react/dist/index.css'
 import { projectsApi, ProjectDetail as ProjDetail, ProjectTask } from '../api/projects'
+import { employeesApi, Employee } from '../api/employees'
 
 const statusLabels: Record<string, { label: string; className: string }> = {
   draft: { label: 'Черновик', className: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
@@ -46,6 +47,7 @@ export default function ProjectDetail() {
   const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.Week)
   const [showAddTask, setShowAddTask] = useState(false)
   const [taskForm, setTaskForm] = useState({ title: '', start_date: '', due_date: '', assignee_id: '', parent_id: '' })
+  const [employees, setEmployees] = useState<Employee[]>([])
 
   const load = () => {
     if (!id) return
@@ -56,6 +58,7 @@ export default function ProjectDetail() {
   }
 
   useEffect(() => { load() }, [id])
+  useEffect(() => { employeesApi.getAll().then(setEmployees).catch(console.error) }, [])
 
   const handleAddTask = async () => {
     if (!id || !taskForm.title) return
@@ -124,7 +127,7 @@ export default function ProjectDetail() {
       </div>
 
       {/* Info cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-5 gap-4">
         <div className="bg-brand-surface border border-brand-border rounded-xl p-4">
           <div className="text-xs text-brand-text-secondary mb-1">Прогресс</div>
           <div className="text-xl font-bold text-brand-text">{avgProgress}%</div>
@@ -144,6 +147,12 @@ export default function ProjectDetail() {
           <div className="text-xs text-brand-text-secondary mb-1">Дедлайн</div>
           <div className="text-xl font-bold text-brand-text">
             {project.end_date ? new Date(project.end_date).toLocaleDateString('ru-RU') : '—'}
+          </div>
+        </div>
+        <div className="bg-brand-surface border border-brand-border rounded-xl p-4">
+          <div className="text-xs text-brand-text-secondary mb-1">Ответственный</div>
+          <div className="text-xl font-bold text-brand-text truncate">
+            {project.responsible?.name || '—'}
           </div>
         </div>
       </div>
@@ -192,6 +201,10 @@ export default function ProjectDetail() {
               <input value={taskForm.due_date} onChange={e => setTaskForm({ ...taskForm, due_date: e.target.value })} type="date" className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text" />
             </div>
           </div>
+          <select value={taskForm.assignee_id} onChange={e => setTaskForm({ ...taskForm, assignee_id: e.target.value })} className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text">
+            <option value="">Исполнитель...</option>
+            {employees.filter(e => e.is_active).map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+          </select>
           {project.tasks.length > 0 && (
             <select value={taskForm.parent_id} onChange={e => setTaskForm({ ...taskForm, parent_id: e.target.value })} className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text">
               <option value="">Без родительской задачи</option>
@@ -236,7 +249,10 @@ export default function ProjectDetail() {
           <h3 className="text-sm font-medium text-brand-text-secondary">Задачи без дат (не на Ганте)</h3>
           {project.tasks.filter(t => !t.start_date || !t.due_date).map(t => (
             <div key={t.id} className="bg-brand-surface border border-brand-border rounded-xl p-3 flex items-center justify-between">
-              <span className="text-brand-text text-sm">{t.title}</span>
+              <div>
+                <span className="text-brand-text text-sm">{t.title}</span>
+                {t.assignee && <span className="text-xs text-brand-text-secondary ml-2">· {t.assignee.name}</span>}
+              </div>
               <span className="text-xs text-brand-text-secondary">{t.progress}%</span>
             </div>
           ))}
