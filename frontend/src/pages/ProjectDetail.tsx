@@ -115,6 +115,12 @@ export default function ProjectDetail() {
         </button>
         <h1 className="text-2xl font-bold text-brand-text">{project.name}</h1>
         <span className={`text-xs px-3 py-1 rounded-full font-medium ${st.className}`}>{st.label}</span>
+        <button
+          onClick={() => projectsApi.exportProject(id!)}
+          className="ml-auto px-4 py-2 border border-brand-border text-brand-text rounded-xl text-sm font-medium hover:bg-brand-surface transition-colors"
+        >
+          ⬇ JSON
+        </button>
       </div>
 
       {/* Info cards */}
