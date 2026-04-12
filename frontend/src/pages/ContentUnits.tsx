@@ -343,7 +343,7 @@ function ContentUnitModal({ item, onClose, onSave, saving }: ModalProps) {
           </div>
 
           {/* Dates */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="flex items-center gap-1.5 text-xs text-brand-text-secondary mb-1">
                 <Youtube size={12} className="text-red-500" /> YouTube
@@ -801,26 +801,36 @@ export default function ContentUnits() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold text-brand-text">Единицы контента</h1>
-        <div className="flex items-center gap-2">
+      <div className="space-y-3 mb-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-lg sm:text-xl font-bold text-brand-text">Единицы контента</h1>
+          <button
+            onClick={() => setModalItem({})}
+            className="flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white text-sm rounded-xl
+              hover:bg-primary-700 transition-colors"
+          >
+            <Plus size={16} />
+            <span className="hidden sm:inline">Добавить</span>
+          </button>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center">
             <button
               onClick={() => handleSync()}
               disabled={syncing}
-              className="flex items-center gap-2 px-4 py-2.5 bg-card border border-brand-border text-brand-text text-sm rounded-l-xl
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-card border border-brand-border text-brand-text text-xs sm:text-sm rounded-l-xl
                 hover:border-primary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors
                 disabled:opacity-50 disabled:cursor-not-allowed"
               title={syncUrl ? `Папка: ${syncUrl}` : 'Нажмите для настройки'}
             >
               {syncing ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-              {syncing ? 'Загрузка...' : 'Загрузить с Я.Диска'}
+              <span className="hidden sm:inline">{syncing ? 'Загрузка...' : 'Загрузить с Я.Диска'}</span>
             </button>
             <button
               onClick={() => setSyncModalOpen(true)}
-              className="px-2 py-2.5 bg-card border border-l-0 border-brand-border text-brand-text-secondary text-sm rounded-r-xl
+              className="px-2 py-2 sm:py-2.5 bg-card border border-l-0 border-brand-border text-brand-text-secondary text-sm rounded-r-xl
                 hover:border-primary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
               title="Изменить папку"
             >
@@ -829,40 +839,32 @@ export default function ContentUnits() {
           </div>
           <button
             onClick={() => setExportModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-card border border-brand-border text-brand-text text-sm rounded-xl
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-card border border-brand-border text-brand-text text-xs sm:text-sm rounded-xl
               hover:border-green-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
           >
             <Upload size={16} />
-            Выгрузить в таблицу
+            <span className="hidden sm:inline">Выгрузить в таблицу</span>
           </button>
           {ytConnected ? (
-            <div className="flex items-center gap-1.5 px-3 py-2.5 text-sm text-green-600 dark:text-green-400 bg-card border border-green-300 dark:border-green-700 rounded-xl">
+            <div className="flex items-center gap-1.5 px-3 py-2 sm:py-2.5 text-sm text-green-600 dark:text-green-400 bg-card border border-green-300 dark:border-green-700 rounded-xl">
               <Youtube size={16} />
-              <span className="text-xs">{ytChannelName || 'YouTube'}</span>
+              <span className="text-xs hidden sm:inline">{ytChannelName || 'YouTube'}</span>
               <span className="text-[10px]">✓</span>
             </div>
           ) : (
             <button
               onClick={handleYouTubeConnect}
-              className="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white text-sm rounded-xl hover:bg-red-700 transition-colors"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-red-600 text-white text-xs sm:text-sm rounded-xl hover:bg-red-700 transition-colors"
             >
               <Youtube size={16} />
-              Подключить YouTube
+              <span className="hidden sm:inline">Подключить YouTube</span>
             </button>
           )}
-          <button
-            onClick={() => setModalItem({})}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white text-sm rounded-xl
-              hover:bg-primary-700 transition-colors"
-          >
-            <Plus size={16} />
-            Добавить
-          </button>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-2 mb-6">
+      <div className="flex items-center gap-2 mb-6 flex-wrap">
         {([
           ['all', 'Все'],
           ['unpublished', 'Без дат'],
@@ -872,7 +874,7 @@ export default function ContentUnits() {
           <button
             key={key}
             onClick={() => setFilter(key)}
-            className={`px-3 py-1.5 text-sm rounded-xl border transition-colors ${
+            className={`px-3 py-1.5 text-xs sm:text-sm rounded-xl border transition-colors ${
               filter === key
                 ? 'bg-primary-100 dark:bg-primary-900/40 border-primary-300 dark:border-primary-600 text-primary-700 dark:text-primary-300'
                 : 'bg-card border-brand-border text-brand-text-secondary hover:border-primary-300 dark:hover:border-primary-600'
