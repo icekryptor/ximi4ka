@@ -36,6 +36,7 @@ import channelPresetRoutes from './routes/channel-preset.routes';
 import contentUnitRoutes from './routes/content-unit.routes';
 import youtubeRoutes from './routes/youtube.routes';
 import n8nRoutes from './routes/n8n.routes';
+import telegramRoutes from './routes/telegram.routes';
 import { unitEconomicsController } from './controllers/unit-economics.controller';
 
 // Middleware
@@ -100,6 +101,9 @@ app.get('/api/youtube/callback', async (req, res) => {
 // n8n API — API key auth (no JWT)
 app.use('/api/n8n', apiKeyAuth, n8nRoutes);
 
+// Telegram webhook (public — verified by secret in URL)
+app.use('/api/webhooks/telegram', telegramRoutes);
+
 // Protected routes (auth required)
 app.use('/api/transactions', authMiddleware, transactionRoutes);
 app.use('/api/counterparties', authMiddleware, counterpartyRoutes);
@@ -160,10 +164,21 @@ async function bootstrap() {
   // synchronize() can drop columns and cause data loss
 
   console.log('');
-  app.listen(PORT, () => {
+  app.listen(PORT, async () => {
     console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
     console.log(`   Health: http://localhost:${PORT}/health`);
     console.log('');
+
+    // Initialize Telegram bot
+    if (process.env.TELEGRAM_BOT_TOKEN) {
+      const { initTelegramListener } = await import('./services/telegram-listener')
+      const { initDigestScheduler } = await import('./services/telegram-scheduler')
+      const { setupWebhook } = await import('./services/telegram.service')
+      initTelegramListener()
+      await initDigestScheduler()
+      const baseUrl = process.env.BACKEND_URL || `http://localhost:${PORT}`
+      setupWebhook(baseUrl)
+    }
   });
 }
 

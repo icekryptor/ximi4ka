@@ -34,4 +34,10 @@ router.delete('/:id/members/:memberId', projectController.removeMember);
 
 router.get('/:id/export', projectController.exportProject);
 
+// Telegram settings
+router.get('/:id/telegram', projectController.getTelegramSettings);
+router.put('/:id/telegram', projectController.updateTelegramSettings);
+router.delete('/:id/telegram', projectController.unlinkTelegram);
+router.post('/:id/telegram/test', projectController.sendTelegramTest);
+
 export default router;

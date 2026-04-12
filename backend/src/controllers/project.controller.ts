@@ -1,12 +1,14 @@
 import { Request, Response } from 'express';
 import { In } from 'typeorm';
 import { AppDataSource } from '../config/database';
+import { Employee } from '../entities/Employee';
 import { Project } from '../entities/Project';
 import { ProjectMember } from '../entities/ProjectMember';
 import { Task } from '../entities/Task';
 import { TaskDependency } from '../entities/TaskDependency';
 import { TaskChecklistItem } from '../entities/TaskChecklistItem';
 import { TaskComment } from '../entities/TaskComment';
+import { eventBus } from '../services/event-bus';
 
 const projectRepo = () => AppDataSource.getRepository(Project);
 const memberRepo = () => AppDataSource.getRepository(ProjectMember);
@@ -211,6 +213,11 @@ export const projectController = {
       const task = await taskRepo().findOne({ where: { id: taskId } });
       if (!task) return res.status(404).json({ error: 'Задача не найдена' });
 
+      // Capture old values before mutation
+      const oldAssigneeId = task.assignee_id
+      const oldProgress = task.progress || 0
+      const oldColumn = task.column
+
       const { title, description, assignee_id, start_date, due_date, progress, parent_id, column, priority } = req.body;
       if (title !== undefined) task.title = title;
       if (description !== undefined) task.description = description;
@@ -223,6 +230,46 @@ export const projectController = {
       if (priority !== undefined) task.priority = priority;
 
       const saved = await taskRepo().save(task);
+
+      // Emit Telegram events (fire-and-forget)
+      if (task.project_id) {
+        const project = await AppDataSource.getRepository(Project).findOne({ where: { id: task.project_id } })
+        const projectName = project?.name || ''
+
+        // Task assigned (assignee changed)
+        if (req.body.assignee_id && req.body.assignee_id !== oldAssigneeId) {
+          const assignee = task.assignee_id
+            ? await AppDataSource.getRepository(Employee).findOne({ where: { id: task.assignee_id } })
+            : null
+          eventBus.emitEvent('task.assigned', {
+            projectId: task.project_id, projectName,
+            taskId: task.id, taskTitle: task.title,
+            assigneeName: assignee?.name, priority: task.priority, dueDate: task.due_date,
+          })
+        }
+
+        // Task completed
+        if ((req.body.progress === 100 || req.body.column === 'done') && oldProgress < 100 && oldColumn !== 'done') {
+          const assignee = task.assignee_id
+            ? await AppDataSource.getRepository(Employee).findOne({ where: { id: task.assignee_id } })
+            : null
+          eventBus.emitEvent('task.completed', {
+            projectId: task.project_id, projectName,
+            taskId: task.id, taskTitle: task.title,
+            assigneeName: assignee?.name,
+          })
+        }
+
+        // Status changed (column changed)
+        if (req.body.column && req.body.column !== oldColumn) {
+          eventBus.emitEvent('task.status_changed', {
+            projectId: task.project_id, projectName,
+            taskId: task.id, taskTitle: task.title,
+            oldColumn, newColumn: req.body.column,
+          })
+        }
+      }
+
       res.json(saved);
     } catch (error) {
       console.error('Ошибка при обновлении задачи:', error);
@@ -499,6 +546,21 @@ export const projectController = {
         attachment_name: attachment_name || null,
       });
       const saved = await commentRepo().save(comment);
+
+      // Emit for Telegram
+      if (taskId) {
+        const taskObj = await AppDataSource.getRepository(Task).findOne({ where: { id: taskId } })
+        if (taskObj?.project_id) {
+          const proj = await AppDataSource.getRepository(Project).findOne({ where: { id: taskObj.project_id } })
+          eventBus.emitEvent('task.comment_added', {
+            projectId: taskObj.project_id, projectName: proj?.name || '',
+            taskId: taskObj.id, taskTitle: taskObj.title,
+            authorId: (req as any).user?.userId || '', text: req.body.text || '',
+            attachmentUrl: req.body.attachment_url,
+          })
+        }
+      }
+
       res.status(201).json(saved);
     } catch (error) {
       console.error('Ошибка при добавлении комментария:', error);
@@ -563,6 +625,17 @@ export const projectController = {
         where: { id: saved.id },
         relations: ['employee'],
       });
+
+      // Emit for Telegram
+      const proj = await AppDataSource.getRepository(Project).findOne({ where: { id } })
+      const emp = await AppDataSource.getRepository(Employee).findOne({ where: { id: req.body.employee_id } })
+      if (proj && emp) {
+        eventBus.emitEvent('project.member_added', {
+          projectId: id, projectName: proj.name,
+          employeeName: emp.name, role: req.body.role,
+        })
+      }
+
       res.status(201).json(withEmployee);
     } catch (error) {
       console.error('Ошибка при добавлении участника проекта:', error);
@@ -670,6 +743,55 @@ export const projectController = {
     } catch (error) {
       console.error('Ошибка при импорте проекта:', error);
       res.status(500).json({ error: 'Ошибка при импорте проекта' });
+    }
+  },
+
+  getTelegramSettings: async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params
+      const { getChatSettings } = await import('../services/telegram.service')
+      const settings = await getChatSettings(id)
+      res.json(settings || { linked: false })
+    } catch (err: any) {
+      res.status(500).json({ error: err.message })
+    }
+  },
+
+  updateTelegramSettings: async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params
+      const { updateChatSettings } = await import('../services/telegram.service')
+      const { rescheduleDigest } = await import('../services/telegram-scheduler')
+      const updated = await updateChatSettings(id, req.body)
+      if (!updated) return res.status(404).json({ error: 'Telegram chat not linked' })
+      await rescheduleDigest(id)
+      res.json(updated)
+    } catch (err: any) {
+      res.status(500).json({ error: err.message })
+    }
+  },
+
+  unlinkTelegram: async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params
+      const { unlinkChat } = await import('../services/telegram.service')
+      const { removeDigest } = await import('../services/telegram-scheduler')
+      await unlinkChat(id)
+      removeDigest(id)
+      res.json({ success: true })
+    } catch (err: any) {
+      res.status(500).json({ error: err.message })
+    }
+  },
+
+  sendTelegramTest: async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params
+      const { sendTestMessage } = await import('../services/telegram.service')
+      const sent = await sendTestMessage(id)
+      res.json({ success: sent })
+    } catch (err: any) {
+      res.status(500).json({ error: err.message })
     }
   },
 };
