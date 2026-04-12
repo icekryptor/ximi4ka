@@ -1,5 +1,5 @@
 import { eventBus, TaskEvent, TaskStatusEvent, TaskCommentEvent, MemberEvent } from './event-bus'
-import { getChatIdForProject, sendMessage } from './telegram.service'
+import { getChatIdForProject, sendMessage, erpLink } from './telegram.service'
 
 function escapeHtml(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -30,6 +30,7 @@ export function initTelegramListener(): void {
       `Исполнитель: ${assignee}`,
       `Приоритет: ${priority}`,
       `Дедлайн: ${deadline}`,
+      erpLink(data.projectId),
     ]
     notify(data.projectId, lines.join('\n')).catch(console.error)
   })
@@ -41,6 +42,7 @@ export function initTelegramListener(): void {
       `Проект: <b>${escapeHtml(data.projectName)}</b>`,
       `Задача: ${escapeHtml(data.taskTitle)}`,
       `Исполнитель: ${assignee}`,
+      erpLink(data.projectId),
     ]
     notify(data.projectId, lines.join('\n')).catch(console.error)
   })
@@ -53,6 +55,7 @@ export function initTelegramListener(): void {
       `Проект: <b>${escapeHtml(data.projectName)}</b>`,
       `Задача: ${escapeHtml(data.taskTitle)}`,
       `Статус: <s>${oldLabel}</s> → ${newLabel}`,
+      erpLink(data.projectId),
     ]
     notify(data.projectId, lines.join('\n')).catch(console.error)
   })
@@ -66,6 +69,7 @@ export function initTelegramListener(): void {
       `Проект: <b>${escapeHtml(data.projectName)}</b>`,
       `Задача: ${escapeHtml(data.taskTitle)}`,
       `Текст: ${preview}`,
+      erpLink(data.projectId),
     ]
     notify(data.projectId, lines.join('\n')).catch(console.error)
   })
@@ -79,6 +83,7 @@ export function initTelegramListener(): void {
       `Задача: ${escapeHtml(data.taskTitle)}`,
       `Исполнитель: ${assignee}`,
       `Дата: ${deadline}`,
+      erpLink(data.projectId),
     ]
     notify(data.projectId, lines.join('\n')).catch(console.error)
   })
@@ -90,6 +95,7 @@ export function initTelegramListener(): void {
       `Проект: <b>${escapeHtml(data.projectName)}</b>`,
       `Сотрудник: ${escapeHtml(data.employeeName)}`,
       `Роль: ${role}`,
+      erpLink(data.projectId),
     ]
     notify(data.projectId, lines.join('\n')).catch(console.error)
   })
