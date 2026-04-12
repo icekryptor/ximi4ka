@@ -39,6 +39,7 @@ const RecurringTaskDetail = lazy(() => import('./pages/RecurringTaskDetail'))
 const ContentUnits = lazy(() => import('./pages/ContentUnits'))
 const Projects = lazy(() => import('./pages/Projects'))
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail'))
+const PublicProject = lazy(() => import('./pages/PublicProject'))
 
 // === Page Transition ===
 const PageTransition = ({ children }: { children: React.ReactNode }) => {
@@ -85,6 +86,7 @@ function App() {
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/public/unit-economics/:token" element={<PublicUnitEconomics />} />
+                  <Route path="/project/:id" element={<PublicProject />} />
 
                   {/* Protected routes — wrapped in Layout */}
                   <Route
