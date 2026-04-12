@@ -39,6 +39,7 @@ import contentUnitRoutes from './routes/content-unit.routes';
 import youtubeRoutes from './routes/youtube.routes';
 import n8nRoutes from './routes/n8n.routes';
 import telegramRoutes from './routes/telegram.routes';
+import publicProjectRoutes from './routes/publicProject.routes';
 import { unitEconomicsController } from './controllers/unit-economics.controller';
 
 // Middleware
@@ -82,6 +83,7 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 // Public routes (no auth required)
 app.use('/api/auth', authRoutes);
 app.get('/api/public/unit-economics/:token', unitEconomicsController.getPublicShare);
+app.use('/api/public/projects', publicProjectRoutes);
 
 // YouTube OAuth callback (must be public — Google redirects here)
 app.get('/api/youtube/callback', async (req, res) => {

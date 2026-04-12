@@ -1,7 +1,11 @@
 import TelegramBot from 'node-telegram-bot-api'
+import jwt from 'jsonwebtoken'
 import { AppDataSource } from '../config/database'
+import { getJwtSecret } from '../config/auth'
 import { TelegramChat } from '../entities/TelegramChat'
 import { Project } from '../entities/Project'
+import { ProjectMember } from '../entities/ProjectMember'
+import { Employee } from '../entities/Employee'
 import { Task, TaskColumn, TaskPriority } from '../entities/Task'
 
 // ── Label maps ──────────────────────────────────────────────────────────
@@ -27,13 +31,28 @@ const PRIORITY_ICON: Record<string, string> = {
   low: '🟢',
 }
 
-// ── ERP link helper ────────────────────────────────────────────────────
+// ── ERP link helpers ───────────────────────────────────────────────────
 
-export function projectUrl(projectId: string): string {
-  const base = (process.env.FRONTEND_URL || 'https://ximi4ka.vercel.app').replace(/\/$/, '')
-  return `${base}/planning/projects/${projectId}`
+function frontendBase(): string {
+  return (process.env.FRONTEND_URL || 'https://ximi4ka.vercel.app').replace(/\/$/, '')
 }
 
+/** Public project page URL (no token — shows "request access" prompt) */
+export function projectUrl(projectId: string): string {
+  return `${frontendBase()}/project/${projectId}`
+}
+
+/** Public project page URL with personal JWT token */
+export function projectUrlWithToken(projectId: string, employeeId: string): string {
+  const token = jwt.sign(
+    { projectId, employeeId, scope: 'telegram-project' },
+    getJwtSecret(),
+    { expiresIn: '30d' },
+  )
+  return `${frontendBase()}/project/${projectId}?token=${token}`
+}
+
+/** Generic ERP link for group messages (no personal token) */
 export function erpLink(projectId: string): string {
   return `\n🔗 <a href="${projectUrl(projectId)}">Открыть в ERP</a>`
 }
@@ -148,6 +167,7 @@ export async function handleWebhook(body: any): Promise<void> {
   const text: string = message.text
   const chatId: number = message.chat.id
   const chatTitle: string = message.chat.title || message.chat.first_name || ''
+  const fromUser = message.from
 
   // Strip @botname suffix from commands
   const match = text.match(/^\/(\w+)(?:@\S+)?\s*(.*)$/)
@@ -172,6 +192,9 @@ export async function handleWebhook(body: any): Promise<void> {
         break
       case 'digest':
         await handleDigestCommand(chatId)
+        break
+      case 'mylink':
+        await handleMyLink(chatId, fromUser)
         break
       default:
         // Unknown command — ignore
@@ -322,6 +345,84 @@ async function handleDigestCommand(chatId: number): Promise<void> {
     return
   }
   await sendDigestForProject(chat.project_id, chat.chat_id)
+}
+
+async function handleMyLink(chatId: number, fromUser: any): Promise<void> {
+  const chat = await chatRepo().findOne({ where: { chat_id: String(chatId) } })
+  if (!chat) {
+    await sendMessage(chatId, 'ℹ️ Чат не привязан. Используйте <code>/link &lt;project_id&gt;</code>')
+    return
+  }
+
+  // Find employee by Telegram username
+  const username = fromUser?.username
+  if (!username) {
+    await sendMessage(chatId, '⚠️ У вас не установлен username в Telegram. Настройте его в настройках Telegram.')
+    return
+  }
+
+  const employeeRepository = AppDataSource.getRepository(Employee)
+  // Match with or without @ prefix
+  const employee = await employeeRepository
+    .createQueryBuilder('e')
+    .where('LOWER(REPLACE(e.telegram, \'@\', \'\')) = LOWER(:username)', { username: username.replace('@', '') })
+    .getOne()
+
+  if (!employee) {
+    await sendMessage(chatId, `⚠️ Сотрудник с Telegram <b>@${escapeHtml(username)}</b> не найден в системе. Попросите администратора добавить ваш Telegram в карточку сотрудника.`)
+    return
+  }
+
+  // Verify employee is a member or responsible of this project
+  const project = await projectRepo().findOne({ where: { id: chat.project_id } })
+  if (!project) {
+    await sendMessage(chatId, '❌ Проект не найден.')
+    return
+  }
+
+  const isMember = await AppDataSource.getRepository(ProjectMember).findOne({
+    where: { project_id: chat.project_id, employee_id: employee.id },
+  })
+  const isResponsible = project.responsible_id === employee.id
+
+  if (!isMember && !isResponsible) {
+    await sendMessage(chatId, '⚠️ Вы не являетесь участником этого проекта.')
+    return
+  }
+
+  const url = projectUrlWithToken(chat.project_id, employee.id)
+  const role = isResponsible ? 'Ответственный' : 'Участник'
+
+  // Send personal link in DM
+  const bot = getBot()
+  if (!bot) return
+
+  try {
+    await bot.sendMessage(
+      fromUser.id,
+      [
+        `🔑 <b>Персональная ссылка на проект</b>`,
+        `Проект: <b>${escapeHtml(project.name)}</b>`,
+        `Роль: ${role}`,
+        '',
+        `🔗 <a href="${url}">Открыть проект</a>`,
+        '',
+        `⚠️ Ссылка действительна 30 дней. Не передавайте её другим.`,
+      ].join('\n'),
+      { parse_mode: 'HTML' },
+    )
+    await sendMessage(chatId, `✅ @${escapeHtml(username)}, персональная ссылка отправлена вам в личные сообщения.`)
+  } catch (err: any) {
+    // If DM fails — user hasn't started a conversation with the bot
+    if (err.response?.body?.error_code === 403) {
+      await sendMessage(
+        chatId,
+        `⚠️ @${escapeHtml(username)}, я не могу отправить вам личное сообщение. Напишите боту /start в личном чате и попробуйте снова.`,
+      )
+    } else {
+      throw err
+    }
+  }
 }
 
 // ── Digest ──────────────────────────────────────────────────────────────
