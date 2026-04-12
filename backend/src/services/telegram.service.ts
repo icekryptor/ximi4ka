@@ -27,6 +27,17 @@ const PRIORITY_ICON: Record<string, string> = {
   low: '🟢',
 }
 
+// ── ERP link helper ────────────────────────────────────────────────────
+
+export function projectUrl(projectId: string): string {
+  const base = (process.env.FRONTEND_URL || 'https://ximi4ka.vercel.app').replace(/\/$/, '')
+  return `${base}/planning/projects/${projectId}`
+}
+
+export function erpLink(projectId: string): string {
+  return `\n🔗 <a href="${projectUrl(projectId)}">Открыть в ERP</a>`
+}
+
 // ── Helpers ─────────────────────────────────────────────────────────────
 
 export function escapeHtml(text: string): string {
@@ -257,6 +268,7 @@ async function handleStatus(chatId: number): Promise<void> {
     '',
     `💰 Бюджет: ${formatBudget(project.budget)}`,
     `📅 Дедлайн: ${formatDate(project.end_date)}`,
+    erpLink(project.id),
   ]
 
   await sendMessage(chatId, lines.join('\n'))
@@ -297,6 +309,8 @@ async function handleTasks(chatId: number): Promise<void> {
   if (active.length > 15) {
     lines.push(`\n… и ещё ${active.length - 15}`)
   }
+
+  lines.push(erpLink(chat.project_id))
 
   await sendMessage(chatId, lines.join('\n'))
 }
@@ -384,6 +398,8 @@ export async function sendDigestForProject(projectId: string, chatId?: string | 
     lines.push('')
     lines.push('✅ Нет просроченных задач и ближайших дедлайнов.')
   }
+
+  lines.push(erpLink(projectId))
 
   await sendMessage(chatId, lines.join('\n'))
 }
