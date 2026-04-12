@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { projectsApi, ProjectDetail as ProjDetail, ProjectTask, ChecklistItem, TaskCommentItem, ProjectMember } from '../api/projects'
+import { projectsApi, ProjectDetail as ProjDetail, ProjectTask, ChecklistItem, TaskCommentItem, ProjectMember, TelegramChatSettings } from '../api/projects'
 import { employeesApi, Employee } from '../api/employees'
 import GanttChart from '../components/GanttChart'
 import Portal from '../components/Portal'
@@ -36,6 +36,8 @@ export default function ProjectDetail() {
   })
   const [members, setMembers] = useState<ProjectMember[]>([])
   const [newMemberId, setNewMemberId] = useState('')
+  const [telegramSettings, setTelegramSettings] = useState<TelegramChatSettings | null>(null)
+  const [telegramLoading, setTelegramLoading] = useState(false)
 
   const load = () => {
     if (!id) return
@@ -407,36 +409,38 @@ export default function ProjectDetail() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <button onClick={() => navigate('/planning/projects')} className="text-brand-text-secondary hover:text-brand-text transition-colors">
-          ← Назад
-        </button>
-        <h1 className="text-2xl font-bold text-brand-text">{project.name}</h1>
-        <span className={`text-xs px-3 py-1 rounded-full font-medium ${st.className}`}>{st.label}</span>
-        {project.responsible && (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 border border-primary-200 dark:border-primary-800">
-            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary-500 text-white text-[10px] font-bold flex-shrink-0">
-              {project.responsible.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()}
+      <div className="space-y-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <button onClick={() => navigate('/planning/projects')} className="text-brand-text-secondary hover:text-brand-text transition-colors">
+            ← Назад
+          </button>
+          <h1 className="text-xl sm:text-2xl font-bold text-brand-text">{project.name}</h1>
+          <span className={`text-xs px-3 py-1 rounded-full font-medium ${st.className}`}>{st.label}</span>
+          {project.responsible && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 border border-primary-200 dark:border-primary-800">
+              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary-500 text-white text-[10px] font-bold flex-shrink-0">
+                {project.responsible.name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()}
+              </span>
+              <span className="hidden sm:inline">{project.responsible.name}</span>
             </span>
-            {project.responsible.name}
-          </span>
-        )}
-        <div className="flex gap-2 ml-auto">
+          )}
+        </div>
+        <div className="flex gap-2 flex-wrap">
           <button
             onClick={handleShareLink}
-            className="px-4 py-2 border border-brand-border text-brand-text rounded-xl text-sm font-medium hover:bg-brand-surface transition-colors"
+            className="px-3 sm:px-4 py-2 border border-brand-border text-brand-text rounded-xl text-xs sm:text-sm font-medium hover:bg-brand-surface transition-colors"
           >
             {copied ? '✓ Скопировано' : '🔗 Поделиться'}
           </button>
           <button
             onClick={handleExportPdf}
-            className="px-4 py-2 border border-brand-border text-brand-text rounded-xl text-sm font-medium hover:bg-brand-surface transition-colors"
+            className="px-3 sm:px-4 py-2 border border-brand-border text-brand-text rounded-xl text-xs sm:text-sm font-medium hover:bg-brand-surface transition-colors"
           >
             📄 PDF
           </button>
           <button
             onClick={() => projectsApi.exportProject(id!)}
-            className="px-4 py-2 border border-brand-border text-brand-text rounded-xl text-sm font-medium hover:bg-brand-surface transition-colors"
+            className="px-3 sm:px-4 py-2 border border-brand-border text-brand-text rounded-xl text-xs sm:text-sm font-medium hover:bg-brand-surface transition-colors"
           >
             ⬇ JSON
           </button>
@@ -453,9 +457,14 @@ export default function ProjectDetail() {
                 deliverables: project.deliverables || '',
               })
               setMembers(project.members || [])
+              setTelegramLoading(true)
+              projectsApi.getTelegramSettings(id!).then(s => {
+                setTelegramSettings(s)
+                setTelegramLoading(false)
+              }).catch(() => setTelegramLoading(false))
               setShowSettings(true)
             }}
-            className="px-4 py-2 border border-brand-border text-brand-text rounded-xl text-sm font-medium hover:bg-brand-surface transition-colors"
+            className="px-3 sm:px-4 py-2 border border-brand-border text-brand-text rounded-xl text-xs sm:text-sm font-medium hover:bg-brand-surface transition-colors"
           >
             ⚙ Настройки
           </button>
@@ -463,36 +472,36 @@ export default function ProjectDetail() {
       </div>
 
       {/* Info cards */}
-      <div className="grid grid-cols-5 gap-4">
-        <div className="bg-brand-surface border border-brand-border rounded-xl p-4">
-          <div className="text-xs text-brand-text-secondary mb-1">Прогресс</div>
-          <div className="text-xl font-bold text-brand-text">{avgProgress}%</div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+        <div className="bg-brand-surface border border-brand-border rounded-xl p-3 sm:p-4">
+          <div className="text-[10px] sm:text-xs text-brand-text-secondary mb-1">Прогресс</div>
+          <div className="text-lg sm:text-xl font-bold text-brand-text">{avgProgress}%</div>
           <div className="w-full bg-card rounded-full h-1.5 mt-2">
             <div className="bg-primary-500 h-1.5 rounded-full" style={{ width: `${avgProgress}%` }} />
           </div>
         </div>
-        <div className="bg-brand-surface border border-brand-border rounded-xl p-4">
-          <div className="text-xs text-brand-text-secondary mb-1">Бюджет</div>
-          <div className="text-xl font-bold text-brand-text">{Number(project.budget).toLocaleString('ru-RU')} ₽</div>
+        <div className="bg-brand-surface border border-brand-border rounded-xl p-3 sm:p-4">
+          <div className="text-[10px] sm:text-xs text-brand-text-secondary mb-1">Бюджет</div>
+          <div className="text-lg sm:text-xl font-bold text-brand-text">{Number(project.budget).toLocaleString('ru-RU')} ₽</div>
         </div>
-        <div className="bg-brand-surface border border-brand-border rounded-xl p-4">
-          <div className="text-xs text-brand-text-secondary mb-1">Задач</div>
-          <div className="text-xl font-bold text-brand-text">{project.tasks.length}</div>
+        <div className="bg-brand-surface border border-brand-border rounded-xl p-3 sm:p-4">
+          <div className="text-[10px] sm:text-xs text-brand-text-secondary mb-1">Задач</div>
+          <div className="text-lg sm:text-xl font-bold text-brand-text">{project.tasks.length}</div>
         </div>
-        <div className="bg-brand-surface border border-brand-border rounded-xl p-4">
-          <div className="text-xs text-brand-text-secondary mb-1">Дедлайн</div>
-          <div className="text-xl font-bold text-brand-text">
+        <div className="bg-brand-surface border border-brand-border rounded-xl p-3 sm:p-4">
+          <div className="text-[10px] sm:text-xs text-brand-text-secondary mb-1">Дедлайн</div>
+          <div className="text-lg sm:text-xl font-bold text-brand-text">
             {project.end_date ? new Date(project.end_date).toLocaleDateString('ru-RU') : '—'}
           </div>
         </div>
-        <div className="bg-brand-surface border border-brand-border rounded-xl p-4">
-          <div className="text-xs text-brand-text-secondary mb-1">Команда</div>
-          <div className="text-xl font-bold text-brand-text">{(project.members || []).length} чел.</div>
+        <div className="bg-brand-surface border border-brand-border rounded-xl p-3 sm:p-4 col-span-2 sm:col-span-1">
+          <div className="text-[10px] sm:text-xs text-brand-text-secondary mb-1">Команда</div>
+          <div className="text-lg sm:text-xl font-bold text-brand-text">{(project.members || []).length} чел.</div>
         </div>
       </div>
 
       {/* Gantt toolbar */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex gap-1 bg-card p-1 rounded-xl border border-brand-border">
           {([
             { mode: 'day' as const, label: 'День' },
@@ -525,7 +534,7 @@ export default function ProjectDetail() {
         <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 space-y-4">
           <h2 className="text-lg font-semibold text-brand-text">Новая задача</h2>
           <input value={taskForm.title} onChange={e => setTaskForm({ ...taskForm, title: e.target.value })} placeholder="Название задачи" className="w-full px-4 py-2 rounded-xl border border-brand-border bg-card text-brand-text" />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-xs text-brand-text-secondary">Начало</label>
               <input value={taskForm.start_date} onChange={e => setTaskForm({ ...taskForm, start_date: e.target.value })} type="date" className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text" />
@@ -555,7 +564,7 @@ export default function ProjectDetail() {
       )}
 
       {/* Gantt chart */}
-      <div data-gantt-root="" className="relative">
+      <div data-gantt-root="" className="relative -mx-4 sm:mx-0 overflow-x-auto">
         <GanttChart
           tasks={project.tasks}
           dependencies={project.dependencies}
@@ -592,13 +601,13 @@ export default function ProjectDetail() {
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" style={{ zIndex: 9999 }} onClick={() => setShowSettings(false)}>
             <div className="bg-card border border-brand-border rounded-2xl w-full max-w-2xl shadow-2xl" onClick={e => e.stopPropagation()} style={{ boxShadow: '0 20px 60px rgba(131,110,254,0.15), 0 4px 16px rgba(0,0,0,0.08)' }}>
               {/* Modal header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-brand-border">
-                <h2 className="text-lg font-semibold text-brand-text">Настройки проекта</h2>
+              <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-brand-border">
+                <h2 className="text-base sm:text-lg font-semibold text-brand-text">Настройки проекта</h2>
                 <button onClick={() => setShowSettings(false)} className="text-brand-text-secondary hover:text-brand-text transition-colors text-xl leading-none">&times;</button>
               </div>
 
               {/* Modal body */}
-              <div className="px-6 py-5 space-y-4 max-h-[80vh] overflow-y-auto">
+              <div className="px-4 sm:px-6 py-4 sm:py-5 space-y-4 max-h-[80vh] overflow-y-auto">
                 {/* Name */}
                 <div>
                   <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Название</label>
@@ -621,7 +630,7 @@ export default function ProjectDetail() {
                 </div>
 
                 {/* Dates row */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
                     <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Начало</label>
                     <input
@@ -643,7 +652,7 @@ export default function ProjectDetail() {
                 </div>
 
                 {/* Budget & Status row */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
                     <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Бюджет (₽)</label>
                     <input
@@ -727,7 +736,7 @@ export default function ProjectDetail() {
                   )}
 
                   {/* Add member row */}
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <select
                       value={newMemberId}
                       onChange={e => setNewMemberId(e.target.value)}
@@ -750,10 +759,127 @@ export default function ProjectDetail() {
                     </button>
                   </div>
                 </div>
+
+                {/* Telegram section */}
+                <div className="border-t border-brand-border pt-4 mt-2">
+                  <div className="text-sm font-semibold text-brand-text mb-3">Telegram</div>
+
+                  {telegramLoading ? (
+                    <p className="text-xs text-brand-text-secondary">Загрузка...</p>
+                  ) : telegramSettings && telegramSettings.chat_id ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                        <span className="text-green-600 dark:text-green-400 text-sm">✅</span>
+                        <span className="text-sm text-green-700 dark:text-green-300">
+                          Привязан: <b>{telegramSettings.chat_title || 'Группа'}</b>
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-brand-text-secondary">Уведомления</span>
+                        <button
+                          onClick={async () => {
+                            const updated = await projectsApi.updateTelegramSettings(id!, {
+                              notifications_enabled: !telegramSettings.notifications_enabled,
+                            })
+                            setTelegramSettings({ ...telegramSettings, ...updated })
+                          }}
+                          className={`relative w-10 h-5 rounded-full transition-colors ${
+                            telegramSettings.notifications_enabled ? 'bg-primary-500' : 'bg-gray-300 dark:bg-gray-600'
+                          }`}
+                        >
+                          <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+                            telegramSettings.notifications_enabled ? 'translate-x-5' : 'translate-x-0.5'
+                          }`} />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-brand-text-secondary">Автосводка</span>
+                        <button
+                          onClick={async () => {
+                            const updated = await projectsApi.updateTelegramSettings(id!, {
+                              digest_enabled: !telegramSettings.digest_enabled,
+                            })
+                            setTelegramSettings({ ...telegramSettings, ...updated })
+                          }}
+                          className={`relative w-10 h-5 rounded-full transition-colors ${
+                            telegramSettings.digest_enabled ? 'bg-primary-500' : 'bg-gray-300 dark:bg-gray-600'
+                          }`}
+                        >
+                          <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+                            telegramSettings.digest_enabled ? 'translate-x-5' : 'translate-x-0.5'
+                          }`} />
+                        </button>
+                      </div>
+
+                      {telegramSettings.digest_enabled && (
+                        <div>
+                          <label className="text-xs text-brand-text-secondary mb-1 block">Частота сводки</label>
+                          <select
+                            value={telegramSettings.digest_cron}
+                            onChange={async (e) => {
+                              const updated = await projectsApi.updateTelegramSettings(id!, {
+                                digest_cron: e.target.value,
+                              })
+                              setTelegramSettings({ ...telegramSettings, ...updated })
+                            }}
+                            className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/50"
+                          >
+                            <option value="0 9 * * *">Ежедневно (9:00)</option>
+                            <option value="0 9 * * 1">Еженедельно (пн 9:00)</option>
+                            <option value="0 9 1,15 * *">Раз в 2 недели</option>
+                          </select>
+                        </div>
+                      )}
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={async () => {
+                            await projectsApi.sendTelegramTest(id!)
+                          }}
+                          className="px-3 py-1.5 text-xs bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors"
+                        >
+                          Тестовое сообщение
+                        </button>
+                        <button
+                          onClick={async () => {
+                            await projectsApi.unlinkTelegram(id!)
+                            setTelegramSettings({ linked: false, digest_cron: '0 9 * * 1', digest_enabled: true, notifications_enabled: true })
+                          }}
+                          className="px-3 py-1.5 text-xs border border-red-300 dark:border-red-700 text-red-500 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                        >
+                          Отвязать чат
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-xs text-brand-text-secondary">Чат не привязан. Для привязки:</p>
+                      <ol className="text-xs text-brand-text-secondary space-y-1 list-decimal list-inside">
+                        <li>Добавьте бота в Telegram-группу проекта</li>
+                        <li>Отправьте команду в группе:</li>
+                      </ol>
+                      <div className="flex items-center gap-2">
+                        <code className="flex-1 px-3 py-2 rounded-xl bg-brand-surface border border-brand-border text-xs text-brand-text font-mono truncate">
+                          /link {id}
+                        </code>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(`/link ${id}`)
+                          }}
+                          className="px-3 py-2 text-xs border border-brand-border rounded-xl text-brand-text-secondary hover:text-primary-500 hover:border-primary-300 transition-colors flex-shrink-0"
+                        >
+                          Копировать
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Modal footer */}
-              <div className="flex justify-end gap-3 px-6 py-4 border-t border-brand-border">
+              <div className="flex justify-end gap-3 px-4 sm:px-6 py-4 border-t border-brand-border">
                 <button onClick={() => setShowSettings(false)} className="px-4 py-2 text-sm text-brand-text-secondary hover:text-brand-text transition-colors">
                   Отмена
                 </button>
@@ -772,13 +898,13 @@ export default function ProjectDetail() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" style={{ zIndex: 9999 }} onClick={() => setEditingTask(null)}>
           <div className="bg-card border border-brand-border rounded-2xl w-full max-w-lg shadow-2xl" onClick={e => e.stopPropagation()} style={{ boxShadow: '0 20px 60px rgba(131,110,254,0.15), 0 4px 16px rgba(0,0,0,0.08)' }}>
             {/* Modal header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-brand-border">
-              <h2 className="text-lg font-semibold text-brand-text">Редактирование задачи</h2>
+            <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-brand-border">
+              <h2 className="text-base sm:text-lg font-semibold text-brand-text">Редактирование задачи</h2>
               <button onClick={() => setEditingTask(null)} className="text-brand-text-secondary hover:text-brand-text transition-colors text-xl leading-none">&times;</button>
             </div>
 
             {/* Modal body */}
-            <div className="px-6 py-5 space-y-4 max-h-[80vh] overflow-y-auto">
+            <div className="px-4 sm:px-6 py-4 sm:py-5 space-y-4 max-h-[80vh] overflow-y-auto">
               {/* Title */}
               <div>
                 <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Название</label>
@@ -801,7 +927,7 @@ export default function ProjectDetail() {
               </div>
 
               {/* Dates row */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Начало</label>
                   <input
@@ -823,7 +949,7 @@ export default function ProjectDetail() {
               </div>
 
               {/* Assignee & Priority row */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Исполнитель</label>
                   <select
@@ -1048,7 +1174,7 @@ export default function ProjectDetail() {
             </div>
 
             {/* Modal footer */}
-            <div className="flex justify-end gap-3 px-6 py-4 border-t border-brand-border">
+            <div className="flex justify-end gap-3 px-4 sm:px-6 py-4 border-t border-brand-border">
               <button onClick={() => setEditingTask(null)} className="px-4 py-2 text-sm text-brand-text-secondary hover:text-brand-text transition-colors">
                 Отмена
               </button>

@@ -75,6 +75,17 @@ export interface ProjectMember {
   created_at: string
 }
 
+export interface TelegramChatSettings {
+  id?: string
+  project_id?: string
+  chat_id?: string
+  chat_title?: string
+  digest_cron: string
+  digest_enabled: boolean
+  notifications_enabled: boolean
+  linked?: boolean
+}
+
 export interface ProjectDetail extends Project {
   tasks: ProjectTask[]
   dependencies: TaskDependency[]
@@ -231,4 +242,17 @@ export const projectsApi = {
   removeMember: async (projectId: string, memberId: string): Promise<void> => {
     await api.delete(`/projects/${projectId}/members/${memberId}`)
   },
+
+  // Telegram
+  getTelegramSettings: (projectId: string) =>
+    api.get<TelegramChatSettings>(`/projects/${projectId}/telegram`).then(r => r.data),
+
+  updateTelegramSettings: (projectId: string, data: Partial<TelegramChatSettings>) =>
+    api.put<TelegramChatSettings>(`/projects/${projectId}/telegram`, data).then(r => r.data),
+
+  unlinkTelegram: (projectId: string) =>
+    api.delete(`/projects/${projectId}/telegram`).then(r => r.data),
+
+  sendTelegramTest: (projectId: string) =>
+    api.post(`/projects/${projectId}/telegram/test`).then(r => r.data),
 }
