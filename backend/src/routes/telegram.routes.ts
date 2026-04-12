@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express'
+import { AppDataSource } from '../config/database'
 import { handleWebhook } from '../services/telegram.service'
 
 const router = Router()
@@ -10,6 +11,10 @@ router.post('/:secret', async (req: Request, res: Response) => {
     return
   }
   try {
+    // Ensure DB is initialized (needed for Vercel serverless)
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize()
+    }
     await handleWebhook(req.body)
     res.sendStatus(200)
   } catch (err: any) {
