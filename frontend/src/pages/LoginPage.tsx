@@ -70,7 +70,7 @@ export default function LoginPage() {
               backgroundClip: 'text',
             }}
           >
-            Ximi4ka
+            XimERP
           </h1>
           <p className="text-sm text-brand-text-secondary">
             Финансовая система управления

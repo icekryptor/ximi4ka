@@ -523,7 +523,7 @@ const SidebarContent = ({ currentPath, onNavClick }: SidebarContentProps) => {
             backgroundClip: 'text',
           }}
         >
-          XimFinance
+          XimERP
         </span>
       </div>
 

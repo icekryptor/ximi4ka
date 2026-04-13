@@ -312,7 +312,7 @@ const PublicUnitEconomics = () => {
               <Calculator className="h-5 w-5 text-white" />
             </div>
             <div className="min-w-0">
-              <div className="text-xs text-[#524667] font-medium">Ximi4ka | UNIT-экономика</div>
+              <div className="text-xs text-[#524667] font-medium">XimERP | UNIT-экономика</div>
               <div className="text-base font-bold text-[#1c1528] truncate">{data.name}</div>
             </div>
           </div>
@@ -369,7 +369,7 @@ const PublicUnitEconomics = () => {
 
       {/* Footer */}
       <footer className="py-6 text-center">
-        <p className="text-xs text-[#524667]">Создано в Ximi4ka Finance</p>
+        <p className="text-xs text-[#524667]">Создано в XimERP</p>
       </footer>
     </div>
   )

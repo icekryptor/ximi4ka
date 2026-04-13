@@ -316,7 +316,7 @@ const WbAdsAnalytics = () => {
               <ol className="list-decimal list-inside space-y-1.5 text-brand-text-secondary">
                 <li>Перейдите в <span className="font-medium text-brand-text">Личный кабинет WB</span> → <span className="font-medium text-brand-text">Настройки</span> → <span className="font-medium text-brand-text">Доступ к API</span></li>
                 <li>Нажмите <span className="font-medium text-brand-text">«Создать новый токен»</span></li>
-                <li>Укажите имя (например, «XimFinance Реклама»)</li>
+                <li>Укажите имя (например, «XimERP Реклама»)</li>
                 <li>
                   <span className="font-medium text-brand-text">Обязательные разрешения:</span>
                   <ul className="list-disc list-inside ml-4 mt-1 space-y-0.5">

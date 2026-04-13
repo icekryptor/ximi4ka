@@ -136,7 +136,7 @@ app.use('/api/channel-presets', authMiddleware, channelPresetRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', service: 'XimFinance Backend' });
+  res.json({ status: 'OK', service: 'XimERP Backend' });
 });
 
 // 404 handler
