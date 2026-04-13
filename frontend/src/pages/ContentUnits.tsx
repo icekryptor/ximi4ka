@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Plus, ExternalLink, X, Trash2, Pencil, Youtube, Instagram, Link as LinkIcon, Download, Loader2, Upload, Hash, Settings } from 'lucide-react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { Plus, ExternalLink, X, Trash2, Pencil, Youtube, Instagram, Link as LinkIcon, Download, Loader2, Upload, Hash, Settings, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { contentUnitsApi, ContentUnit } from '../api/contentUnits'
 import { useToast } from '../contexts/ToastContext'
 
@@ -10,234 +10,10 @@ const IconTikTok = () => (
   </svg>
 )
 
-// ─── Content Card ────────────────────────────────────────────────────────
+// ─── Sort types ─────────────────────────────────────────────────────────
 
-interface ContentCardProps {
-  item: ContentUnit
-  onEdit: (item: ContentUnit) => void
-  onDateChange: (item: ContentUnit, platform: 'youtube' | 'instagram' | 'tiktok', date: string | null) => void
-  onDelete: (id: string) => void
-  onPublishYouTube: (item: ContentUnit) => void
-  onMarkPublished: (item: ContentUnit, platform: 'youtube' | 'instagram' | 'tiktok') => void
-  ytConnected: boolean
-  publishing: boolean
-}
-
-function ContentCard({ item, onEdit, onDateChange, onDelete, onPublishYouTube, onMarkPublished, ytConnected, publishing }: ContentCardProps) {
-  const allDates = item.youtube_date && item.instagram_date && item.tiktok_date
-  const someDates = item.youtube_date || item.instagram_date || item.tiktok_date
-
-  return (
-    <div className={`bg-card rounded-2xl border transition-all hover:shadow-md ${
-      allDates ? 'border-green-300 dark:border-green-700' : 'border-brand-border'
-    }`}>
-      <div className="p-4">
-        {/* Header: title + actions */}
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="text-sm font-semibold text-brand-text line-clamp-2 flex-1">{item.title}</h3>
-          <div className="flex items-center gap-1 shrink-0">
-            {item.material_url && (
-              <a
-                href={item.material_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-1 rounded-lg text-brand-text-secondary hover:text-primary-600 dark:hover:text-primary-400 hover:bg-surface-hover transition-colors"
-                title="Открыть материал"
-              >
-                <ExternalLink size={14} />
-              </a>
-            )}
-            <button
-              onClick={() => onEdit(item)}
-              className="p-1 rounded-lg text-brand-text-secondary hover:text-primary-600 dark:hover:text-primary-400 hover:bg-surface-hover transition-colors"
-            >
-              <Pencil size={14} />
-            </button>
-            <button
-              onClick={() => onDelete(item.id)}
-              className="p-1 rounded-lg text-brand-text-secondary hover:text-red-500 dark:hover:text-red-400 hover:bg-surface-hover transition-colors"
-            >
-              <Trash2 size={14} />
-            </button>
-          </div>
-        </div>
-
-        {/* Description preview (2-3 lines) */}
-        <div className="mb-3">
-          {item.description ? (
-            <p className="text-xs text-brand-text-secondary line-clamp-3 leading-relaxed">{item.description}</p>
-          ) : (
-            <p className="text-xs text-brand-text-secondary/40 italic">Нет описания</p>
-          )}
-        </div>
-
-        {/* Tags as colored badges */}
-        {item.tags && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {item.tags.split(/[\s,]+/).filter(Boolean).map((tag, i) => (
-              <span
-                key={i}
-                className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium
-                  bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300"
-              >
-                {tag.startsWith('#') ? tag : `#${tag}`}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Material link */}
-        {item.material_url && (
-          <div className="flex items-center gap-1.5 text-xs text-primary-600 dark:text-primary-400 mb-3 truncate">
-            <LinkIcon size={12} className="shrink-0" />
-            <span className="truncate">{item.material_url}</span>
-          </div>
-        )}
-
-        {/* Platform date pickers */}
-        <div className="space-y-2">
-          <div className="space-y-1">
-            <PlatformDateRow
-              icon={<Youtube size={14} />}
-              label="YT"
-              date={item.youtube_date}
-              onChange={d => onDateChange(item, 'youtube', d)}
-              colorClass="text-red-500"
-            />
-            {item.youtube_date && !item.youtube_published && ytConnected && (
-              <button
-                onClick={() => onPublishYouTube(item)}
-                disabled={publishing}
-                className="ml-7 flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-medium rounded-lg
-                  bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400
-                  hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors
-                  disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {publishing ? <Loader2 size={10} className="animate-spin" /> : <Upload size={10} />}
-                {publishing ? 'Загрузка на YT...' : 'Опубликовать на YT'}
-              </button>
-            )}
-            {item.youtube_published && (
-              <div className="ml-7 flex items-center gap-1.5 text-[10px] text-green-600 dark:text-green-400">
-                <span>✓</span>
-                {item.youtube_published_url ? (
-                  <a href={item.youtube_published_url} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                    {item.publish_status === 'scheduled' ? 'Запланировано' : 'Опубликовано'}
-                  </a>
-                ) : (
-                  <span>{item.publish_status === 'scheduled' ? 'Запланировано' : 'Опубликовано'}</span>
-                )}
-              </div>
-            )}
-            {item.publish_status === 'error' && item.publish_error && (
-              <p className="ml-7 text-[10px] text-red-500 truncate" title={item.publish_error}>Ошибка: {item.publish_error}</p>
-            )}
-          </div>
-          <div className="space-y-1">
-            <PlatformDateRow
-              icon={<Instagram size={14} />}
-              label="IG"
-              date={item.instagram_date}
-              onChange={d => onDateChange(item, 'instagram', d)}
-              colorClass="text-pink-500"
-            />
-            {item.instagram_published ? (
-              <div className="ml-7 flex items-center gap-1.5 text-[10px] text-green-600 dark:text-green-400">
-                <span>✓</span>
-                {item.instagram_published_url ? (
-                  <a href={item.instagram_published_url} target="_blank" rel="noopener noreferrer" className="hover:underline">Опубликовано</a>
-                ) : <span>Опубликовано</span>}
-              </div>
-            ) : item.instagram_date ? (
-              <button
-                onClick={() => onMarkPublished(item, 'instagram')}
-                className="ml-7 flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-medium rounded-lg
-                  bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400
-                  hover:bg-pink-100 dark:hover:bg-pink-900/40 transition-colors"
-              >
-                Отметить опубл.
-              </button>
-            ) : null}
-          </div>
-          <div className="space-y-1">
-            <PlatformDateRow
-              icon={<IconTikTok />}
-              label="TT"
-              date={item.tiktok_date}
-              onChange={d => onDateChange(item, 'tiktok', d)}
-              colorClass="text-brand-text"
-            />
-            {item.tiktok_published ? (
-              <div className="ml-7 flex items-center gap-1.5 text-[10px] text-green-600 dark:text-green-400">
-                <span>✓</span>
-                {item.tiktok_published_url ? (
-                  <a href={item.tiktok_published_url} target="_blank" rel="noopener noreferrer" className="hover:underline">Опубликовано</a>
-                ) : <span>Опубликовано</span>}
-              </div>
-            ) : item.tiktok_date ? (
-              <button
-                onClick={() => onMarkPublished(item, 'tiktok')}
-                className="ml-7 flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-medium rounded-lg
-                  bg-gray-100 dark:bg-gray-900/40 text-brand-text-secondary
-                  hover:bg-gray-200 dark:hover:bg-gray-800/40 transition-colors"
-              >
-                Отметить опубл.
-              </button>
-            ) : null}
-          </div>
-        </div>
-      </div>
-
-      {/* Status bar */}
-      <div className={`px-4 py-2 rounded-b-2xl text-[11px] font-medium ${
-        allDates
-          ? 'bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400'
-          : someDates
-          ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400'
-          : 'bg-subtle text-brand-text-secondary'
-      }`}>
-        {allDates ? 'Запланировано везде' : someDates ? 'Частично запланировано' : 'Даты не назначены'}
-      </div>
-    </div>
-  )
-}
-
-// ─── Platform Date Row ──────────────────────────────────────────────────
-
-interface PlatformDateRowProps {
-  icon: React.ReactNode
-  label: string
-  date: string | null
-  onChange: (date: string | null) => void
-  colorClass: string
-}
-
-function PlatformDateRow({ icon, label, date, onChange, colorClass }: PlatformDateRowProps) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className={`${colorClass} shrink-0`}>{icon}</span>
-      <span className="text-[11px] text-brand-text font-medium w-5 shrink-0">{label}</span>
-      <input
-        type="date"
-        value={date || ''}
-        onChange={e => onChange(e.target.value || null)}
-        className={`flex-1 text-[11px] rounded-lg border px-2 py-1 outline-none transition-colors
-          bg-subtle border-brand-border text-brand-text
-          focus:border-primary-400
-          ${date ? 'text-brand-text' : 'text-brand-text-secondary'}`}
-      />
-      {date && (
-        <button
-          onClick={() => onChange(null)}
-          className="p-0.5 rounded text-brand-text-secondary hover:text-red-500 transition-colors"
-          title="Убрать дату"
-        >
-          <X size={12} />
-        </button>
-      )}
-    </div>
-  )
-}
+type SortField = 'title' | 'instagram_date' | 'youtube_date'
+type SortDir = 'asc' | 'desc'
 
 // ─── Edit/Create Modal ───────────────────────────────────────────────────
 
@@ -452,6 +228,36 @@ function PlatformCell({ date, published, publishedUrl, onDateChange, onTogglePub
   )
 }
 
+// ─── Sortable Header ──────────────────────────────────────────────────────
+
+interface SortHeaderProps {
+  label: React.ReactNode
+  field: SortField
+  sortField: SortField
+  sortDir: SortDir
+  onSort: (field: SortField) => void
+  className?: string
+}
+
+function SortHeader({ label, field, sortField, sortDir, onSort, className = '' }: SortHeaderProps) {
+  const active = sortField === field
+  return (
+    <th
+      className={`px-3 py-3 text-xs font-semibold uppercase tracking-wider cursor-pointer select-none hover:text-brand-text transition-colors ${className}`}
+      onClick={() => onSort(field)}
+    >
+      <div className="flex items-center gap-1">
+        {label}
+        {active ? (
+          sortDir === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />
+        ) : (
+          <ArrowUpDown size={12} className="opacity-30" />
+        )}
+      </div>
+    </th>
+  )
+}
+
 // ─── Content Table ────────────────────────────────────────────────────────
 
 interface ContentTableProps {
@@ -463,24 +269,36 @@ interface ContentTableProps {
   onPublishYouTube: (item: ContentUnit) => void
   ytConnected: boolean
   publishing: boolean
+  sortField: SortField
+  sortDir: SortDir
+  onSort: (field: SortField) => void
 }
 
-function ContentTable({ items, onEdit, onDelete, onDateChange, onMarkPublished }: ContentTableProps) {
+function ContentTable({ items, onEdit, onDelete, onDateChange, onMarkPublished, sortField, sortDir, onSort }: ContentTableProps) {
   return (
     <div className="bg-card rounded-2xl border border-brand-border overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-brand-border">
-              <th className="text-left px-4 py-3 text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">Название</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-brand-text-secondary uppercase tracking-wider min-w-[200px]">Описание</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">Теги</th>
-              <th className="text-center px-3 py-3 text-xs font-semibold text-red-500 uppercase tracking-wider">
-                <div className="flex items-center justify-center gap-1"><Youtube size={12} /> YT</div>
-              </th>
-              <th className="text-center px-3 py-3 text-xs font-semibold text-pink-500 uppercase tracking-wider">
-                <div className="flex items-center justify-center gap-1"><Instagram size={12} /> IG</div>
-              </th>
+              <SortHeader label="Название" field="title" sortField={sortField} sortDir={sortDir} onSort={onSort} className="text-left text-brand-text-secondary" />
+              <th className="text-left px-3 py-3 text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">Теги</th>
+              <SortHeader
+                label={<span className="flex items-center gap-1"><Youtube size={12} className="text-red-500" /> YT</span>}
+                field="youtube_date"
+                sortField={sortField}
+                sortDir={sortDir}
+                onSort={onSort}
+                className="text-center text-red-500"
+              />
+              <SortHeader
+                label={<span className="flex items-center gap-1"><Instagram size={12} className="text-pink-500" /> IG</span>}
+                field="instagram_date"
+                sortField={sortField}
+                sortDir={sortDir}
+                onSort={onSort}
+                className="text-center text-pink-500"
+              />
               <th className="text-center px-3 py-3 text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">
                 <div className="flex items-center justify-center gap-1"><IconTikTok /> TT</div>
               </th>
@@ -490,19 +308,16 @@ function ContentTable({ items, onEdit, onDelete, onDateChange, onMarkPublished }
           <tbody>
             {items.map(item => (
               <tr key={item.id} className="border-b border-brand-border/50 hover:bg-brand-surface transition-colors">
-                <td className="px-4 py-3">
-                  <div className="font-medium text-brand-text text-sm max-w-[250px] truncate">{item.title}</div>
+                <td className="px-3 py-3">
+                  <div className="font-medium text-brand-text text-sm max-w-[300px] truncate">{item.title}</div>
                   {item.material_url && (
-                    <a href={item.material_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary-500 hover:underline truncate block max-w-[250px]">
-                      {item.material_url}
+                    <a href={item.material_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary-500 hover:underline truncate block max-w-[300px]">
+                      <ExternalLink size={10} className="inline mr-1" />Материал
                     </a>
                   )}
                 </td>
-                <td className="px-4 py-3">
-                  <p className="text-xs text-brand-text-secondary line-clamp-2 max-w-[300px]">{item.description || '—'}</p>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-wrap gap-1 max-w-[200px]">
+                <td className="px-3 py-3">
+                  <div className="flex flex-wrap gap-1 max-w-[180px]">
                     {item.tags?.split(/[\s,]+/).filter(Boolean).slice(0, 3).map((tag, i) => (
                       <span key={i} className="px-1.5 py-0.5 rounded-full text-[10px] bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300">
                         {tag.startsWith('#') ? tag : `#${tag}`}
@@ -577,7 +392,8 @@ export default function ContentUnits() {
   const [ytConnected, setYtConnected] = useState(false)
   const [ytChannelName, setYtChannelName] = useState<string | null>(null)
   const [publishing, setPublishing] = useState<string | null>(null)
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('table')
+  const [sortField, setSortField] = useState<SortField>('title')
+  const [sortDir, setSortDir] = useState<SortDir>('asc')
 
   const loadItems = useCallback(async () => {
     try {
@@ -783,14 +599,35 @@ export default function ContentUnits() {
     setExporting(false)
   }, [items, exportPlatforms, toast])
 
-  const filtered = items.filter(item => {
-    if (filter === 'all') return true
-    const all = item.youtube_date && item.instagram_date && item.tiktok_date
-    const some = item.youtube_date || item.instagram_date || item.tiktok_date
-    if (filter === 'published') return all
-    if (filter === 'partial') return some && !all
-    return !some
-  })
+  const handleSort = useCallback((field: SortField) => {
+    setSortDir(prev => sortField === field ? (prev === 'asc' ? 'desc' : 'asc') : 'asc')
+    setSortField(field)
+  }, [sortField])
+
+  const filtered = useMemo(() => {
+    const list = items.filter(item => {
+      if (filter === 'all') return true
+      const all = item.youtube_date && item.instagram_date && item.tiktok_date
+      const some = item.youtube_date || item.instagram_date || item.tiktok_date
+      if (filter === 'published') return all
+      if (filter === 'partial') return some && !all
+      return !some
+    })
+
+    return list.sort((a, b) => {
+      const dir = sortDir === 'asc' ? 1 : -1
+      if (sortField === 'title') {
+        return dir * (a.title || '').localeCompare(b.title || '', 'ru')
+      }
+      // Date fields — nulls always go last
+      const dateA = a[sortField]
+      const dateB = b[sortField]
+      if (!dateA && !dateB) return 0
+      if (!dateA) return 1
+      if (!dateB) return -1
+      return dir * dateA.localeCompare(dateB)
+    })
+  }, [items, filter, sortField, sortDir])
 
   if (loading) {
     return (
@@ -883,23 +720,7 @@ export default function ContentUnits() {
             {label}
           </button>
         ))}
-        <div className="flex items-center gap-1 ml-auto">
-          <button
-            onClick={() => setViewMode('cards')}
-            className={`p-1.5 rounded-lg transition-colors ${viewMode === 'cards' ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-600' : 'text-brand-text-secondary hover:text-brand-text'}`}
-            title="Карточки"
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.5"/></svg>
-          </button>
-          <button
-            onClick={() => setViewMode('table')}
-            className={`p-1.5 rounded-lg transition-colors ${viewMode === 'table' ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-600' : 'text-brand-text-secondary hover:text-brand-text'}`}
-            title="Таблица"
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><line x1="1" y1="3" x2="15" y2="3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><line x1="1" y1="8" x2="15" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><line x1="1" y1="13" x2="15" y2="13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-          </button>
-          <span className="text-xs text-brand-text-secondary ml-2">{filtered.length} из {items.length}</span>
-        </div>
+        <span className="text-xs text-brand-text-secondary ml-auto">{filtered.length} из {items.length}</span>
       </div>
 
       {/* Cards/Table view */}
@@ -916,22 +737,6 @@ export default function ContentUnits() {
             </button>
           )}
         </div>
-      ) : viewMode === 'cards' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filtered.map(item => (
-            <ContentCard
-              key={item.id}
-              item={item}
-              onEdit={setModalItem}
-              onDateChange={handleDateChange}
-              onDelete={handleDelete}
-              onPublishYouTube={handlePublishYouTube}
-              onMarkPublished={handleMarkPublished}
-              ytConnected={ytConnected}
-              publishing={publishing === item.id}
-            />
-          ))}
-        </div>
       ) : (
         <ContentTable
           items={filtered}
@@ -942,6 +747,9 @@ export default function ContentUnits() {
           onPublishYouTube={handlePublishYouTube}
           ytConnected={ytConnected}
           publishing={publishing !== null}
+          sortField={sortField}
+          sortDir={sortDir}
+          onSort={handleSort}
         />
       )}
 

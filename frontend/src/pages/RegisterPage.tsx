@@ -99,7 +99,7 @@ export default function RegisterPage() {
             Регистрация
           </h1>
           <p className="text-sm text-brand-text-secondary">
-            Создайте аккаунт в системе Ximi4ka
+            Создайте аккаунт в системе XimERP
           </p>
         </div>
 
