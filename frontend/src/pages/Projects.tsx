@@ -208,7 +208,10 @@ export default function Projects() {
                 className="bg-brand-surface border border-brand-border rounded-2xl p-5 cursor-pointer hover:shadow-lg transition-shadow"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-brand-text font-semibold">{p.name}</h3>
+                  <div className="flex items-center gap-2">
+                    {p.color && <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: p.color }} />}
+                    <h3 className="text-brand-text font-semibold">{p.name}</h3>
+                  </div>
                   <span className={`text-xs px-3 py-1 rounded-full font-medium ${st.className}`}>{st.label}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-brand-text-secondary mb-3">

@@ -10,6 +10,7 @@ export interface Project {
   end_date: string | null
   deliverables: string | null
   status: string
+  color: string | null
   responsible_id: string | null
   responsible: { id: string; name: string } | null
   created_by: string
@@ -102,6 +103,7 @@ export interface ProjectCreate {
   deliverables?: string
   status?: string
   responsible_id?: string
+  color?: string | null
 }
 
 export const projectsApi = {

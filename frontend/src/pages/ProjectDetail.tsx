@@ -32,7 +32,7 @@ export default function ProjectDetail() {
   const [showLinkInput, setShowLinkInput] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [settingsForm, setSettingsForm] = useState({
-    name: '', description: '', budget: 0, start_date: '', end_date: '', status: '', responsible_id: '', deliverables: ''
+    name: '', description: '', budget: 0, start_date: '', end_date: '', status: '', responsible_id: '', deliverables: '', color: ''
   })
   const [members, setMembers] = useState<ProjectMember[]>([])
   const [newMemberId, setNewMemberId] = useState('')
@@ -227,6 +227,7 @@ export default function ProjectDetail() {
         status: settingsForm.status,
         responsible_id: settingsForm.responsible_id || undefined,
         deliverables: settingsForm.deliverables || undefined,
+        color: settingsForm.color || null,
       })
       setShowSettings(false)
       load()
@@ -414,6 +415,7 @@ export default function ProjectDetail() {
           <button onClick={() => navigate('/planning/projects')} className="text-brand-text-secondary hover:text-brand-text transition-colors">
             ← Назад
           </button>
+          {project.color && <span className="w-3.5 h-3.5 rounded-full shrink-0" style={{ backgroundColor: project.color }} />}
           <h1 className="text-xl sm:text-2xl font-bold text-brand-text">{project.name}</h1>
           <span className={`text-xs px-3 py-1 rounded-full font-medium ${st.className}`}>{st.label}</span>
           {project.responsible && (
@@ -455,6 +457,7 @@ export default function ProjectDetail() {
                 status: project.status,
                 responsible_id: project.responsible_id || '',
                 deliverables: project.deliverables || '',
+                color: project.color || '',
               })
               setMembers(project.members || [])
               setTelegramLoading(true)
@@ -676,6 +679,31 @@ export default function ProjectDetail() {
                       <option value="completed">Завершён</option>
                       <option value="cancelled">Отменён</option>
                     </select>
+                  </div>
+                </div>
+
+                {/* Color tag */}
+                <div>
+                  <label className="text-xs font-medium text-brand-text-secondary mb-1 block">Цветовой тег</label>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280'].map(c => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setSettingsForm({ ...settingsForm, color: settingsForm.color === c ? '' : c })}
+                        className={`w-7 h-7 rounded-full border-2 transition-all ${settingsForm.color === c ? 'border-brand-text scale-110' : 'border-transparent hover:scale-110'}`}
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                    {settingsForm.color && (
+                      <button
+                        type="button"
+                        onClick={() => setSettingsForm({ ...settingsForm, color: '' })}
+                        className="text-xs text-brand-text-secondary hover:text-brand-text transition-colors"
+                      >
+                        Убрать
+                      </button>
+                    )}
                   </div>
                 </div>
 
