@@ -50,6 +50,9 @@ export class Project {
   @Column({ type: 'uuid', nullable: true, comment: 'Ответственный за проект' })
   responsible_id: string;
 
+  @Column({ type: 'varchar', length: 20, nullable: true, comment: 'Цветовой тег проекта (hex)' })
+  color: string;
+
   @Column({ type: 'uuid', comment: 'Кто создал' })
   created_by: string;
 
