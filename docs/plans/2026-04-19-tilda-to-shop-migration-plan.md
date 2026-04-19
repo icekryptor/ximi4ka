@@ -6,7 +6,9 @@
 
 **Architecture:** New monorepo `ximi4ka-shop` (sibling to this repo) with two deployable services — `web/` (Next.js 15 App Router, storefront + admin) and `api/` (Node + Express + TypeORM on a separate Supabase Postgres). Storefront owns catalog; ERP receives paid orders and forwards to existing Telegram bot. Yandex Pay as priority payment method. Soft cutover via `shop.ximi4ka.ru` subdomain, later DNS swap + 301 map.
 
-**Tech Stack:** Next.js 15, React 19, TypeScript, TailwindCSS, Tiptap (WYSIWYG), Node + Express, TypeORM, PostgreSQL (Supabase), argon2 (admin auth), Yandex Pay Checkout API, Supabase Storage (images), Vitest + Playwright (tests), Sentry, Vercel (web) + Fly.io or Railway (api).
+**Tech Stack:** Next.js 16 (App Router, Turbopack), React 19, TypeScript, TailwindCSS v4, Tiptap (WYSIWYG), Node + Express, TypeORM, PostgreSQL (Supabase), argon2 (admin auth), Yandex Pay Checkout API, Supabase Storage (images), Vitest + Playwright (tests), Sentry, Vercel (web) + Fly.io or Railway (api).
+
+> **Note:** Plan originally said "Next.js 15" but `create-next-app@latest` installed Next.js 16.2.4 (current stable) during Task 0.4. Dispatcher policy was "accept latest; don't downgrade."
 
 **Design doc:** [2026-04-19-tilda-to-shop-migration-design.md](2026-04-19-tilda-to-shop-migration-design.md)
 
