@@ -134,12 +134,21 @@ The work splits into nine phases. **Phases 0–2 are locally executable** with n
 
 **Goal:** Local Postgres (via docker-compose), TypeORM entities matching design-doc schema, migrations, and CRUD endpoints (with validation + tests) for products, categories, and pages. Auth deferred to Phase 3.
 
-### Task 1.1: Local Postgres via docker-compose
+### Task 1.1: Local Postgres via Homebrew *(adapted — docker not installed)*
 
 **Files:**
-- Create: `ximi4ka-shop/docker-compose.yml` — `postgres:16` on port 5433 (avoid colliding with ERP's Postgres), volume, default creds for dev only.
+- Modify: `ximi4ka-shop/api/.env.example` — point `DATABASE_URL` at the local Homebrew Postgres on `:5432`.
 
-**Steps:** `docker compose up -d`. Verify `psql`. Update `api/.env` with local URL. Commit: `chore: add docker-compose for local Postgres`.
+**Setup commands (one-time, already done on dev machine):**
+```
+brew install postgresql@16
+brew services start postgresql@16
+createdb ximi4ka_shop
+```
+
+**Commit:** `chore: use Homebrew Postgres for local dev` *(commit b294127)*.
+
+> Original plan used `docker-compose.yml` on port 5433. Switched to Homebrew because Docker isn't installed on the dev machine. Homebrew Postgres runs as a user-level service on the default :5432.
 
 ### Task 1.2: TypeORM DataSource
 
