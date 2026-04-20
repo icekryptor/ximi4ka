@@ -16,20 +16,20 @@
 
 ## Phased Overview
 
-The work splits into nine phases. **Phases 0–2 are locally executable** with no external accounts. Phases 3+ require credentials the owner provisions (see "External Prerequisites" below).
+The work splits into nine phases. **Phases 0–3 are complete.** Current HEAD: `a14f00e`. **438 tests passing** (web 303, api 129, shared 6).
 
-| Phase | Title | External deps needed | Can start autonomously? |
+| Phase | Title | Status | External deps |
 |---|---|---|---|
-| 0 | Repo scaffolding & tooling | None (local git) | **Yes** |
-| 1 | Shop DB schema + API CRUD (products, categories, pages) | Local Postgres via Docker | **Yes** |
-| 2 | Public storefront — catalog, product page, cart | None | **Yes** |
-| 3 | Admin panel + WYSIWYG | None (but needs Supabase Storage for images in prod) | Partial — local-disk fallback OK |
-| 4 | Checkout + Yandex Pay integration | **Yandex Pay merchant account + credentials** | **No — blocked** |
-| 5 | ERP integration (inbound orders + Telegram) | ERP deploy target + shared secret | **No — blocked** |
-| 6 | SEO + GEO (JSON-LD, sitemap, robots, llms.txt, Metrika) | None for code; verification IDs needed for launch | Partial |
-| 7 | AMP + Turbo + YML feed | None for code | **Yes** |
-| 8 | i18n plumbing (RU launch, EN-ready) | None | **Yes** |
-| 9 | Cutover (staging deploy, 301 map, DNS, observability) | **Vercel + Fly/Railway + Sentry + domain DNS + Tilda URL export** | **No — blocked** |
+| 0 | Repo scaffolding & tooling | ✅ **Complete** | — |
+| 1 | Shop DB schema + API CRUD | ✅ **Complete** | — |
+| 2 | Public storefront — catalog, product page, cart | ✅ **Complete** | — |
+| 3 | Admin panel + WYSIWYG + settings | ✅ **Complete** | — |
+| 4 | Checkout + Yandex Pay integration | ⛔ **Blocked** | Yandex Pay merchant credentials |
+| 5 | ERP integration (inbound orders + Telegram) | ⛔ **Blocked** | ERP deploy target + shared secret |
+| 6 | SEO + GEO (JSON-LD, sitemap, robots, llms.txt, Metrika) | 🟢 **Unblocked** | Verification IDs at cutover |
+| 7 | AMP + Turbo + YML feed | 🟢 **Unblocked** | — |
+| 8 | i18n plumbing (RU launch, EN-ready) | 🟢 **Unblocked** | — |
+| 9 | Cutover (staging deploy, 301 map, DNS, observability) | ⛔ **Blocked** | Vercel + Fly/Railway + Sentry + DNS + Tilda export |
 
 ## External Prerequisites (owner must provide before Phases 4/5/9)
 
@@ -51,7 +51,9 @@ The work splits into nine phases. **Phases 0–2 are locally executable** with n
 
 ---
 
-## Phase 0 — Repo Scaffolding & Tooling
+## Phase 0 — Repo Scaffolding & Tooling ✅ Complete
+
+**Shipped:** 9 commits `5eda343…7702cee`. Monorepo skeleton, shared types workspace, Express API on :3001 with `/health`, Next.js 16 + React 19 + Tailwind v4 web app, Prettier + EditorConfig, GitHub Actions matrix (Node 20/22), `.env.example` for both services.
 
 **Goal:** Create the new repo, initialize `web/` and `api/` workspaces, set up shared TypeScript config, install baseline dependencies, wire up lint/format/test tooling, and land a green CI config in `main`. Everything passes with zero feature code.
 
@@ -130,7 +132,9 @@ The work splits into nine phases. **Phases 0–2 are locally executable** with n
 
 ---
 
-## Phase 1 — Shop DB Schema + API CRUD
+## Phase 1 — Shop DB Schema + API CRUD ✅ Complete
+
+**Shipped:** commits `b294127…12e04ca`. Local Postgres (Homebrew `postgresql@16` — see Task 1.1 adaptation below), TypeORM DataSource, 9 entities (Product, ProductImage, ProductCategory, Page, Order, OrderItem, AdminUser, EntityRevision, Redirect) with 2 migrations applied, public + admin REST CRUD for Products/Categories/Pages with zod validation, `{ error }` envelope, soft-delete, slug-conflict handling, pagination, seed script with realistic Russian chemistry-kit data (3 categories, 8 products, 4 pages, 1 admin user).
 
 **Goal:** Local Postgres (via docker-compose), TypeORM entities matching design-doc schema, migrations, and CRUD endpoints (with validation + tests) for products, categories, and pages. Auth deferred to Phase 3.
 
@@ -199,7 +203,9 @@ Same rhythm as Task 1.5. Public `GET` endpoints only filter `is_published = true
 
 ---
 
-## Phase 2 — Public Storefront (Catalog, Product, Cart)
+## Phase 2 — Public Storefront (Catalog, Product, Cart) ✅ Complete
+
+**Shipped:** commits `04eaa24…5974262`. Typed API client in `web/lib/api.ts`, SSG/ISR homepage + category list/detail + product detail + `/[slug]` CMS pages + `/cart` full page, 8-type block renderer with DOMPurify sanitization and FAQ JSON-LD (GEO win), localStorage cart with drawer via custom events, site-wide Header + Footer using brand tokens (`#836efe` etc.), mobile burger, active-route highlight, all strings in Russian. 8 working routes verified via browser smoke tests + screenshots.
 
 **Goal:** Shoppable site using the API from Phase 1. Still no checkout/payment — cart is `localStorage` only. Fully SSR/SSG for SEO.
 
@@ -246,25 +252,27 @@ Russian UI, design tokens from existing ximi4ka.ru (purple `#836efe`, etc. — s
 
 ---
 
-## Phase 3 — Admin Panel + WYSIWYG
+## Phase 3 — Admin Panel + WYSIWYG ✅ Complete
 
-**Goal:** Admins can log in, create/edit products/categories/pages with Tiptap, upload images, and manage redirects.
+**Shipped:** commits `73dad05…a14f00e`. Full admin at `/admin` with cookie sessions + CSRF, sidebar navigation, CRUD UIs for every resource, Tiptap rich-text editor, block editor mirroring public `BlockRenderer`, media library, redirects with CSV import and active 301 middleware, revision history with restore, and site settings driving `/robots.txt`, `/llms.txt`, Metrika/GA4 injection, YML feed metadata, Yandex Pay sandbox/production toggle.
 
-### Outline (to be expanded to bite-sized tasks before execution)
+**Task-by-task commit map:**
 
-- 3.1: Admin auth — argon2, session cookie, CSRF middleware, `POST /api/auth/login`, `POST /api/auth/logout`. **TDD heavy here** — auth bugs are security bugs.
-- 3.2: Admin shell — `/admin/*` route group in Next.js, auth guard server component, sidebar nav (Products, Categories, Pages, Orders, Redirects, Media, Settings).
-- 3.3: Product list + create/edit form. SEO fields panel. Image upload (calls `POST /api/media/upload`).
-- 3.4: Tiptap WYSIWYG integration — rich text, headings, lists, links toolbar.
-- 3.5: Block editor — add/remove/reorder blocks; each block type has its own inline editor; live-preview pane using public `BlockRenderer`.
-- 3.6: Category tree editor.
-- 3.7: Page list + editor (reuses block editor from 3.5).
-- 3.8: Media library.
-- 3.9: Redirects table CRUD + CSV import.
-- 3.10: Revision history + restore.
-- 3.11: Site settings (analytics IDs, robots.txt content, llms.txt content, YML feed metadata, Yandex Pay toggle/mode).
+- 3.1 — Admin auth (cookie sessions + CSRF + argon2) → `2ed7702 feat(api): add admin auth with cookie sessions and CSRF`
+- 3.2 — Admin shell + login page + sidebar → `309052a feat(web): add admin shell with login and sidebar nav`
+- 3.3 — Product management UI → `0eac836 feat(web): admin product management UI`
+- 3.4 — Tiptap rich text editor → `b93d6f5 feat(web): add Tiptap rich text editor`
+- 3.5 — Block editor + live preview → `1ab863f feat(web): add block editor with 8 block types and preview`
+- 3.6 — Category tree editor → `35e6be0 feat(web): admin category tree editor`
+- 3.7 — Page management UI → `4acb8f2 feat(web): admin page management UI`
+- 3.8 — Media library → `3763eb6 feat(web): admin media library`
+- 3.9 — Redirects CRUD + CSV import + active middleware → `9e45c25 feat: admin redirects with CSV import and active middleware`
+- 3.10 — Revision history with restore → `6ef5f3b feat: revision history with restore`
+- 3.11 — Site settings (robots/llms/analytics/yml/yandex-pay) → `a14f00e feat: add site settings (robots/llms/analytics/yml/yandex-pay)`
 
 **Image storage:** in dev, local disk under `api/uploads/`. In prod, Supabase Storage — adapter interface in API so swap is one env-var change.
+
+**Carry-forward:** The YML settings schema shipped with discrete typed columns (`yml_shop_name`, `yml_company`, `yml_url`, + Yandex Webmaster / Google Search Console verification IDs) rather than one JSONB blob. `currency` and `deliveryNote` fields will be added by Phase 7 when the YML generator has concrete requirements.
 
 ---
 
@@ -304,9 +312,17 @@ Russian UI, design tokens from existing ximi4ka.ru (purple `#836efe`, etc. — s
 
 ---
 
-## Phase 6 — SEO + GEO
+## Phase 6 — SEO + GEO 🟢 Unblocked (next candidate)
 
 **Goal:** Every public route emits correct meta tags, JSON-LD, sitemap entry, and renders fast.
+
+**What's already in place from earlier phases:**
+- FAQ block components emit `FAQPage` JSON-LD (from Phase 2.5 block renderer).
+- Admin-editable `robots.txt` and `llms.txt` served at the Next.js app root (from Phase 3.11).
+- Metrika + GA4 injection via admin-configured counter IDs (from Phase 3.11).
+- Per-entity SEO fields (`metaTitle`, `metaDescription`, `ogImage`, `canonicalUrl`, `noindex`) already on Product, ProductCategory, and Page entities + admin forms.
+
+**What Phase 6 still needs to add:** per-page `generateMetadata`, remaining JSON-LD types (Product/ItemList/Article/BreadcrumbList/Organization/WebSite+SearchAction), `/sitemap.xml`, Open Graph/Twitter tags, Core Web Vitals audit, SEO regression test suite.
 
 ### Outline
 
@@ -371,6 +387,32 @@ Russian UI, design tokens from existing ximi4ka.ru (purple `#836efe`, etc. — s
 
 ## Notes on Plan Granularity
 
-Phases 0–2 have bite-sized TDD tasks because they're what we'll execute first. Phases 3–9 are outlined; each phase will be expanded into bite-sized tasks **before that phase starts**, not all upfront. This avoids writing 2000 lines of plan that go stale before they're read, and lets early-phase learnings shape later tasks.
+Phases 0–2 had bite-sized TDD tasks because they were executed first. Phases 3–9 were outlined; each phase gets expanded into bite-sized tasks **before execution**, not all upfront. Phase 3's outline was expanded during execution (see the per-task commit map above).
 
-When a phase is ready to start, the executing-plans skill will expand the outline into the standard TDD-style step list.
+Phases 4–9 remain as outlines. When the next phase is ready to start, expand its outline into the standard TDD-style step list.
+
+## Current State Snapshot (as of 2026-04-20)
+
+- **Repo:** `/Users/vasilijaistov/Desktop/continuum/ximi4ka-shop/`
+- **Branch / HEAD:** `main` @ `a14f00e`
+- **Commit count:** 37
+- **Tests:** 438 passing (web 303 / api 129 / shared 6), 0 failing
+- **Typecheck / lint / build:** all green
+- **Local services:** Postgres 16 (Homebrew, `brew services`), api dev `npm run dev -w api` (:3001), web dev `npm run dev -w web` (:3000)
+- **Seeded admin:** `admin@ximi4ka.local` / `admin-password-change-me` (hashed, LOCAL DEV ONLY)
+
+## Outstanding Carry-Forwards
+
+- `DeliveryAddress` shape needs Russia-specific fields (`region`, `country`) before Phase 4 Yandex Pay integration.
+- Product `og_image` column is varchar(255) while the admin zod schema allows up to 500 chars — small migration to harmonize.
+- YML settings schema (`currency`, `deliveryNote`) will land with Phase 7 YML generator.
+- Root `npm run`-ws` deprecation warning — cosmetic; switch to `--workspaces` when convenient.
+- `.claude/launch.json` is a local preview-tooling file, untracked.
+
+## External Prerequisites Still Blocking
+
+| Phase | Needed |
+|---|---|
+| 4 | Yandex Pay merchant account (contract signed, API key + secret, sandbox creds) |
+| 5 | Shared-secret env value + ERP deploy access to add `POST /api/internal/orders/inbound` |
+| 9 | Vercel + Fly.io (or Railway) + Sentry accounts; DNS for `shop.ximi4ka.ru` + `api.shop.ximi4ka.ru`; Tilda URL export + top-traffic list from Metrika; production Yandex Pay credentials |
