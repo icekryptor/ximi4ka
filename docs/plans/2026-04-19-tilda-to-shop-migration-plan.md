@@ -26,7 +26,7 @@ The work splits into nine phases. **Phases 0–3 are complete.** Current HEAD: `
 | 3 | Admin panel + WYSIWYG + settings | ✅ **Complete** | — |
 | 4 | Checkout + Yandex Pay integration | ⛔ **Blocked** | Yandex Pay merchant credentials |
 | 5 | ERP integration (inbound orders + Telegram) | ⛔ **Blocked** | ERP deploy target + shared secret |
-| 6 | SEO + GEO (JSON-LD, sitemap, robots, llms.txt, Metrika) | 🟢 **Unblocked** | Verification IDs at cutover |
+| 6 | SEO + GEO (JSON-LD, sitemap, robots, llms.txt, Metrika) | ✅ **Complete** (6.8 CWV audit deferred) | Verification IDs at cutover |
 | 7 | AMP + Turbo + YML feed | 🟢 **Unblocked** | — |
 | 8 | i18n plumbing (RU launch, EN-ready) | 🟢 **Unblocked** | — |
 | 9 | Cutover (staging deploy, 301 map, DNS, observability) | ⛔ **Blocked** | Vercel + Fly/Railway + Sentry + DNS + Tilda export |
@@ -312,17 +312,21 @@ Russian UI, design tokens from existing ximi4ka.ru (purple `#836efe`, etc. — s
 
 ---
 
-## Phase 6 — SEO + GEO 🟢 Unblocked (next candidate)
+## Phase 6 — SEO + GEO ✅ Complete (6.8 CWV audit deferred)
 
-**Goal:** Every public route emits correct meta tags, JSON-LD, sitemap entry, and renders fast.
+**Shipped:** commit `2da1596 feat: add SEO + GEO coverage (generateMetadata, JSON-LD, sitemap, regression tests)`.
 
-**What's already in place from earlier phases:**
-- FAQ block components emit `FAQPage` JSON-LD (from Phase 2.5 block renderer).
-- Admin-editable `robots.txt` and `llms.txt` served at the Next.js app root (from Phase 3.11).
-- Metrika + GA4 injection via admin-configured counter IDs (from Phase 3.11).
-- Per-entity SEO fields (`metaTitle`, `metaDescription`, `ogImage`, `canonicalUrl`, `noindex`) already on Product, ProductCategory, and Page entities + admin forms.
+- 6.1/6.7 — `buildMetadata` helper in `web/lib/metadata.ts`; `generateMetadata` wired into `/`, `/categories`, `/categories/[slug]`, `/product/[slug]`, `/[slug]`, `/cart`. Respects admin-set `metaTitle`/`metaDescription`/`ogImage`/`canonicalUrl`/`noindex`. OG + Twitter tags included. Cart is `noindex`.
+- 6.2 — `web/lib/jsonLd.ts` with Organization, WebSite + SearchAction, BreadcrumbList, Product, ItemList, Article generators. `<JsonLd>` injector component. FAQ `FAQPage` continues to be emitted by the Phase 2.5 block renderer (unchanged).
+- 6.3 — `web/app/sitemap.ts` returns `MetadataRoute.Sitemap` with homepage, categories index, cart, every published product, every category, and every published CMS page (via a new `GET /api/public/pages` list endpoint + `listPages` client).
+- 6.4 `/robots.txt` — landed in Phase 3.11.
+- 6.5 `/llms.txt` — landed in Phase 3.11.
+- 6.6 Metrika + GA4 injection — landed in Phase 3.11.
+- 6.9 — Regression test suites: 13 tests for `buildMetadata`, 9 for JSON-LD generators, 3 for sitemap, 3 for product-page metadata, 2 each for `/api/public/pages` + `listPages`. +32 tests total (web 333 / api 131 / shared 6).
 
-**What Phase 6 still needs to add:** per-page `generateMetadata`, remaining JSON-LD types (Product/ItemList/Article/BreadcrumbList/Organization/WebSite+SearchAction), `/sitemap.xml`, Open Graph/Twitter tags, Core Web Vitals audit, SEO regression test suite.
+**Deferred (6.8):** Core Web Vitals audit via Lighthouse CI — flag as follow-up. Needs a hosted staging target to measure against meaningfully.
+
+**Also deferred:** real `og-default.png` asset (currently a placeholder path); `hreflang` alternates (deferred to Phase 8 i18n).
 
 ### Outline
 
@@ -394,9 +398,9 @@ Phases 4–9 remain as outlines. When the next phase is ready to start, expand i
 ## Current State Snapshot (as of 2026-04-20)
 
 - **Repo:** `/Users/vasilijaistov/Desktop/continuum/ximi4ka-shop/`
-- **Branch / HEAD:** `main` @ `a14f00e`
-- **Commit count:** 37
-- **Tests:** 438 passing (web 303 / api 129 / shared 6), 0 failing
+- **Branch / HEAD:** `main` @ `2da1596`
+- **Commit count:** 38
+- **Tests:** 470 passing (web 333 / api 131 / shared 6), 0 failing
 - **Typecheck / lint / build:** all green
 - **Local services:** Postgres 16 (Homebrew, `brew services`), api dev `npm run dev -w api` (:3001), web dev `npm run dev -w web` (:3000)
 - **Seeded admin:** `admin@ximi4ka.local` / `admin-password-change-me` (hashed, LOCAL DEV ONLY)
