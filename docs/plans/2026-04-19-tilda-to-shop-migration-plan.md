@@ -27,8 +27,8 @@ The work splits into nine phases. **Phases 0–3 are complete.** Current HEAD: `
 | 4 | Checkout + Yandex Pay integration | ⛔ **Blocked** | Yandex Pay merchant credentials |
 | 5 | ERP integration (inbound orders + Telegram) | ⛔ **Blocked** | ERP deploy target + shared secret |
 | 6 | SEO + GEO (JSON-LD, sitemap, robots, llms.txt, Metrika) | ✅ **Complete** (6.8 CWV audit deferred) | Verification IDs at cutover |
-| 7 | AMP + Turbo + YML feed | 🟢 **Unblocked** | — |
-| 8 | i18n plumbing (RU launch, EN-ready) | 🟢 **Unblocked** | — |
+| 7 | AMP + Turbo + YML feed | ✅ **Complete** | — |
+| 8 | i18n plumbing (RU launch, EN-ready) | ✅ **Complete** | — |
 | 9 | Cutover (staging deploy, 301 map, DNS, observability) | ⛔ **Blocked** | Vercel + Fly/Railway + Sentry + DNS + Tilda export |
 
 ## External Prerequisites (owner must provide before Phases 4/5/9)
@@ -342,29 +342,36 @@ Russian UI, design tokens from existing ximi4ka.ru (purple `#836efe`, etc. — s
 
 ---
 
-## Phase 7 — AMP + Turbo + YML Feed
+## Phase 7 — AMP + Turbo + YML Feed ✅ Complete
 
-### Outline
+**Shipped:** commit `b03cf7a feat: add AMP, Turbo, and YML feeds`.
 
-- 7.1: AMP route group — `/amp/product/[slug]`, `/amp/article/[slug]`. Strip interactive JS, use AMP components.
-- 7.2: AMP validator in CI (fails build on invalid AMP).
-- 7.3: `<link rel="amphtml">` injection on canonical pages.
-- 7.4: Yandex Turbo RSS endpoint — `/turbo.xml`. Shared content source with AMP.
-- 7.5: YML feed — `GET /yml.xml`. XML generator from `products` + settings. Cached, invalidated on product save.
-- 7.6: YML XSD validation in admin "Preview YML" action.
-- 7.7: Integration tests for all three feeds.
+- 7.1 / 7.3 — `/amp/product/[slug]` and `/amp/article/[slug]` route handlers return AMP-valid HTML via pure string templates in `web/lib/amp.ts`. Canonical pages emit `<link rel="amphtml">` via the extended `buildMetadata` helper.
+- 7.2 — `amphtml-validator` runs in unit tests; live smoke test against `/amp/product/:slug` returns PASS.
+- 7.4 — `/turbo.xml` route handler emits Yandex Turbo RSS 2.0 with namespaced `<turbo:content>` wrapping product and CMS-page content.
+- 7.5 — `/yml.xml` route handler generates Yandex Market Language feed from published products + `SiteSettings`. Category-UUIDs mapped to integer IDs inline. Backed by a new `?include=categories` param on `GET /api/public/products` that returns `categoryIds[]`.
+- 7.6 — Admin "Проверить YML" button with structural validation (required elements, offer counts). Real DTD validation is deliberately skipped (Yandex publishes a DTD, not an XSD; full client-side validation is disproportionate).
+- 7.7 — Unit tests for all three generators + API tests for the products-with-categories and public-settings-with-YML extensions.
+
+**Migration:** `1777000000000-AddYmlCurrencyAndDelivery` adds `yml_currency` (default `'RUB'`) and `yml_delivery_note` to `site_settings`.
+
++46 tests (web 377 / api 133 / shared 6 = 516).
 
 ---
 
-## Phase 8 — i18n Plumbing
+## Phase 8 — i18n Plumbing ✅ Complete
 
-### Outline
+**Shipped:** commit `dd10c72 feat: i18n plumbing (RU default, EN prefix with RU fallback)`.
 
-- 8.1: Next.js locale routing — `/ru/*` (default, no-prefix-fallback TBD).
-- 8.2: `translations` JSONB on products/categories/pages — migration, entity update, CRUD validation.
-- 8.3: Admin UI — language tabs with completeness indicator.
-- 8.4: `hreflang` alternates in `<head>` + sitemap.
-- 8.5: **RU-only content at launch.** Verify EN locale renders the default locale when no translation exists (fallback behavior), no broken pages.
+- 8.1 — Middleware-driven locale routing. Public routes moved under `web/app/[locale]/(public)/…`. Unprefixed URLs (`/product/foo`) rewrite internally to `/ru/product/foo` so RU stays prefix-free; `/en/product/foo` routes through the same `[locale]` segment. No i18n library — ~50 LoC of helpers in `web/lib/i18n.ts`.
+- 8.2 — `translations` JSONB already existed on Product / ProductCategory / Page entities (added in Phase 1.3/1.4). No migration needed. Strict zod validation added via shared `TranslationsSchema` in `api/src/routes/admin/i18n.ts`.
+- 8.3 — `web/components/admin/LanguageTabs.tsx` used in Product, Category, and Page admin forms. Tabs: `[RU ✓] [EN ·]`, completeness indicator per tab, save writes RU fields at the top level and EN fields under `translations.en` in a single PATCH.
+- 8.4 — `buildMetadata` emits `<link rel="alternate">` for every locale plus `x-default`. Sitemap emits `alternates.languages` per URL.
+- 8.5 — Verified `/en/product/:slug` renders RU fallback content when `translations.en` is missing; no broken pages.
+
+**Out of scope (RU-only at launch):** per-locale slug routing; translating static nav, button strings, cart state, or the admin UI itself — these remain RU-only and ready to be translated in a follow-up.
+
++36 tests (web 410 / api 136 / shared 6 = 552).
 
 ---
 
@@ -398,9 +405,9 @@ Phases 4–9 remain as outlines. When the next phase is ready to start, expand i
 ## Current State Snapshot (as of 2026-04-20)
 
 - **Repo:** `/Users/vasilijaistov/Desktop/continuum/ximi4ka-shop/`
-- **Branch / HEAD:** `main` @ `2da1596`
-- **Commit count:** 38
-- **Tests:** 470 passing (web 333 / api 131 / shared 6), 0 failing
+- **Branch / HEAD:** `main` @ `dd10c72`
+- **Commit count:** 40
+- **Tests:** 552 passing (web 410 / api 136 / shared 6), 0 failing
 - **Typecheck / lint / build:** all green
 - **Local services:** Postgres 16 (Homebrew, `brew services`), api dev `npm run dev -w api` (:3001), web dev `npm run dev -w web` (:3000)
 - **Seeded admin:** `admin@ximi4ka.local` / `admin-password-change-me` (hashed, LOCAL DEV ONLY)
@@ -409,8 +416,11 @@ Phases 4–9 remain as outlines. When the next phase is ready to start, expand i
 
 - `DeliveryAddress` shape needs Russia-specific fields (`region`, `country`) before Phase 4 Yandex Pay integration.
 - Product `og_image` column is varchar(255) while the admin zod schema allows up to 500 chars — small migration to harmonize.
-- YML settings schema (`currency`, `deliveryNote`) will land with Phase 7 YML generator.
-- Root `npm run`-ws` deprecation warning — cosmetic; switch to `--workspaces` when convenient.
+- 6.8 Core Web Vitals audit (Lighthouse CI) — deferred; needs a hosted staging target.
+- `og-default.png` is a placeholder URL; real image needed in a design pass.
+- Per-locale slug routing — out of scope for Phase 8; EN uses RU slugs.
+- Static nav / button / cart / admin-UI strings — out of scope for Phase 8; RU-only for now.
+- Root `npm run -ws` deprecation warning — cosmetic; switch to `--workspaces` when convenient.
 - `.claude/launch.json` is a local preview-tooling file, untracked.
 
 ## External Prerequisites Still Blocking
