@@ -12,19 +12,32 @@
 
 ---
 
-## Stage Overview
+## Stage Overview — ALL 7 STAGES COMPLETE ✅
 
-| Stage | Title | Commits | Detail level |
+Final HEAD: `ea8f0ae`. Total: **21 commits** across the 7 stages (range `dd10c72..ea8f0ae`).
+
+| Stage | Title | Status | Commits |
 |---|---|---|---|
-| 1 | Foundation layer (tokens + primitives + motion + decor SVGs) | 1–2 | **Bite-sized below** |
-| 2 | Homepage redesign + SiteSettings migration | 2–3 | **Bite-sized below** |
-| 3 | Product detail redesign | 2–3 | Outline; expand before execution |
-| 4 | Pattern extraction (folder restructure) | 1 | Outline |
-| 5 | Apply to category list/detail, cart, CMS pages, 404 | 3–4 | Outline |
-| 6 | Header + Footer harmonization | 1 | Outline |
-| 7 | Final pass (Playwright visual baselines, Lighthouse audit) | 1 | Outline |
+| 1 | Foundation layer (tokens + primitives + motion + decor SVGs) | ✅ | 7 — `42e753e`, `c5414fc`, `4db43db`, `e04be89`, `1eb0e32`, `69f53ad`, `89b5d1a` |
+| 2 | Homepage redesign + SiteSettings migration | ✅ | 3 — `20df6df`, `a2563fe`, `359d134` |
+| 3 | Product detail redesign | ✅ | 3 — `2567815`, `0a0aedf`, `fb75d0f` |
+| 4 | Pattern extraction (folder restructure) | ✅ | 1 — `f5764f6` |
+| 5 | Apply to category list/detail, cart, CMS pages, 404 | ✅ | 5 — `44136bb`, `1690580`, `4ef7246`, `a2464a8`, `0c2029d` |
+| 6 | Header + Footer harmonization | ✅ | 1 — `f142ef4` |
+| 7 | Final pass (Playwright visual baselines) | ✅ | 1 — `ea8f0ae` |
 
-Total: 12–14 commits.
+**Final test counts:** web 536 / api 141 / shared 6 = **683**, plus **27 Playwright visual baselines** (9 routes × 3 viewports). Typecheck, lint, build all green.
+
+## Carry-forwards from execution
+
+- **Lighthouse audit** still gated as Phase 9 (cutover) prep — needs hosted staging environment for accurate scores. `npm run test:lighthouse` is a no-op echo pointing at the cutover plan.
+- **Cross-platform visual baselines** — current snapshots are macOS-rendered; CI on Linux will diff on Cyrillic font hinting. Need Docker-based Chromium or parallel `*-linux.png` baselines before enabling visual-regression in CI.
+- **`Reveal` hydration mismatch** — framer-motion `Reveal`/`Fade`/`Stagger` log a hydration warning in Next 16 dev mode. Doesn't affect snapshots (animations disabled during capture) but worth a cleanup pass.
+- **Next 16 `middleware` → `proxy` deprecation** — file rename due before Phase 9 cutover.
+- **`web/components/CartButton.tsx` deleted** during Stage 6 (inlined into Header). Cart drawer event constant moved to `@/lib/cart` to break the chrome→component dep.
+- **Webfont license documentation** — capture Mazzard H Extrabold license proof before deploy.
+- **Real product photography + lifestyle imagery** — design accommodates them via `<ProductCard>` `image` prop and `<HeroProductStack>`; populate via admin once shoots happen.
+- **Real trust strip + testimonials copy** — admin/Settings/Маркетинг section ready for input.
 
 ## Execution Posture
 
