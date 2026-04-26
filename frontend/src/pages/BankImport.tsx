@@ -2,8 +2,42 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Upload, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet } from 'lucide-react'
 import { bankImportsApi, PreviewResponse, PreviewRow, CommitRow, RuleToCreate } from '../api/bankImports'
 import { bankAccountsApi, BankAccount } from '../api/bankAccounts'
+import { counterpartiesApi } from '../api/counterparties'
+import { categoriesApi } from '../api/categories'
+import { Counterparty, Category } from '../api/types'
 import { useToast } from '../contexts/ToastContext'
 import { useNavigate } from 'react-router-dom'
+
+function CounterpartySelect({ value, onChange }: { value: string | null; onChange: (id: string | null) => void }) {
+  const [items, setItems] = useState<Counterparty[]>([])
+  useEffect(() => { counterpartiesApi.getAll().then(setItems).catch(console.error) }, [])
+  return (
+    <select
+      value={value || ''}
+      onChange={e => onChange(e.target.value || null)}
+      className="text-xs border border-brand-border rounded-lg px-2 py-1 bg-card max-w-[180px]"
+    >
+      <option value="">— выбрать —</option>
+      {items.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+    </select>
+  )
+}
+
+function CategorySelect({ value, type, onChange }: { value: string | null; type: 'income' | 'expense'; onChange: (id: string | null) => void }) {
+  const [items, setItems] = useState<Category[]>([])
+  useEffect(() => { categoriesApi.getAll().then(setItems).catch(console.error) }, [])
+  const filtered = items.filter(c => c.type === type || !c.type)
+  return (
+    <select
+      value={value || ''}
+      onChange={e => onChange(e.target.value || null)}
+      className="text-xs border border-brand-border rounded-lg px-2 py-1 bg-card max-w-[180px]"
+    >
+      <option value="">— выбрать —</option>
+      {filtered.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+    </select>
+  )
+}
 
 export default function BankImport() {
   const toast = useToast()
@@ -197,10 +231,87 @@ export default function BankImport() {
             </button>
           </div>
 
-          {/* TODO Task 4.3: actual preview table */}
-          <p className="text-sm text-brand-text-secondary italic">
-            Таблица превью будет добавлена в задаче 4.3.
-          </p>
+          {/* Preview table */}
+          <div className="overflow-x-auto -mx-2 sm:mx-0">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-brand-border text-xs text-brand-text-secondary">
+                  <th className="text-left px-2 py-2 w-8">☑</th>
+                  <th className="text-left px-2 py-2">Дата</th>
+                  <th className="text-right px-2 py-2">Сумма</th>
+                  <th className="text-left px-2 py-2">Контрагент</th>
+                  <th className="text-left px-2 py-2">→ ERP</th>
+                  <th className="text-left px-2 py-2">Категория</th>
+                  <th className="text-left px-2 py-2">Запомнить</th>
+                </tr>
+              </thead>
+              <tbody>
+                {preview.rows.map((r: PreviewRow) => {
+                  const s = rowStates[r.index]
+                  if (!s) return null
+                  const bg =
+                    s.skip ? 'opacity-40' :
+                    s.is_transfer ? 'bg-blue-50' :
+                    r.match_quality === 'inn' && s.category_id ? 'bg-green-50' :
+                    s.counterparty_id || s.category_id ? 'bg-amber-50' :
+                    'bg-red-50'
+                  return (
+                    <tr key={r.index} className={`border-b border-brand-border/50 ${bg}`}>
+                      <td className="px-2 py-2">
+                        <input
+                          type="checkbox"
+                          checked={!s.skip}
+                          onChange={e => setRowStates(prev => ({ ...prev, [r.index]: { ...prev[r.index], skip: !e.target.checked } }))}
+                        />
+                      </td>
+                      <td className="px-2 py-2 whitespace-nowrap">{r.date}</td>
+                      <td className="px-2 py-2 text-right whitespace-nowrap">
+                        <span className={r.type === 'income' ? 'text-green-700' : 'text-red-700'}>
+                          {r.type === 'income' ? '+' : '−'}{r.amount.toLocaleString('ru-RU')} ₽
+                        </span>
+                      </td>
+                      <td className="px-2 py-2 max-w-[200px] truncate" title={r.counterparty_name}>
+                        {r.counterparty_name}
+                        {r.counterparty_inn && <span className="text-xs text-brand-text-secondary block">ИНН {r.counterparty_inn}</span>}
+                      </td>
+                      <td className="px-2 py-2">
+                        {s.is_transfer ? (
+                          <span className="text-xs text-blue-700">🔄 Перевод между счетами</span>
+                        ) : (
+                          <CounterpartySelect
+                            value={s.counterparty_id}
+                            onChange={cpId => setRowStates(prev => ({ ...prev, [r.index]: { ...prev[r.index], counterparty_id: cpId } }))}
+                          />
+                        )}
+                      </td>
+                      <td className="px-2 py-2">
+                        {s.is_transfer ? (
+                          <span className="text-xs text-brand-text-secondary">—</span>
+                        ) : (
+                          <CategorySelect
+                            value={s.category_id}
+                            type={r.type}
+                            onChange={catId => setRowStates(prev => ({ ...prev, [r.index]: { ...prev[r.index], category_id: catId } }))}
+                          />
+                        )}
+                      </td>
+                      <td className="px-2 py-2">
+                        <label className="text-xs flex items-center gap-1 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={s.learn}
+                            disabled={!r.counterparty_inn}
+                            onChange={e => setRowStates(prev => ({ ...prev, [r.index]: { ...prev[r.index], learn: e.target.checked } }))}
+                          />
+                          {r.counterparty_inn ? 'для ИНН' : '—'}
+                        </label>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
