@@ -1,0 +1,208 @@
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { Upload, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet } from 'lucide-react'
+import { bankImportsApi, PreviewResponse, PreviewRow, CommitRow, RuleToCreate } from '../api/bankImports'
+import { bankAccountsApi, BankAccount } from '../api/bankAccounts'
+import { useToast } from '../contexts/ToastContext'
+import { useNavigate } from 'react-router-dom'
+
+export default function BankImport() {
+  const toast = useToast()
+  const navigate = useNavigate()
+  const [accounts, setAccounts] = useState<BankAccount[]>([])
+  const [selectedAccount, setSelectedAccount] = useState<string>('')   // empty = auto-detect
+  const [file, setFile] = useState<File | null>(null)
+  const [preview, setPreview] = useState<PreviewResponse | null>(null)
+  const [loadingPreview, setLoadingPreview] = useState(false)
+  const [committing, setCommitting] = useState(false)
+
+  // Per-row UI state (edited fields, learn flag, skip flag)
+  type RowState = {
+    counterparty_id: string | null
+    counterparty_name: string
+    counterparty_inn: string | null
+    category_id: string | null
+    is_transfer: boolean
+    transfer_match_id: string | null
+    skip: boolean
+    learn: boolean
+  }
+  const [rowStates, setRowStates] = useState<Record<number, RowState>>({})
+
+  useEffect(() => { bankAccountsApi.list().then(setAccounts).catch(console.error) }, [])
+
+  // When preview arrives, init row states
+  useEffect(() => {
+    if (!preview) return
+    const states: Record<number, RowState> = {}
+    for (const r of preview.rows) {
+      states[r.index] = {
+        counterparty_id: r.suggested_counterparty_id,
+        counterparty_name: r.counterparty_name,
+        counterparty_inn: r.counterparty_inn,
+        category_id: r.suggested_category_id,
+        is_transfer: r.is_transfer,
+        transfer_match_id: r.transfer_match_id,
+        skip: r.is_duplicate,
+        learn: r.match_quality === 'none',  // by default learn for new mappings
+      }
+    }
+    setRowStates(states)
+  }, [preview])
+
+  const onFileSelect = (f: File) => {
+    setFile(f)
+    setPreview(null)
+  }
+
+  const runPreview = async () => {
+    if (!file) return
+    setLoadingPreview(true)
+    try {
+      const r = await bankImportsApi.preview(file, selectedAccount || undefined)
+      setPreview(r)
+      toast.success(`Распарсено ${r.total_rows} строк`)
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error || 'Ошибка парсинга')
+    } finally { setLoadingPreview(false) }
+  }
+
+  const counts = useMemo(() => {
+    if (!preview) return null
+    let auto = 0, partial = 0, manual = 0, dup = 0, transfer = 0
+    for (const r of preview.rows) {
+      if (r.is_duplicate) dup++
+      else if (r.is_transfer) transfer++
+      else if (r.match_quality === 'inn' && r.suggested_category_id) auto++
+      else if (r.suggested_counterparty_id || r.suggested_category_id) partial++
+      else manual++
+    }
+    return { auto, partial, manual, dup, transfer }
+  }, [preview])
+
+  const commit = async () => {
+    if (!preview) return
+    setCommitting(true)
+    try {
+      const rows: CommitRow[] = preview.rows.map(r => {
+        const s = rowStates[r.index]
+        return {
+          external_id: r.external_id,
+          date: r.date,
+          type: r.type,
+          amount: r.amount,
+          counterparty_name: s.counterparty_name || r.counterparty_name,
+          counterparty_inn: s.counterparty_inn,
+          description: r.description,
+          counterparty_id: s.counterparty_id,
+          category_id: s.category_id,
+          is_transfer: s.is_transfer,
+          transfer_match_id: s.transfer_match_id,
+          skip: s.skip,
+        }
+      })
+
+      // Build rules to create from rows where `learn` is true and we have manual mapping
+      const rules_to_create: RuleToCreate[] = []
+      for (const r of preview.rows) {
+        const s = rowStates[r.index]
+        if (!s.learn || s.skip) continue
+        if (!s.counterparty_id && !s.category_id && !s.is_transfer) continue
+
+        if (r.counterparty_inn) {
+          rules_to_create.push({
+            match_type: 'inn',
+            match_value: r.counterparty_inn,
+            counterparty_id: s.counterparty_id,
+            category_id: s.category_id,
+            is_inter_transfer: s.is_transfer,
+          })
+        }
+      }
+
+      const result = await bankImportsApi.commit({
+        bank_account_id: preview.bank_account_id,
+        file_name: file?.name || 'unknown.xlsx',
+        period_start: preview.period_start,
+        period_end: preview.period_end,
+        rows,
+        rules_to_create,
+      })
+      toast.success(`Импортировано ${result.imported_rows} строк, правил создано: ${rules_to_create.length}`)
+      navigate('/transactions')
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error || 'Ошибка импорта')
+    } finally { setCommitting(false) }
+  }
+
+  return (
+    <div className="p-4 sm:p-6 lg:p-8">
+      <h1 className="text-xl sm:text-2xl font-bold text-brand-text mb-6">Импорт банковских выписок</h1>
+
+      {/* Upload card */}
+      <div className="bg-card border border-brand-border rounded-2xl p-5 mb-6">
+        <h2 className="text-base font-semibold text-brand-text mb-3">1. Загрузка файла</h2>
+        <div className="flex flex-col sm:flex-row gap-3 mb-3">
+          <select
+            value={selectedAccount}
+            onChange={e => setSelectedAccount(e.target.value)}
+            className="px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text"
+          >
+            <option value="">Автоопределение банка</option>
+            {accounts.map(a => (
+              <option key={a.id} value={a.id}>{a.name} ({a.bank_code})</option>
+            ))}
+          </select>
+          <label className="flex-1 cursor-pointer flex items-center gap-2 px-3 py-2 rounded-xl border border-brand-border bg-subtle text-brand-text-secondary hover:border-primary-400">
+            <FileSpreadsheet size={16} />
+            <span className="truncate">{file?.name || 'Выбрать .xlsx файл'}</span>
+            <input type="file" accept=".xlsx,.xls" hidden onChange={e => e.target.files && onFileSelect(e.target.files[0])} />
+          </label>
+          <button
+            onClick={runPreview}
+            disabled={!file || loadingPreview}
+            className="px-5 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-40 transition-colors flex items-center gap-2"
+          >
+            {loadingPreview && <Loader2 size={16} className="animate-spin" />}
+            <Upload size={16} />
+            Проверить
+          </button>
+        </div>
+      </div>
+
+      {/* Preview area */}
+      {preview && counts && (
+        <div className="bg-card border border-brand-border rounded-2xl p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+              <h2 className="text-base font-semibold text-brand-text">2. Превью ({preview.total_rows} строк)</h2>
+              <p className="text-xs text-brand-text-secondary mt-1">
+                {preview.period_start} → {preview.period_end} · банк: {preview.bank_code}
+              </p>
+              <div className="flex gap-2 mt-2 text-xs flex-wrap">
+                <span className="px-2 py-1 rounded bg-green-100 text-green-700">✓ авто: {counts.auto}</span>
+                <span className="px-2 py-1 rounded bg-amber-100 text-amber-700">⚠ частично: {counts.partial}</span>
+                <span className="px-2 py-1 rounded bg-red-100 text-red-700">⛔ ручная разметка: {counts.manual}</span>
+                <span className="px-2 py-1 rounded bg-blue-100 text-blue-700">🔄 переводы: {counts.transfer}</span>
+                <span className="px-2 py-1 rounded bg-gray-100 text-gray-600">❌ дубли: {counts.dup}</span>
+              </div>
+            </div>
+            <button
+              onClick={commit}
+              disabled={committing}
+              className="px-5 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-40 flex items-center gap-2"
+            >
+              {committing && <Loader2 size={16} className="animate-spin" />}
+              <CheckCircle2 size={16} />
+              Импортировать {preview.total_rows - counts.dup} строк
+            </button>
+          </div>
+
+          {/* TODO Task 4.3: actual preview table */}
+          <p className="text-sm text-brand-text-secondary italic">
+            Таблица превью будет добавлена в задаче 4.3.
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}

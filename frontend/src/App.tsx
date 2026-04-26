@@ -18,6 +18,7 @@ const Categories = lazy(() => import('./pages/Categories'))
 const Reports = lazy(() => import('./pages/Reports'))
 const Supplies = lazy(() => import('./pages/Supplies'))
 const FinancialReports = lazy(() => import('./pages/FinancialReports'))
+const BankImport = lazy(() => import('./pages/BankImport'))
 const Marketplace = lazy(() => import('./pages/Marketplace'))
 const WbAdsAnalytics = lazy(() => import('./pages/WbAdsAnalytics'))
 const WbFinanceReports = lazy(() => import('./pages/WbFinanceReports'))
@@ -104,6 +105,7 @@ function App() {
                                 <Route path="/counterparties" element={<Counterparties />} />
                                 <Route path="/reports" element={<Reports />} />
                                 <Route path="/financial-reports" element={<FinancialReports />} />
+                                <Route path="/financial-reports/import" element={<BankImport />} />
                                 {/* Себестоимость */}
                                 <Route path="/components" element={<ComponentsCatalog />} />
                                 <Route path="/cost-calculation" element={<CostCalculation />} />
