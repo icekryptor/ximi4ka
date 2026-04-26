@@ -4,7 +4,9 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  Index
+  Index,
+  ManyToOne,
+  JoinColumn
 } from 'typeorm';
 import { TransactionType } from './Transaction';
 
@@ -46,6 +48,16 @@ export class Category {
 
   @Column({ type: 'varchar', length: 30, nullable: true, comment: 'Группа для финансовых отчётов' })
   group: CategoryGroup;
+
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  cashflow_section: 'operational' | 'investing' | 'financing' | null;
+
+  @Column({ type: 'uuid', nullable: true })
+  parent_id: string | null;
+
+  @ManyToOne(() => Category, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'parent_id' })
+  parent: Category | null;
 
   @CreateDateColumn()
   created_at: Date;
