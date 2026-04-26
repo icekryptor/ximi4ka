@@ -56,8 +56,21 @@ export function parseTochka(buffer: Buffer): ParseResult {
   const ws = wb.Sheets[opsSheetName]
   const aoa = XLSX.utils.sheet_to_json<any[]>(ws, { header: 1, blankrows: false, raw: true }) as any[][]
 
-  // Headers in row 2 (index 1)
-  const headers = aoa[1] || []
+  // Locate header row dynamically: the first row that contains both
+  // "Дата документа" and "Контрагент" (Tochka headers can sit on row 0 or row 1
+  // depending on whether the export includes a top metadata row).
+  let headerRowIdx = -1
+  for (let i = 0; i < Math.min(aoa.length, 5); i++) {
+    const row = aoa[i] || []
+    const joined = row.map(c => String(c || '').toLowerCase()).join('|')
+    if (joined.includes('дата документа') && joined.includes('контрагент')) {
+      headerRowIdx = i
+      break
+    }
+  }
+  if (headerRowIdx < 0) throw new Error('Не найдена строка заголовков Точка-выписки')
+
+  const headers = aoa[headerRowIdx] || []
   const cols = {
     docNum:   findColumnIndex(headers, TOCHKA_COLS.document_number),
     dateDoc:  findColumnIndex(headers, TOCHKA_COLS.date_doc),
@@ -77,7 +90,7 @@ export function parseTochka(buffer: Buffer): ParseResult {
   const warnings: string[] = []
   let minDate = '9999-12-31', maxDate = '0000-01-01'
 
-  for (let i = 2; i < aoa.length; i++) {
+  for (let i = headerRowIdx + 1; i < aoa.length; i++) {
     const row = aoa[i]
     if (!row || row.length === 0) continue
 
