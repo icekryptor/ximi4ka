@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Loader2, Filter } from 'lucide-react'
+import { Loader2, Filter, Download } from 'lucide-react'
+import * as XLSX from 'xlsx'
 import { cashflowApi, CashflowReport, PeriodBucket } from '../api/cashflow'
 import { bankAccountsApi, BankAccount } from '../api/bankAccounts'
 import { apiClient } from '../api/client'
@@ -88,6 +89,78 @@ export default function Cashflow() {
     setSelectedAccounts(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
   }
 
+  const exportXlsx = () => {
+    if (!report) return
+    const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0)
+    const blank = (n: number) => new Array(n).fill('') as (string | number)[]
+    const aoa: (string | number)[][] = []
+    const periodCount = report.periods.length
+
+    aoa.push(['Категория', ...report.periods.map(p => p.label), 'Итого'])
+    aoa.push(['Остаток на начало', ...blank(periodCount), Math.round(report.opening_balance)])
+
+    for (const sec of report.sections) {
+      if (sec.inflows.length === 0 && sec.outflows.length === 0) continue
+      aoa.push([SECTION_LABELS[sec.code], ...blank(periodCount), ''])
+
+      aoa.push(['  Поступления', ...blank(periodCount), ''])
+      sec.inflows.forEach(r => aoa.push([
+        '    ' + r.name,
+        ...r.values.map(v => Math.round(v)),
+        Math.round(sum(r.values)),
+      ]))
+      aoa.push([
+        '  Итого поступлений',
+        ...sec.inflows_total.map(v => Math.round(v)),
+        Math.round(sum(sec.inflows_total)),
+      ])
+
+      aoa.push(['  Выплаты', ...blank(periodCount), ''])
+      sec.outflows.forEach(r => aoa.push([
+        '    ' + r.name,
+        ...r.values.map(v => -Math.round(v)),
+        -Math.round(sum(r.values)),
+      ]))
+      aoa.push([
+        '  Итого выплат',
+        ...sec.outflows_total.map(v => -Math.round(v)),
+        -Math.round(sum(sec.outflows_total)),
+      ])
+
+      aoa.push([
+        '  Чистый поток',
+        ...sec.net.map(v => Math.round(v)),
+        Math.round(sum(sec.net)),
+      ])
+    }
+
+    if (report.unsorted_inflows.length > 0 || report.unsorted_outflows.length > 0) {
+      aoa.push(['Без раздела', ...blank(periodCount), ''])
+      report.unsorted_inflows.forEach(r => aoa.push([
+        '    ' + r.name,
+        ...r.values.map(v => Math.round(v)),
+        Math.round(sum(r.values)),
+      ]))
+      report.unsorted_outflows.forEach(r => aoa.push([
+        '    ' + r.name,
+        ...r.values.map(v => -Math.round(v)),
+        -Math.round(sum(r.values)),
+      ]))
+    }
+
+    aoa.push([
+      'ЧИСТЫЙ ДЕНЕЖНЫЙ ПОТОК',
+      ...report.net_cash_flow.map(v => Math.round(v)),
+      Math.round(sum(report.net_cash_flow)),
+    ])
+    aoa.push(['Остаток на конец', ...blank(periodCount), Math.round(report.closing_balance)])
+
+    const ws = XLSX.utils.aoa_to_sheet(aoa)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'БДДС')
+    XLSX.writeFile(wb, `cashflow_${from}_${to}.xlsx`)
+  }
+
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <h1 className="text-xl sm:text-2xl font-bold text-brand-text mb-4">БДДС / Отчёт о движении денежных средств</h1>
@@ -127,6 +200,15 @@ export default function Cashflow() {
           ))}
         </div>
         {loading && <Loader2 size={16} className="animate-spin text-primary-600" />}
+        <button
+          onClick={exportXlsx}
+          disabled={!report}
+          className="ml-auto px-3 py-1 text-sm border border-brand-border rounded-lg hover:bg-subtle disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+          title="Экспорт в Excel"
+        >
+          <Download size={14} />
+          Excel
+        </button>
       </div>
 
       {/* Report table */}
