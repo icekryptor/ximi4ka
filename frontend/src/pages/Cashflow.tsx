@@ -1,7 +1,27 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Loader2, Filter } from 'lucide-react'
-import { cashflowApi, CashflowReport } from '../api/cashflow'
+import { cashflowApi, CashflowReport, PeriodBucket } from '../api/cashflow'
 import { bankAccountsApi, BankAccount } from '../api/bankAccounts'
+import { apiClient } from '../api/client'
+
+interface DrilldownTarget {
+  category_id: string | null
+  category_name: string
+  period_start: string
+  period_end: string
+  type: 'income' | 'expense'
+}
+
+interface DrilldownTx {
+  id: string
+  date: string
+  amount: number | string
+  type: 'income' | 'expense'
+  description?: string
+  raw_description?: string | null
+  category?: { id: string; name: string } | null
+  counterparty?: { id: string; name: string } | null
+}
 
 const SECTION_LABELS: Record<string, string> = {
   operational: 'Операционная деятельность',
@@ -28,7 +48,28 @@ export default function Cashflow() {
   const [loading, setLoading] = useState(false)
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({})
 
+  const [drilldown, setDrilldown] = useState<DrilldownTarget | null>(null)
+  const [drilldownTx, setDrilldownTx] = useState<DrilldownTx[]>([])
+  const [drilldownLoading, setDrilldownLoading] = useState(false)
+
   useEffect(() => { bankAccountsApi.list().then(setAccounts).catch(console.error) }, [])
+
+  useEffect(() => {
+    if (!drilldown) { setDrilldownTx([]); return }
+    setDrilldownLoading(true)
+    // Reuse existing /api/transactions endpoint (params: startDate, endDate, categoryId, type)
+    const params: any = {
+      startDate: drilldown.period_start,
+      endDate: drilldown.period_end,
+      type: drilldown.type,
+      limit: 500,
+    }
+    if (drilldown.category_id) params.categoryId = drilldown.category_id
+    apiClient.get('/transactions', { params })
+      .then(r => setDrilldownTx(Array.isArray(r.data) ? r.data : (r.data?.items || [])))
+      .catch(err => { console.error('[drilldown]', err); setDrilldownTx([]) })
+      .finally(() => setDrilldownLoading(false))
+  }, [drilldown])
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -120,8 +161,10 @@ export default function Cashflow() {
                       key={sec.code}
                       label={SECTION_LABELS[sec.code]}
                       section={sec}
+                      periods={report.periods}
                       collapsed={collapsed}
                       onToggle={() => setCollapsedSections(prev => ({ ...prev, [sec.code]: !prev[sec.code] }))}
+                      onCellClick={setDrilldown}
                     />
                   )
                 })}
@@ -131,7 +174,9 @@ export default function Cashflow() {
                   <UnsortedRows
                     inflows={report.unsorted_inflows}
                     outflows={report.unsorted_outflows}
+                    periods={report.periods}
                     periodCount={report.periods.length}
+                    onCellClick={setDrilldown}
                   />
                 )}
 
@@ -157,12 +202,56 @@ export default function Cashflow() {
           </div>
         </div>
       )}
+
+      {/* Drill-down side panel */}
+      {drilldown && (
+        <div className="fixed inset-y-0 right-0 w-full sm:w-[480px] bg-card border-l border-brand-border shadow-2xl z-40 overflow-y-auto">
+          <div className="p-4 border-b border-brand-border flex items-center justify-between sticky top-0 bg-card">
+            <div>
+              <h3 className="font-semibold">{drilldown.category_name}</h3>
+              <p className="text-xs text-brand-text-secondary">
+                {drilldown.period_start} → {drilldown.period_end}
+              </p>
+            </div>
+            <button
+              onClick={() => setDrilldown(null)}
+              className="text-brand-text-secondary hover:text-brand-text text-xl leading-none px-2"
+              aria-label="Закрыть"
+            >×</button>
+          </div>
+          <div className="p-4">
+            {drilldownLoading && <Loader2 size={16} className="animate-spin text-primary-600" />}
+            {!drilldownLoading && drilldownTx.length === 0 && (
+              <p className="text-sm text-brand-text-secondary">Нет транзакций</p>
+            )}
+            {drilldownTx.map(tx => (
+              <div key={tx.id} className="border-b border-brand-border/40 py-2 text-sm">
+                <div className="flex justify-between gap-2">
+                  <span>{tx.date ? new Date(tx.date).toLocaleDateString('ru-RU') : ''}</span>
+                  <span className={tx.type === 'income' ? 'text-green-700' : 'text-red-700'}>
+                    {tx.type === 'income' ? '+' : '−'}{fmt(Number(tx.amount))} ₽
+                  </span>
+                </div>
+                {tx.counterparty?.name && (
+                  <p className="text-xs text-brand-text-secondary truncate">{tx.counterparty.name}</p>
+                )}
+                {tx.description && (
+                  <p className="text-xs text-brand-text-secondary truncate">{tx.description}</p>
+                )}
+                {tx.raw_description && (
+                  <p className="text-xs text-brand-text-secondary italic truncate">{tx.raw_description}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
 // Section component
-function SectionRows({ label, section, collapsed, onToggle }: any) {
+function SectionRows({ label, section, periods, collapsed, onToggle, onCellClick }: any) {
   const inflowsTotalSum = section.inflows_total.reduce((a: number, b: number) => a + b, 0)
   const outflowsTotalSum = section.outflows_total.reduce((a: number, b: number) => a + b, 0)
   const netTotalSum = section.net.reduce((a: number, b: number) => a + b, 0)
@@ -177,7 +266,7 @@ function SectionRows({ label, section, collapsed, onToggle }: any) {
       {!collapsed && <>
         <tr><td className="px-6 py-1 text-xs text-brand-text-secondary italic" colSpan={section.net.length + 2}>Поступления</td></tr>
         {section.inflows.map((row: any) => (
-          <CategoryRowDisplay key={row.category_id} row={row} />
+          <CategoryRowDisplay key={row.category_id} row={row} periods={periods} type="income" onCellClick={onCellClick} />
         ))}
         <tr className="border-b border-brand-border/50 italic">
           <td className="px-6 py-1 sticky left-0 bg-card text-brand-text-secondary">Итого поступлений</td>
@@ -189,7 +278,7 @@ function SectionRows({ label, section, collapsed, onToggle }: any) {
 
         <tr><td className="px-6 py-1 text-xs text-brand-text-secondary italic" colSpan={section.net.length + 2}>Выплаты</td></tr>
         {section.outflows.map((row: any) => (
-          <CategoryRowDisplay key={row.category_id} row={row} />
+          <CategoryRowDisplay key={row.category_id} row={row} periods={periods} type="expense" onCellClick={onCellClick} />
         ))}
         <tr className="border-b border-brand-border/50 italic">
           <td className="px-6 py-1 sticky left-0 bg-card text-brand-text-secondary">Итого выплат</td>
@@ -213,20 +302,40 @@ function SectionRows({ label, section, collapsed, onToggle }: any) {
   )
 }
 
-function CategoryRowDisplay({ row }: { row: any }) {
+function CategoryRowDisplay({ row, periods, type, onCellClick }: {
+  row: any
+  periods?: PeriodBucket[]
+  type?: 'income' | 'expense'
+  onCellClick?: (t: DrilldownTarget) => void
+}) {
   const total = row.values.reduce((a: number, b: number) => a + b, 0)
   return (
     <tr className="border-b border-brand-border/30 hover:bg-subtle">
       <td className="px-6 py-1 sticky left-0 bg-card">{row.name}</td>
-      {row.values.map((v: number, i: number) => (
-        <td key={i} className="px-3 py-1 text-right">{v ? fmt(v) : ''}</td>
-      ))}
+      {row.values.map((v: number, i: number) => {
+        const clickable = !!(v && periods && type && onCellClick)
+        return (
+          <td
+            key={i}
+            onClick={clickable ? () => onCellClick!({
+              category_id: row.category_id,
+              category_name: row.name,
+              period_start: periods![i].start,
+              period_end: periods![i].end,
+              type: type!,
+            }) : undefined}
+            className={`px-3 py-1 text-right ${clickable ? 'cursor-pointer hover:bg-primary-50' : ''}`}
+          >
+            {v ? fmt(v) : ''}
+          </td>
+        )
+      })}
       <td className="px-3 py-1 text-right">{fmt(total)}</td>
     </tr>
   )
 }
 
-function UnsortedRows({ inflows, outflows, periodCount }: any) {
+function UnsortedRows({ inflows, outflows, periods, periodCount, onCellClick }: any) {
   if (inflows.length === 0 && outflows.length === 0) return null
   return (
     <>
@@ -235,8 +344,23 @@ function UnsortedRows({ inflows, outflows, periodCount }: any) {
           Без раздела (категории без cashflow_section) — <a href="/categories" className="underline text-primary-600">проставить разделы</a>
         </td>
       </tr>
-      {[...inflows, ...outflows].map((row: any) => (
-        <CategoryRowDisplay key={(row.category_id || 'null') + ':' + (inflows.includes(row) ? 'in' : 'out')} row={row} />
+      {inflows.map((row: any) => (
+        <CategoryRowDisplay
+          key={(row.category_id || 'null') + ':in'}
+          row={row}
+          periods={periods}
+          type="income"
+          onCellClick={onCellClick}
+        />
+      ))}
+      {outflows.map((row: any) => (
+        <CategoryRowDisplay
+          key={(row.category_id || 'null') + ':out'}
+          row={row}
+          periods={periods}
+          type="expense"
+          onCellClick={onCellClick}
+        />
       ))}
     </>
   )
