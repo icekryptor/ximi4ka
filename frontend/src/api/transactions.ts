@@ -114,4 +114,20 @@ export const transactionsApi = {
     const response = await apiClient.post<{ imported: number }>('/transactions/import/confirm', { rows });
     return response.data;
   },
+
+  // Inter-account transfer linking
+  transferCandidates: async (id: string): Promise<Transaction[]> => {
+    const response = await apiClient.get<Transaction[]>(`/transactions/${id}/transfer-candidates`);
+    return response.data;
+  },
+
+  markTransfer: async (id: string, mirrorId: string): Promise<{ success: boolean }> => {
+    const response = await apiClient.post<{ success: boolean }>(`/transactions/${id}/mark-transfer`, { mirror_id: mirrorId });
+    return response.data;
+  },
+
+  unmarkTransfer: async (id: string): Promise<{ success: boolean }> => {
+    const response = await apiClient.post<{ success: boolean }>(`/transactions/${id}/unmark-transfer`);
+    return response.data;
+  },
 };

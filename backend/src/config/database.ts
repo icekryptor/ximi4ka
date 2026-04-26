@@ -39,6 +39,9 @@ import { ProjectMember } from '../entities/ProjectMember';
 import { TaskDependency } from '../entities/TaskDependency';
 import { TaskChecklistItem } from '../entities/TaskChecklistItem'
 import { TelegramChat } from '../entities/TelegramChat';
+import { BankAccount } from '../entities/BankAccount';
+import { BankImport } from '../entities/BankImport';
+import { ImportRule } from '../entities/ImportRule';
 
 dotenv.config();
 
@@ -48,7 +51,7 @@ const databaseUrl = process.env.DATABASE_URL;
 
 const isDev = process.env.NODE_ENV !== 'production';
 
-const allEntities = [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, UnitEconomicsShare, User, DailySales, Employee, SalesChannel, QcChecklist, Board, Task, TaskComment, TaskTag, ChannelPreset, ContentUnit, OAuthToken, Department, DepartmentRole, RecurringTask, RecurringTaskReport, Project, ProjectMember, TaskDependency, TaskChecklistItem, TelegramChat];
+const allEntities = [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, UnitEconomicsShare, User, DailySales, Employee, SalesChannel, QcChecklist, Board, Task, TaskComment, TaskTag, ChannelPreset, ContentUnit, OAuthToken, Department, DepartmentRole, RecurringTask, RecurringTaskReport, Project, ProjectMember, TaskDependency, TaskChecklistItem, TelegramChat, BankAccount, BankImport, ImportRule];
 
 const dataSourceOptions = databaseUrl
   ? {

@@ -12,6 +12,11 @@ router.get('/export', transactionController.exportXlsx);
 router.post('/import', upload.single('file'), transactionController.importXlsx);
 router.post('/import/confirm', transactionController.confirmImport);
 
+// Inter-account transfer linking — BEFORE generic /:id routes
+router.get('/:id/transfer-candidates', transactionController.transferCandidates);
+router.post('/:id/mark-transfer', transactionController.markAsTransfer);
+router.post('/:id/unmark-transfer', transactionController.unmarkTransfer);
+
 router.get('/:id', transactionController.getById);
 router.post('/', transactionController.create);
 router.put('/:id', transactionController.update);

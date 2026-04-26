@@ -4,7 +4,7 @@ import { categoriesApi } from '../api/categories'
 import { counterpartiesApi } from '../api/counterparties'
 import { Transaction, Category, Counterparty, TransactionType } from '../api/types'
 import { formatCurrency } from '../utils/format'
-import { Plus, Edit2, Trash2, TrendingUp, TrendingDown, Search, Filter, Download, Upload, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Plus, Edit2, Trash2, TrendingUp, TrendingDown, Search, Filter, Download, Upload, ChevronLeft, ChevronRight, ArrowLeftRight, X } from 'lucide-react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale/ru'
 import TransactionModal from '../components/TransactionModal'
@@ -30,6 +30,13 @@ const Transactions = () => {
   const [pagination, setPagination] = useState<PaginationMeta>({
     total: 0, page: 1, limit: PAGE_SIZE, totalPages: 1,
   })
+
+  // Transfer marking state
+  const [transferSource, setTransferSource] = useState<Transaction | null>(null)
+  const [transferCandidates, setTransferCandidates] = useState<Transaction[]>([])
+  const [transferLoading, setTransferLoading] = useState(false)
+  const [selectedMirrorId, setSelectedMirrorId] = useState<string | null>(null)
+  const [transferSubmitting, setTransferSubmitting] = useState(false)
 
   const loadTransactions = useCallback(async (pageNum: number) => {
     try {
@@ -104,6 +111,62 @@ const Transactions = () => {
     setIsModalOpen(false)
     setEditingTransaction(null)
     loadTransactions(page)
+  }
+
+  const openTransferDialog = async (tx: Transaction) => {
+    setTransferSource(tx)
+    setSelectedMirrorId(null)
+    setTransferCandidates([])
+    setTransferLoading(true)
+    try {
+      const list = await transactionsApi.transferCandidates(tx.id)
+      setTransferCandidates(list)
+    } catch (error) {
+      console.error('Ошибка загрузки кандидатов:', error)
+      toast.error('Не удалось загрузить кандидатов')
+    } finally {
+      setTransferLoading(false)
+    }
+  }
+
+  const closeTransferDialog = () => {
+    setTransferSource(null)
+    setTransferCandidates([])
+    setSelectedMirrorId(null)
+  }
+
+  const handleConfirmTransfer = async () => {
+    if (!transferSource || !selectedMirrorId) return
+    try {
+      setTransferSubmitting(true)
+      await transactionsApi.markTransfer(transferSource.id, selectedMirrorId)
+      toast.success('Помечено как перевод между счетами')
+      closeTransferDialog()
+      loadTransactions(page)
+    } catch (error) {
+      console.error('Ошибка связывания перевода:', error)
+      toast.error('Не удалось связать транзакции')
+    } finally {
+      setTransferSubmitting(false)
+    }
+  }
+
+  const handleUnmarkTransfer = async (tx: Transaction) => {
+    const ok = await confirm({
+      title: 'Снять метку перевода?',
+      message: 'Транзакция (и связанная) перестанет считаться внутренним переводом и снова попадёт в БДДС.',
+      confirmText: 'Снять метку',
+      variant: 'danger',
+    })
+    if (!ok) return
+    try {
+      await transactionsApi.unmarkTransfer(tx.id)
+      toast.success('Метка снята')
+      loadTransactions(page)
+    } catch (error) {
+      console.error('Ошибка снятия метки:', error)
+      toast.error('Не удалось снять метку')
+    }
   }
 
   // Client-side search filter (search within currently loaded page)
@@ -226,7 +289,18 @@ const Transactions = () => {
                         {format(new Date(transaction.date), 'd MMM yyyy', { locale: ru })}
                       </td>
                       <td className="py-3 px-4">
-                        <p className="font-medium text-brand-text">{transaction.description}</p>
+                        <p className="font-medium text-brand-text flex items-center gap-2">
+                          {transaction.description}
+                          {transaction.is_inter_account_transfer && (
+                            <span
+                              className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-700"
+                              title="Внутренний перевод между счетами"
+                            >
+                              <ArrowLeftRight className="h-3 w-3 mr-0.5" />
+                              перевод
+                            </span>
+                          )}
+                        </p>
                         {transaction.notes && (
                           <p className="text-sm text-brand-text-secondary">{transaction.notes}</p>
                         )}
@@ -263,6 +337,23 @@ const Transactions = () => {
                       </td>
                       <td className="py-3 px-4 text-right">
                         <div className="flex justify-end space-x-2">
+                          {transaction.is_inter_account_transfer ? (
+                            <button
+                              onClick={() => handleUnmarkTransfer(transaction)}
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Снять метку перевода"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => openTransferDialog(transaction)}
+                              className="p-2 text-brand-text-secondary hover:bg-subtle rounded-lg transition-colors"
+                              title="Это перевод между счетами"
+                            >
+                              <ArrowLeftRight className="h-4 w-4" />
+                            </button>
+                          )}
                           <button
                             onClick={() => handleEdit(transaction)}
                             className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
@@ -355,6 +446,98 @@ const Transactions = () => {
             loadTransactions(page)
           }}
         />
+      )}
+
+      {transferSource && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="p-4 border-b border-brand-border flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-brand-text">Связать как перевод между счетами</h3>
+                <p className="text-xs text-brand-text-secondary mt-1">
+                  {transferSource.type === TransactionType.INCOME ? 'Доход' : 'Расход'} ·{' '}
+                  {format(new Date(transferSource.date), 'd MMM yyyy', { locale: ru })} ·{' '}
+                  {formatCurrency(transferSource.amount)} · {transferSource.description}
+                </p>
+              </div>
+              <button onClick={closeTransferDialog} className="p-1 hover:bg-subtle rounded-lg" aria-label="Закрыть">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-4 overflow-y-auto flex-1">
+              {transferLoading ? (
+                <div className="py-8 text-center">
+                  <div className="animate-spin h-6 w-6 border-4 border-primary-500 border-t-transparent rounded-full mx-auto" />
+                </div>
+              ) : transferCandidates.length === 0 ? (
+                <p className="text-sm text-brand-text-secondary py-6 text-center">
+                  Не найдено зеркальных транзакций (та же сумма, противоположный тип, дата ±2 дня, другой счёт).
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-xs text-brand-text-secondary mb-2">
+                    Выберите зеркальную транзакцию:
+                  </p>
+                  {transferCandidates.map((c) => (
+                    <label
+                      key={c.id}
+                      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        selectedMirrorId === c.id
+                          ? 'border-primary-500 bg-primary-50'
+                          : 'border-brand-border hover:bg-subtle'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="mirror"
+                        value={c.id}
+                        checked={selectedMirrorId === c.id}
+                        onChange={() => setSelectedMirrorId(c.id)}
+                        className="mt-1"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className={`text-xs font-medium ${
+                            c.type === TransactionType.INCOME ? 'text-green-700' : 'text-red-700'
+                          }`}>
+                            {c.type === TransactionType.INCOME ? 'Доход' : 'Расход'}
+                          </span>
+                          <span className="text-xs text-brand-text-secondary">
+                            {format(new Date(c.date), 'd MMM yyyy', { locale: ru })}
+                          </span>
+                        </div>
+                        <p className="text-sm font-medium text-brand-text truncate">{c.description}</p>
+                        <div className="flex items-center justify-between gap-2 mt-1">
+                          <span className="text-xs text-brand-text-secondary truncate">
+                            {c.bank_account?.name || 'Без счёта'}
+                            {c.counterparty?.name && ` · ${c.counterparty.name}`}
+                          </span>
+                          <span className="text-sm font-semibold">{formatCurrency(c.amount)}</span>
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="p-4 border-t border-brand-border flex justify-end gap-2">
+              <button
+                onClick={closeTransferDialog}
+                className="btn btn-secondary"
+                disabled={transferSubmitting}
+              >
+                Отмена
+              </button>
+              <button
+                onClick={handleConfirmTransfer}
+                className="btn btn-primary"
+                disabled={!selectedMirrorId || transferSubmitting}
+              >
+                {transferSubmitting ? 'Связываем…' : 'Связать как перевод'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

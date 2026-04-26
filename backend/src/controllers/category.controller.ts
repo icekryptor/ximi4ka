@@ -4,14 +4,39 @@ import { Category } from '../entities/Category';
 
 const categoryRepository = AppDataSource.getRepository(Category);
 
+// Поля, которые разрешено создавать / обновлять через API
+const ALLOWED_FIELDS = [
+  'name',
+  'type',
+  'color',
+  'description',
+  'is_active',
+  'group',
+  'parent_id',
+  'cashflow_section',
+] as const;
+
+function pickAllowed(body: any): Partial<Category> {
+  const out: any = {};
+  for (const key of ALLOWED_FIELDS) {
+    if (body && Object.prototype.hasOwnProperty.call(body, key)) {
+      out[key] = body[key];
+    }
+  }
+  // Нормализация пустой строки → null для опциональных строковых FK/enum
+  if (out.parent_id === '' ) out.parent_id = null;
+  if (out.cashflow_section === '') out.cashflow_section = null;
+  return out;
+}
+
 export const categoryController = {
   // Получить все категории
   async getAll(req: Request, res: Response) {
     try {
       const { type, active } = req.query;
-      
+
       let where: any = {};
-      
+
       if (type) where.type = type;
       if (active !== undefined) where.is_active = active === 'true';
 
@@ -20,6 +45,7 @@ export const categoryController = {
         order: { name: 'ASC' }
       });
 
+      // Возвращаем сущности целиком — parent_id и cashflow_section включены автоматически.
       res.json(categories);
     } catch (error) {
       console.error('Ошибка при получении категорий:', error);
@@ -47,7 +73,8 @@ export const categoryController = {
   // Создать категорию
   async create(req: Request, res: Response) {
     try {
-      const category = categoryRepository.create(req.body);
+      const payload = pickAllowed(req.body);
+      const category = categoryRepository.create(payload);
       const savedCategory = await categoryRepository.save(category);
       res.status(201).json(savedCategory);
     } catch (error) {
@@ -66,7 +93,12 @@ export const categoryController = {
         return res.status(404).json({ error: 'Категория не найдена' });
       }
 
-      await categoryRepository.update(id, req.body);
+      const payload = pickAllowed(req.body);
+      // Нельзя сделать категорию своим же родителем
+      if (payload.parent_id === id) {
+        return res.status(400).json({ error: 'Категория не может быть родителем самой себя' });
+      }
+      await categoryRepository.update(id, payload);
       const updatedCategory = await categoryRepository.findOne({ where: { id } });
 
       res.json(updatedCategory);
