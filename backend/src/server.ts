@@ -39,6 +39,7 @@ import n8nRoutes from './routes/n8n.routes';
 import telegramRoutes from './routes/telegram.routes';
 import publicProjectRoutes from './routes/publicProject.routes';
 import bankAccountRoutes from './routes/bankAccount.routes';
+import bankImportRoutes from './routes/bankImport.routes';
 import { unitEconomicsController } from './controllers/unit-economics.controller';
 
 // Middleware
@@ -135,6 +136,7 @@ app.use('/api/youtube', authMiddleware, youtubeRoutes);
 app.use('/api/tasks', authMiddleware, taskCommentRoutes);
 app.use('/api/channel-presets', authMiddleware, channelPresetRoutes);
 app.use('/api/bank-accounts', authMiddleware, bankAccountRoutes);
+app.use('/api/bank-imports', authMiddleware, bankImportRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
