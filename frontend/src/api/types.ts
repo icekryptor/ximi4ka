@@ -59,6 +59,8 @@ export enum CategoryGroup {
   OTHER = 'other'
 }
 
+export type CashflowSection = 'operational' | 'investing' | 'financing';
+
 export interface Category {
   id: string;
   name: string;
@@ -67,6 +69,8 @@ export interface Category {
   description?: string;
   is_active: boolean;
   group?: CategoryGroup;
+  parent_id: string | null;
+  cashflow_section: CashflowSection | null;
   created_at: string;
   updated_at: string;
 }
