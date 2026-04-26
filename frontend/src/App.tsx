@@ -19,6 +19,7 @@ const Reports = lazy(() => import('./pages/Reports'))
 const Supplies = lazy(() => import('./pages/Supplies'))
 const FinancialReports = lazy(() => import('./pages/FinancialReports'))
 const BankImport = lazy(() => import('./pages/BankImport'))
+const Cashflow = lazy(() => import('./pages/Cashflow'))
 const Marketplace = lazy(() => import('./pages/Marketplace'))
 const WbAdsAnalytics = lazy(() => import('./pages/WbAdsAnalytics'))
 const WbFinanceReports = lazy(() => import('./pages/WbFinanceReports'))
@@ -106,6 +107,7 @@ function App() {
                                 <Route path="/reports" element={<Reports />} />
                                 <Route path="/financial-reports" element={<FinancialReports />} />
                                 <Route path="/financial-reports/import" element={<BankImport />} />
+                                <Route path="/financial-reports/cashflow" element={<Cashflow />} />
                                 {/* Себестоимость */}
                                 <Route path="/components" element={<ComponentsCatalog />} />
                                 <Route path="/cost-calculation" element={<CostCalculation />} />
