@@ -40,6 +40,7 @@ import telegramRoutes from './routes/telegram.routes';
 import publicProjectRoutes from './routes/publicProject.routes';
 import bankAccountRoutes from './routes/bankAccount.routes';
 import bankImportRoutes from './routes/bankImport.routes';
+import importRuleRoutes from './routes/importRule.routes';
 import { unitEconomicsController } from './controllers/unit-economics.controller';
 
 // Middleware
@@ -137,6 +138,7 @@ app.use('/api/tasks', authMiddleware, taskCommentRoutes);
 app.use('/api/channel-presets', authMiddleware, channelPresetRoutes);
 app.use('/api/bank-accounts', authMiddleware, bankAccountRoutes);
 app.use('/api/bank-imports', authMiddleware, bankImportRoutes);
+app.use('/api/import-rules', authMiddleware, importRuleRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
