@@ -30,6 +30,11 @@ export interface Transaction {
   notes?: string;
   source?: TransactionSource;
   source_id?: string;
+  bank_account_id?: string | null;
+  bank_account?: { id: string; name: string } | null;
+  is_inter_account_transfer?: boolean;
+  linked_transfer_id?: string | null;
+  raw_description?: string | null;
   created_at: string;
   updated_at: string;
 }

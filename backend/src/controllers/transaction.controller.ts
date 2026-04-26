@@ -344,6 +344,99 @@ export const transactionController = {
     }
   },
 
+  // ===== TRANSFER LINKING =====
+  async markAsTransfer(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { mirror_id } = req.body;
+      if (!mirror_id) {
+        return res.status(400).json({ error: 'mirror_id обязателен' });
+      }
+      if (mirror_id === id) {
+        return res.status(400).json({ error: 'Нельзя связать транзакцию саму с собой' });
+      }
+
+      const [tx, mirror] = await Promise.all([
+        transactionRepository.findOne({ where: { id } }),
+        transactionRepository.findOne({ where: { id: mirror_id } }),
+      ]);
+
+      if (!tx || !mirror) {
+        return res.status(404).json({ error: 'Транзакция не найдена' });
+      }
+
+      await transactionRepository.update(id,        { is_inter_account_transfer: true, linked_transfer_id: mirror_id } as any);
+      await transactionRepository.update(mirror_id, { is_inter_account_transfer: true, linked_transfer_id: id } as any);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Ошибка связывания перевода:', error);
+      res.status(500).json({ error: 'Ошибка связывания перевода' });
+    }
+  },
+
+  async unmarkTransfer(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const tx = await transactionRepository.findOne({ where: { id } });
+      if (!tx) {
+        return res.status(404).json({ error: 'Транзакция не найдена' });
+      }
+      const linkedId = (tx as any).linked_transfer_id as string | null;
+      await transactionRepository.update(id, { is_inter_account_transfer: false, linked_transfer_id: null } as any);
+      if (linkedId) {
+        await transactionRepository.update(linkedId, { is_inter_account_transfer: false, linked_transfer_id: null } as any);
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Ошибка снятия метки перевода:', error);
+      res.status(500).json({ error: 'Ошибка снятия метки перевода' });
+    }
+  },
+
+  // ===== TRANSFER CANDIDATES =====
+  async transferCandidates(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const tx = await transactionRepository.findOne({ where: { id } });
+      if (!tx) {
+        return res.status(404).json({ error: 'Транзакция не найдена' });
+      }
+      if ((tx as any).is_inter_account_transfer) {
+        return res.json([]);
+      }
+
+      const oppositeType = tx.type === TransactionType.INCOME ? TransactionType.EXPENSE : TransactionType.INCOME;
+      const baseDate = new Date(tx.date as any);
+      const start = new Date(baseDate); start.setDate(start.getDate() - 2);
+      const end = new Date(baseDate); end.setDate(end.getDate() + 2);
+
+      const qb = transactionRepository.createQueryBuilder('t')
+        .leftJoinAndSelect('t.bank_account', 'ba')
+        .leftJoinAndSelect('t.counterparty', 'cp')
+        .leftJoinAndSelect('t.category', 'cat')
+        .where('t.id != :id', { id })
+        .andWhere('t.type = :oppositeType', { oppositeType })
+        .andWhere('t.amount = :amount', { amount: tx.amount })
+        .andWhere('t.date BETWEEN :start AND :end', {
+          start: start.toISOString().split('T')[0],
+          end:   end.toISOString().split('T')[0],
+        })
+        .andWhere('(t.is_inter_account_transfer IS NULL OR t.is_inter_account_transfer = false)');
+
+      if ((tx as any).bank_account_id) {
+        qb.andWhere('(t.bank_account_id IS NULL OR t.bank_account_id != :bankId)', {
+          bankId: (tx as any).bank_account_id,
+        });
+      }
+
+      const candidates = await qb.orderBy('t.date', 'ASC').limit(50).getMany();
+      res.json(candidates);
+    } catch (error) {
+      console.error('Ошибка получения кандидатов:', error);
+      res.status(500).json({ error: 'Ошибка получения кандидатов' });
+    }
+  },
+
   // ===== IMPORT CONFIRM =====
   async confirmImport(req: Request, res: Response) {
     try {
