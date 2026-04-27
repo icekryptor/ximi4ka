@@ -244,8 +244,35 @@ export const bankImportController = {
         return newCpKeyToId.get(key) || null
       }
 
-      // ── 4. Bulk-insert transactions in chunks of 100 ──
-      const txPayloads = activeRows.map(r => {
+      // ── 4. Filter duplicates: already-in-DB and duplicates within this file ──
+      const candidateExternalIds = Array.from(new Set(
+        activeRows.map(r => r.external_id).filter(Boolean) as string[]
+      ))
+      const existingExternalIds = new Set<string>()
+      if (candidateExternalIds.length > 0) {
+        const found = await txRepo.createQueryBuilder('t')
+          .select(['t.external_id'])
+          .where('t.bank_account_id = :acc', { acc: bank_account_id })
+          .andWhere('t.external_id IN (:...ids)', { ids: candidateExternalIds })
+          .getMany()
+        for (const t of found) if (t.external_id) existingExternalIds.add(t.external_id)
+      }
+
+      const seenInBatch = new Set<string>()
+      let dupSkipped = 0
+      const rowsToInsert = activeRows.filter(r => {
+        if (!r.external_id) return true
+        const dupKey = `${bank_account_id}:${r.external_id}`
+        if (existingExternalIds.has(r.external_id) || seenInBatch.has(dupKey)) {
+          dupSkipped++
+          return false
+        }
+        seenInBatch.add(dupKey)
+        return true
+      })
+
+      // ── 5. Bulk-insert transactions in chunks of 100 ──
+      const txPayloads = rowsToInsert.map(r => {
         const desc = (r.description || '').slice(0, 500)
         return {
           date: r.date,
@@ -274,11 +301,12 @@ export const bankImportController = {
         }
       }
       importedRows = insertedTxIds.length
+      skipped += dupSkipped
 
-      // ── 5. Backlink mirror transfer transactions ──
-      const transferUpdates = activeRows
+      // ── 6. Backlink mirror transfer transactions (use rowsToInsert / insertedTxIds) ──
+      const transferUpdates = rowsToInsert
         .map((r, idx) => ({ row: r, newId: insertedTxIds[idx] }))
-        .filter(({ row }) => row.is_transfer && row.transfer_match_id)
+        .filter(({ row, newId }) => row.is_transfer && row.transfer_match_id && newId)
       if (transferUpdates.length > 0) {
         await Promise.all(transferUpdates.map(({ row, newId }) =>
           txRepo.update(row.transfer_match_id!, {
