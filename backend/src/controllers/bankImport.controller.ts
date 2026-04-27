@@ -191,28 +191,69 @@ export const bankImportController = {
       let skipped = 0
       const transferLinks: Array<{ a: string; b: string }> = []
 
-      for (const r of rows) {
-        if (r.skip) { skipped++; continue }
+      const activeRows = rows.filter(r => !r.skip)
+      skipped = rows.length - activeRows.length
 
-        // Auto-create counterparty if name given but no FK
-        let counterpartyId = r.counterparty_id
-        if (!counterpartyId && r.counterparty_name) {
-          const newCp = cpRepo.create({
-            name: r.counterparty_name,
-            inn: r.counterparty_inn || null,
-          } as any)
-          const savedCp = await cpRepo.save(newCp)
-          counterpartyId = (savedCp as any).id
+      // ── 1. Pre-fetch existing counterparties by INN to deduplicate creates ──
+      const innsToLookup = Array.from(new Set(
+        activeRows
+          .filter(r => !r.counterparty_id && r.counterparty_inn)
+          .map(r => r.counterparty_inn!)
+      ))
+      const existingByInn = new Map<string, string>()
+      if (innsToLookup.length > 0) {
+        const found = await cpRepo.createQueryBuilder('cp')
+          .select(['cp.id', 'cp.inn'])
+          .where('cp.inn IN (:...inns)', { inns: innsToLookup })
+          .getMany()
+        found.forEach(cp => existingByInn.set((cp as any).inn, cp.id))
+      }
+
+      // ── 2. Build list of NEW counterparties to create (deduped by INN+name) ──
+      type NewCp = { key: string; name: string; inn: string | null }
+      const newCpMap = new Map<string, NewCp>()
+      for (const r of activeRows) {
+        if (r.counterparty_id) continue
+        if (!r.counterparty_name) continue
+        if (r.counterparty_inn && existingByInn.has(r.counterparty_inn)) continue
+        const key = r.counterparty_inn ? `inn:${r.counterparty_inn}` : `name:${r.counterparty_name}`
+        if (!newCpMap.has(key)) {
+          newCpMap.set(key, { key, name: r.counterparty_name, inn: r.counterparty_inn || null })
         }
+      }
 
+      // ── 3. Bulk-insert new counterparties via single INSERT ──
+      const newCpKeyToId = new Map<string, string>()
+      if (newCpMap.size > 0) {
+        const newCpList = Array.from(newCpMap.values())
+        const insertResult = await cpRepo.insert(
+          newCpList.map(cp => ({ name: cp.name, inn: cp.inn })) as any[]
+        )
+        newCpList.forEach((cp, idx) => {
+          newCpKeyToId.set(cp.key, (insertResult.identifiers[idx] as any).id)
+        })
+      }
+
+      const resolveCounterpartyId = (r: typeof activeRows[number]): string | null => {
+        if (r.counterparty_id) return r.counterparty_id
+        if (r.counterparty_inn && existingByInn.has(r.counterparty_inn)) {
+          return existingByInn.get(r.counterparty_inn)!
+        }
+        if (!r.counterparty_name) return null
+        const key = r.counterparty_inn ? `inn:${r.counterparty_inn}` : `name:${r.counterparty_name}`
+        return newCpKeyToId.get(key) || null
+      }
+
+      // ── 4. Bulk-insert transactions in chunks of 100 ──
+      const txPayloads = activeRows.map(r => {
         const desc = (r.description || '').slice(0, 500)
-        const tx = txRepo.create({
+        return {
           date: r.date,
           type: r.type,
           amount: r.amount,
           description: desc,
           source: 'import',
-          counterparty_id: counterpartyId,
+          counterparty_id: resolveCounterpartyId(r),
           category_id: r.category_id,
           bank_account_id,
           import_id: savedSession.id,
@@ -220,41 +261,57 @@ export const bankImportController = {
           raw_description: r.description,
           is_inter_account_transfer: r.is_transfer,
           linked_transfer_id: r.transfer_match_id || null,
-        } as any)
-        const savedTx = await txRepo.save(tx)
-        importedRows++
+        }
+      })
 
-        // If this row is a transfer matched against an existing tx, link both ways
-        if (r.is_transfer && r.transfer_match_id) {
-          await txRepo.update(r.transfer_match_id, {
-            is_inter_account_transfer: true,
-            linked_transfer_id: (savedTx as any).id,
-          } as any)
-          transferLinks.push({ a: (savedTx as any).id, b: r.transfer_match_id })
+      const insertedTxIds: string[] = []
+      const CHUNK = 100
+      for (let i = 0; i < txPayloads.length; i += CHUNK) {
+        const chunk = txPayloads.slice(i, i + CHUNK)
+        const result = await txRepo.insert(chunk as any[])
+        for (const ident of result.identifiers) {
+          insertedTxIds.push((ident as any).id)
         }
       }
+      importedRows = insertedTxIds.length
 
-      // Persist learned rules (upsert by match_type + match_value)
-      for (const rule of rules_to_create || []) {
-        if (!rule.match_value) continue
-        const existing = await ruleRepo.findOne({
-          where: { match_type: rule.match_type, match_value: rule.match_value },
-        })
-        if (existing) {
-          existing.counterparty_id = rule.counterparty_id || existing.counterparty_id
-          existing.category_id = rule.category_id || existing.category_id
-          existing.is_inter_transfer = rule.is_inter_transfer || existing.is_inter_transfer
-          existing.hit_count = (existing.hit_count || 0) + 1
-          existing.last_used_at = new Date()
-          await ruleRepo.save(existing)
-        } else {
-          const created = ruleRepo.create({
-            ...rule,
-            hit_count: 1,
-            last_used_at: new Date(),
-          } as any)
-          await ruleRepo.save(created)
+      // ── 5. Backlink mirror transfer transactions ──
+      const transferUpdates = activeRows
+        .map((r, idx) => ({ row: r, newId: insertedTxIds[idx] }))
+        .filter(({ row }) => row.is_transfer && row.transfer_match_id)
+      if (transferUpdates.length > 0) {
+        await Promise.all(transferUpdates.map(({ row, newId }) =>
+          txRepo.update(row.transfer_match_id!, {
+            is_inter_account_transfer: true,
+            linked_transfer_id: newId,
+          } as any).then(() => transferLinks.push({ a: newId, b: row.transfer_match_id! }))
+        ))
+      }
+
+      // ── 6. Bulk upsert learned rules ──
+      const validRules = (rules_to_create || []).filter(r => r.match_value)
+      if (validRules.length > 0) {
+        const existing = await ruleRepo.find({ where: validRules.map(r => ({ match_type: r.match_type, match_value: r.match_value })) as any })
+        const existingMap = new Map(existing.map(e => [`${e.match_type}:${e.match_value}`, e]))
+
+        const toUpdate: ImportRule[] = []
+        const toInsert: ImportRule[] = []
+        for (const rule of validRules) {
+          const key = `${rule.match_type}:${rule.match_value}`
+          const ex = existingMap.get(key)
+          if (ex) {
+            ex.counterparty_id = rule.counterparty_id || ex.counterparty_id
+            ex.category_id = rule.category_id || ex.category_id
+            ex.is_inter_transfer = rule.is_inter_transfer || ex.is_inter_transfer
+            ex.hit_count = (ex.hit_count || 0) + 1
+            ex.last_used_at = new Date()
+            toUpdate.push(ex)
+          } else {
+            toInsert.push(ruleRepo.create({ ...rule, hit_count: 1, last_used_at: new Date() } as any) as any)
+          }
         }
+        if (toInsert.length > 0) await ruleRepo.insert(toInsert)
+        if (toUpdate.length > 0) await ruleRepo.save(toUpdate)
       }
 
       // Finalize session
