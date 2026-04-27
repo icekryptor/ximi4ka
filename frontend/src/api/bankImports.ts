@@ -75,4 +75,7 @@ export const bankImportsApi = {
     rules_to_create: RuleToCreate[]
   }): Promise<{ import_id: string; imported_rows: number; skipped: number; transfer_links: number }> =>
     api.post('/bank-imports/commit', data, { timeout: LONG_TIMEOUT }).then(r => r.data),
+  autoCategorize: (rows: Array<{ index: number; counterparty_id: string | null; type: 'income' | 'expense' }>):
+    Promise<{ suggestions: Array<{ index: number; category_id: string; category_name: string | null }> }> =>
+    api.post('/bank-imports/auto-categorize', { rows }).then(r => r.data),
 }

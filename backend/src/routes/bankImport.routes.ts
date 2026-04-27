@@ -10,4 +10,5 @@ const upload = multer({
 const router = Router()
 router.post('/preview', upload.single('file'), bankImportController.preview)
 router.post('/commit', bankImportController.commit)
+router.post('/auto-categorize', bankImportController.autoCategorize)
 export default router

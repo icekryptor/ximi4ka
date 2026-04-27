@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Upload, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet } from 'lucide-react'
+import { Upload, Loader2, CheckCircle2, AlertCircle, FileSpreadsheet, Sparkles } from 'lucide-react'
 import { bankImportsApi, PreviewResponse, PreviewRow, CommitRow, RuleToCreate } from '../api/bankImports'
 import { bankAccountsApi, BankAccount } from '../api/bankAccounts'
 import { counterpartiesApi } from '../api/counterparties'
@@ -48,6 +48,7 @@ export default function BankImport() {
   const [preview, setPreview] = useState<PreviewResponse | null>(null)
   const [loadingPreview, setLoadingPreview] = useState(false)
   const [committing, setCommitting] = useState(false)
+  const [autoCategorizing, setAutoCategorizing] = useState(false)
 
   // Per-row UI state (edited fields, learn flag, skip flag)
   type RowState = {
@@ -168,6 +169,41 @@ export default function BankImport() {
     } finally { setCommitting(false) }
   }
 
+  const autoCategorize = async () => {
+    if (!preview) return
+    // Collect rows that have counterparty mapped but no category, and aren't transfers/skipped
+    const candidates = preview.rows
+      .filter(r => {
+        const s = rowStates[r.index]
+        if (!s) return false
+        return s.counterparty_id && !s.category_id && !s.is_transfer && !s.skip
+      })
+      .map(r => ({ index: r.index, counterparty_id: rowStates[r.index].counterparty_id, type: r.type }))
+
+    if (candidates.length === 0) {
+      toast.success('Нет строк для авто-распределения (у всех уже есть категория или нет контрагента)')
+      return
+    }
+    setAutoCategorizing(true)
+    try {
+      const { suggestions } = await bankImportsApi.autoCategorize(candidates)
+      if (suggestions.length === 0) {
+        toast.success('Не удалось подобрать категории — нет истории по этим контрагентам')
+        return
+      }
+      setRowStates(prev => {
+        const next = { ...prev }
+        for (const s of suggestions) {
+          if (next[s.index]) next[s.index] = { ...next[s.index], category_id: s.category_id }
+        }
+        return next
+      })
+      toast.success(`Проставлено ${suggestions.length} из ${candidates.length}. Проверьте перед импортом.`)
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error || 'Ошибка авто-распределения')
+    } finally { setAutoCategorizing(false) }
+  }
+
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <h1 className="text-xl sm:text-2xl font-bold text-brand-text mb-6">Импорт банковских выписок</h1>
@@ -220,16 +256,35 @@ export default function BankImport() {
                 <span className="px-2 py-1 rounded bg-gray-100 text-gray-600">❌ дубли: {counts.dup}</span>
               </div>
             </div>
-            <button
-              onClick={commit}
-              disabled={committing}
-              className="px-5 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-40 flex items-center gap-2"
-            >
-              {committing && <Loader2 size={16} className="animate-spin" />}
-              <CheckCircle2 size={16} />
-              Импортировать {preview.total_rows - counts.dup} строк
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={autoCategorize}
+                disabled={autoCategorizing || committing}
+                className="px-4 py-2 bg-card border border-primary-300 text-primary-700 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-900/20 disabled:opacity-40 flex items-center gap-2 text-sm"
+                title="Проставить категории по истории контрагентов"
+              >
+                {autoCategorizing ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                Авто-распределить категории
+              </button>
+              <button
+                onClick={commit}
+                disabled={committing || autoCategorizing}
+                className="px-5 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-40 flex items-center gap-2"
+              >
+                {committing && <Loader2 size={16} className="animate-spin" />}
+                <CheckCircle2 size={16} />
+                Импортировать {preview.total_rows - counts.dup} строк
+              </button>
+            </div>
           </div>
+
+          <p className="text-xs text-brand-text-secondary mb-4 flex items-start gap-1.5">
+            <AlertCircle size={14} className="shrink-0 mt-0.5 text-amber-600" />
+            <span>
+              «Авто-распределить» проставляет категории по самой частой из истории каждого контрагента.
+              <strong> Проверьте предложенные значения перед импортом</strong> — это эвристика, не правило.
+            </span>
+          </p>
 
           {/* Preview table */}
           <div className="overflow-x-auto -mx-2 sm:mx-0">

@@ -413,4 +413,76 @@ export const bankImportController = {
       res.status(500).json({ error: err.message || 'Ошибка импорта' })
     }
   },
+
+  // POST /api/bank-imports/auto-categorize
+  // Body: { rows: [{ index, counterparty_id, type }] }
+  // Returns: { suggestions: [{ index, category_id, category_name }] }
+  // For each row with counterparty_id and no category, returns the most-frequent
+  // category previously used for that counterparty (preferring matching type).
+  async autoCategorize(req: Request, res: Response): Promise<void> {
+    try {
+      const { rows } = req.body as { rows: Array<{ index: number; counterparty_id: string | null; type: 'income' | 'expense' }> }
+      if (!Array.isArray(rows)) { res.status(400).json({ error: 'rows array required' }); return }
+
+      const cpIds = Array.from(new Set(rows.map(r => r.counterparty_id).filter(Boolean) as string[]))
+      if (cpIds.length === 0) { res.json({ suggestions: [] }); return }
+
+      const txRepo = AppDataSource.getRepository(Transaction)
+      const stats = await txRepo.createQueryBuilder('t')
+        .select('t.counterparty_id', 'cp_id')
+        .addSelect('t.category_id', 'cat_id')
+        .addSelect('t.type', 'tx_type')
+        .addSelect('COUNT(*)', 'cnt')
+        .where('t.counterparty_id IN (:...cps)', { cps: cpIds })
+        .andWhere('t.category_id IS NOT NULL')
+        .groupBy('t.counterparty_id, t.category_id, t.type')
+        .getRawMany<{ cp_id: string; cat_id: string; tx_type: string; cnt: string }>()
+
+      // For each (cp, type) pair pick the highest-count category.
+      // Fallback: if no match for the row's type, use the most-frequent category
+      // for the counterparty regardless of type.
+      const byCpAndType = new Map<string, { catId: string; cnt: number }>()
+      const byCpAny     = new Map<string, { catId: string; cnt: number }>()
+      for (const s of stats) {
+        const cnt = parseInt(s.cnt, 10)
+        const keyType = `${s.cp_id}|${s.tx_type}`
+        const cur = byCpAndType.get(keyType)
+        if (!cur || cnt > cur.cnt) byCpAndType.set(keyType, { catId: s.cat_id, cnt })
+        const curAny = byCpAny.get(s.cp_id)
+        if (!curAny || cnt > curAny.cnt) byCpAny.set(s.cp_id, { catId: s.cat_id, cnt })
+      }
+
+      const pickedCatIds = new Set<string>()
+      const suggestions: Array<{ index: number; counterparty_id: string; category_id: string }> = []
+      for (const r of rows) {
+        if (!r.counterparty_id) continue
+        const byType = byCpAndType.get(`${r.counterparty_id}|${r.type}`)
+        const fallback = byCpAny.get(r.counterparty_id)
+        const pick = byType || fallback
+        if (pick) {
+          pickedCatIds.add(pick.catId)
+          suggestions.push({ index: r.index, counterparty_id: r.counterparty_id, category_id: pick.catId })
+        }
+      }
+
+      // Resolve names for response
+      const catRepo = AppDataSource.getRepository(Category)
+      const cats = pickedCatIds.size === 0 ? [] : await catRepo.find({
+        where: { id: In(Array.from(pickedCatIds)) },
+        select: ['id', 'name'],
+      })
+      const nameById = new Map(cats.map(c => [c.id, c.name]))
+
+      res.json({
+        suggestions: suggestions.map(s => ({
+          index: s.index,
+          category_id: s.category_id,
+          category_name: nameById.get(s.category_id) || null,
+        })),
+      })
+    } catch (err: any) {
+      console.error('[bankImport.autoCategorize]', err)
+      res.status(500).json({ error: err.message || 'Ошибка авто-распределения' })
+    }
+  },
 }
