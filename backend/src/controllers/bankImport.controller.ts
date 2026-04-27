@@ -8,6 +8,8 @@ import { detectTransfer } from '../services/transfer-detector'
 import { BankImport } from '../entities/BankImport'
 import { ImportRule } from '../entities/ImportRule'
 import { Counterparty } from '../entities/Counterparty'
+import { Category } from '../entities/Category'
+import { In } from 'typeorm'
 
 export interface PreviewRowOut {
   index: number
@@ -109,6 +111,57 @@ export const bankImportController = {
           } as PreviewRowOut
         }))
         out.push(...enriched)
+      }
+
+      // ── Enrich: для контрагентов без явной категории — взять самую частую из истории ──
+      const cpsNeedingCategory = Array.from(new Set(
+        out
+          .filter(r => r.suggested_counterparty_id && !r.suggested_category_id && !r.is_transfer)
+          .map(r => r.suggested_counterparty_id!)
+      ))
+      if (cpsNeedingCategory.length > 0) {
+        const stats = await txRepo.createQueryBuilder('t')
+          .select('t.counterparty_id', 'cp_id')
+          .addSelect('t.category_id', 'cat_id')
+          .addSelect('COUNT(*)', 'cnt')
+          .where('t.counterparty_id IN (:...cps)', { cps: cpsNeedingCategory })
+          .andWhere('t.category_id IS NOT NULL')
+          .groupBy('t.counterparty_id, t.category_id')
+          .getRawMany<{ cp_id: string; cat_id: string; cnt: string }>()
+
+        // Pick most-frequent category per counterparty
+        const bestByCp = new Map<string, { catId: string; cnt: number }>()
+        for (const s of stats) {
+          const cnt = parseInt(s.cnt, 10)
+          const cur = bestByCp.get(s.cp_id)
+          if (!cur || cnt > cur.cnt) bestByCp.set(s.cp_id, { catId: s.cat_id, cnt })
+        }
+
+        // Fetch category names for the picked categories
+        const picked = Array.from(new Set(Array.from(bestByCp.values()).map(v => v.catId)))
+        const catRepo = AppDataSource.getRepository(Category)
+        const catNames = picked.length === 0 ? [] : await catRepo.find({
+          where: { id: In(picked) },
+          select: ['id', 'name'],
+        })
+        const catNameById = new Map(catNames.map(c => [c.id, c.name]))
+
+        for (const r of out) {
+          if (!r.suggested_counterparty_id) continue
+          if (r.suggested_category_id) continue
+          if (r.is_transfer) continue
+          const best = bestByCp.get(r.suggested_counterparty_id)
+          if (best) {
+            r.suggested_category_id = best.catId
+            r.suggested_category_name = catNameById.get(best.catId) || null
+            // Mark match_quality as 'name' to indicate it's an inferred suggestion
+            if (r.match_quality === 'inn') {
+              // keep 'inn' since counterparty match was via INN
+            } else if (r.match_quality === 'none') {
+              r.match_quality = 'name'
+            }
+          }
+        }
       }
 
       const response: PreviewResponse = {
