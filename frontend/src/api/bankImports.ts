@@ -53,12 +53,18 @@ export interface RuleToCreate {
   is_inter_transfer: boolean
 }
 
+// Bank statement parsing/import can take a while on large files
+const LONG_TIMEOUT = 180_000  // 3 minutes
+
 export const bankImportsApi = {
   preview: (file: File, bankAccountId?: string): Promise<PreviewResponse> => {
     const fd = new FormData()
     fd.append('file', file)
     if (bankAccountId) fd.append('bank_account_id', bankAccountId)
-    return api.post('/bank-imports/preview', fd, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data)
+    return api.post('/bank-imports/preview', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: LONG_TIMEOUT,
+    }).then(r => r.data)
   },
   commit: (data: {
     bank_account_id: string
@@ -68,5 +74,5 @@ export const bankImportsApi = {
     rows: CommitRow[]
     rules_to_create: RuleToCreate[]
   }): Promise<{ import_id: string; imported_rows: number; skipped: number; transfer_links: number }> =>
-    api.post('/bank-imports/commit', data).then(r => r.data),
+    api.post('/bank-imports/commit', data, { timeout: LONG_TIMEOUT }).then(r => r.data),
 }
