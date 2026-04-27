@@ -205,10 +205,13 @@ export const bankImportController = {
           counterpartyId = (savedCp as any).id
         }
 
+        const desc = (r.description || '').slice(0, 500)
         const tx = txRepo.create({
           date: r.date,
           type: r.type,
           amount: r.amount,
+          description: desc,
+          source: 'import',
           counterparty_id: counterpartyId,
           category_id: r.category_id,
           bank_account_id,
