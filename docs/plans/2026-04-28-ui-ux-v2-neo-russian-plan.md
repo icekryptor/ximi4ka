@@ -12,19 +12,28 @@
 
 ---
 
-## Stage Overview
+## Stage Overview — ALL 7 STAGES COMPLETE ✅
 
-| Stage | Title | Commits | Detail level |
+Shipped across **17 commits** (range `61a6b50..a2b1410`). Tests: web 625 / api 181 / shared 6 = **812 vitest** + **27 refreshed Playwright baselines**, all green.
+
+| Stage | Title | Status | Commits |
 |---|---|---|---|
-| 1 | Foundation extensions (tokens + 4 UI primitives) | 1–2 | **Bite-sized below** |
-| 2 | Homepage v2 (hero + manifesto + dense grid + dark zebra) | 2–3 | **Bite-sized below** |
-| 3 | Product detail v2 (sticker gallery + KeyFacts + dark «Что внутри») | 2 | Outline |
-| 4 | Pattern extraction (if needed) | 0–1 | Outline |
-| 5 | Catalog/category/cart/CMS/404 | 2–3 | Outline |
-| 6 | Header + Footer touches | 1 | Outline |
-| 7 | Final pass — Playwright baseline refresh + Lighthouse | 1 | Outline |
+| 1 | Foundation extensions | ✅ | 6 — `05047f5`, `3798407`, `3a3386b`, `8554039`, `53330e8`, `60aaa0b` |
+| 2 | Homepage v2 | ✅ | 4 — `f7bcb13`, `40f1f9b`, `7571f5f`, `eff908e` |
+| 3 | Product detail v2 | ✅ | 2 — `c03fcb1`, `e166301` |
+| 4 | Pattern extraction | ✅ | 0 — components correctly placed at authoring time |
+| 5 | Catalog/category/cart/CMS/404 | ✅ | 3 — `a11b447`, `4bf1c63`, `9dac3af` |
+| 6 | Header + Footer touches | ✅ | 1 — `b06470a` |
+| 7 | Playwright baseline refresh | ✅ | 1 — `a2b1410` |
 
-Total: **9–12 commits.**
+## v2 Carry-Forwards
+
+- **`MoleculeMotif` accent variant** — `vivid` currently uses brand purple. The ContentsSection/404/Hero on dark surfaces would benefit from a true orange variant (`stroke: var(--color-accent)`). Small follow-up; current rendering is acceptable.
+- **api integration tests wipe dev DB** — every `npm test -w api` truncates products/categories/images. Re-import via `npm run import:tilda -w api -- /path/to/csv` after running tests. Real fix: separate test schema or test DB.
+- **Lighthouse audit** — gated as Phase 9 (cutover) prep work; needs hosted staging environment for accurate scores. `npm run test:lighthouse` is a no-op echo pointing at the cutover plan.
+- **Cross-platform Playwright baselines** — current snapshots are macOS-rendered; CI on Linux will diff on Cyrillic font hinting. Need Docker-based Chromium or parallel `*-linux.png` baselines.
+- **Reveal hydration mismatch** — framer-motion `Reveal`/`Fade`/`Stagger` log a hydration warning in Next 16 dev. Doesn't affect snapshots (animations disabled during capture).
+- **Next 16 middleware → proxy** rename due before Phase 9 cutover.
 
 ## Execution Posture
 
