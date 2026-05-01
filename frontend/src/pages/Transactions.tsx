@@ -261,7 +261,7 @@ const Transactions = () => {
                 <thead>
                   <tr className="border-b border-brand-border">
                     <th className="text-left py-3 px-4 font-medium text-brand-text-secondary">Тип</th>
-                    <th className="text-left py-3 px-4 font-medium text-brand-text-secondary">Дата</th>
+                    <th className="text-left py-3 px-4 font-medium text-brand-text-secondary whitespace-nowrap">Дата</th>
                     <th className="text-left py-3 px-4 font-medium text-brand-text-secondary">Описание</th>
                     <th className="text-left py-3 px-4 font-medium text-brand-text-secondary">Категория</th>
                     <th className="text-left py-3 px-4 font-medium text-brand-text-secondary">Контрагент</th>
@@ -285,7 +285,7 @@ const Transactions = () => {
                           </span>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-sm text-brand-text-secondary">
+                      <td className="py-3 px-4 text-sm text-brand-text-secondary whitespace-nowrap">
                         {format(new Date(transaction.date), 'd MMM yyyy', { locale: ru })}
                       </td>
                       <td className="py-3 px-4">

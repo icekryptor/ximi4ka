@@ -221,7 +221,11 @@
 
 @keyframes fadeSlideUp {
   from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  /* No transform in 'to' — leaving it as translateY(0) creates a containing
+     block on the .page-enter wrapper, which breaks position: fixed for
+     descendants like modal overlays (they get positioned relative to
+     .page-enter instead of the viewport, hiding modal panels off-screen). */
+  to   { opacity: 1; }
 }
 
 @keyframes slideInBottom {
