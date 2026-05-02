@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { transactionsApi, PaginationMeta } from '../api/transactions'
 import { categoriesApi } from '../api/categories'
 import { counterpartiesApi } from '../api/counterparties'
@@ -448,7 +449,7 @@ const Transactions = () => {
         />
       )}
 
-      {transferSource && (
+      {transferSource && createPortal(
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
           <div className="bg-card rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
             <div className="p-4 border-b border-brand-border flex items-center justify-between">
@@ -537,7 +538,8 @@ const Transactions = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )

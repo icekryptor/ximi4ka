@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { Transaction, Category, Counterparty, TransactionType } from '../api/types'
 import { transactionsApi } from '../api/transactions'
@@ -53,7 +54,10 @@ const TransactionModal = ({ transaction, categories, counterparties, onClose }: 
   const expenseCategories = categories.filter(c => c.type === TransactionType.EXPENSE && c.is_active)
   const relevantCategories = formData.type === TransactionType.INCOME ? incomeCategories : expenseCategories
 
-  return (
+  // Portal to <body> — bypasses any ancestor with transform/filter/will-change/contain
+  // that would otherwise turn into a containing block for `position: fixed` and pull
+  // this modal off-screen. See commit 26b893d for the related .page-enter fix.
+  return createPortal(
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-card rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-brand-border">
@@ -210,7 +214,8 @@ const TransactionModal = ({ transaction, categories, counterparties, onClose }: 
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

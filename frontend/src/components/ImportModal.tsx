@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { X, Upload, CheckCircle, AlertTriangle, FileSpreadsheet } from 'lucide-react'
 import { transactionsApi, ParsedTransactionRow, ImportPreview } from '../api/transactions'
 import { formatCurrency } from '../utils/format'
@@ -92,7 +93,9 @@ const ImportModal = ({ onClose }: ImportModalProps) => {
 
   // formatCurrency imported from utils/format
 
-  return (
+  // Portal to <body> — bypasses ancestor containing-block issues that would
+  // otherwise pull modal off-screen. See TransactionModal for the same pattern.
+  return createPortal(
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-card rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-brand-border">
@@ -279,7 +282,8 @@ const ImportModal = ({ onClose }: ImportModalProps) => {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
