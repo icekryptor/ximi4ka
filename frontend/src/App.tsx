@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { Routes, Route, useLocation, Link } from 'react-router-dom'
+import { Routes, Route, useLocation, Link, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import ErrorBoundary from './components/ErrorBoundary'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -18,7 +18,6 @@ const Categories = lazy(() => import('./pages/Categories'))
 const Reports = lazy(() => import('./pages/Reports'))
 const Supplies = lazy(() => import('./pages/Supplies'))
 const FinancialReports = lazy(() => import('./pages/FinancialReports'))
-const BankImport = lazy(() => import('./pages/BankImport'))
 const Cashflow = lazy(() => import('./pages/Cashflow'))
 const Marketplace = lazy(() => import('./pages/Marketplace'))
 const WbAdsAnalytics = lazy(() => import('./pages/WbAdsAnalytics'))
@@ -106,7 +105,8 @@ function App() {
                                 <Route path="/counterparties" element={<Counterparties />} />
                                 <Route path="/reports" element={<Reports />} />
                                 <Route path="/financial-reports" element={<FinancialReports />} />
-                                <Route path="/financial-reports/import" element={<BankImport />} />
+                                {/* Bank import is now an in-page modal on /transactions; redirect old bookmarks. */}
+                                <Route path="/financial-reports/import" element={<Navigate to="/transactions" replace />} />
                                 <Route path="/financial-reports/cashflow" element={<Cashflow />} />
                                 {/* Себестоимость */}
                                 <Route path="/components" element={<ComponentsCatalog />} />

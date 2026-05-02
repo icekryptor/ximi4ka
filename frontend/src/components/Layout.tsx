@@ -58,14 +58,6 @@ const IconFinancialReports = () => (
   </svg>
 )
 
-const IconBankImport = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-    <polyline points="17 8 12 3 7 8" />
-    <line x1="12" y1="3" x2="12" y2="15" />
-  </svg>
-)
-
 const IconCashflow = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M3 3v18h18" />
@@ -284,7 +276,6 @@ const NAV_GROUPS: NavGroup[] = [
       { type: 'link', name: 'Контрагенты', href: '/counterparties', icon: IconCounterparties },
       { type: 'link', name: 'Отчёты', href: '/reports', icon: IconReports },
       { type: 'link', name: 'Фин. отчёты', href: '/financial-reports', icon: IconFinancialReports },
-      { type: 'link', name: 'Импорт выписок', href: '/financial-reports/import', icon: IconBankImport },
       { type: 'link', name: 'БДДС', href: '/financial-reports/cashflow', icon: IconCashflow },
     ],
   },

@@ -1,15 +1,16 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { transactionsApi, PaginationMeta } from '../api/transactions'
 import { categoriesApi } from '../api/categories'
 import { counterpartiesApi } from '../api/counterparties'
 import { Transaction, Category, Counterparty, TransactionType } from '../api/types'
 import { formatCurrency } from '../utils/format'
-import { Plus, Edit2, Trash2, TrendingUp, TrendingDown, Search, Filter, Download, Upload, ChevronLeft, ChevronRight, ArrowLeftRight, X } from 'lucide-react'
+import { Plus, Edit2, Trash2, TrendingUp, TrendingDown, Search, Filter, Download, Upload, ChevronLeft, ChevronRight, ChevronDown, ArrowLeftRight, X, FileSpreadsheet, Landmark } from 'lucide-react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale/ru'
 import TransactionModal from '../components/TransactionModal'
 import ImportModal from '../components/ImportModal'
+import BankImportModal from '../components/BankImportModal'
 import { useToast } from '../contexts/ToastContext'
 import { useConfirmDialog } from '../contexts/ConfirmDialogContext'
 
@@ -27,6 +28,9 @@ const Transactions = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState<string>('all')
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
+  const [isBankImportOpen, setIsBankImportOpen] = useState(false)
+  const [importDropdownOpen, setImportDropdownOpen] = useState(false)
+  const importDropdownRef = useRef<HTMLDivElement>(null)
   const [page, setPage] = useState(1)
   const [pagination, setPagination] = useState<PaginationMeta>({
     total: 0, page: 1, limit: PAGE_SIZE, totalPages: 1,
@@ -79,6 +83,25 @@ const Transactions = () => {
   useEffect(() => {
     loadTransactions(page)
   }, [page, loadTransactions])
+
+  // Close import dropdown on outside click / Escape
+  useEffect(() => {
+    if (!importDropdownOpen) return
+    const onClick = (e: MouseEvent) => {
+      if (importDropdownRef.current && !importDropdownRef.current.contains(e.target as Node)) {
+        setImportDropdownOpen(false)
+      }
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setImportDropdownOpen(false)
+    }
+    document.addEventListener('mousedown', onClick)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onClick)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [importDropdownOpen])
 
   const handleDelete = async (id: string) => {
     const ok = await confirm({
@@ -198,14 +221,48 @@ const Transactions = () => {
             <Download className="h-4 w-4" />
             <span>Экспорт</span>
           </button>
-          <button
-            onClick={() => setIsImportModalOpen(true)}
-            className="btn btn-secondary flex items-center space-x-2"
-            title="Импорт из Excel"
-          >
-            <Upload className="h-4 w-4" />
-            <span>Импорт</span>
-          </button>
+          <div className="relative" ref={importDropdownRef}>
+            <button
+              onClick={() => setImportDropdownOpen(o => !o)}
+              className="btn btn-secondary flex items-center space-x-2"
+              title="Импорт транзакций"
+              aria-haspopup="menu"
+              aria-expanded={importDropdownOpen}
+            >
+              <Upload className="h-4 w-4" />
+              <span>Импорт</span>
+              <ChevronDown className={`h-4 w-4 transition-transform ${importDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {importDropdownOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 mt-1 w-60 bg-card border border-brand-border rounded-xl shadow-xl py-1 z-30"
+              >
+                <button
+                  role="menuitem"
+                  onClick={() => { setImportDropdownOpen(false); setIsImportModalOpen(true) }}
+                  className="w-full text-left px-3 py-2.5 text-sm hover:bg-subtle flex items-center gap-3 transition-colors"
+                >
+                  <FileSpreadsheet className="h-4 w-4 text-green-600 flex-shrink-0" />
+                  <span>
+                    <span className="font-medium block">Excel-файл</span>
+                    <span className="text-xs text-brand-text-secondary">Список транзакций (.xlsx)</span>
+                  </span>
+                </button>
+                <button
+                  role="menuitem"
+                  onClick={() => { setImportDropdownOpen(false); setIsBankImportOpen(true) }}
+                  className="w-full text-left px-3 py-2.5 text-sm hover:bg-subtle flex items-center gap-3 transition-colors"
+                >
+                  <Landmark className="h-4 w-4 text-primary-600 flex-shrink-0" />
+                  <span>
+                    <span className="font-medium block">Выписка банка</span>
+                    <span className="text-xs text-brand-text-secondary">Точка / Озон + автоматчинг</span>
+                  </span>
+                </button>
+              </div>
+            )}
+          </div>
           <button onClick={handleAdd} className="btn btn-primary flex items-center space-x-2">
             <Plus className="h-5 w-5" />
             <span>Добавить</span>
@@ -444,6 +501,15 @@ const Transactions = () => {
         <ImportModal
           onClose={() => {
             setIsImportModalOpen(false)
+            loadTransactions(page)
+          }}
+        />
+      )}
+
+      {isBankImportOpen && (
+        <BankImportModal
+          onClose={() => {
+            setIsBankImportOpen(false)
             loadTransactions(page)
           }}
         />
