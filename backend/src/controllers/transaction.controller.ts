@@ -3,8 +3,9 @@ import { AppDataSource } from '../config/database';
 import { Transaction, TransactionType, TransactionSource } from '../entities/Transaction';
 import { Category } from '../entities/Category';
 import { Counterparty } from '../entities/Counterparty';
-import { Between, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import { Between, LessThanOrEqual, MoreThanOrEqual, IsNull } from 'typeorm';
 import ExcelJS from 'exceljs';
+import { suggestMatch } from '../services/import-matcher';
 
 const transactionRepository = AppDataSource.getRepository(Transaction);
 
@@ -127,6 +128,74 @@ export const transactionController = {
     } catch (error) {
       console.error('Ошибка при удалении транзакции:', error);
       res.status(500).json({ error: 'Ошибка при удалении транзакции' });
+    }
+  },
+
+  // ===== AUTO-DISTRIBUTE (категории по правилам ImportRule) =====
+
+  // GET /transactions/uncategorized-count — сколько транзакций без категории
+  async getUncategorizedCount(req: Request, res: Response) {
+    try {
+      const count = await transactionRepository.count({ where: { category_id: IsNull() } });
+      res.json({ count });
+    } catch (error) {
+      console.error('Ошибка при подсчёте нераспределённых:', error);
+      res.status(500).json({ error: 'Ошибка при подсчёте нераспределённых' });
+    }
+  },
+
+  // POST /transactions/auto-distribute — прогоняет все category_id IS NULL через
+  // движок правил из import-matcher и проставляет category/counterparty там,
+  // где есть совпадение (по ИНН, описанию или имени контрагента).
+  async autoDistribute(req: Request, res: Response) {
+    try {
+      const unsorted = await transactionRepository.find({
+        where: { category_id: IsNull() },
+        relations: ['counterparty'],
+      });
+
+      let categoriesAssigned = 0;
+      let counterpartiesAssigned = 0;
+
+      for (const tx of unsorted) {
+        // Соберём NormalizedRow-shape из существующей транзакции для движка правил
+        const row = {
+          external_id: null,
+          date: typeof tx.date === 'string' ? tx.date : new Date(tx.date).toISOString().slice(0, 10),
+          type: tx.type as 'income' | 'expense',
+          amount: Number(tx.amount),
+          counterparty_name: tx.counterparty?.name || '',
+          counterparty_inn: tx.counterparty?.inn || null,
+          description: tx.description || '',
+          raw: {},
+        };
+
+        const match = await suggestMatch(row);
+
+        const updates: Partial<Transaction> = {};
+        if (match.category_id) {
+          updates.category_id = match.category_id;
+        }
+        // Контрагент проставляется, только если был пустой — не перебиваем существующего
+        if (match.counterparty_id && !tx.counterparty_id) {
+          updates.counterparty_id = match.counterparty_id;
+        }
+
+        if (Object.keys(updates).length > 0) {
+          await transactionRepository.update(tx.id, updates);
+          if (updates.category_id) categoriesAssigned++;
+          if (updates.counterparty_id) counterpartiesAssigned++;
+        }
+      }
+
+      res.json({
+        scanned: unsorted.length,
+        categories_assigned: categoriesAssigned,
+        counterparties_assigned: counterpartiesAssigned,
+      });
+    } catch (error) {
+      console.error('Ошибка при авто-распределении транзакций:', error);
+      res.status(500).json({ error: 'Ошибка при авто-распределении' });
     }
   },
 

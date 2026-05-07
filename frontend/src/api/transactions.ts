@@ -130,4 +130,23 @@ export const transactionsApi = {
     const response = await apiClient.post<{ success: boolean }>(`/transactions/${id}/unmark-transfer`);
     return response.data;
   },
+
+  // Auto-distribute (running ImportRule engine over uncategorized transactions)
+  uncategorizedCount: async (): Promise<{ count: number }> => {
+    const response = await apiClient.get<{ count: number }>('/transactions/uncategorized-count');
+    return response.data;
+  },
+
+  autoDistribute: async (): Promise<{
+    scanned: number;
+    categories_assigned: number;
+    counterparties_assigned: number;
+  }> => {
+    const response = await apiClient.post<{
+      scanned: number;
+      categories_assigned: number;
+      counterparties_assigned: number;
+    }>('/transactions/auto-distribute');
+    return response.data;
+  },
 };

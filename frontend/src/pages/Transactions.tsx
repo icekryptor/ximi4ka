@@ -5,7 +5,7 @@ import { categoriesApi } from '../api/categories'
 import { counterpartiesApi } from '../api/counterparties'
 import { Transaction, Category, Counterparty, TransactionType } from '../api/types'
 import { formatCurrency } from '../utils/format'
-import { Plus, Edit2, Trash2, TrendingUp, TrendingDown, Search, Filter, Download, Upload, ChevronLeft, ChevronRight, ChevronDown, ArrowLeftRight, X, FileSpreadsheet, Landmark } from 'lucide-react'
+import { Plus, Edit2, Trash2, TrendingUp, TrendingDown, Search, Filter, Download, Upload, ChevronLeft, ChevronRight, ChevronDown, ArrowLeftRight, X, FileSpreadsheet, Landmark, Sparkles } from 'lucide-react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale/ru'
 import TransactionModal from '../components/TransactionModal'
@@ -35,6 +35,10 @@ const Transactions = () => {
   const [pagination, setPagination] = useState<PaginationMeta>({
     total: 0, page: 1, limit: PAGE_SIZE, totalPages: 1,
   })
+
+  // Auto-distribute state — count of transactions without category
+  const [unsortedCount, setUnsortedCount] = useState(0)
+  const [autoDistributing, setAutoDistributing] = useState(false)
 
   // Transfer marking state
   const [transferSource, setTransferSource] = useState<Transaction | null>(null)
@@ -71,9 +75,19 @@ const Transactions = () => {
     }
   }, [])
 
+  const loadUnsortedCount = useCallback(async () => {
+    try {
+      const { count } = await transactionsApi.uncategorizedCount()
+      setUnsortedCount(count)
+    } catch (error) {
+      console.error('Ошибка загрузки счётчика нераспределённых:', error)
+    }
+  }, [])
+
   useEffect(() => {
     loadMeta()
-  }, [loadMeta])
+    loadUnsortedCount()
+  }, [loadMeta, loadUnsortedCount])
 
   useEffect(() => {
     setPage(1)
@@ -135,6 +149,7 @@ const Transactions = () => {
     setIsModalOpen(false)
     setEditingTransaction(null)
     loadTransactions(page)
+    loadUnsortedCount()
   }
 
   const openTransferDialog = async (tx: Transaction) => {
@@ -172,6 +187,37 @@ const Transactions = () => {
       toast.error('Не удалось связать транзакции')
     } finally {
       setTransferSubmitting(false)
+    }
+  }
+
+  const handleAutoDistribute = async () => {
+    if (unsortedCount === 0) {
+      toast.success('Нет нераспределённых транзакций')
+      return
+    }
+    const ok = await confirm({
+      title: 'Распределить нераспределённые транзакции?',
+      message: `Будет проверено ${unsortedCount} транзакций без категории. Для каждой движок правил подберёт категорию (а где было пусто — и контрагента) по уже существующим правилам импорта (по ИНН, описанию, имени).`,
+      confirmText: 'Распределить',
+      variant: 'primary',
+    })
+    if (!ok) return
+
+    setAutoDistributing(true)
+    try {
+      const result = await transactionsApi.autoDistribute()
+      const cat = result.categories_assigned
+      const cp = result.counterparties_assigned
+      const msg = cat === 0 && cp === 0
+        ? `Просканировано ${result.scanned}, совпадений по правилам не найдено`
+        : `Проставлено категорий: ${cat}${cp > 0 ? `, контрагентов: ${cp}` : ''} (из ${result.scanned})`
+      toast.success(msg)
+      await Promise.all([loadTransactions(page), loadUnsortedCount()])
+    } catch (error) {
+      console.error('Ошибка авто-распределения:', error)
+      toast.error('Не удалось распределить транзакции')
+    } finally {
+      setAutoDistributing(false)
     }
   }
 
@@ -213,6 +259,17 @@ const Transactions = () => {
           <p className="text-brand-text-secondary mt-1">Управление доходами и расходами</p>
         </div>
         <div className="flex items-center space-x-2">
+          {unsortedCount > 0 && (
+            <button
+              onClick={handleAutoDistribute}
+              disabled={autoDistributing}
+              className="btn flex items-center space-x-2 bg-primary-50 dark:bg-primary-900/20 text-primary-700 border border-primary-200 hover:bg-primary-100 dark:hover:bg-primary-900/30 disabled:opacity-40"
+              title="Автоматически проставить категории по существующим правилам импорта"
+            >
+              <Sparkles className={`h-4 w-4 ${autoDistributing ? 'animate-pulse' : ''}`} />
+              <span>Распределить ({unsortedCount})</span>
+            </button>
+          )}
           <button
             onClick={() => transactionsApi.exportXlsx()}
             className="btn btn-secondary flex items-center space-x-2"
@@ -502,6 +559,7 @@ const Transactions = () => {
           onClose={() => {
             setIsImportModalOpen(false)
             loadTransactions(page)
+            loadUnsortedCount()
           }}
         />
       )}
@@ -511,6 +569,7 @@ const Transactions = () => {
           onClose={() => {
             setIsBankImportOpen(false)
             loadTransactions(page)
+            loadUnsortedCount()
           }}
         />
       )}

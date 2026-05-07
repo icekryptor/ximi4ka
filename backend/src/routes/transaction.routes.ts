@@ -7,6 +7,10 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.get('/', transactionController.getAll);
 
+// Auto-distribute uncategorized transactions through ImportRule engine — BEFORE /:id
+router.get('/uncategorized-count', transactionController.getUncategorizedCount);
+router.post('/auto-distribute', transactionController.autoDistribute);
+
 // Export/Import — BEFORE /:id to avoid route conflict
 router.get('/export', transactionController.exportXlsx);
 router.post('/import', upload.single('file'), transactionController.importXlsx);
