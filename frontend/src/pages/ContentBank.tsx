@@ -15,6 +15,7 @@ import {
 import { KNOWN_NETWORKS } from '../lib/networks'
 import { useToast } from '../contexts/ToastContext'
 import { useConfirmDialog } from '../contexts/ConfirmDialogContext'
+import { UnitEditModal } from '../components/content-bank/UnitEditModal'
 
 function FilterChipBar<T extends string>({
   label,
@@ -422,28 +423,13 @@ export default function ContentBank() {
       )}
 
       {editingUnit !== null && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => setEditingUnit(null)}
-        >
-          <div
-            className="bg-card rounded-2xl shadow-xl w-full max-w-md p-6 m-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-bold mb-2">
-              {editingUnit === 'new' ? 'Новая единица контента' : 'Редактирование'}
-            </h3>
-            <p className="text-sm text-brand-text-secondary mb-4">
-              Полная модалка появится в Stage 7. Сейчас это плейсхолдер.
-            </p>
-            <button
-              onClick={() => setEditingUnit(null)}
-              className="btn btn-secondary w-full"
-            >
-              Закрыть
-            </button>
-          </div>
-        </div>
+        <UnitEditModal
+          unit={editingUnit}
+          onClose={() => {
+            setEditingUnit(null)
+            load()
+          }}
+        />
       )}
     </div>
   )
