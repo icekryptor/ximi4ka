@@ -16,6 +16,7 @@ import { KNOWN_NETWORKS } from '../lib/networks'
 import { useToast } from '../contexts/ToastContext'
 import { useConfirmDialog } from '../contexts/ConfirmDialogContext'
 import { UnitEditModal } from '../components/content-bank/UnitEditModal'
+import { RubricsManagerModal } from '../components/content-bank/RubricsManagerModal'
 
 function FilterChipBar<T extends string>({
   label,
@@ -77,6 +78,7 @@ export default function ContentBank() {
   const [loading, setLoading] = useState(true)
   const [rubrics, setRubrics] = useState<ContentRubric[]>([])
   const [editingUnit, setEditingUnit] = useState<ContentUnit | 'new' | null>(null)
+  const [rubricsManagerOpen, setRubricsManagerOpen] = useState(false)
   const reqIdRef = useRef(0)
 
   // Filters from URL
@@ -222,7 +224,10 @@ export default function ContentBank() {
             <option value="title">По алфавиту</option>
             <option value="status">По статусу</option>
           </select>
-          <button className="btn btn-secondary flex items-center gap-2">
+          <button
+            onClick={() => setRubricsManagerOpen(true)}
+            className="btn btn-secondary flex items-center gap-2"
+          >
             <Settings size={16} />
             <span className="hidden sm:inline">Рубрики</span>
           </button>
@@ -428,6 +433,19 @@ export default function ContentBank() {
           onClose={() => {
             setEditingUnit(null)
             load()
+          }}
+        />
+      )}
+
+      {rubricsManagerOpen && (
+        <RubricsManagerModal
+          onClose={() => {
+            setRubricsManagerOpen(false)
+            // Refresh rubrics list so chip filter and dropdowns reflect changes
+            rubricsApi
+              .getAll()
+              .then(setRubrics)
+              .catch(() => toast.error('Не удалось загрузить рубрики'))
           }}
         />
       )}
