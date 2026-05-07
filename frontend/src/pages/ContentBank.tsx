@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Plus, Settings, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Plus, Settings, Search, ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react'
 import {
   unitsApi,
   rubricsApi,
@@ -14,6 +14,7 @@ import {
 } from '../api/contentBank'
 import { KNOWN_NETWORKS } from '../lib/networks'
 import { useToast } from '../contexts/ToastContext'
+import { useConfirmDialog } from '../contexts/ConfirmDialogContext'
 
 function FilterChipBar<T extends string>({
   label,
@@ -62,6 +63,7 @@ function FilterChipBar<T extends string>({
 
 export default function ContentBank() {
   const toast = useToast()
+  const { confirm } = useConfirmDialog()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [items, setItems] = useState<ContentUnit[]>([])
@@ -73,6 +75,7 @@ export default function ContentBank() {
   })
   const [loading, setLoading] = useState(true)
   const [rubrics, setRubrics] = useState<ContentRubric[]>([])
+  const [editingUnit, setEditingUnit] = useState<ContentUnit | 'new' | null>(null)
 
   // Filters from URL
   const statusFilter = useMemo(
@@ -147,6 +150,24 @@ export default function ContentBank() {
       .catch(() => toast.error('Не удалось загрузить рубрики'))
   }, [toast])
 
+  const handleDelete = async (id: string) => {
+    const ok = await confirm({
+      title: 'Удалить единицу?',
+      message:
+        'Будет удалена единица контента и все её публикации. Действие нельзя отменить.',
+      confirmText: 'Удалить',
+      variant: 'danger',
+    })
+    if (!ok) return
+    try {
+      await unitsApi.delete(id)
+      toast.success('Удалено')
+      load()
+    } catch {
+      toast.error('Не удалось удалить')
+    }
+  }
+
   const updateParam = (key: string, values: string[]) => {
     const sp = new URLSearchParams(searchParams)
     if (values.length === 0) sp.delete(key)
@@ -206,7 +227,10 @@ export default function ContentBank() {
             <Settings size={16} />
             <span className="hidden sm:inline">Рубрики</span>
           </button>
-          <button className="btn btn-primary flex items-center gap-2">
+          <button
+            onClick={() => setEditingUnit('new')}
+            className="btn btn-primary flex items-center gap-2"
+          >
             <Plus size={16} />
             <span>Добавить</span>
           </button>
@@ -276,6 +300,9 @@ export default function ContentBank() {
                     Название / Hook
                   </th>
                   <th className="text-left py-3 px-4 font-medium text-brand-text-secondary">Сети</th>
+                  <th className="text-right py-3 px-4 font-medium text-brand-text-secondary whitespace-nowrap">
+                    Действия
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -316,6 +343,24 @@ export default function ContentBank() {
                             {p.network}
                           </span>
                         ))}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-right whitespace-nowrap">
+                      <div className="flex justify-end gap-1">
+                        <button
+                          onClick={() => setEditingUnit(u)}
+                          className="p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                          title="Редактировать"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(u.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                          title="Удалить"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -374,6 +419,31 @@ export default function ContentBank() {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {editingUnit !== null && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => setEditingUnit(null)}
+        >
+          <div
+            className="bg-card rounded-2xl shadow-xl w-full max-w-md p-6 m-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-bold mb-2">
+              {editingUnit === 'new' ? 'Новая единица контента' : 'Редактирование'}
+            </h3>
+            <p className="text-sm text-brand-text-secondary mb-4">
+              Полная модалка появится в Stage 7. Сейчас это плейсхолдер.
+            </p>
+            <button
+              onClick={() => setEditingUnit(null)}
+              className="btn btn-secondary w-full"
+            >
+              Закрыть
+            </button>
           </div>
         </div>
       )}
