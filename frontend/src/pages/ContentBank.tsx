@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Plus, Settings, Search, ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react'
 import {
@@ -76,24 +76,15 @@ export default function ContentBank() {
   const [loading, setLoading] = useState(true)
   const [rubrics, setRubrics] = useState<ContentRubric[]>([])
   const [editingUnit, setEditingUnit] = useState<ContentUnit | 'new' | null>(null)
+  const reqIdRef = useRef(0)
 
   // Filters from URL
-  const statusFilter = useMemo(
-    () => (searchParams.get('status')?.split(',').filter(Boolean) as ContentStatus[]) || [],
-    [searchParams]
-  )
-  const rubricFilter = useMemo(
-    () => searchParams.get('rubric_id')?.split(',').filter(Boolean) || [],
-    [searchParams]
-  )
-  const typeFilter = useMemo(
-    () => (searchParams.get('content_type')?.split(',').filter(Boolean) as ContentType[]) || [],
-    [searchParams]
-  )
-  const networkFilter = useMemo(
-    () => searchParams.get('network')?.split(',').filter(Boolean) || [],
-    [searchParams]
-  )
+  const statusFilter =
+    (searchParams.get('status')?.split(',').filter(Boolean) as ContentStatus[]) || []
+  const rubricFilter = searchParams.get('rubric_id')?.split(',').filter(Boolean) || []
+  const typeFilter =
+    (searchParams.get('content_type')?.split(',').filter(Boolean) as ContentType[]) || []
+  const networkFilter = searchParams.get('network')?.split(',').filter(Boolean) || []
   const searchFromUrl = searchParams.get('search') || ''
   const sort = (searchParams.get('sort') as 'created_at' | 'title' | 'status') || 'created_at'
   const page = parseInt(searchParams.get('page') || '1', 10) || 1
@@ -110,17 +101,19 @@ export default function ContentBank() {
   useEffect(() => {
     if (searchInput === searchFromUrl) return
     const t = setTimeout(() => {
-      const sp = new URLSearchParams(searchParams)
-      if (searchInput) sp.set('search', searchInput)
-      else sp.delete('search')
-      sp.delete('page')
-      setSearchParams(sp)
+      setSearchParams((prev) => {
+        const sp = new URLSearchParams(prev)
+        if (searchInput) sp.set('search', searchInput)
+        else sp.delete('search')
+        sp.delete('page')
+        return sp
+      })
     }, 300)
     return () => clearTimeout(t)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchInput])
+  }, [searchInput, searchFromUrl, setSearchParams])
 
   const load = useCallback(async () => {
+    const reqId = ++reqIdRef.current
     setLoading(true)
     try {
       const params: Record<string, unknown> = { limit: 50, page, sort }
@@ -130,13 +123,18 @@ export default function ContentBank() {
       if (networkFilter.length > 0) params.network = networkFilter.join(',')
       if (searchFromUrl) params.search = searchFromUrl
       const r = await unitsApi.list(params)
+      if (reqId !== reqIdRef.current) return
       setItems(r.data)
       setPagination(r.pagination)
     } catch {
+      if (reqId !== reqIdRef.current) return
       toast.error('Ошибка загрузки контент-банка')
+    } finally {
+      if (reqId === reqIdRef.current) setLoading(false)
     }
-    setLoading(false)
-  }, [statusFilter, rubricFilter, typeFilter, networkFilter, searchFromUrl, sort, page, toast])
+    // searchParams covers all filter/sort/page state since they're derived from it
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, toast])
 
   useEffect(() => {
     load()
