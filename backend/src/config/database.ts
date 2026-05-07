@@ -29,6 +29,8 @@ import { TaskComment } from '../entities/TaskComment';
 import { TaskTag } from '../entities/TaskTag';
 import { ChannelPreset } from '../entities/ChannelPreset';
 import { ContentUnit } from '../entities/ContentUnit';
+import { ContentRubric } from '../entities/ContentRubric';
+import { ContentPublication } from '../entities/ContentPublication';
 import { OAuthToken } from '../entities/OAuthToken';
 import { Department } from '../entities/Department';
 import { DepartmentRole } from '../entities/DepartmentRole';
@@ -51,7 +53,7 @@ const databaseUrl = process.env.DATABASE_URL;
 
 const isDev = process.env.NODE_ENV !== 'production';
 
-const allEntities = [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, UnitEconomicsShare, User, DailySales, Employee, SalesChannel, QcChecklist, Board, Task, TaskComment, TaskTag, ChannelPreset, ContentUnit, OAuthToken, Department, DepartmentRole, RecurringTask, RecurringTaskReport, Project, ProjectMember, TaskDependency, TaskChecklistItem, TelegramChat, BankAccount, BankImport, ImportRule];
+const allEntities = [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, UnitEconomicsShare, User, DailySales, Employee, SalesChannel, QcChecklist, Board, Task, TaskComment, TaskTag, ChannelPreset, ContentUnit, ContentRubric, ContentPublication, OAuthToken, Department, DepartmentRole, RecurringTask, RecurringTaskReport, Project, ProjectMember, TaskDependency, TaskChecklistItem, TelegramChat, BankAccount, BankImport, ImportRule];
 
 const dataSourceOptions = databaseUrl
   ? {
