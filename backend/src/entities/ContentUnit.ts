@@ -4,60 +4,65 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
 } from 'typeorm'
+import { ContentRubric } from './ContentRubric'
+import { ContentPublication } from './ContentPublication'
+
+export type ContentType = 'short_video' | 'text_post' | 'other'
+
+export type ContentStatus =
+  | 'idea'
+  | 'script'
+  | 'filming'
+  | 'editing'
+  | 'ready'
+  | 'published'
+  | 'rejected'
 
 @Entity('content_units')
 export class ContentUnit {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
+  @Column({ type: 'uuid', nullable: true })
+  rubric_id: string | null
+
+  @ManyToOne(() => ContentRubric, (r) => r.units, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'rubric_id' })
+  rubric: ContentRubric | null
+
+  @Column({ type: 'varchar', length: 20, default: 'short_video' })
+  content_type: ContentType
+
+  @Column({ type: 'varchar', length: 20, default: 'idea' })
+  status: ContentStatus
+
+  @Column({ type: 'smallint', nullable: true })
+  complexity: number | null
+
   @Column({ type: 'varchar', length: 500 })
   title: string
 
   @Column({ type: 'text', nullable: true })
-  description: string | null
+  hook: string | null
+
+  @Column({ type: 'text', nullable: true })
+  hook_ab: string | null
+
+  @Column({ type: 'text', nullable: true })
+  visual: string | null
+
+  @Column({ type: 'text', nullable: true })
+  essence: string | null
+
+  @Column({ type: 'text', nullable: true })
+  notes: string | null
 
   @Column({ type: 'varchar', length: 1000, nullable: true })
-  material_url: string | null
-
-  @Column({ type: 'date', nullable: true })
-  youtube_date: string | null
-
-  @Column({ type: 'date', nullable: true })
-  instagram_date: string | null
-
-  @Column({ type: 'date', nullable: true })
-  tiktok_date: string | null
-
-  @Column({ type: 'boolean', default: false })
-  youtube_published: boolean
-
-  @Column({ type: 'boolean', default: false })
-  instagram_published: boolean
-
-  @Column({ type: 'boolean', default: false })
-  tiktok_published: boolean
-
-  @Column({ type: 'varchar', length: 50, nullable: true })
-  youtube_video_id: string | null
-
-  @Column({ type: 'varchar', length: 500, nullable: true })
-  youtube_published_url: string | null
-
-  @Column({ type: 'varchar', length: 500, nullable: true })
-  instagram_published_url: string | null
-
-  @Column({ type: 'varchar', length: 500, nullable: true })
-  tiktok_published_url: string | null
-
-  @Column({ type: 'varchar', length: 20, default: 'draft' })
-  publish_status: string
-
-  @Column({ type: 'text', nullable: true })
-  publish_error: string | null
-
-  @Column({ type: 'text', nullable: true })
-  tags: string | null
+  video_url: string | null
 
   @Column({ type: 'uuid' })
   created_by: string
@@ -67,4 +72,7 @@ export class ContentUnit {
 
   @UpdateDateColumn()
   updated_at: Date
+
+  @OneToMany(() => ContentPublication, (p) => p.content_unit)
+  publications: ContentPublication[]
 }
