@@ -36,7 +36,6 @@ import projectRoutes from './routes/project.routes';
 import taskCommentRoutes from './routes/taskComment.routes';
 import channelPresetRoutes from './routes/channel-preset.routes';
 import contentUnitRoutes from './routes/content-unit.routes';
-import youtubeRoutes from './routes/youtube.routes';
 import n8nRoutes from './routes/n8n.routes';
 import telegramRoutes from './routes/telegram.routes';
 import publicProjectRoutes from './routes/publicProject.routes';
@@ -89,22 +88,6 @@ app.use('/api/auth', authRoutes);
 app.get('/api/public/unit-economics/:token', unitEconomicsController.getPublicShare);
 app.use('/api/public/projects', publicProjectRoutes);
 
-// YouTube OAuth callback (must be public — Google redirects here)
-app.get('/api/youtube/callback', async (req, res) => {
-  try {
-    const { handleCallback } = await import('./services/youtube.service')
-    const code = req.query.code as string
-    if (!code) return res.status(400).json({ error: 'Missing code' })
-    const result = await handleCallback(code)
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
-    res.redirect(`${frontendUrl}/content-units?youtube_connected=true&channel=${encodeURIComponent(result.channelName)}`)
-  } catch (error: any) {
-    console.error('YouTube OAuth callback error:', error)
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
-    res.redirect(`${frontendUrl}/content-units?youtube_error=${encodeURIComponent(error.message)}`)
-  }
-})
-
 // n8n API — API key auth (no JWT)
 app.use('/api/n8n', apiKeyAuth, n8nRoutes);
 
@@ -135,7 +118,6 @@ app.use('/api/departments', authMiddleware, departmentRoutes);
 app.use('/api/recurring-tasks', authMiddleware, recurringTaskRoutes);
 app.use('/api/projects', authMiddleware, projectRoutes);
 app.use('/api/content-units', authMiddleware, contentUnitRoutes);
-app.use('/api/youtube', authMiddleware, youtubeRoutes);
 app.use('/api/tasks', authMiddleware, taskCommentRoutes);
 app.use('/api/channel-presets', authMiddleware, channelPresetRoutes);
 app.use('/api/bank-accounts', authMiddleware, bankAccountRoutes);
