@@ -1,4 +1,7 @@
 import 'reflect-metadata'
+import dotenv from 'dotenv'
+dotenv.config()
+
 import { AppDataSource } from '../config/database'
 import { ContentRubric } from '../entities/ContentRubric'
 import { ContentUnit, ContentStatus } from '../entities/ContentUnit'
