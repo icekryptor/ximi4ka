@@ -78,6 +78,53 @@ export default function ContentBankTriage() {
     setSaving(false)
   }, [current, feedback, saving, currentIndex, advance, toast])
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      // Don't trigger 1/2/3 when typing in textarea (let user type "1" in feedback)
+      const target = e.target as HTMLElement
+      const isInTextarea = target?.tagName === 'TEXTAREA' || target?.tagName === 'INPUT'
+
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        navigate('/content-bank')
+        return
+      }
+
+      if (e.key === 'ArrowLeft' && !isInTextarea) {
+        e.preventDefault()
+        goBack()
+        return
+      }
+      if (e.key === 'ArrowRight' && !isInTextarea) {
+        e.preventDefault()
+        advance()
+        return
+      }
+
+      if (e.key === 'Tab' && !isInTextarea) {
+        e.preventDefault()
+        textareaRef.current?.focus()
+        return
+      }
+
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && isInTextarea) {
+        // Save with current grade if already set, else default to 'excellent'
+        e.preventDefault()
+        const g = current?.review_grade || 'excellent'
+        saveAndAdvance(g)
+        return
+      }
+
+      if (!isInTextarea) {
+        if (e.key === '1') { e.preventDefault(); saveAndAdvance('excellent') }
+        else if (e.key === '2') { e.preventDefault(); saveAndAdvance('needs_work') }
+        else if (e.key === '3') { e.preventDefault(); saveAndAdvance('rejected') }
+      }
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [navigate, goBack, advance, saveAndAdvance, current])
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
