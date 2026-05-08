@@ -137,11 +137,13 @@ export const contentUnitController = {
         )
       }
 
-      qb.orderBy('r.sort_order', 'ASC').addOrderBy('u.created_at', 'ASC')
+      qb.orderBy('r.sort_order', 'ASC')
+        .addOrderBy('u.created_at', 'ASC')
+        .addOrderBy('u.id', 'ASC')
       const units = await qb.getMany()
 
       const rubricRepo = AppDataSource.getRepository(ContentRubric)
-      const rubrics = await rubricRepo.find({ order: { sort_order: 'ASC' } })
+      const rubrics = await rubricRepo.find({ order: { sort_order: 'ASC', id: 'ASC' } })
 
       const payload = {
         meta: {
