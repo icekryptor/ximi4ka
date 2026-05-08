@@ -564,10 +564,23 @@ export default function ContentBank() {
       {editingUnit !== null && (
         <UnitEditModal
           unit={editingUnit}
-          onClose={() => {
-            setEditingUnit(null)
-            load()
+          onSaved={(saved) => {
+            // Splice the saved unit into local state so closing the modal
+            // doesn't force a 1-2s round-trip to Supabase Singapore.
+            setItems((prev) => {
+              const idx = prev.findIndex((u) => u.id === saved.id)
+              if (idx >= 0) {
+                const next = prev.slice()
+                next[idx] = saved
+                return next
+              }
+              // New unit — prepend so the user sees it immediately. The next
+              // genuine load() (filter/sort/page change) will place it
+              // correctly per server-side ordering.
+              return [saved, ...prev]
+            })
           }}
+          onClose={() => setEditingUnit(null)}
         />
       )}
 
