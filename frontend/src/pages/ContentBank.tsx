@@ -11,6 +11,8 @@ import {
   PaginationMeta,
   STATUS_LABELS,
   CONTENT_TYPE_LABELS,
+  REVIEW_GRADE_LABELS,
+  ReviewGrade,
 } from '../api/contentBank'
 import { KNOWN_NETWORKS } from '../lib/networks'
 import { useToast } from '../contexts/ToastContext'
@@ -88,6 +90,7 @@ export default function ContentBank() {
   const typeFilter =
     (searchParams.get('content_type')?.split(',').filter(Boolean) as ContentType[]) || []
   const networkFilter = searchParams.get('network')?.split(',').filter(Boolean) || []
+  const reviewGradeFilter = searchParams.get('review_grade')?.split(',').filter(Boolean) || []
   const searchFromUrl = searchParams.get('search') || ''
   const sort = (searchParams.get('sort') as 'created_at' | 'title' | 'status') || 'created_at'
   const page = parseInt(searchParams.get('page') || '1', 10) || 1
@@ -124,6 +127,7 @@ export default function ContentBank() {
       if (rubricFilter.length > 0) params.rubric_id = rubricFilter.join(',')
       if (typeFilter.length > 0) params.content_type = typeFilter.join(',')
       if (networkFilter.length > 0) params.network = networkFilter.join(',')
+      if (reviewGradeFilter.length > 0) params.review_grade = reviewGradeFilter.join(',')
       if (searchFromUrl) params.search = searchFromUrl
       const r = await unitsApi.list(params)
       if (reqId !== reqIdRef.current) return
@@ -276,6 +280,17 @@ export default function ContentBank() {
           options={statusOptions}
           selected={statusFilter}
           onChange={(next) => updateParam('status', next)}
+        />
+        <FilterChipBar
+          label="Оценка"
+          options={[
+            { value: 'excellent', label: REVIEW_GRADE_LABELS.excellent },
+            { value: 'needs_work', label: REVIEW_GRADE_LABELS.needs_work },
+            { value: 'rejected', label: REVIEW_GRADE_LABELS.rejected },
+            { value: 'null', label: '— не оценено —' },
+          ]}
+          selected={reviewGradeFilter}
+          onChange={(next) => updateParam('review_grade', next)}
         />
       </div>
 
