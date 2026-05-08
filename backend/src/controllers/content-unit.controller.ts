@@ -237,7 +237,7 @@ export const contentUnitController = {
       let rubricsToSkip = 0
       if (Array.isArray(json.rubrics)) {
         for (const r of json.rubrics) {
-          if (!r || typeof r !== 'object' || !r.slug || !r.title) {
+          if (!r || typeof r !== 'object' || Array.isArray(r) || !r.slug || !r.title) {
             errors.push(`Рубрика без slug или title: ${JSON.stringify(r)}`)
             continue
           }
@@ -263,7 +263,7 @@ export const contentUnitController = {
       const plannedUnits: ImportPlan['units'] = []
 
       for (const incoming of json.units) {
-        if (typeof incoming !== 'object' || incoming === null) {
+        if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) {
           errors.push(`Невалидная единица: ${JSON.stringify(incoming)}`)
           continue
         }
@@ -404,9 +404,14 @@ export const contentUnitController = {
 
         const incoming = item.incoming as Record<string, any>
         const patch: Record<string, any> = stripProtected(incoming)
-        patch.rubric_id = (typeof incoming.rubric_slug === 'string' && incoming.rubric_slug)
-          ? (slugToId.get(incoming.rubric_slug) || null)
-          : null
+
+        // Only override rubric_id when rubric_slug is explicitly present in the incoming JSON.
+        // AI agents may emit JSON for prose-only changes without rubric_slug — don't unrubric existing units silently.
+        if ('rubric_slug' in incoming) {
+          patch.rubric_id = (typeof incoming.rubric_slug === 'string' && incoming.rubric_slug)
+            ? (slugToId.get(incoming.rubric_slug) || null)
+            : null
+        }
 
         if (item.action === 'update' && item.existing_id) {
           await repo.update(item.existing_id, patch)

@@ -51,3 +51,13 @@ export function getImportPlan(token: string): ImportPlan | null {
 export function deleteImportPlan(token: string) {
   store.delete(token)
 }
+
+// Periodic sweep: every minute, drop expired entries.
+// `unref()` so this interval doesn't keep the process alive at shutdown.
+const sweepInterval = setInterval(() => {
+  const now = Date.now()
+  for (const [t, p] of store) {
+    if (now - p.created_at > TTL_MS) store.delete(t)
+  }
+}, 60_000)
+sweepInterval.unref()

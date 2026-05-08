@@ -2,7 +2,10 @@ import { Router } from 'express'
 import multer from 'multer'
 import { contentUnitController } from '../controllers/content-unit.controller'
 
-const upload = multer({ storage: multer.memoryStorage() })
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 25 * 1024 * 1024 }, // 25 MB — match bankImport.routes pattern
+})
 
 const router = Router()
 
