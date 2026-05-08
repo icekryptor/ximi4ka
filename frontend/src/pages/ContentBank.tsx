@@ -30,6 +30,7 @@ import { useToast } from '../contexts/ToastContext'
 import { useConfirmDialog } from '../contexts/ConfirmDialogContext'
 import { UnitEditModal } from '../components/content-bank/UnitEditModal'
 import { RubricsManagerModal } from '../components/content-bank/RubricsManagerModal'
+import ImportJsonModal from '../components/content-bank/ImportJsonModal'
 
 function FilterChipBar<T extends string>({
   label,
@@ -93,6 +94,7 @@ export default function ContentBank() {
   const [rubrics, setRubrics] = useState<ContentRubric[]>([])
   const [editingUnit, setEditingUnit] = useState<ContentUnit | 'new' | null>(null)
   const [rubricsManagerOpen, setRubricsManagerOpen] = useState(false)
+  const [importModalOpen, setImportModalOpen] = useState(false)
   const [ungraded, setUngraded] = useState(0)
   const reqIdRef = useRef(0)
 
@@ -264,7 +266,7 @@ export default function ContentBank() {
           </button>
 
           <button
-            onClick={() => alert('Stage 8 implements this')}
+            onClick={() => setImportModalOpen(true)}
             className="btn btn-secondary flex items-center gap-2"
             title="Импорт из JSON"
           >
@@ -531,6 +533,21 @@ export default function ContentBank() {
           onClose={() => {
             setRubricsManagerOpen(false)
             // Refresh rubrics list so chip filter and dropdowns reflect changes
+            rubricsApi
+              .getAll()
+              .then(setRubrics)
+              .catch(() => toast.error('Не удалось загрузить рубрики'))
+          }}
+        />
+      )}
+
+      {importModalOpen && (
+        <ImportJsonModal
+          onClose={() => {
+            setImportModalOpen(false)
+            load()
+            loadUngradedCount()
+            // Rubrics may have been created during import — refresh chip filter list
             rubricsApi
               .getAll()
               .then(setRubrics)
