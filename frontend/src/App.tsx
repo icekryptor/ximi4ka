@@ -38,6 +38,7 @@ const PublicUnitEconomics = lazy(() => import('./pages/PublicUnitEconomics'))
 const RecurringTasks = lazy(() => import('./pages/RecurringTasks'))
 const RecurringTaskDetail = lazy(() => import('./pages/RecurringTaskDetail'))
 const ContentBank = lazy(() => import('./pages/ContentBank'))
+const ContentBankTriage = lazy(() => import('./pages/ContentBankTriage'))
 const Projects = lazy(() => import('./pages/Projects'))
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail'))
 const PublicProject = lazy(() => import('./pages/PublicProject'))
@@ -126,6 +127,7 @@ function App() {
                                 <Route path="/planning/projects" element={<Projects />} />
                                 <Route path="/planning/projects/:id" element={<ProjectDetail />} />
                                 <Route path="/content-bank" element={<ContentBank />} />
+                                <Route path="/content-bank/triage" element={<ContentBankTriage />} />
                                 <Route path="/content-units" element={<Navigate to="/content-bank" replace />} />
                                 {/* Маркетплейсы */}
                                 <Route path="/marketplace" element={<Marketplace />} />
