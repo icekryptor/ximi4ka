@@ -3,6 +3,8 @@ import { IsNull } from 'typeorm'
 import { AppDataSource } from '../config/database'
 import { ContentUnit } from '../entities/ContentUnit'
 import { ContentRubric } from '../entities/ContentRubric'
+import { ContentPublication } from '../entities/ContentPublication'
+import { saveImportPlan, getImportPlan, deleteImportPlan, ImportPlan } from '../services/import-token-store'
 
 const repo = AppDataSource.getRepository(ContentUnit)
 
@@ -206,6 +208,256 @@ export const contentUnitController = {
     } catch (e) {
       console.error('Error exporting units:', e)
       res.status(500).json({ error: 'Ошибка экспорта' })
+    }
+  },
+
+  async importPreview(req: Request, res: Response) {
+    try {
+      if (!req.file) return res.status(400).json({ error: 'Файл не загружен' })
+      let json: any
+      try {
+        json = JSON.parse(req.file.buffer.toString('utf-8'))
+      } catch {
+        return res.status(400).json({ error: 'Невалидный JSON' })
+      }
+
+      const errors: string[] = []
+      const warnings: string[] = []
+
+      if (!json.units || !Array.isArray(json.units)) {
+        return res.status(400).json({ error: 'JSON должен содержать массив units[]' })
+      }
+
+      const rubricRepo = AppDataSource.getRepository(ContentRubric)
+      const existingRubrics = await rubricRepo.find()
+      const slugToRubric = new Map(existingRubrics.map(r => [r.slug, r]))
+
+      const plannedRubrics: ImportPlan['rubrics'] = []
+      let rubricsToCreate = 0
+      let rubricsToSkip = 0
+      if (Array.isArray(json.rubrics)) {
+        for (const r of json.rubrics) {
+          if (!r || typeof r !== 'object' || !r.slug || !r.title) {
+            errors.push(`Рубрика без slug или title: ${JSON.stringify(r)}`)
+            continue
+          }
+          const existing = slugToRubric.get(r.slug)
+          plannedRubrics.push({
+            slug: r.slug,
+            title: r.title,
+            emoji: r.emoji ?? null,
+            tone: r.tone ?? null,
+            audience: r.audience ?? null,
+            cta_template: r.cta_template ?? null,
+            sort_order: r.sort_order ?? 0,
+            existing_id: existing?.id ?? null,
+          })
+          if (existing) rubricsToSkip++
+          else rubricsToCreate++
+        }
+      }
+
+      let unitsToInsert = 0
+      let unitsToUpdate = 0
+      let unitsToSkip = 0
+      const plannedUnits: ImportPlan['units'] = []
+
+      for (const incoming of json.units) {
+        if (typeof incoming !== 'object' || incoming === null) {
+          errors.push(`Невалидная единица: ${JSON.stringify(incoming)}`)
+          continue
+        }
+
+        const incomingObj = incoming as Record<string, unknown>
+
+        // Check rubric_slug existence (unknown slug → warning, unit will be created without rubric)
+        if (incomingObj.rubric_slug && typeof incomingObj.rubric_slug === 'string' &&
+            !slugToRubric.has(incomingObj.rubric_slug) &&
+            !plannedRubrics.find(r => r.slug === incomingObj.rubric_slug)) {
+          warnings.push(`rubric_slug '${incomingObj.rubric_slug}' не найден — единица будет без рубрики`)
+        }
+
+        // UPDATE path: id present and exists in DB
+        if (typeof incomingObj.id === 'string') {
+          const existing = await repo.findOne({ where: { id: incomingObj.id } })
+          if (existing) {
+            plannedUnits.push({
+              incoming: incomingObj,
+              action: 'update',
+              existing_id: existing.id,
+            })
+            unitsToUpdate++
+            continue
+          }
+        }
+
+        // Skip-on-duplicate by (rubric_id from slug, hook)
+        if (typeof incomingObj.rubric_slug === 'string' &&
+            typeof incomingObj.hook === 'string' && incomingObj.hook) {
+          const existingRubric = slugToRubric.get(incomingObj.rubric_slug)
+          if (existingRubric) {
+            const dup = await repo.findOne({
+              where: { rubric_id: existingRubric.id, hook: incomingObj.hook },
+            })
+            if (dup) {
+              plannedUnits.push({
+                incoming: incomingObj,
+                action: 'skip',
+                existing_id: dup.id,
+                skip_reason: 'duplicate (rubric_id, hook)',
+              })
+              unitsToSkip++
+              continue
+            }
+          }
+        }
+
+        plannedUnits.push({ incoming: incomingObj, action: 'insert', existing_id: null })
+        unitsToInsert++
+      }
+
+      const token = saveImportPlan({
+        rubrics: plannedRubrics,
+        units: plannedUnits,
+        user_id: req.user!.userId,
+        created_at: Date.now(),
+      })
+
+      res.json({
+        rubrics: {
+          to_create: rubricsToCreate,
+          to_skip: rubricsToSkip,
+          parsed_total: plannedRubrics.length,
+        },
+        units: {
+          to_insert: unitsToInsert,
+          to_update: unitsToUpdate,
+          to_skip_duplicate: unitsToSkip,
+          parsed_total: plannedUnits.length,
+        },
+        errors,
+        warnings,
+        preview_token: token,
+      })
+    } catch (e) {
+      console.error('Error in import preview:', e)
+      res.status(500).json({ error: 'Ошибка предварительного разбора' })
+    }
+  },
+
+  async importCommit(req: Request, res: Response) {
+    try {
+      const { preview_token } = req.body
+      if (!preview_token) return res.status(400).json({ error: 'preview_token обязателен' })
+
+      const plan = getImportPlan(preview_token)
+      if (!plan) return res.status(404).json({ error: 'Токен истёк или не найден. Загрузите файл заново.' })
+
+      const PROTECTED = new Set(['id', 'review_grade', 'review_feedback', 'reviewed_at',
+        'created_by', 'created_at', 'updated_at', 'rubric', 'rubric_slug', 'publications'])
+
+      const stripProtected = (incoming: Record<string, unknown>) => {
+        const out: Record<string, unknown> = {}
+        for (const [k, v] of Object.entries(incoming)) {
+          if (!PROTECTED.has(k)) out[k] = v
+        }
+        return out
+      }
+
+      const rubricRepo = AppDataSource.getRepository(ContentRubric)
+      const publicationRepo = AppDataSource.getRepository(ContentPublication)
+
+      let rubricsCreated = 0
+      let rubricsSkipped = 0
+      const slugToId = new Map<string, string>()
+      for (const r of plan.rubrics) {
+        if (r.existing_id) {
+          slugToId.set(r.slug, r.existing_id)
+          rubricsSkipped++
+        } else {
+          const created = await rubricRepo.save(rubricRepo.create({
+            slug: r.slug,
+            title: r.title,
+            emoji: r.emoji,
+            tone: r.tone,
+            audience: r.audience,
+            cta_template: r.cta_template,
+            sort_order: r.sort_order,
+          }))
+          slugToId.set(r.slug, created.id)
+          rubricsCreated++
+        }
+      }
+      // Backfill slugToId with rubrics that exist in DB but weren't in the incoming JSON
+      const allRubrics = await rubricRepo.find()
+      for (const r of allRubrics) if (!slugToId.has(r.slug)) slugToId.set(r.slug, r.id)
+
+      let unitsInserted = 0
+      let unitsUpdated = 0
+      let unitsSkipped = 0
+
+      for (const item of plan.units) {
+        if (item.action === 'skip') {
+          unitsSkipped++
+          continue
+        }
+
+        const incoming = item.incoming as Record<string, any>
+        const patch: Record<string, any> = stripProtected(incoming)
+        patch.rubric_id = (typeof incoming.rubric_slug === 'string' && incoming.rubric_slug)
+          ? (slugToId.get(incoming.rubric_slug) || null)
+          : null
+
+        if (item.action === 'update' && item.existing_id) {
+          await repo.update(item.existing_id, patch)
+          // Replace publications: delete old, insert new
+          await publicationRepo.delete({ content_unit_id: item.existing_id })
+          for (const p of (incoming.publications || [])) {
+            if (!p || typeof p !== 'object' || typeof p.network !== 'string') continue
+            await publicationRepo.save(publicationRepo.create({
+              content_unit_id: item.existing_id,
+              network: p.network,
+              scheduled_at: p.scheduled_at ? new Date(p.scheduled_at) : null,
+              published_at: p.published_at ? new Date(p.published_at) : null,
+              published_url: p.published_url ?? null,
+              notes: p.notes ?? null,
+            }))
+          }
+          unitsUpdated++
+        } else {
+          // INSERT
+          const title = (typeof patch.title === 'string' && patch.title.trim()) ||
+            (typeof incoming.hook === 'string' && incoming.hook ? String(incoming.hook).slice(0, 80) : 'Без названия')
+          const created = await repo.save(repo.create({
+            ...patch,
+            title,
+            created_by: plan.user_id,
+          }))
+          for (const p of (incoming.publications || [])) {
+            if (!p || typeof p !== 'object' || typeof p.network !== 'string') continue
+            await publicationRepo.save(publicationRepo.create({
+              content_unit_id: created.id,
+              network: p.network,
+              scheduled_at: p.scheduled_at ? new Date(p.scheduled_at) : null,
+              published_at: p.published_at ? new Date(p.published_at) : null,
+              published_url: p.published_url ?? null,
+              notes: p.notes ?? null,
+            }))
+          }
+          unitsInserted++
+        }
+      }
+
+      deleteImportPlan(preview_token)
+
+      res.json({
+        rubrics: { created: rubricsCreated, skipped: rubricsSkipped },
+        units: { inserted: unitsInserted, updated: unitsUpdated, skipped: unitsSkipped },
+        errors: [],
+      })
+    } catch (e: any) {
+      console.error('Error in import commit:', e)
+      res.status(500).json({ error: 'Ошибка импорта: ' + (e?.message || 'неизвестная ошибка') })
     }
   },
 

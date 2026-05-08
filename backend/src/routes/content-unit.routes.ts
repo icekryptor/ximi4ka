@@ -1,10 +1,15 @@
 import { Router } from 'express'
+import multer from 'multer'
 import { contentUnitController } from '../controllers/content-unit.controller'
+
+const upload = multer({ storage: multer.memoryStorage() })
 
 const router = Router()
 
 router.get('/ungraded-count', contentUnitController.ungradedCount)
 router.get('/export', contentUnitController.export)
+router.post('/import/preview', upload.single('file'), contentUnitController.importPreview)
+router.post('/import/commit', contentUnitController.importCommit)
 router.get('/', contentUnitController.getAll)
 router.get('/:id', contentUnitController.getOne)
 router.post('/', contentUnitController.create)
