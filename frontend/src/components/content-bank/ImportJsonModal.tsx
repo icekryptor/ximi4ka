@@ -122,14 +122,14 @@ export default function ImportJsonModal({ onClose }: Props) {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-subtle rounded-xl p-4">
-                  <p className="text-xs uppercase text-brand-text-secondary mb-2">Рубрики</p>
+                  <p className="text-xs uppercase text-brand-text-secondary mb-2">📁 Рубрики</p>
                   <p className="text-sm text-brand-text">
                     <span className="font-bold text-green-700">{preview.rubrics.to_create}</span> новых,{' '}
                     <span className="text-brand-text-secondary">{preview.rubrics.to_skip}</span> пропустим
                   </p>
                 </div>
                 <div className="bg-subtle rounded-xl p-4">
-                  <p className="text-xs uppercase text-brand-text-secondary mb-2">Идеи</p>
+                  <p className="text-xs uppercase text-brand-text-secondary mb-2">📝 Идеи</p>
                   <p className="text-sm text-brand-text">
                     <span className="font-bold text-green-700">{preview.units.to_insert}</span> новых,{' '}
                     <span className="font-bold text-amber-700">{preview.units.to_update}</span> обновим,{' '}
@@ -164,7 +164,7 @@ export default function ImportJsonModal({ onClose }: Props) {
               )}
 
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-800">
-                ОБНОВЛЕНИЕ перезапишет: <code>hook</code>, <code>hook_ab</code>, <code>visual</code>, <code>essence</code>, <code>notes</code>, <code>video_url</code>, <code>publications</code>.
+                ⚠️ ОБНОВЛЕНИЕ перезапишет: <code>hook</code>, <code>hook_ab</code>, <code>visual</code>, <code>essence</code>, <code>notes</code>, <code>video_url</code>, <code>publications</code>.
                 НЕ перезапишет: <code>review_grade</code>, <code>review_feedback</code>, <code>reviewed_at</code>, <code>created_*</code>.
               </div>
             </div>
