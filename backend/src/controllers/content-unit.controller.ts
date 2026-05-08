@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import { IsNull } from 'typeorm'
 import { AppDataSource } from '../config/database'
 import { ContentUnit } from '../entities/ContentUnit'
 
@@ -77,6 +78,16 @@ export const contentUnitController = {
     } catch (e) {
       console.error('Error fetching units:', e)
       res.status(500).json({ error: 'Ошибка загрузки единиц' })
+    }
+  },
+
+  async ungradedCount(req: Request, res: Response) {
+    try {
+      const count = await repo.count({ where: { review_grade: IsNull() } })
+      res.json({ count })
+    } catch (e) {
+      console.error('Error counting ungraded units:', e)
+      res.status(500).json({ error: 'Ошибка подсчёта неоценённых' })
     }
   },
 
