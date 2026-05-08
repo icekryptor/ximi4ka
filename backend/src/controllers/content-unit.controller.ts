@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { IsNull } from 'typeorm'
+import { In, IsNull } from 'typeorm'
 import { AppDataSource } from '../config/database'
 import { ContentUnit } from '../entities/ContentUnit'
 import { ContentRubric } from '../entities/ContentRubric'
@@ -24,10 +24,14 @@ export const contentUnitController = {
       const page = Math.max(1, parseInt(req.query.page as string) || 1)
       const limit = Math.min(200, Math.max(1, parseInt(req.query.limit as string) || 50))
 
+      // We deliberately do NOT joinAndSelect publications here. With skip/take
+      // and a one-to-many joinAndSelect, TypeORM wraps the query in a DISTINCT
+      // pagination layer that can't reference correlated aggregate subqueries
+      // in ORDER BY (the scheduled_at sort blew up with a 500). Instead, we
+      // load publications in a single batch query after pagination is settled.
       const qb = repo
         .createQueryBuilder('u')
         .leftJoinAndSelect('u.rubric', 'r')
-        .leftJoinAndSelect('u.publications', 'p')
 
       if (status) qb.andWhere('u.status IN (:...statuses)', { statuses: status.split(',') })
       if (rubric_id) qb.andWhere('u.rubric_id IN (:...rubrics)', { rubrics: rubric_id.split(',') })
@@ -65,23 +69,41 @@ export const contentUnitController = {
       } else if (sort === 'status') {
         qb.orderBy('u.status', 'ASC').addOrderBy('u.created_at', 'DESC')
       } else if (sort === 'scheduled_at') {
-        // Sort by earliest scheduled publication. If a network filter is active,
-        // restrict the subquery to those networks so per-network sort works for team workflows.
-        const networkClause = network ? 'AND cp.network IN (:...networks_sort)' : ''
+        // Sort by earliest scheduled publication. Per-network filter is mirrored
+        // inside the subquery so team workflows can sort per platform.
+        const networkClause = network ? ' AND cp_sort.network IN (:...networks_sort)' : ''
         qb.orderBy(
-          `(SELECT MIN(cp.scheduled_at) FROM content_publications cp WHERE cp.content_unit_id = u.id ${networkClause})`,
+          `(SELECT MIN(cp_sort.scheduled_at) FROM content_publications cp_sort WHERE cp_sort.content_unit_id = u.id${networkClause})`,
           'ASC',
           'NULLS LAST',
-        )
+        ).addOrderBy('u.created_at', 'DESC')
         if (network) qb.setParameter('networks_sort', network.split(','))
       } else {
         qb.orderBy('u.created_at', 'DESC')
       }
 
-      const [data, total] = await qb
+      const [units, total] = await qb
         .skip((page - 1) * limit)
         .take(limit)
         .getManyAndCount()
+
+      // Hydrate publications for the page (one batch query, sorted by sort_order).
+      const ids = units.map(u => u.id)
+      const data = units as ContentUnit[]
+      if (ids.length > 0) {
+        const pubRepo = AppDataSource.getRepository(ContentPublication)
+        const allPubs = await pubRepo.find({
+          where: { content_unit_id: In(ids) },
+          order: { sort_order: 'ASC', created_at: 'ASC' },
+        })
+        const pubsByUnit = new Map<string, ContentPublication[]>()
+        for (const p of allPubs) {
+          const arr = pubsByUnit.get(p.content_unit_id) || []
+          arr.push(p)
+          pubsByUnit.set(p.content_unit_id, arr)
+        }
+        for (const u of data) u.publications = pubsByUnit.get(u.id) || []
+      }
 
       res.json({
         data,
