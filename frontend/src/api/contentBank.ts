@@ -11,6 +11,8 @@ export type ContentStatus =
   | 'published'
   | 'rejected'
 
+export type ReviewGrade = 'excellent' | 'needs_work' | 'rejected'
+
 export interface ContentRubric {
   id: string
   slug: string
@@ -51,6 +53,9 @@ export interface ContentUnit {
   essence: string | null
   notes: string | null
   video_url: string | null
+  review_grade: ReviewGrade | null
+  review_feedback: string | null
+  reviewed_at: string | null
   created_by: string
   created_at: string
   updated_at: string
@@ -62,6 +67,7 @@ export interface UnitsListParams {
   rubric_id?: string      // CSV
   content_type?: string   // CSV
   network?: string        // CSV
+  review_grade?: string   // CSV: 'excellent,needs_work' or special 'null'
   search?: string
   sort?: 'created_at' | 'title' | 'status'
   page?: number
@@ -78,6 +84,20 @@ export interface PaginationMeta {
 export interface UnitsListResponse {
   data: ContentUnit[]
   pagination: PaginationMeta
+}
+
+export interface ImportPreviewResponse {
+  rubrics: { to_create: number; to_skip: number; parsed_total: number }
+  units: { to_insert: number; to_update: number; to_skip_duplicate: number; parsed_total: number }
+  errors: string[]
+  warnings: string[]
+  preview_token: string
+}
+
+export interface ImportCommitResponse {
+  rubrics: { created: number; skipped: number }
+  units: { inserted: number; updated: number; skipped: number }
+  errors: string[]
 }
 
 // === Rubrics ===
@@ -120,6 +140,29 @@ export const unitsApi = {
   delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/content-units/${id}`)
   },
+  ungradedCount: async (): Promise<{ count: number }> => {
+    const r = await apiClient.get<{ count: number }>('/content-units/ungraded-count')
+    return r.data
+  },
+  export: async (params: UnitsListParams = {}): Promise<Blob> => {
+    const r = await apiClient.get('/content-units/export', { params, responseType: 'blob' })
+    return r.data as Blob
+  },
+  importPreview: async (file: File): Promise<ImportPreviewResponse> => {
+    const fd = new FormData()
+    fd.append('file', file)
+    const r = await apiClient.post<ImportPreviewResponse>(
+      '/content-units/import/preview', fd,
+      { headers: { 'Content-Type': 'multipart/form-data' } },
+    )
+    return r.data
+  },
+  importCommit: async (token: string): Promise<ImportCommitResponse> => {
+    const r = await apiClient.post<ImportCommitResponse>(
+      '/content-units/import/commit', { preview_token: token },
+    )
+    return r.data
+  },
 }
 
 // === Publications ===
@@ -159,4 +202,10 @@ export const COMPLEXITY_LABELS: Record<number, string> = {
   1: '⭐ просто',
   2: '⭐⭐ средне',
   3: '⭐⭐⭐ сложно',
+}
+
+export const REVIEW_GRADE_LABELS: Record<ReviewGrade, string> = {
+  excellent: '✅ отлично',
+  needs_work: '⚠️ доработать',
+  rejected: '❌ отказ',
 }
