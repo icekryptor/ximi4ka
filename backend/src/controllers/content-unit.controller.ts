@@ -60,9 +60,23 @@ export const contentUnitController = {
       }
 
       // Sort
-      if (sort === 'title') qb.orderBy('u.title', 'ASC')
-      else if (sort === 'status') qb.orderBy('u.status', 'ASC').addOrderBy('u.created_at', 'DESC')
-      else qb.orderBy('u.created_at', 'DESC')
+      if (sort === 'title') {
+        qb.orderBy('u.title', 'ASC')
+      } else if (sort === 'status') {
+        qb.orderBy('u.status', 'ASC').addOrderBy('u.created_at', 'DESC')
+      } else if (sort === 'scheduled_at') {
+        // Sort by earliest scheduled publication. If a network filter is active,
+        // restrict the subquery to those networks so per-network sort works for team workflows.
+        const networkClause = network ? 'AND cp.network IN (:...networks_sort)' : ''
+        qb.orderBy(
+          `(SELECT MIN(cp.scheduled_at) FROM content_publications cp WHERE cp.content_unit_id = u.id ${networkClause})`,
+          'ASC',
+          'NULLS LAST',
+        )
+        if (network) qb.setParameter('networks_sort', network.split(','))
+      } else {
+        qb.orderBy('u.created_at', 'DESC')
+      }
 
       const [data, total] = await qb
         .skip((page - 1) * limit)

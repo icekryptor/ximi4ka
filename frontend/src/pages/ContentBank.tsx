@@ -108,7 +108,9 @@ export default function ContentBank() {
   const networkFilter = searchParams.get('network')?.split(',').filter(Boolean) || []
   const reviewGradeFilter = searchParams.get('review_grade')?.split(',').filter(Boolean) || []
   const searchFromUrl = searchParams.get('search') || ''
-  const sort = (searchParams.get('sort') as 'created_at' | 'title' | 'status') || 'created_at'
+  const sort =
+    (searchParams.get('sort') as 'created_at' | 'title' | 'status' | 'scheduled_at') ||
+    'created_at'
   const page = parseInt(searchParams.get('page') || '1', 10) || 1
 
   // Local search input mirrors URL but updates with debounce
@@ -283,6 +285,7 @@ export default function ContentBank() {
             <option value="created_at">Сначала новые</option>
             <option value="title">По алфавиту</option>
             <option value="status">По статусу</option>
+            <option value="scheduled_at">По дате публикации</option>
           </select>
           <button
             onClick={() => navigate('/content-bank/triage')}
@@ -422,9 +425,6 @@ export default function ContentBank() {
               <thead>
                 <tr className="border-b border-brand-border">
                   <th className="text-left py-3 px-4 font-medium text-brand-text-secondary whitespace-nowrap">
-                    Рубрика
-                  </th>
-                  <th className="text-left py-3 px-4 font-medium text-brand-text-secondary whitespace-nowrap">
                     Статус
                   </th>
                   <th className="text-left py-3 px-4 font-medium text-brand-text-secondary whitespace-nowrap">
@@ -441,16 +441,11 @@ export default function ContentBank() {
               </thead>
               <tbody>
                 {items.map((u) => (
-                  <tr key={u.id} className="border-b border-brand-border hover:bg-subtle">
-                    <td className="py-3 px-4 whitespace-nowrap">
-                      {u.rubric ? (
-                        <span>
-                          {u.rubric.emoji} {u.rubric.title}
-                        </span>
-                      ) : (
-                        <span className="text-brand-text-secondary">—</span>
-                      )}
-                    </td>
+                  <tr
+                    key={u.id}
+                    onClick={() => setEditingUnit(u)}
+                    className="border-b border-brand-border hover:bg-subtle cursor-pointer"
+                  >
                     <td className="py-3 px-4 whitespace-nowrap text-xs">
                       {STATUS_LABELS[u.status]}
                     </td>
@@ -458,6 +453,12 @@ export default function ContentBank() {
                       {CONTENT_TYPE_LABELS[u.content_type]}
                     </td>
                     <td className="py-3 px-4">
+                      {u.rubric && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-subtle text-brand-text-secondary mb-1">
+                          <span>{u.rubric.emoji}</span>
+                          <span>{u.rubric.title}</span>
+                        </span>
+                      )}
                       <div className="font-medium text-brand-text max-w-[400px] truncate">
                         {u.title}
                       </div>
@@ -479,7 +480,10 @@ export default function ContentBank() {
                         ))}
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-right whitespace-nowrap">
+                    <td
+                      className="py-3 px-4 text-right whitespace-nowrap"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="flex justify-end gap-1">
                         <button
                           onClick={() => setEditingUnit(u)}

@@ -69,7 +69,7 @@ export interface UnitsListParams {
   network?: string        // CSV
   review_grade?: string   // CSV: 'excellent,needs_work' or special 'null'
   search?: string
-  sort?: 'created_at' | 'title' | 'status'
+  sort?: 'created_at' | 'title' | 'status' | 'scheduled_at'
   page?: number
   limit?: number
 }
