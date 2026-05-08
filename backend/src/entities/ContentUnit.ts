@@ -22,6 +22,8 @@ export type ContentStatus =
   | 'published'
   | 'rejected'
 
+export type ReviewGrade = 'excellent' | 'needs_work' | 'rejected'
+
 @Entity('content_units')
 export class ContentUnit {
   @PrimaryGeneratedColumn('uuid')
@@ -63,6 +65,15 @@ export class ContentUnit {
 
   @Column({ type: 'varchar', length: 1000, nullable: true })
   video_url: string | null
+
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  review_grade: ReviewGrade | null
+
+  @Column({ type: 'text', nullable: true })
+  review_feedback: string | null
+
+  @Column({ type: 'timestamptz', nullable: true })
+  reviewed_at: Date | null
 
   @Column({ type: 'uuid' })
   created_by: string
