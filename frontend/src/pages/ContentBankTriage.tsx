@@ -17,7 +17,6 @@ export default function ContentBankTriage() {
   const [queue, setQueue] = useState<ContentUnit[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [feedback, setFeedback] = useState('')
-  const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -60,23 +59,38 @@ export default function ContentBankTriage() {
     setCurrentIndex(prev => Math.max(prev - 1, 0))
   }, [])
 
-  const saveAndAdvance = useCallback(async (grade: ReviewGrade) => {
-    if (!current || saving) return
-    setSaving(true)
-    try {
-      const updated = await unitsApi.update(current.id, {
-        review_grade: grade,
-        review_feedback: feedback.trim() || null,
-        reviewed_at: new Date().toISOString(),
-      } as any)
-      // Update queue locally with new value (so back-navigation shows latest)
-      setQueue(prev => prev.map((u, i) => i === currentIndex ? updated : u))
-      advance()
-    } catch {
-      toast.error('Ошибка сохранения')
-    }
-    setSaving(false)
-  }, [current, feedback, saving, currentIndex, advance, toast])
+  const saveAndAdvance = useCallback((grade: ReviewGrade) => {
+    if (!current) return
+    const id = current.id
+    const reviewedAt = new Date().toISOString()
+    const reviewFeedback = feedback.trim() || null
+    const label = current.hook?.slice(0, 40) || current.title
+
+    // 1) Optimistic local update — match by id (not index) so rapid presses
+    //    can't smear into each other if React batches setCurrentIndex.
+    setQueue(prev => prev.map(u => u.id === id ? {
+      ...u,
+      review_grade: grade,
+      review_feedback: reviewFeedback,
+      reviewed_at: reviewedAt,
+    } : u))
+
+    // 2) Advance immediately — next card shows without waiting for the API.
+    advance()
+
+    // 3) Fire-and-forget API call — error surfaces as toast but never blocks UI.
+    //    Backend's update endpoint does 3 sequential DB round-trips
+    //    (findOne + update + findOne-with-relations) over Russia → Railway →
+    //    Supabase Singapore — ~1-1.5s per save. Keeping that on the critical
+    //    path made triage feel sluggish.
+    unitsApi.update(id, {
+      review_grade: grade,
+      review_feedback: reviewFeedback,
+      reviewed_at: reviewedAt,
+    } as any).catch(() => {
+      toast.error(`Не удалось сохранить «${label}»`)
+    })
+  }, [current, feedback, advance, toast])
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -255,21 +269,18 @@ export default function ContentBankTriage() {
         <div className="grid grid-cols-3 gap-3">
           <button
             onClick={() => saveAndAdvance('excellent')}
-            disabled={saving}
             className="px-4 py-3 bg-green-500 text-white rounded-xl font-semibold hover:bg-green-600 disabled:opacity-40"
           >
             ✅ 1 Отлично
           </button>
           <button
             onClick={() => saveAndAdvance('needs_work')}
-            disabled={saving}
             className="px-4 py-3 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-600 disabled:opacity-40"
           >
             ⚠️ 2 Доработать
           </button>
           <button
             onClick={() => saveAndAdvance('rejected')}
-            disabled={saving}
             className="px-4 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 disabled:opacity-40"
           >
             ❌ 3 Отказ
