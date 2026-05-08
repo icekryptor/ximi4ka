@@ -96,6 +96,7 @@ export default function ContentBank() {
   const [rubricsManagerOpen, setRubricsManagerOpen] = useState(false)
   const [importModalOpen, setImportModalOpen] = useState(false)
   const [ungraded, setUngraded] = useState(0)
+  const [rejectedCount, setRejectedCount] = useState(0)
   const reqIdRef = useRef(0)
 
   // Filters from URL
@@ -179,9 +180,36 @@ export default function ContentBank() {
     }
   }, [])
 
+  const loadRejectedCount = useCallback(async () => {
+    try {
+      const r = await unitsApi.rejectedCount()
+      setRejectedCount(r.count)
+    } catch {
+      // silent — non-critical
+    }
+  }, [])
+
   useEffect(() => {
     loadUngradedCount()
-  }, [loadUngradedCount])
+    loadRejectedCount()
+  }, [loadUngradedCount, loadRejectedCount])
+
+  const handlePurgeRejected = useCallback(async () => {
+    const ok = await confirm({
+      title: 'Удалить отказные идеи?',
+      message: `Будет удалено ${rejectedCount} идей со статусом «❌ отказ» вместе с их публикациями. Действие нельзя отменить.`,
+      confirmText: 'Удалить',
+      variant: 'danger',
+    })
+    if (!ok) return
+    try {
+      const r = await unitsApi.purgeRejected()
+      toast.success(`Удалено ${r.deleted} идей`)
+      await Promise.all([load(), loadUngradedCount(), loadRejectedCount()])
+    } catch {
+      toast.error('Ошибка удаления отказов')
+    }
+  }, [confirm, rejectedCount, toast, load, loadUngradedCount, loadRejectedCount])
 
   const handleDelete = async (id: string) => {
     const ok = await confirm({
@@ -264,6 +292,17 @@ export default function ContentBank() {
             <Sparkles size={16} />
             <span className="hidden sm:inline">Триаж{ungraded > 0 ? ` (${ungraded})` : ''}</span>
           </button>
+
+          {rejectedCount > 0 && (
+            <button
+              onClick={handlePurgeRejected}
+              className="btn flex items-center gap-2 border border-red-300 text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 dark:border-red-800 dark:text-red-400"
+              title="Удалить все идеи со статусом «отказ»"
+            >
+              <Trash2 size={16} />
+              <span className="hidden sm:inline">Отказы ({rejectedCount})</span>
+            </button>
+          )}
 
           <button
             onClick={() => setImportModalOpen(true)}

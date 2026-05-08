@@ -163,6 +163,16 @@ export const unitsApi = {
     )
     return r.data
   },
+
+  rejectedCount: async (): Promise<{ count: number }> => {
+    const r = await apiClient.get<{ count: number }>('/content-units/rejected-count')
+    return r.data
+  },
+
+  purgeRejected: async (): Promise<{ deleted: number }> => {
+    const r = await apiClient.delete<{ deleted: number }>('/content-units/purge-rejected')
+    return r.data
+  },
 }
 
 // === Publications ===
