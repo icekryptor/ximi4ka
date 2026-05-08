@@ -1,6 +1,17 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { Plus, Settings, Search, ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react'
+import { useSearchParams, useNavigate } from 'react-router-dom'
+import {
+  Plus,
+  Settings,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Pencil,
+  Trash2,
+  Download,
+  Upload,
+  Sparkles,
+} from 'lucide-react'
 import {
   unitsApi,
   rubricsApi,
@@ -69,6 +80,7 @@ export default function ContentBank() {
   const toast = useToast()
   const { confirm } = useConfirmDialog()
   const [searchParams, setSearchParams] = useSearchParams()
+  const navigate = useNavigate()
 
   const [items, setItems] = useState<ContentUnit[]>([])
   const [pagination, setPagination] = useState<PaginationMeta>({
@@ -81,6 +93,7 @@ export default function ContentBank() {
   const [rubrics, setRubrics] = useState<ContentRubric[]>([])
   const [editingUnit, setEditingUnit] = useState<ContentUnit | 'new' | null>(null)
   const [rubricsManagerOpen, setRubricsManagerOpen] = useState(false)
+  const [ungraded, setUngraded] = useState(0)
   const reqIdRef = useRef(0)
 
   // Filters from URL
@@ -155,6 +168,19 @@ export default function ContentBank() {
       .catch(() => toast.error('Не удалось загрузить рубрики'))
   }, [toast])
 
+  const loadUngradedCount = useCallback(async () => {
+    try {
+      const r = await unitsApi.ungradedCount()
+      setUngraded(r.count)
+    } catch {
+      // silent — non-critical
+    }
+  }, [])
+
+  useEffect(() => {
+    loadUngradedCount()
+  }, [loadUngradedCount])
+
   const handleDelete = async (id: string) => {
     const ok = await confirm({
       title: 'Удалить единицу?',
@@ -228,6 +254,54 @@ export default function ContentBank() {
             <option value="title">По алфавиту</option>
             <option value="status">По статусу</option>
           </select>
+          <button
+            onClick={() => navigate('/content-bank/triage')}
+            className="btn btn-secondary flex items-center gap-2"
+            title="Режим триажа — оценка идей"
+          >
+            <Sparkles size={16} />
+            <span className="hidden sm:inline">Триаж{ungraded > 0 ? ` (${ungraded})` : ''}</span>
+          </button>
+
+          <button
+            onClick={() => alert('Stage 8 implements this')}
+            className="btn btn-secondary flex items-center gap-2"
+            title="Импорт из JSON"
+          >
+            <Upload size={16} />
+            <span className="hidden sm:inline">Импорт</span>
+          </button>
+
+          <button
+            onClick={async () => {
+              try {
+                const params: Record<string, string> = {}
+                const sp = searchParams
+                for (const k of ['status', 'rubric_id', 'content_type', 'network', 'review_grade', 'search']) {
+                  const v = sp.get(k)
+                  if (v) params[k] = v
+                }
+                const blob = await unitsApi.export(params)
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = `content-bank-export-${Date.now()}.json`
+                document.body.appendChild(a)
+                a.click()
+                a.remove()
+                URL.revokeObjectURL(url)
+                toast.success(`Экспортировано: ${Math.round(blob.size / 1024)} KB`)
+              } catch {
+                toast.error('Ошибка экспорта')
+              }
+            }}
+            className="btn btn-secondary flex items-center gap-2"
+            title="Экспорт в JSON"
+          >
+            <Download size={16} />
+            <span className="hidden sm:inline">Экспорт</span>
+          </button>
+
           <button
             onClick={() => setRubricsManagerOpen(true)}
             className="btn btn-secondary flex items-center gap-2"
