@@ -94,6 +94,26 @@ export const contentUnitController = {
     }
   },
 
+  async rejectedCount(req: Request, res: Response) {
+    try {
+      const count = await repo.count({ where: { review_grade: 'rejected' } })
+      res.json({ count })
+    } catch (e) {
+      console.error('Error counting rejected units:', e)
+      res.status(500).json({ error: 'Ошибка подсчёта отказов' })
+    }
+  },
+
+  async purgeRejected(req: Request, res: Response) {
+    try {
+      const result = await repo.delete({ review_grade: 'rejected' })
+      res.json({ deleted: result.affected || 0 })
+    } catch (e) {
+      console.error('Error purging rejected units:', e)
+      res.status(500).json({ error: 'Ошибка удаления отказов' })
+    }
+  },
+
   async export(req: Request, res: Response) {
     try {
       const {

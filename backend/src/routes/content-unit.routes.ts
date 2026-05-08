@@ -10,6 +10,8 @@ const upload = multer({
 const router = Router()
 
 router.get('/ungraded-count', contentUnitController.ungradedCount)
+router.get('/rejected-count', contentUnitController.rejectedCount)
+router.delete('/purge-rejected', contentUnitController.purgeRejected)
 router.get('/export', contentUnitController.export)
 router.post('/import/preview', upload.single('file'), contentUnitController.importPreview)
 router.post('/import/commit', contentUnitController.importCommit)
