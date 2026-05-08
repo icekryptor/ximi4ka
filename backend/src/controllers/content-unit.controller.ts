@@ -12,6 +12,7 @@ export const contentUnitController = {
         rubric_id,
         content_type,
         network,
+        review_grade,
         search,
         sort = 'created_at',
       } = req.query as Record<string, string | undefined>
@@ -33,6 +34,19 @@ export const contentUnitController = {
           'EXISTS (SELECT 1 FROM content_publications cp WHERE cp.content_unit_id = u.id AND cp.network IN (:...networks))',
           { networks: network.split(',') },
         )
+      }
+      if (review_grade) {
+        const grades = review_grade.split(',')
+        if (grades.includes('null')) {
+          const rest = grades.filter(g => g !== 'null')
+          if (rest.length > 0) {
+            qb.andWhere('(u.review_grade IS NULL OR u.review_grade IN (:...rest))', { rest })
+          } else {
+            qb.andWhere('u.review_grade IS NULL')
+          }
+        } else {
+          qb.andWhere('u.review_grade IN (:...grades)', { grades })
+        }
       }
       if (search) {
         qb.andWhere(
