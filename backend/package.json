@@ -24,6 +24,7 @@
   "author": "XimFinance Team",
   "license": "UNLICENSED",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.95.1",
     "@supabase/supabase-js": "^2.99.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/multer": "^2.0.0",
