@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { useNavigate } from 'react-router-dom'
 import { X } from 'lucide-react'
 import {
   ContentUnit,
@@ -80,6 +81,7 @@ function initialFormData(unit: ContentUnit | 'new'): FormData {
 
 export function UnitEditModal({ unit, onClose, onSaved }: Props) {
   const toast = useToast()
+  const navigate = useNavigate()
   const [formData, setFormData] = useState<FormData>(() => initialFormData(unit))
   const [rubrics, setRubrics] = useState<ContentRubric[]>([])
   const [saving, setSaving] = useState(false)
@@ -513,6 +515,14 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
                 placeholder="Полный текст сценария — проговаривается при съёмке."
                 className="w-full mt-1 px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text outline-none focus:border-primary-400 resize-y font-mono text-sm whitespace-pre-line"
               />
+              <button
+                type="button"
+                onClick={() => unit !== 'new' && navigate(`/voiceover/${unit.id}`)}
+                disabled={unit === 'new'}
+                className="text-xs text-primary-600 hover:text-primary-700 mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                🎙 Открыть в войсовер-студии →
+              </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
