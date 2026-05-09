@@ -68,6 +68,11 @@ export const contentUnitController = {
         qb.orderBy('u.title', 'ASC')
       } else if (sort === 'status') {
         qb.orderBy('u.status', 'ASC').addOrderBy('u.created_at', 'DESC')
+      } else if (sort === 'ready_at') {
+        // Plain column sort — no subquery. Backlog without a planned date
+        // sinks to the bottom (NULLS LAST).
+        qb.orderBy('u.ready_at', 'ASC', 'NULLS LAST')
+          .addOrderBy('u.created_at', 'DESC')
       } else if (sort === 'scheduled_at') {
         // Sort by earliest scheduled publication. Per-network filter is mirrored
         // inside the subquery so team workflows can sort per platform.
