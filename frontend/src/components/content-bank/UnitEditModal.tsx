@@ -33,6 +33,10 @@ interface FormData {
   essence: string
   notes: string
   video_url: string
+  script_text: string
+  video_brief: string
+  voiceover_text: string
+  ready_at: string
 }
 
 function initialFormData(unit: ContentUnit | 'new'): FormData {
@@ -49,6 +53,10 @@ function initialFormData(unit: ContentUnit | 'new'): FormData {
       essence: '',
       notes: '',
       video_url: '',
+      script_text: '',
+      video_brief: '',
+      voiceover_text: '',
+      ready_at: '',
     }
   }
   return {
@@ -63,6 +71,10 @@ function initialFormData(unit: ContentUnit | 'new'): FormData {
     essence: unit.essence || '',
     notes: unit.notes || '',
     video_url: unit.video_url || '',
+    script_text: unit.script_text ?? '',
+    video_brief: unit.video_brief ?? '',
+    voiceover_text: unit.voiceover_text ?? '',
+    ready_at: unit.ready_at ? new Date(unit.ready_at).toISOString().slice(0, 10) : '',
   }
 }
 
@@ -117,6 +129,10 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
       essence: formData.essence.trim() || null,
       notes: formData.notes.trim() || null,
       video_url: formData.video_url.trim() || null,
+      script_text: formData.script_text.trim() || null,
+      video_brief: formData.video_brief.trim() || null,
+      voiceover_text: formData.voiceover_text.trim() || null,
+      ready_at: formData.ready_at ? new Date(formData.ready_at).toISOString() : null,
     }
 
     setSaving(true)
