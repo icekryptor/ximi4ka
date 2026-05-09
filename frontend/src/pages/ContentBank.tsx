@@ -22,12 +22,14 @@ import {
   PaginationMeta,
   STATUS_LABELS,
   CONTENT_TYPE_LABELS,
+  COMPLEXITY_LABELS,
   REVIEW_GRADE_LABELS,
   ReviewGrade,
 } from '../api/contentBank'
 import { KNOWN_NETWORKS } from '../lib/networks'
 import { useToast } from '../contexts/ToastContext'
 import { useConfirmDialog } from '../contexts/ConfirmDialogContext'
+import { UnitChip } from '../components/content-bank/UnitChip'
 import { UnitEditModal } from '../components/content-bank/UnitEditModal'
 import { RubricsManagerModal } from '../components/content-bank/RubricsManagerModal'
 import ImportJsonModal from '../components/content-bank/ImportJsonModal'
@@ -77,6 +79,11 @@ function FilterChipBar<T extends string>({
   )
 }
 
+function formatReadyDate(iso: string): string {
+  const d = new Date(iso)
+  return d.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' })
+}
+
 export default function ContentBank() {
   const toast = useToast()
   const { confirm } = useConfirmDialog()
@@ -109,7 +116,12 @@ export default function ContentBank() {
   const reviewGradeFilter = searchParams.get('review_grade')?.split(',').filter(Boolean) || []
   const searchFromUrl = searchParams.get('search') || ''
   const sort =
-    (searchParams.get('sort') as 'created_at' | 'title' | 'status' | 'scheduled_at') ||
+    (searchParams.get('sort') as
+      | 'created_at'
+      | 'title'
+      | 'status'
+      | 'ready_at'
+      | 'scheduled_at') ||
     'created_at'
   const page = parseInt(searchParams.get('page') || '1', 10) || 1
 
@@ -285,7 +297,8 @@ export default function ContentBank() {
             <option value="created_at">Сначала новые</option>
             <option value="title">По алфавиту</option>
             <option value="status">По статусу</option>
-            <option value="scheduled_at">По дате публикации</option>
+            <option value="ready_at">📅 По дате готовности</option>
+            <option value="scheduled_at">🚀 По дате публикации</option>
           </select>
           <button
             onClick={() => navigate('/content-bank/triage')}
@@ -424,18 +437,14 @@ export default function ContentBank() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-brand-border">
-                  <th className="text-left py-3 px-4 font-medium text-brand-text-secondary whitespace-nowrap">
-                    Статус
-                  </th>
-                  <th className="text-left py-3 px-4 font-medium text-brand-text-secondary whitespace-nowrap">
-                    Тип
-                  </th>
                   <th className="text-left py-3 px-4 font-medium text-brand-text-secondary">
-                    Название / Hook
+                    Контент
                   </th>
-                  <th className="text-left py-3 px-4 font-medium text-brand-text-secondary">Сети</th>
+                  <th className="text-left py-3 px-4 font-medium text-brand-text-secondary whitespace-nowrap">
+                    Сети
+                  </th>
                   <th className="text-right py-3 px-4 font-medium text-brand-text-secondary whitespace-nowrap">
-                    Действия
+                    {/* действия */}
                   </th>
                 </tr>
               </thead>
@@ -446,25 +455,48 @@ export default function ContentBank() {
                     onClick={() => setEditingUnit(u)}
                     className="border-b border-brand-border hover:bg-subtle cursor-pointer"
                   >
-                    <td className="py-3 px-4 whitespace-nowrap text-xs">
-                      {STATUS_LABELS[u.status]}
-                    </td>
-                    <td className="py-3 px-4 whitespace-nowrap text-xs">
-                      {CONTENT_TYPE_LABELS[u.content_type]}
-                    </td>
                     <td className="py-3 px-4">
-                      {u.rubric && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-subtle text-brand-text-secondary mb-1">
-                          <span>{u.rubric.emoji}</span>
-                          <span>{u.rubric.title}</span>
-                        </span>
-                      )}
-                      <div className="font-medium text-brand-text max-w-[400px] truncate">
+                      <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                        {u.rubric && (
+                          <UnitChip variant="rubric">
+                            {u.rubric.emoji} {u.rubric.title}
+                          </UnitChip>
+                        )}
+                        <UnitChip variant="status" status={u.status}>
+                          {STATUS_LABELS[u.status]}
+                        </UnitChip>
+                        <UnitChip variant="type" contentType={u.content_type}>
+                          {CONTENT_TYPE_LABELS[u.content_type]}
+                        </UnitChip>
+                        {u.complexity != null && COMPLEXITY_LABELS[u.complexity] && (
+                          <UnitChip variant="complexity">
+                            {COMPLEXITY_LABELS[u.complexity]}
+                          </UnitChip>
+                        )}
+                        {u.ready_at && (
+                          <span
+                            className={
+                              'ml-auto text-xs ' +
+                              (sort === 'ready_at'
+                                ? 'text-primary-600 font-medium'
+                                : 'text-brand-text-secondary')
+                            }
+                          >
+                            ↗ {formatReadyDate(u.ready_at)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="font-semibold text-brand-text leading-snug">
                         {u.title}
                       </div>
-                      {u.hook && u.hook !== u.title && (
-                        <div className="text-xs text-brand-text-secondary max-w-[400px] truncate">
-                          {u.hook}
+                      {u.hook && (
+                        <div className="text-sm text-brand-text-secondary mt-0.5 line-clamp-1">
+                          → {u.hook}
+                        </div>
+                      )}
+                      {u.script_text && (
+                        <div className="text-xs text-brand-text-secondary mt-1.5 line-clamp-3 whitespace-pre-line">
+                          {u.script_text}
                         </div>
                       )}
                     </td>
