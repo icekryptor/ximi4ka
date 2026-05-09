@@ -75,6 +75,18 @@ export class ContentUnit {
   @Column({ type: 'timestamptz', nullable: true })
   reviewed_at: Date | null
 
+  @Column({ type: 'text', nullable: true })
+  script_text: string | null
+
+  @Column({ type: 'text', nullable: true })
+  video_brief: string | null
+
+  @Column({ type: 'text', nullable: true })
+  voiceover_text: string | null
+
+  @Column({ type: 'timestamptz', nullable: true })
+  ready_at: Date | null
+
   @Column({ type: 'uuid' })
   created_by: string
 
