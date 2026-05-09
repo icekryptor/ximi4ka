@@ -45,6 +45,7 @@ import bankAccountRoutes from './routes/bankAccount.routes';
 import bankImportRoutes from './routes/bankImport.routes';
 import importRuleRoutes from './routes/importRule.routes';
 import cashflowRoutes from './routes/cashflow.routes';
+import voiceoverRoutes from './routes/voiceover.routes';
 import { unitEconomicsController } from './controllers/unit-economics.controller';
 
 // Middleware
@@ -128,6 +129,7 @@ app.use('/api/bank-accounts', authMiddleware, bankAccountRoutes);
 app.use('/api/bank-imports', authMiddleware, bankImportRoutes);
 app.use('/api/import-rules', authMiddleware, importRuleRoutes);
 app.use('/api/cashflow', authMiddleware, cashflowRoutes);
+app.use('/api/voiceover', authMiddleware, voiceoverRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
