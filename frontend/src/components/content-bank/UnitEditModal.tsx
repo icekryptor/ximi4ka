@@ -456,6 +456,19 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
             </div>
           </div>
 
+          {/* Ready-at date */}
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-brand-text-secondary uppercase tracking-wider">
+              📅 Дата готовности
+            </label>
+            <input
+              type="date"
+              value={formData.ready_at}
+              onChange={(e) => setFormData({ ...formData, ready_at: e.target.value })}
+              className="px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text outline-none focus:border-primary-400"
+            />
+          </div>
+
           {/* Title */}
           <div>
             <label className="label">Название</label>
@@ -484,6 +497,51 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
               }
             />
           </div>
+
+          {/* Production section */}
+          <section className="space-y-3 border-t border-brand-border pt-4">
+            <h3 className="text-sm font-semibold text-brand-text">🎬 Производство</h3>
+
+            <div>
+              <label className="text-xs text-brand-text-secondary uppercase tracking-wider">
+                Сценарий
+              </label>
+              <textarea
+                value={formData.script_text}
+                onChange={(e) => setFormData({ ...formData, script_text: e.target.value })}
+                rows={10}
+                placeholder="Полный текст сценария — проговаривается при съёмке."
+                className="w-full mt-1 px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text outline-none focus:border-primary-400 resize-y font-mono text-sm whitespace-pre-line"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-brand-text-secondary uppercase tracking-wider">
+                  ТЗ для видео
+                </label>
+                <textarea
+                  value={formData.video_brief}
+                  onChange={(e) => setFormData({ ...formData, video_brief: e.target.value })}
+                  rows={5}
+                  placeholder="Что снимаем, ракурсы, реквизит, локация…"
+                  className="w-full mt-1 px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text outline-none focus:border-primary-400 resize-y text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-brand-text-secondary uppercase tracking-wider">
+                  Озвучка
+                </label>
+                <textarea
+                  value={formData.voiceover_text}
+                  onChange={(e) => setFormData({ ...formData, voiceover_text: e.target.value })}
+                  rows={5}
+                  placeholder="Текст голоса за кадром."
+                  className="w-full mt-1 px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text outline-none focus:border-primary-400 resize-y text-sm"
+                />
+              </div>
+            </div>
+          </section>
 
           {/* Publications section */}
           <div className="pt-4 border-t border-brand-border">
