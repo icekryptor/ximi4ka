@@ -56,6 +56,10 @@ export interface ContentUnit {
   review_grade: ReviewGrade | null
   review_feedback: string | null
   reviewed_at: string | null
+  script_text: string | null
+  video_brief: string | null
+  voiceover_text: string | null
+  ready_at: string | null
   created_by: string
   created_at: string
   updated_at: string
@@ -69,7 +73,7 @@ export interface UnitsListParams {
   network?: string        // CSV
   review_grade?: string   // CSV: 'excellent,needs_work' or special 'null'
   search?: string
-  sort?: 'created_at' | 'title' | 'status' | 'scheduled_at'
+  sort?: 'created_at' | 'title' | 'status' | 'scheduled_at' | 'ready_at'
   page?: number
   limit?: number
 }
