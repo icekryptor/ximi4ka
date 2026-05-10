@@ -140,13 +140,6 @@ const IconMic = () => (
   </svg>
 )
 
-const IconChart = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" y1="20" x2="18" y2="10" />
-    <line x1="12" y1="20" x2="12" y2="4" />
-    <line x1="6" y1="20" x2="6" y2="14" />
-  </svg>
-)
 
 const IconMarketplace = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -332,7 +325,6 @@ const NAV_GROUPS: NavGroup[] = [
       { type: 'link', name: 'Канбан-доски', href: '/planning', icon: IconPlanning },
       { type: 'link', name: 'Контент-банк', href: '/content-bank', icon: IconContent },
       { type: 'link', name: 'Войсовер', href: '/voiceover', icon: IconMic },
-      { type: 'link', name: 'Контент-движок', href: '/content-engine', icon: IconChart },
     ],
   },
   {
