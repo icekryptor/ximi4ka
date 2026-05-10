@@ -17,6 +17,7 @@ export const contentUnitController = {
         content_type,
         network,
         review_grade,
+        stage,
         search,
         sort = 'created_at',
       } = req.query as Record<string, string | undefined>
@@ -54,6 +55,46 @@ export const contentUnitController = {
           }
         } else {
           qb.andWhere('u.review_grade IN (:...grades)', { grades })
+        }
+      }
+      // Filter by stage (mirrors Edge Function bucket heuristics from content-engine-stats)
+      // Each stage maps to a unique combination of status / review_grade / has_script /
+      // has_voiceover / has_video / publication state.
+      if (stage) {
+        switch (stage) {
+          case 'ideas':
+            qb.andWhere("u.status = 'idea'").andWhere('u.review_grade IS NULL')
+            break
+          case 'triage_needs_work':
+            qb.andWhere("u.review_grade = 'needs_work'")
+            break
+          case 'excellent':
+            qb.andWhere("u.review_grade = 'excellent'").andWhere('u.script_text IS NULL')
+            break
+          case 'planning':
+            qb.andWhere('u.script_text IS NULL').andWhere(
+              'EXISTS (SELECT 1 FROM content_publications cp_stage WHERE cp_stage.content_unit_id = u.id AND cp_stage.scheduled_at IS NOT NULL)',
+            )
+            break
+          case 'scripting':
+            qb.andWhere('u.script_text IS NOT NULL').andWhere('u.voiceover_text IS NULL')
+            break
+          case 'voiceover_prep':
+            qb.andWhere('u.voiceover_text IS NOT NULL').andWhere('u.video_url IS NULL')
+            break
+          case 'production':
+            qb.andWhere('u.video_url IS NOT NULL').andWhere(
+              'NOT EXISTS (SELECT 1 FROM content_publications cp_stage WHERE cp_stage.content_unit_id = u.id AND cp_stage.published_at IS NOT NULL)',
+            )
+            break
+          case 'published':
+            qb.andWhere(
+              'EXISTS (SELECT 1 FROM content_publications cp_stage WHERE cp_stage.content_unit_id = u.id AND cp_stage.published_at IS NOT NULL)',
+            )
+            break
+          case 'rejected':
+            qb.andWhere("(u.status = 'rejected' OR u.review_grade = 'rejected')")
+            break
         }
       }
       if (search) {
