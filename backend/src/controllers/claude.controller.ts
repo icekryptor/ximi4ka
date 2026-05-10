@@ -20,7 +20,18 @@ async function callClaude(system: string, user: string, maxTokens = 4096): Promi
 }
 
 function handleClaudeError(e: any, res: Response, defaultMsg: string) {
+  // Verbose logging — captures everything we might need for debugging when
+  // a request fails. Anthropic SDK errors carry status + a response body
+  // (string or object) that explains what went wrong (invalid model,
+  // max_tokens out of range, billing issue, content-policy block, etc.)
   const status = e?.status || e?.response?.status
+  const errMessage = e?.message
+  const errType = e?.error?.type || e?.response?.data?.error?.type
+  const errBody = e?.error?.message || e?.response?.data?.error?.message
+  console.error(
+    `[Claude error] status=${status ?? 'n/a'} type=${errType ?? 'n/a'} ` +
+      `message="${errMessage ?? 'n/a'}" body="${(errBody ?? '').toString().slice(0, 300)}"`,
+  )
   if (status === 429) {
     return res.status(503).json({ error: 'Сервис временно перегружен, попробуйте через минуту' })
   }
@@ -31,7 +42,6 @@ function handleClaudeError(e: any, res: Response, defaultMsg: string) {
   if (e?.code === 'ETIMEDOUT' || e?.name === 'TimeoutError') {
     return res.status(504).json({ error: 'Превышено время ожидания, попробуйте ещё раз' })
   }
-  console.error('Claude error:', e?.message || e)
   return res.status(500).json({ error: defaultMsg })
 }
 
@@ -269,9 +279,13 @@ ${cache.brandDocs.style_guide_video}
 - Каждый чанк должен быть самостоятельной единицей для озвучки.
 
 Формат: строго JSON {"chunks":["чанк1","чанк2",...]}. Только JSON, без пояснений.`
-      // 8192 because preprocess is the largest-output endpoint by design:
-      // every word can grow with U+0301 stress marks, plus JSON overhead.
-      const raw = await callClaude(system, script, 8192)
+      // 4096 — restored from the temporary 8192 bump. The Anthropic SDK
+      // rejected 8192 with a generic error mapped to 'Ошибка препроцессинга'
+      // on the client. Sonnet 4.5 supports up to 64k output tokens per docs,
+      // but something in the SDK or request chain doesn't accept 8192 here.
+      // If preprocess truncates mid-JSON at 4096, switch to streaming or
+      // request output_size beta header — not 8192 raw.
+      const raw = await callClaude(system, script, 4096)
       const parsed = parseClaudeJson(
         raw,
         (v) => {
