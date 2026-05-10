@@ -66,6 +66,12 @@ export function PreprocessStep({ state, update, onBack, onDone }: Props) {
     toast.success('Чанк скопирован')
   }
 
+  const copyAll = async () => {
+    if (state.chunks.length === 0) return
+    await navigator.clipboard.writeText(state.chunks.join('\n\n'))
+    toast.success('Весь сценарий скопирован')
+  }
+
   const downloadTZ = () => {
     const blob = new Blob([buildTZ(state)], { type: 'text/plain;charset=utf-8' })
     const a = document.createElement('a')
@@ -118,6 +124,9 @@ export function PreprocessStep({ state, update, onBack, onDone }: Props) {
             <button onClick={run} disabled={running} className="btn btn-secondary text-sm">
               🔄 Перезапустить
             </button>
+            <button onClick={copyAll} className="btn btn-secondary text-sm">
+              <Copy size={14} /> Копировать всё
+            </button>
             <button onClick={downloadTZ} className="btn btn-secondary text-sm">
               <Download size={14} /> Скачать ТЗ
             </button>
@@ -126,17 +135,20 @@ export function PreprocessStep({ state, update, onBack, onDone }: Props) {
 
           <div className="space-y-2">
             {state.chunks.map((c, i) => (
-              <div key={i} className="flex items-start gap-2 p-3 rounded-xl border border-brand-border bg-subtle">
+              <button
+                key={i}
+                type="button"
+                onClick={() => copyChunk(c)}
+                className="group w-full text-left flex items-start gap-2 p-3 rounded-xl border border-brand-border bg-subtle hover:border-primary-300 hover:bg-primary-50 focus:border-primary-400 focus:outline-none transition-colors"
+                title="Кликни чтобы скопировать"
+              >
                 <div className="text-xs font-mono text-brand-text-secondary w-6 shrink-0">{i + 1}</div>
                 <pre className="flex-1 text-sm whitespace-pre-line font-mono text-brand-text">{c}</pre>
-                <button
-                  onClick={() => copyChunk(c)}
-                  className="text-brand-text-secondary hover:text-primary-600"
-                  title="Копировать"
-                >
-                  <Copy size={14} />
-                </button>
-              </div>
+                <Copy
+                  size={14}
+                  className="text-brand-text-secondary group-hover:text-primary-600 shrink-0 mt-0.5"
+                />
+              </button>
             ))}
           </div>
         </>
