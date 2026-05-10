@@ -42,6 +42,16 @@ function handleClaudeError(e: any, res: Response, defaultMsg: string) {
   if (e?.code === 'ETIMEDOUT' || e?.name === 'TimeoutError') {
     return res.status(504).json({ error: 'Превышено время ожидания, попробуйте ещё раз' })
   }
+  // Anthropic returns 400 with type=invalid_request_error when the account
+  // balance is depleted ("Your credit balance is too low..."). The user-facing
+  // toast 'Ошибка препроцессинга' is unhelpful — surface the actual cause +
+  // pointer to top up.
+  const fullMessage = `${errMessage ?? ''} ${errBody ?? ''}`.toLowerCase()
+  if (fullMessage.includes('credit balance')) {
+    return res
+      .status(402)
+      .json({ error: 'Закончились кредиты Anthropic — пополни баланс в console.anthropic.com → Billing' })
+  }
   return res.status(500).json({ error: defaultMsg })
 }
 
