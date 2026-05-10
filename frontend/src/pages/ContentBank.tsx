@@ -11,6 +11,7 @@ import {
   Download,
   Upload,
   Sparkles,
+  RefreshCw,
 } from 'lucide-react'
 import {
   unitsApi,
@@ -26,6 +27,12 @@ import {
   REVIEW_GRADE_LABELS,
   ReviewGrade,
 } from '../api/contentBank'
+import { contentEngineApi, DashboardData, StageKey } from '../api/contentEngine'
+import { MetricsRow } from '../components/content-engine/MetricsRow'
+import { PipelineRow } from '../components/content-engine/PipelineRow'
+import { Bottlenecks } from '../components/content-engine/Bottlenecks'
+import { TodayQueue } from '../components/content-engine/TodayQueue'
+import { RecentPublished } from '../components/content-engine/RecentPublished'
 import { KNOWN_NETWORKS } from '../lib/networks'
 import { useToast } from '../contexts/ToastContext'
 import { useConfirmDialog } from '../contexts/ConfirmDialogContext'
@@ -100,6 +107,8 @@ export default function ContentBank() {
   const [loading, setLoading] = useState(true)
   const [rubrics, setRubrics] = useState<ContentRubric[]>([])
   const [editingUnit, setEditingUnit] = useState<ContentUnit | 'new' | null>(null)
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null)
+  const [dashboardFetching, setDashboardFetching] = useState(false)
   const [rubricsManagerOpen, setRubricsManagerOpen] = useState(false)
   const [importModalOpen, setImportModalOpen] = useState(false)
   const [ungraded, setUngraded] = useState(0)
@@ -123,6 +132,7 @@ export default function ContentBank() {
       | 'ready_at'
       | 'scheduled_at') ||
     'created_at'
+  const stage = (searchParams.get('stage') as StageKey | null) || null
   const page = parseInt(searchParams.get('page') || '1', 10) || 1
 
   // Local search input mirrors URL but updates with debounce
@@ -159,6 +169,7 @@ export default function ContentBank() {
       if (networkFilter.length > 0) params.network = networkFilter.join(',')
       if (reviewGradeFilter.length > 0) params.review_grade = reviewGradeFilter.join(',')
       if (searchFromUrl) params.search = searchFromUrl
+      if (stage) params.stage = stage
       const r = await unitsApi.list(params)
       if (reqId !== reqIdRef.current) return
       setItems(r.data)
@@ -203,10 +214,41 @@ export default function ContentBank() {
     }
   }, [])
 
+  const refreshDashboard = useCallback(async () => {
+    setDashboardFetching(true)
+    try {
+      const r = await contentEngineApi.stats()
+      setDashboard(r)
+    } catch {
+      // Silent failure — keep previous data, never disrupt the table
+    } finally {
+      setDashboardFetching(false)
+    }
+  }, [])
+
   useEffect(() => {
     loadUngradedCount()
     loadRejectedCount()
   }, [loadUngradedCount, loadRejectedCount])
+
+  // Dashboard data — initial load + 30s polling, paused while modal is open or tab hidden
+  useEffect(() => {
+    refreshDashboard()
+    const tick = () => {
+      if (document.hidden) return
+      if (editingUnit !== null) return
+      refreshDashboard()
+    }
+    const timer = setInterval(tick, 30000)
+    const onVisibility = () => {
+      if (!document.hidden && editingUnit === null) refreshDashboard()
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
+  }, [editingUnit, refreshDashboard])
 
   const handlePurgeRejected = useCallback(async () => {
     const ok = await confirm({
