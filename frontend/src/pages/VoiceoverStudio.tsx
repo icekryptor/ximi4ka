@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { useToast } from '../contexts/ToastContext'
 import { unitsApi, ContentUnit, ContentRubric } from '../api/contentBank'
-import { voiceoverApi, BootstrapResponse, FactcheckItem } from '../api/voiceover'
+import { voiceoverApi, BootstrapResponse, FactcheckItem, Pattern } from '../api/voiceover'
 import { StepNav } from '../components/voiceover/StepNav'
 import { UnitPicker } from '../components/voiceover/UnitPicker'
 import { GenerateStep } from '../components/voiceover/GenerateStep'
@@ -26,6 +26,10 @@ export interface WizardState {
   finalScript: string
   editNotes: string
   chunks: string[]
+  iteration: number
+  patterns: Pattern[]
+  patternsApproved: boolean[]
+  editSummary: string
 }
 
 const INITIAL: WizardState = {
@@ -39,6 +43,10 @@ const INITIAL: WizardState = {
   finalScript: '',
   editNotes: '',
   chunks: [],
+  iteration: 1,
+  patterns: [],
+  patternsApproved: [],
+  editSummary: '',
 }
 
 export default function VoiceoverStudio() {
