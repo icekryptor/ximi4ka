@@ -6,6 +6,14 @@ export interface FactcheckItem {
   text: string
 }
 
+export interface Pattern {
+  code: string
+  title: string
+  before?: string
+  after?: string
+  rationale: string
+}
+
 export interface BootstrapResponse {
   rubrics: ContentRubric[]
   brandDocs: {
@@ -48,6 +56,34 @@ export const voiceoverApi = {
 
   preprocess: async (script: string): Promise<{ chunks: string[] }> => {
     const r = await apiClient.post<{ chunks: string[] }>('/claude/preprocess', { script })
+    return r.data
+  },
+
+  editWithLearning: async (params: {
+    originalScript: string
+    notes?: string
+    editedScript?: string
+  }): Promise<{ finalScript: string; summary: string; patterns: Pattern[] }> => {
+    const r = await apiClient.post<{
+      finalScript: string
+      summary: string
+      patterns: Pattern[]
+    }>('/claude/edit-with-learning', params)
+    return r.data
+  },
+
+  extendGuide: async (
+    addenda: Pattern[],
+  ): Promise<{ version: string; addendaCount: number }> => {
+    const r = await apiClient.post<{ version: string; addendaCount: number }>(
+      '/voiceover/extend-guide',
+      { addenda },
+    )
+    return r.data
+  },
+
+  refreshCache: async (): Promise<{ ok: true }> => {
+    const r = await apiClient.post<{ ok: true }>('/voiceover/cache/refresh')
     return r.data
   },
 }
