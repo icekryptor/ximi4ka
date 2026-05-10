@@ -328,7 +328,28 @@ export default function ContentBank() {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex items-center justify-between mb-6 gap-2 flex-wrap">
-        <h1 className="text-lg sm:text-xl font-bold text-brand-text">Контент-банк</h1>
+        <div className="flex flex-col gap-1">
+          <h1 className="text-lg sm:text-xl font-bold text-brand-text">Контент-банк</h1>
+          {dashboard && (
+            <div className="flex items-center gap-2 text-xs text-brand-text-secondary">
+              <span
+                className={
+                  'inline-block w-2 h-2 rounded-full ' +
+                  (dashboardFetching ? 'bg-primary-500 animate-pulse' : 'bg-green-500')
+                }
+                aria-label={dashboardFetching ? 'Обновляется' : 'Актуально'}
+              />
+              <span>Обновлено: {new Date(dashboard.generated_at).toLocaleTimeString('ru-RU')}</span>
+              <button
+                onClick={refreshDashboard}
+                disabled={dashboardFetching}
+                className="ml-2 flex items-center gap-1 px-2 py-1 rounded-lg border border-brand-border hover:bg-subtle disabled:opacity-50"
+              >
+                <RefreshCw size={12} className={dashboardFetching ? 'animate-spin' : ''} /> Обновить
+              </button>
+            </div>
+          )}
+        </div>
         <div className="flex gap-2 items-center">
           <select
             value={sort}
@@ -417,6 +438,38 @@ export default function ContentBank() {
           </button>
         </div>
       </div>
+
+      {dashboard && (
+        <div className="space-y-4 mb-4">
+          <MetricsRow stats={dashboard.stats} />
+          <Bottlenecks counts={dashboard.stats.counts} />
+          <TodayQueue queue={dashboard.today_queue} />
+        </div>
+      )}
+
+      {dashboard && (
+        <div className="mb-4">
+          <PipelineRow
+            counts={dashboard.stats.counts}
+            openStage={stage}
+            onStageClick={(s) => {
+              setSearchParams((prev) => {
+                const sp = new URLSearchParams(prev)
+                if (stage === s) {
+                  sp.delete('stage')
+                } else {
+                  sp.set('stage', s)
+                  // mutual exclusion: stage replaces status + review_grade filters
+                  sp.delete('status')
+                  sp.delete('review_grade')
+                }
+                sp.delete('page')
+                return sp
+              })
+            }}
+          />
+        </div>
+      )}
 
       {/* Filters */}
       <div className="mb-6 space-y-3">
@@ -632,6 +685,12 @@ export default function ContentBank() {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {dashboard && dashboard.recent_published.length > 0 && (
+        <div className="mt-6">
+          <RecentPublished items={dashboard.recent_published} />
         </div>
       )}
 
