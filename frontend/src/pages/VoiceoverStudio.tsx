@@ -128,7 +128,13 @@ export default function VoiceoverStudio() {
       )}
 
       {state.step === 'style' && (
-        <StyleStep state={state} update={update} onBack={() => update({ step: 'factcheck' })} onNext={() => update({ step: 'preprocess' })} />
+        <StyleStep
+          state={state}
+          update={update}
+          onBack={() => update({ step: 'factcheck' })}
+          onNext={() => update({ step: 'preprocess' })}
+          onRegenerate={() => update({ step: 'generate' })}
+        />
       )}
 
       {state.step === 'preprocess' && (
