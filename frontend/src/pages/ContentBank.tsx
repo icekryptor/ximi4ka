@@ -490,22 +490,10 @@ export default function ContentBank() {
           onChange={(next) => updateParam('content_type', next)}
         />
         <FilterChipBar
-          label="Рубрика"
-          options={rubricOptions}
-          selected={rubricFilter}
-          onChange={(next) => updateParam('rubric_id', next)}
-        />
-        <FilterChipBar
           label="Сети"
           options={networkOptions}
           selected={networkFilter}
           onChange={(next) => updateParam('network', next)}
-        />
-        <FilterChipBar
-          label="Статус"
-          options={statusOptions}
-          selected={statusFilter}
-          onChange={(next) => updateParam('status', next)}
         />
         <FilterChipBar
           label="Оценка"
