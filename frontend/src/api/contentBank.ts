@@ -1,4 +1,5 @@
 import { apiClient } from './client'
+import type { StageKey } from './contentEngine'
 
 export type ContentType = 'short_video' | 'text_post' | 'other'
 
@@ -72,6 +73,7 @@ export interface UnitsListParams {
   content_type?: string   // CSV
   network?: string        // CSV
   review_grade?: string   // CSV: 'excellent,needs_work' or special 'null'
+  stage?: StageKey
   search?: string
   sort?: 'created_at' | 'title' | 'status' | 'scheduled_at' | 'ready_at'
   page?: number
