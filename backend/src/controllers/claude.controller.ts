@@ -146,6 +146,84 @@ ${cache.brandDocs.style_guide_video}
     }
   },
 
+  async editWithLearning(req: Request, res: Response) {
+    try {
+      const { originalScript, notes, editedScript } = req.body as {
+        originalScript?: string
+        notes?: string
+        editedScript?: string
+      }
+      if (!originalScript || !originalScript.trim()) {
+        return res.status(400).json({ error: 'Поле originalScript обязательно' })
+      }
+      if (!notes?.trim() && !editedScript?.trim()) {
+        return res.status(400).json({ error: 'Нужно указать notes или editedScript' })
+      }
+
+      const cache = await getPromptCache()
+      const system = `Ты — редактор бренда Химичка. Тебе показывают исходный сценарий и правки от оператора.
+У оператора есть два режима ввода правок:
+1. Свободные заметки (текст с указаниями: что поменять и почему)
+2. Отредактированная версия сценария (новая версия, в которой уже сделаны правки)
+
+## Стилевой гайд (текущая версия)
+${cache.brandDocs.style_guide_video}
+
+## Твоя задача
+1. Если есть editedScript — используй его как новую версию. Если только notes — примени правки к originalScript и создай новую версию.
+2. Проанализируй РАЗНИЦУ между originalScript и новой версией (или смысл notes).
+3. Извлеки СМЫСЛОВЫЕ ПАТТЕРНЫ — общие правила, которые стоит добавить в стилевой гайд, чтобы при будущих генерациях не повторять ту же ошибку.
+4. Каждый паттерн должен быть в формате существующих дополнений к гайду (А{N}, С{N}, Э{N}):
+   - code: следующий свободный номер в правильной категории. Категории:
+     * А (А11+) — аудиальные правила (произношение, ритм, артикуляция)
+     * С (С10+) — структурные/лексические правила (конструкции, образы, сюжет)
+     * Э (Э8+) — финальные уточнения (узкие правила из конкретного редактирования)
+   - title: короткое название правила (5-10 слов)
+   - before: пример «как НЕ надо» (одна фраза из исходного сценария, если применимо)
+   - after: пример «как надо» (одна фраза из новой версии, если применимо)
+   - rationale: 1-2 предложения объясняющие почему
+
+5. Не выдумывай паттерны если их нет. Лучше вернуть 0 паттернов чем мусор.
+6. Игнорируй тривиальные правки (опечатки, перестановка слов без смысла).
+7. Если правка ОДИН РАЗ — это не паттерн. Паттерн — это правило, которое применимо к любому будущему сценарию.
+
+## Формат ответа
+Строго JSON:
+{
+  "finalScript": "полная новая версия сценария",
+  "summary": "1-2 предложения о сути правок",
+  "patterns": [
+    { "code": "Э8", "title": "...", "before": "...", "after": "...", "rationale": "..." }
+  ]
+}
+Только JSON, без пояснений.`
+
+      const userPayload = JSON.stringify({
+        originalScript,
+        notes: notes ?? null,
+        editedScript: editedScript ?? null,
+      })
+      const raw = await callClaude(system, userPayload, 4096)
+      let parsed: { finalScript: string; summary: string; patterns: any[] }
+      try {
+        const cleaned = raw.replace(/```json|```/g, '').trim()
+        parsed = JSON.parse(cleaned)
+        if (typeof parsed.finalScript !== 'string') throw new Error('finalScript missing')
+        if (!Array.isArray(parsed.patterns)) parsed.patterns = []
+      } catch {
+        // Fallback — if model didn't return JSON, treat as plain edit + no patterns
+        parsed = {
+          finalScript: editedScript ?? originalScript,
+          summary: raw.slice(0, 200),
+          patterns: [],
+        }
+      }
+      res.json(parsed)
+    } catch (e: any) {
+      handleClaudeError(e, res, 'Ошибка обучения на правках')
+    }
+  },
+
   async preprocess(req: Request, res: Response) {
     try {
       const { script } = req.body as { script?: string }
