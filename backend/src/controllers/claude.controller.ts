@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import Anthropic from '@anthropic-ai/sdk'
 import { getPromptCache } from '../services/prompt-cache'
+import { parseClaudeJson, splitIntoSentenceChunks } from '../lib/parse-claude-json'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY ?? '' })
 const MODEL = 'claude-sonnet-4-5-20250929'
@@ -88,14 +89,11 @@ CTA-формула: «Найти нас можно по слову "Химичк
 
 Проверь текст. Ответь строго JSON-массивом: [{"type":"ok"|"warn"|"err","text":"описание"}]. Только JSON.`
       const raw = await callClaude(system, script, 2048)
-      let items: Array<{ type: string; text: string }>
-      try {
-        const cleaned = raw.replace(/```json|```/g, '').trim()
-        items = JSON.parse(cleaned)
-        if (!Array.isArray(items)) throw new Error('not array')
-      } catch {
-        items = [{ type: 'info', text: raw }]
-      }
+      const items = parseClaudeJson(
+        raw,
+        (v) => (Array.isArray(v) ? (v as Array<{ type: string; text: string }>) : null),
+        'factcheck',
+      ) ?? [{ type: 'info', text: raw.slice(0, 1000) }]
       res.json({ items })
     } catch (e: any) {
       handleClaudeError(e, res, 'Ошибка фактчекинга')
@@ -204,21 +202,31 @@ ${cache.brandDocs.style_guide_video}
         editedScript: editedScript ?? null,
       })
       const raw = await callClaude(system, userPayload, 4096)
-      let parsed: { finalScript: string; summary: string; patterns: any[] }
-      try {
-        const cleaned = raw.replace(/```json|```/g, '').trim()
-        parsed = JSON.parse(cleaned)
-        if (typeof parsed.finalScript !== 'string') throw new Error('finalScript missing')
-        if (!Array.isArray(parsed.patterns)) parsed.patterns = []
-      } catch {
-        // Fallback — if model didn't return JSON, treat as plain edit + no patterns
-        parsed = {
-          finalScript: editedScript ?? originalScript,
-          summary: raw.slice(0, 200),
-          patterns: [],
-        }
+      const parsed = parseClaudeJson(
+        raw,
+        (v) => {
+          if (
+            v &&
+            typeof v === 'object' &&
+            typeof (v as any).finalScript === 'string'
+          ) {
+            const result = v as { finalScript: string; summary?: string; patterns?: any[] }
+            return {
+              finalScript: result.finalScript,
+              summary: typeof result.summary === 'string' ? result.summary : '',
+              patterns: Array.isArray(result.patterns) ? result.patterns : [],
+            }
+          }
+          return null
+        },
+        'edit-with-learning',
+      )
+      const finalParsed = parsed ?? {
+        finalScript: editedScript ?? originalScript,
+        summary: raw.slice(0, 200),
+        patterns: [],
       }
-      res.json(parsed)
+      res.json(finalParsed)
     } catch (e: any) {
       handleClaudeError(e, res, 'Ошибка обучения на правках')
     }
@@ -261,15 +269,25 @@ ${cache.brandDocs.style_guide_video}
 - Каждый чанк должен быть самостоятельной единицей для озвучки.
 
 Формат: строго JSON {"chunks":["чанк1","чанк2",...]}. Только JSON, без пояснений.`
-      const raw = await callClaude(system, script, 4096)
-      let chunks: string[]
-      try {
-        const cleaned = raw.replace(/```json|```/g, '').trim()
-        const parsed = JSON.parse(cleaned)
-        chunks = Array.isArray(parsed?.chunks) ? parsed.chunks : [raw]
-      } catch {
-        chunks = [raw]
-      }
+      // 8192 because preprocess is the largest-output endpoint by design:
+      // every word can grow with U+0301 stress marks, plus JSON overhead.
+      const raw = await callClaude(system, script, 8192)
+      const parsed = parseClaudeJson(
+        raw,
+        (v) => {
+          if (v && typeof v === 'object' && Array.isArray((v as any).chunks)) {
+            const chunks = (v as { chunks: unknown[] }).chunks
+              .filter((c): c is string => typeof c === 'string')
+            if (chunks.length > 0) return { chunks }
+          }
+          return null
+        },
+        'preprocess',
+      )
+      // Graceful fallback: if parsing failed entirely, split the raw response
+      // into sentence-based chunks of ~300 chars rather than dumping it as a
+      // single giant blob. Better UX than the previous [raw] behaviour.
+      const chunks = parsed?.chunks ?? splitIntoSentenceChunks(raw, 300)
       res.json({ chunks })
     } catch (e: any) {
       handleClaudeError(e, res, 'Ошибка препроцессинга')
