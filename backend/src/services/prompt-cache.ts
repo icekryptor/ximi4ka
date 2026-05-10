@@ -45,3 +45,7 @@ export async function getPromptCache(): Promise<PromptCache> {
   }
   return cache
 }
+
+export function invalidatePromptCache(): void {
+  cache = null
+}
