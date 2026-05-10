@@ -40,7 +40,6 @@ const RecurringTaskDetail = lazy(() => import('./pages/RecurringTaskDetail'))
 const ContentBank = lazy(() => import('./pages/ContentBank'))
 const ContentBankTriage = lazy(() => import('./pages/ContentBankTriage'))
 const VoiceoverStudio = lazy(() => import('./pages/VoiceoverStudio'))
-const ContentEngine = lazy(() => import('./pages/ContentEngine'))
 const Projects = lazy(() => import('./pages/Projects'))
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail'))
 const PublicProject = lazy(() => import('./pages/PublicProject'))
@@ -133,7 +132,6 @@ function App() {
                                 <Route path="/content-units" element={<Navigate to="/content-bank" replace />} />
                                 <Route path="/voiceover" element={<VoiceoverStudio />} />
                                 <Route path="/voiceover/:unitId" element={<VoiceoverStudio />} />
-                                <Route path="/content-engine" element={<ContentEngine />} />
                                 {/* Маркетплейсы */}
                                 <Route path="/marketplace" element={<Marketplace />} />
                                 <Route path="/wb-ads" element={<WbAdsAnalytics />} />
