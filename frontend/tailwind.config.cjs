@@ -42,6 +42,16 @@ module.exports = {
       fontFamily: {
         sans: ['Manrope', 'IBM Plex Sans', 'Arial', 'Helvetica', 'sans-serif'],
       },
+      // Compressed type scale — each heading shifts down 1 step vs Tailwind defaults.
+      // text-sm/xs/[10px] stay at Tailwind defaults (14/12/10px) — they're the
+      // dominant body sizes and changing them would refactor ~850 places.
+      // text-base (16px), text-4xl+ unchanged.
+      fontSize: {
+        'lg':  ['1rem',     { lineHeight: '1.5rem'  }], // 16px (was 18px) — section heading
+        'xl':  ['1.125rem', { lineHeight: '1.75rem' }], // 18px (was 20px) — page heading
+        '2xl': ['1.25rem',  { lineHeight: '1.75rem' }], // 20px (was 24px) — modal title, big metric
+        '3xl': ['1.5rem',   { lineHeight: '2rem'    }], // 24px (was 30px) — page title (rare)
+      },
       keyframes: {
         'fade-in': {
           '0%': { opacity: '0' },
