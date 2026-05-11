@@ -128,6 +128,18 @@ ALTER TABLE content_units
   ADD COLUMN IF NOT EXISTS theme_id              UUID REFERENCES strategic_theme(id) ON DELETE SET NULL,
   ADD COLUMN IF NOT EXISTS recipe_state          JSONB,
   ADD COLUMN IF NOT EXISTS production_started_at TIMESTAMPTZ;
+
+-- Widen content_type to accommodate longer values like 'email_newsletter', 'marketplace_card'.
+-- Separate statement: PostgreSQL doesn't allow mixing ADD COLUMN and ALTER COLUMN TYPE.
+-- Guarded for idempotency: skip if already widened.
+DO $$
+BEGIN
+  IF (SELECT character_maximum_length FROM information_schema.columns
+      WHERE table_name = 'content_units' AND column_name = 'content_type') <> 40 THEN
+    ALTER TABLE content_units ALTER COLUMN content_type TYPE VARCHAR(40);
+  END IF;
+END $$;
+
 CREATE INDEX IF NOT EXISTS idx_units_segment ON content_units (target_segment_id);
 CREATE INDEX IF NOT EXISTS idx_units_theme   ON content_units (theme_id);
 
