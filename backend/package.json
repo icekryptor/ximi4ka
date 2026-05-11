@@ -11,6 +11,7 @@
     "seed:cost": "ts-node src/seeds/cost-calculation-data.ts",
     "seed:admin": "ts-node src/seeds/seed-admin.ts",
     "seed:content-bank": "ts-node src/seeds/seed-content-bank.ts",
+    "seed:channels": "ts-node src/seeds/seed-channels.ts",
     "typeorm": "typeorm-ts-node-commonjs",
     "migration:generate": "npm run typeorm -- migration:generate",
     "migration:run": "npm run typeorm -- migration:run",
