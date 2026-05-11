@@ -2,7 +2,6 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
   ManyToOne,
   JoinColumn,
 } from 'typeorm'
@@ -22,7 +21,7 @@ export class ContentMetricSnapshot {
   @JoinColumn({ name: 'publication_id' })
   publication: ContentPublication
 
-  @CreateDateColumn({ type: 'timestamptz', name: 'captured_at' })
+  @Column({ type: 'timestamptz', default: () => 'now()' })
   captured_at: Date
 
   @Column({ type: 'varchar', length: 20, default: 'manual' })
