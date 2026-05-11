@@ -10,8 +10,26 @@ import {
 } from 'typeorm'
 import { ContentRubric } from './ContentRubric'
 import { ContentPublication } from './ContentPublication'
+import { IcpSegment } from './IcpSegment'
+import { StrategicTheme } from './StrategicTheme'
+import { ContentAsset } from './ContentAsset'
 
-export type ContentType = 'short_video' | 'text_post' | 'other'
+export type ContentType =
+  | 'short_video'
+  | 'long_video'
+  | 'stream'
+  | 'podcast'
+  | 'short_post'
+  | 'long_post'
+  | 'carousel'
+  | 'seo_article'
+  | 'email_newsletter'
+  | 'lead_magnet_pdf'
+  | 'marketplace_card'
+  | 'ad_creative'
+  // legacy values — kept for backfill compatibility, do not use for new units
+  | 'text_post'
+  | 'other'
 
 export type ContentStatus =
   | 'idea'
@@ -95,6 +113,29 @@ export class ContentUnit {
 
   @UpdateDateColumn()
   updated_at: Date
+
+  @Column({ type: 'uuid', nullable: true })
+  target_segment_id: string | null
+
+  @ManyToOne(() => IcpSegment, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'target_segment_id' })
+  target_segment: IcpSegment | null
+
+  @Column({ type: 'uuid', nullable: true })
+  theme_id: string | null
+
+  @ManyToOne(() => StrategicTheme, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'theme_id' })
+  theme: StrategicTheme | null
+
+  @Column({ type: 'jsonb', nullable: true })
+  recipe_state: Record<string, unknown> | null
+
+  @Column({ type: 'timestamptz', nullable: true })
+  production_started_at: Date | null
+
+  @OneToMany(() => ContentAsset, (a) => a.content_unit)
+  assets: ContentAsset[]
 
   @OneToMany(() => ContentPublication, (p) => p.content_unit)
   publications: ContentPublication[]
