@@ -40,7 +40,7 @@ module.exports = {
         'brand-lg': '55px',
       },
       fontFamily: {
-        sans: ['IBM Plex Sans', 'Arial', 'Helvetica', 'sans-serif'],
+        sans: ['Manrope', 'IBM Plex Sans', 'Arial', 'Helvetica', 'sans-serif'],
       },
       keyframes: {
         'fade-in': {

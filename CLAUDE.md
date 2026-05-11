@@ -46,7 +46,7 @@ frontend/
 - **Border:** `#e8e5ef`
 - **Background:** `#ffffff`, `#eeebf3`
 - **Border radius:** large rounded (40-55px for cards/buttons)
-- **Font:** Arial
+- **Font:** Manrope (loaded via Google Fonts, weights 400/500/600/700/800, fallback IBM Plex Sans → Arial → system sans)
 - **Style:** Clean minimalism with glassmorphic effects
 
 ## Conventions
@@ -56,3 +56,7 @@ frontend/
 - Backend health check at `GET /health`
 - TypeORM entities use decorators
 - Frontend uses functional components with hooks
+
+## Навигация по контексту:
+1. ВСЕГДА запрашивайте граф знаний сначала
+2. Читайте необработанные файлы, только если я явно так скажу
