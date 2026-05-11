@@ -543,7 +543,7 @@ const SidebarContent = ({ currentPath, onNavClick }: SidebarContentProps) => {
             backgroundClip: 'text',
           }}
         >
-          XimERP
+          XimOS
         </span>
       </div>
 

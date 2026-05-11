@@ -70,10 +70,10 @@ export default function LoginPage() {
               backgroundClip: 'text',
             }}
           >
-            XimERP
+            XimOS
           </h1>
           <p className="text-sm text-brand-text-secondary">
-            Финансовая система управления
+            Операционная система управления бизнесом
           </p>
         </div>
 

@@ -1,8 +1,10 @@
-# XimFinance — CLAUDE.md
+# XimOS — CLAUDE.md
 
 ## Project Overview
-Financial management system for Ximi4ka — a company manufacturing chemistry experiment kits.
-Russian-language UI throughout.
+**XimOS** — operational system for business management ("Операционная система управления бизнесом")
+for Ximi4ka (a company manufacturing chemistry experiment kits). Started as financial-management
+tool (then "XimFinance" / "XimERP"); evolved to span content production, marketplace analytics,
+unit economics, planning, and team operations. Russian-language UI throughout.
 
 ## Tech Stack
 - **Backend:** Node.js + Express + TypeORM + PostgreSQL (Supabase)

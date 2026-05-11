@@ -1,5 +1,5 @@
 {
-  "name": "ximfinance-backend",
+  "name": "ximos-backend",
   "version": "1.0.0",
   "description": "Backend для системы финансового управления XimFinance",
   "main": "dist/server.js",
