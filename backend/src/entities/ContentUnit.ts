@@ -54,7 +54,7 @@ export class ContentUnit {
   @JoinColumn({ name: 'rubric_id' })
   rubric: ContentRubric | null
 
-  @Column({ type: 'varchar', length: 20, default: 'short_video' })
+  @Column({ type: 'varchar', length: 40, default: 'short_video' })
   content_type: ContentType
 
   @Column({ type: 'varchar', length: 20, default: 'idea' })
