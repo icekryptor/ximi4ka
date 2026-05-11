@@ -2,6 +2,8 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** ✅ Phase A complete on 2026-05-12. Ready for Phase B (Strategy + Channels UI).
+
 **Goal:** Заложить schema-фундамент Marketing-юнита: 6 новых таблиц, 4 новых поля в `content_units`, миграцию `content_publications.network` (string) → `channel_id` (FK), без изменения UX и без поломки текущего short_video pipeline.
 
 **Architecture:** Чистая backend-only фаза. Все изменения — это (1) raw SQL migration файл, применяемый вручную в Supabase до деплоя, (2) новые TypeORM entities + расширение существующих, (3) seed для начальных каналов, (4) regression-smoke через существующие endpoints. UX не трогаем.
