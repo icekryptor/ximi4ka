@@ -12,6 +12,9 @@ import { ContentUnit } from './ContentUnit'
 import { Channel } from './Channel'
 
 @Entity('content_publications')
+// Legacy DB constraint — mirrors `content_publications_content_unit_id_network_key`
+// from migration 2026-05-07-content-bank.sql. Will move to (content_unit_id, channel_id)
+// after `network` column drop (planned post-Phase-B).
 @Unique(['content_unit_id', 'network'])
 export class ContentPublication {
   @PrimaryGeneratedColumn('uuid')
