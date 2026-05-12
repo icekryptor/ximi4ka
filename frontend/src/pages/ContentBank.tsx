@@ -86,9 +86,22 @@ function FilterChipBar<T extends string>({
   )
 }
 
-function formatReadyDate(iso: string): string {
+function formatShortDate(iso: string): string {
   const d = new Date(iso)
   return d.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' })
+}
+
+/**
+ * Earliest scheduled publication date for a unit, or null if none.
+ * Filters out unscheduled publications (no scheduled_at) and sorts ISO
+ * strings — works because ISO 8601 sort is chronological.
+ */
+function earliestScheduledAt(publications: ContentUnit['publications']): string | null {
+  const dates = publications
+    .map((p) => p.scheduled_at)
+    .filter((s): s is string => typeof s === 'string' && s.length > 0)
+    .sort()
+  return dates[0] ?? null
 }
 
 export default function ContentBank() {
@@ -131,7 +144,7 @@ export default function ContentBank() {
       | 'status'
       | 'ready_at'
       | 'scheduled_at') ||
-    'created_at'
+    'scheduled_at'
   const stage = (searchParams.get('stage') as StageKey | null) || null
   const schedFrom = searchParams.get('scheduled_at_from') || ''
   const schedTo = searchParams.get('scheduled_at_to') || ''
@@ -620,18 +633,33 @@ export default function ContentBank() {
                             {COMPLEXITY_LABELS[u.complexity]}
                           </UnitChip>
                         )}
-                        {u.ready_at && (
-                          <span
-                            className={
-                              'ml-auto text-xs ' +
-                              (sort === 'ready_at'
-                                ? 'text-primary-600 font-medium'
-                                : 'text-brand-text-secondary')
-                            }
-                          >
-                            ↗ {formatReadyDate(u.ready_at)}
-                          </span>
-                        )}
+                        {(() => {
+                          // Show earliest scheduled publication date — the
+                          // content-bank doubles as a publication calendar.
+                          // Falls back to ready_at (planned readiness) when no
+                          // publication is scheduled yet, so units in early
+                          // stages still show their target date.
+                          const sched = earliestScheduledAt(u.publications)
+                          const dateIso = sched ?? u.ready_at
+                          if (!dateIso) return null
+                          const isScheduled = !!sched
+                          const highlighted =
+                            (isScheduled && sort === 'scheduled_at') ||
+                            (!isScheduled && sort === 'ready_at')
+                          return (
+                            <span
+                              className={
+                                'ml-auto text-xs ' +
+                                (highlighted
+                                  ? 'text-primary-600 font-medium'
+                                  : 'text-brand-text-secondary')
+                              }
+                              title={isScheduled ? 'Ближайшая публикация' : 'Плановая готовность'}
+                            >
+                              {isScheduled ? '🚀' : '↗'} {formatShortDate(dateIso)}
+                            </span>
+                          )
+                        })()}
                       </div>
                       <div className="font-semibold text-brand-text leading-snug">
                         {u.title}
@@ -649,14 +677,46 @@ export default function ContentBank() {
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex flex-wrap gap-1">
-                        {u.publications.map((p) => (
-                          <span
-                            key={p.id}
-                            className="px-1.5 py-0.5 rounded text-[10px] bg-subtle text-brand-text-secondary"
-                          >
-                            {p.network}
-                          </span>
-                        ))}
+                        {/* Cap visible chips at 3. When publications.length > 3,
+                            the third slot becomes a counter "+N" showing the
+                            number of hidden networks. Keeps the column compact
+                            for units published to many channels. */}
+                        {(() => {
+                          const pubs = u.publications
+                          if (pubs.length <= 3) {
+                            return pubs.map((p) => (
+                              <span
+                                key={p.id}
+                                className="px-1.5 py-0.5 rounded text-[10px] bg-subtle text-brand-text-secondary"
+                              >
+                                {p.network}
+                              </span>
+                            ))
+                          }
+                          const visible = pubs.slice(0, 2)
+                          const hiddenCount = pubs.length - 2
+                          return (
+                            <>
+                              {visible.map((p) => (
+                                <span
+                                  key={p.id}
+                                  className="px-1.5 py-0.5 rounded text-[10px] bg-subtle text-brand-text-secondary"
+                                >
+                                  {p.network}
+                                </span>
+                              ))}
+                              <span
+                                className="px-1.5 py-0.5 rounded text-[10px] bg-subtle text-brand-text-secondary font-medium"
+                                title={pubs
+                                  .slice(2)
+                                  .map((p) => p.network)
+                                  .join(', ')}
+                              >
+                                +{hiddenCount}
+                              </span>
+                            </>
+                          )
+                        })()}
                       </div>
                     </td>
                     <td
