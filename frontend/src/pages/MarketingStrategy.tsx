@@ -201,6 +201,7 @@ const SegmentsSection = ({
                     <td className="px-3 py-2">
                       <div className="flex justify-end space-x-1">
                         <button
+                          type="button"
                           onClick={() => {
                             if (editingId === s.id) {
                               onCancelEdit()
@@ -222,6 +223,7 @@ const SegmentsSection = ({
                           <Edit2 className="h-4 w-4" />
                         </button>
                         <button
+                          type="button"
                           onClick={() => onDelete(s)}
                           className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           aria-label="Удалить"
@@ -420,6 +422,7 @@ const ThemesSection = ({
                     <td className="px-3 py-2">
                       <div className="flex justify-end space-x-1">
                         <button
+                          type="button"
                           onClick={() => {
                             if (editingId === t.id) {
                               onCancelEdit()
@@ -440,6 +443,7 @@ const ThemesSection = ({
                           <Edit2 className="h-4 w-4" />
                         </button>
                         <button
+                          type="button"
                           onClick={() => onDelete(t)}
                           className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           aria-label="Удалить"
@@ -647,6 +651,7 @@ const BudgetsSection = ({
                       <td className="px-3 py-2">
                         <div className="flex justify-end space-x-1">
                           <button
+                            type="button"
                             onClick={() => {
                               if (editingId === b.id) {
                                 onCancelEdit()
@@ -667,6 +672,7 @@ const BudgetsSection = ({
                             <Edit2 className="h-4 w-4" />
                           </button>
                           <button
+                            type="button"
                             onClick={() => onDelete(b)}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             aria-label="Удалить"
