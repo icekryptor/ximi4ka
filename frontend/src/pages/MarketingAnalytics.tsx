@@ -233,7 +233,8 @@ export default function MarketingAnalytics() {
             onChange={(e) =>
               setFilters({
                 ...filters,
-                period_end: e.target.value ? new Date(e.target.value).toISOString() : undefined,
+                // Inclusive end-of-day so a "до DD.MM" selection includes publications on that day.
+                period_end: e.target.value ? new Date(`${e.target.value}T23:59:59.999Z`).toISOString() : undefined,
               })
             }
             aria-label="Период по"
