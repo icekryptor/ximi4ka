@@ -304,3 +304,73 @@ export interface WbFinanceSyncStatus {
   firstDate: string | null;
   daysCount: number;
 }
+
+// ─── Marketing Phase B types ─────────────────────────────────────────────────
+
+export interface BrandDoc {
+  id: string
+  slug: string
+  title: string
+  content: string
+  version: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface IcpSegment {
+  id: string
+  slug: string
+  name: string
+  description: string | null
+  age_range: string | null
+  role: string | null
+  sort_order: number
+  active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface StrategicTheme {
+  id: string
+  slug: string
+  name: string
+  description: string | null
+  active_from: string | null  // YYYY-MM-DD
+  active_to: string | null
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+export type ChannelPlatform =
+  | 'telegram' | 'tiktok' | 'reels' | 'youtube' | 'youtube_shorts'
+  | 'vk' | 'x' | 'instagram' | 'yandex_zen' | 'site' | 'wb' | 'ozon' | 'email' | 'other'
+
+export type ChannelIntegrationStatus = 'manual' | 'api_connected' | 'api_planned'
+
+export interface PublishChannel {
+  id: string
+  slug: string
+  display_name: string
+  platform: ChannelPlatform
+  account_handle: string | null
+  profile_url: string | null
+  integration_status: ChannelIntegrationStatus
+  active: boolean
+  config_json: Record<string, unknown> | null
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+export interface ChannelBudget {
+  id: string
+  channel_id: string
+  channel?: PublishChannel  // optional, заполняется через relations
+  period_start: string
+  period_end: string
+  amount_rub: string  // numeric → string
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
