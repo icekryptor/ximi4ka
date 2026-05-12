@@ -55,6 +55,7 @@ import contentEngineRoutes from './routes/content-engine.routes';
 import claudeRoutes from './routes/claude.routes';
 import recipeRoutes from './routes/recipe.routes';
 import { unitEconomicsController } from './controllers/unit-economics.controller';
+import { startPublishWorker } from './services/publish-worker';
 
 // Middleware
 import { authMiddleware } from './middleware/auth';
@@ -176,6 +177,8 @@ async function bootstrap() {
 
   // SAFETY: Never auto-synchronize Supabase — use migrations instead
   // synchronize() can drop columns and cause data loss
+
+  startPublishWorker();
 
   console.log('');
   app.listen(PORT, async () => {
