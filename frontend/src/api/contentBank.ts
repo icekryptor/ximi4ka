@@ -47,11 +47,13 @@ export interface ContentPublication {
   id: string
   content_unit_id: string
   network: string
+  channel_id: string | null
   scheduled_at: string | null
   published_at: string | null
   published_url: string | null
   notes: string | null
   sort_order: number
+  auto_publish: boolean
   created_at: string
   updated_at: string
 }

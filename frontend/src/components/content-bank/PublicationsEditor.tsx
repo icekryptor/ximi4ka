@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import {
   ContentPublication,
   publicationsApi,
 } from '../../api/contentBank'
+import { publishChannelsApi } from '../../api/publishChannels'
+import type { PublishChannel } from '../../api/types'
 import { getNetworkDef, KNOWN_NETWORKS } from '../../lib/networks'
 import { useToast } from '../../contexts/ToastContext'
 
@@ -17,6 +19,16 @@ export function PublicationsEditor({ unitId, publications, onChange }: Props) {
   const toast = useToast()
   const [adding, setAdding] = useState(false)
   const [newNetwork, setNewNetwork] = useState('')
+  const [channels, setChannels] = useState<PublishChannel[]>([])
+
+  useEffect(() => {
+    publishChannelsApi.getAll().then(setChannels).catch(() => {})
+  }, [])
+
+  const channelForRow = (p: ContentPublication): PublishChannel | null => {
+    if (p.channel_id) return channels.find((c) => c.id === p.channel_id) ?? null
+    return channels.find((c) => c.slug === p.network) ?? null
+  }
 
   const addPublication = async (network: string) => {
     if (!network) return
@@ -188,6 +200,27 @@ export function PublicationsEditor({ unitId, publications, onChange }: Props) {
                 className="text-xs w-full px-2 py-1.5 rounded-lg border border-brand-border bg-subtle"
               />
             </div>
+            {(() => {
+              const ch = channelForRow(p)
+              const canAuto = ch?.integration_status === 'api_connected'
+              return (
+                <label
+                  className="inline-flex items-center gap-2 text-sm"
+                  title={canAuto ? '' : 'Канал не настроен для авто-публикации (нужен api_connected)'}
+                >
+                  <input
+                    type="checkbox"
+                    disabled={!canAuto}
+                    checked={!!p.auto_publish}
+                    onChange={(e) => updateField(p, { auto_publish: e.target.checked })}
+                    aria-label="Авто-публикация"
+                  />
+                  <span className={canAuto ? 'text-brand-text' : 'text-brand-text-secondary'}>
+                    Авто-публикация
+                  </span>
+                </label>
+              )
+            })()}
           </div>
         )
       })}
