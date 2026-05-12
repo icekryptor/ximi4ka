@@ -184,8 +184,21 @@ export const contentUnitController = {
           totalPages: Math.ceil(total / limit),
         },
       })
-    } catch (e) {
-      console.error('Error fetching units:', e)
+    } catch (e: any) {
+      // Verbose log so Railway shows what actually broke. Without this we see
+      // only the generic '500 Ошибка загрузки единиц' in client and can't tell
+      // whether the failure is from getManyAndCount, the post-hydration find,
+      // or somewhere else.
+      console.error(
+        '[content-units.getAll] FAILED',
+        'name=', e?.name,
+        'message=', e?.message,
+        'code=', e?.code,
+        'driverError=', e?.driverError?.message,
+        'query=', e?.query,
+        'parameters=', e?.parameters,
+        '\nstack=', e?.stack,
+      )
       res.status(500).json({ error: 'Ошибка загрузки единиц' })
     }
   },
