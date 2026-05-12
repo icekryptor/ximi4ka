@@ -2,6 +2,8 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** ✅ Phase D complete on 2026-05-12. Next: Phase E (analytics worker + KPI dashboard) или hardening (real Telegram bot token, тестовая публикация).
+
 **Goal:** Заложить инфраструктуру авто-публикации контента в каналы с `integration_status='api_connected'`. На v1 — одна реализация Publisher (Telegram через существующий `node-telegram-bot-api`) и cron-воркер, забирающий из `content_publications` записи с `auto_publish=true` и публикующий их.
 
 **Architecture:** Generic `ChannelPublisher` интерфейс. Telegram-реализация использует существующий ленивый `getBot()` из `backend/src/services/telegram.service.ts` (не плодим нового бота). Каналы хранят `chat_id` в `channel.config_json` (поле уже есть из Phase A). Воркер на `node-cron` (уже в зависимостях) тикает каждую минуту, атомарно «забирает» pending-публикацию через мьютекс на ID, публикует, записывает результат. Контент берётся из `content_unit.recipe_state.steps` (шаг `final.artifact_text` — для рецептованных типов), иначе fallback `title + essence`. UI: `auto_publish` чекбокс per-row в `PublicationsEditor`, поле `chat_id` в `PublishChannels` для `platform=telegram`.
