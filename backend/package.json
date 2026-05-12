@@ -5,7 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "nodemon src/server.ts",
-    "build": "tsc",
+    "build": "tsc && cp -R src/content dist/content",
     "start": "node dist/server.js",
     "seed": "ts-node src/seeds/initial-data.ts",
     "seed:cost": "ts-node src/seeds/cost-calculation-data.ts",

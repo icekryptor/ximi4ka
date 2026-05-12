@@ -28,7 +28,7 @@ let cache: Map<string, Recipe> | null = null
 function loadAll(): Map<string, Recipe> {
   const map = new Map<string, Recipe>()
   if (!fs.existsSync(RECIPES_DIR)) {
-    console.warn(`[recipe-engine] directory not found: ${RECIPES_DIR}`)
+    console.error(`[recipe-engine] directory not found: ${RECIPES_DIR} — check build copies src/content to dist/content`)
     return map
   }
   for (const file of fs.readdirSync(RECIPES_DIR)) {
