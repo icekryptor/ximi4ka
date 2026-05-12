@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
+import type { FindOptionsWhere } from 'typeorm'
 import { AppDataSource } from '../config/database'
-import { Channel } from '../entities/Channel'
+import { Channel, ChannelIntegrationStatus, ChannelPlatform } from '../entities/Channel'
 import { ContentPublication } from '../entities/ContentPublication'
 
 const repo = AppDataSource.getRepository(Channel)
@@ -9,9 +10,9 @@ export const channelController = {
   async getAll(req: Request, res: Response) {
     try {
       const { platform, integration_status, active } = req.query
-      const where: Record<string, unknown> = {}
-      if (platform) where.platform = platform
-      if (integration_status) where.integration_status = integration_status
+      const where: FindOptionsWhere<Channel> = {}
+      if (platform) where.platform = platform as ChannelPlatform
+      if (integration_status) where.integration_status = integration_status as ChannelIntegrationStatus
       if (active !== undefined) where.active = active === 'true'
       const channels = await repo.find({
         where,

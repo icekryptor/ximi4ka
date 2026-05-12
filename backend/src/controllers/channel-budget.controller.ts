@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { LessThanOrEqual, MoreThanOrEqual } from 'typeorm'
+import type { FindOptionsWhere } from 'typeorm'
 import { AppDataSource } from '../config/database'
 import { ChannelBudget } from '../entities/ChannelBudget'
 
@@ -9,8 +10,8 @@ export const channelBudgetController = {
   async getAll(req: Request, res: Response) {
     try {
       const { channel_id, from, to } = req.query
-      const where: Record<string, unknown> = {}
-      if (channel_id) where.channel_id = channel_id
+      const where: FindOptionsWhere<ChannelBudget> = {}
+      if (channel_id) where.channel_id = channel_id as string
       // Filter is OVERLAP semantic: budget touching the requested [from, to] range, not contained in it.
       // Operator mental model: "show budgets active during this period" → overlap. Adjust if you need containment.
       if (from) where.period_end = MoreThanOrEqual(from as string)

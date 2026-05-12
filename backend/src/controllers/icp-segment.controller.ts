@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import type { FindOptionsWhere } from 'typeorm'
 import { AppDataSource } from '../config/database'
 import { IcpSegment } from '../entities/IcpSegment'
 
@@ -8,7 +9,7 @@ export const icpSegmentController = {
   async getAll(req: Request, res: Response) {
     try {
       const { active } = req.query
-      const where: Record<string, unknown> = {}
+      const where: FindOptionsWhere<IcpSegment> = {}
       if (active !== undefined) where.active = active === 'true'
       const segments = await repo.find({
         where,
