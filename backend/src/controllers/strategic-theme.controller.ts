@@ -11,12 +11,18 @@ export const strategicThemeController = {
       const { current } = req.query
       if (current === 'true') {
         const today = new Date().toISOString().slice(0, 10)
+        const where: Array<Record<string, unknown>> = [
+          // No dates at all — always-active
+          { active_from: IsNull(), active_to: IsNull() },
+          // Open start, bounded end — still active today
+          { active_from: IsNull(), active_to: MoreThanOrEqual(today) },
+          // Bounded start, open end — started, no end
+          { active_from: LessThanOrEqual(today), active_to: IsNull() },
+          // Bounded both — active window includes today
+          { active_from: LessThanOrEqual(today), active_to: MoreThanOrEqual(today) },
+        ]
         const themes = await repo.find({
-          where: [
-            { active_from: IsNull() },
-            { active_from: LessThanOrEqual(today), active_to: IsNull() },
-            { active_from: LessThanOrEqual(today), active_to: MoreThanOrEqual(today) },
-          ],
+          where,
           order: { sort_order: 'ASC', name: 'ASC' },
         })
         return res.json(themes)
