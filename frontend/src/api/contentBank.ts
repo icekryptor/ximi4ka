@@ -2,7 +2,22 @@ import { apiClient } from './client'
 import type { StageKey } from './contentEngine'
 import type { RecipeState } from './types'
 
-export type ContentType = 'short_video' | 'text_post' | 'other'
+export type ContentType =
+  | 'short_video'
+  | 'long_video'
+  | 'stream'
+  | 'podcast'
+  | 'short_post'
+  | 'long_post'
+  | 'carousel'
+  | 'seo_article'
+  | 'email_newsletter'
+  | 'lead_magnet_pdf'
+  | 'marketplace_card'
+  | 'ad_creative'
+  // legacy values — kept for backfill compatibility
+  | 'text_post'
+  | 'other'
 
 export type ContentStatus =
   | 'idea'
@@ -214,8 +229,20 @@ export const STATUS_LABELS: Record<ContentStatus, string> = {
 }
 
 export const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
-  short_video: '🎬 Ролик',
-  text_post: '📝 Текст',
+  short_video: '🎬 Короткое видео',
+  long_video: '🎥 Длинное видео',
+  stream: '📺 Стрим',
+  podcast: '🎙️ Подкаст',
+  short_post: '📝 Короткий пост',
+  long_post: '📄 Длинный пост',
+  carousel: '🖼️ Карусель',
+  seo_article: '🔎 SEO-статья',
+  email_newsletter: '📧 Email-рассылка',
+  lead_magnet_pdf: '📕 Лид-магнит (PDF)',
+  marketplace_card: '🛒 Карточка маркетплейса',
+  ad_creative: '📢 Рекламный креатив',
+  // legacy
+  text_post: '📝 Текст (legacy)',
   other: 'Прочее',
 }
 
