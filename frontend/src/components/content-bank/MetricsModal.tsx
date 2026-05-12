@@ -62,7 +62,14 @@ export function MetricsModal({ publicationId, onClose, onSnapshotSaved }: Props)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState<FormFields>(EMPTY_FORM)
-  const [capturedAt, setCapturedAt] = useState(() => new Date().toISOString().slice(0, 16))
+  // datetime-local interprets the value as local time, so we must build the string from local components.
+  // Slicing toISOString() (UTC) would display pre-filled time 3h off for MSK operators.
+  const nowLocalForDatetimeInput = () => {
+    const d = new Date()
+    const pad = (n: number) => String(n).padStart(2, '0')
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+  }
+  const [capturedAt, setCapturedAt] = useState(nowLocalForDatetimeInput)
 
   useEffect(() => {
     let cancelled = false
@@ -97,7 +104,7 @@ export function MetricsModal({ publicationId, onClose, onSnapshotSaved }: Props)
       const saved = await metricSnapshotsApi.create(payload)
       setSnapshots([saved, ...snapshots])
       setForm(EMPTY_FORM)
-      setCapturedAt(new Date().toISOString().slice(0, 16))
+      setCapturedAt(nowLocalForDatetimeInput())
       toast.success('Снимок сохранён')
       onSnapshotSaved?.(saved)
     } catch (e) {
