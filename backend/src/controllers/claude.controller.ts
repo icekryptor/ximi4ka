@@ -66,18 +66,14 @@ interface RecipeStepContext {
   custom_prompt?: string
 }
 
-/** Returns { system, user, maxTokens } for a given (content_type, step_id), or null if not implemented. */
-async function buildRecipeStepPrompt(
-  contentType: string,
-  stepId: string,
-  ctx: RecipeStepContext,
-): Promise<{ system: string; user: string; maxTokens: number } | null> {
-  // (short_post, draft)
-  if (contentType === 'short_post' && stepId === 'draft') {
-    const guide = ctx.cache.brandDocs.style_guide_text ?? ''
-    const rubrics = ctx.cache.brandDocs.rubrics_matrix ?? ''
-    const customBlock = ctx.custom_prompt ? `\nДополнительные инструкции: ${ctx.custom_prompt}` : ''
-    const system = `Ты — копирайтер бренда Химичка (наборы для химических опытов, ximi4ka.ru, продажи на WB и Ozon).
+type PromptSpec = { system: string; user: string; maxTokens: number }
+type PromptBuilder = (ctx: RecipeStepContext) => Promise<PromptSpec>
+
+async function buildShortPostDraft(ctx: RecipeStepContext): Promise<PromptSpec> {
+  const guide = ctx.cache.brandDocs.style_guide_text ?? ''
+  const rubrics = ctx.cache.brandDocs.rubrics_matrix ?? ''
+  const customBlock = ctx.custom_prompt ? `\nДополнительные инструкции: ${ctx.custom_prompt}` : ''
+  const system = `Ты — копирайтер бренда Химичка (наборы для химических опытов, ximi4ka.ru, продажи на WB и Ozon).
 
 ## Стилевой гайд (обязательно к исполнению)
 ${guide || '(не задан — используй нейтральный познавательный тон)'}
@@ -91,13 +87,27 @@ ${rubrics}
 Длина: 400-800 символов. Без хэштегов и markdown-разметки.
 Только текст поста, без пояснений.
 Перед написанием определи рубрику и тональную группу из матрицы.`
-    const user = `Идея: ${ctx.unit.title}
+  const user = `Идея: ${ctx.unit.title}
 Рубрика: ${ctx.rubric?.title ?? 'не выбрана'}
 Заметки: ${ctx.unit.notes ?? ''}${customBlock}`
-    return { system, user, maxTokens: 2048 }
-  }
-  // (short_post, final) is manual — no AI prompt
-  return null
+  return { system, user, maxTokens: 2048 }
+}
+
+// Registry: keys are `${content_type}.${step_id}`.
+// Append-only — add new entries as recipes grow.
+const PROMPT_BUILDERS: Record<string, PromptBuilder> = {
+  'short_post.draft': buildShortPostDraft,
+}
+
+/** Returns { system, user, maxTokens } for a given (content_type, step_id), or null if not implemented. */
+async function buildRecipeStepPrompt(
+  contentType: string,
+  stepId: string,
+  ctx: RecipeStepContext,
+): Promise<PromptSpec | null> {
+  const builder = PROMPT_BUILDERS[`${contentType}.${stepId}`]
+  if (!builder) return null
+  return builder(ctx)
 }
 
 export const claudeController = {
