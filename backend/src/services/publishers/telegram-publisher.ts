@@ -2,14 +2,22 @@ import type { ChannelPublisher, PublishContext, PublishResult } from './types'
 import { extractPublishText } from './content-extract'
 import { getBot, escapeHtml } from '../telegram.service'
 
-function trimChatId(chatId: string): string {
-  // Telegram returns negative ints for groups/channels. For URL: https://t.me/c/{abs_id_minus_minus_100}/{msg_id}
-  // Public channels: https://t.me/{username}/{msg_id}.
-  // We don't know username from chat_id alone here; just trim leading -100 for private.
+function buildMessageUrl(chatId: string, messageId: number): string {
   const s = String(chatId)
-  if (s.startsWith('-100')) return s.substring(4)
-  if (s.startsWith('-')) return s.substring(1)
-  return s
+  // Public channel: chat_id starts with '@' → https://t.me/{username}/{msg_id}
+  if (s.startsWith('@')) {
+    return `https://t.me/${s.slice(1)}/${messageId}`
+  }
+  // Private channel: chat_id is numeric, starts with '-100' → https://t.me/c/{stripped}/{msg_id}
+  if (s.startsWith('-100')) {
+    return `https://t.me/c/${s.substring(4)}/${messageId}`
+  }
+  // Generic negative (legacy supergroups): fallback to /c/
+  if (s.startsWith('-')) {
+    return `https://t.me/c/${s.substring(1)}/${messageId}`
+  }
+  // Positive numeric (1-on-1 chat) — no public URL; return /c/ as best-effort fallback
+  return `https://t.me/c/${s}/${messageId}`
 }
 
 export const telegramPublisher: ChannelPublisher = {
@@ -39,8 +47,7 @@ export const telegramPublisher: ChannelPublisher = {
     })
 
     // Build public URL — best-effort
-    const trimmed = trimChatId(String(chatId))
-    const url = `https://t.me/c/${trimmed}/${msg.message_id}`
+    const url = buildMessageUrl(String(chatId), msg.message_id)
 
     return {
       published_url: url,
