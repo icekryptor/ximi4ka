@@ -1,3 +1,27 @@
+/**
+ * publish-worker — cron-driven processor for scheduled auto-publications.
+ *
+ * ## Concurrency model (v1)
+ *
+ * - **Same-process race protection:** `inFlight: Set<string>` mutex by publication.id
+ *   prevents two cron ticks from picking up the same row. Cron interval (60s) >> typical
+ *   publish duration (1-3s for Telegram), so contention is rare.
+ *
+ * - **Single-instance assumption:** Railway runs ONE backend instance. Multi-instance
+ *   scale-out would require DB-level locks (e.g. `pg_try_advisory_lock`).
+ *
+ * - **Restart-during-publish hazard:** if the process is killed AFTER `bot.sendMessage`
+ *   completes but BEFORE the `repo.update(published_at)` lands, the publication remains
+ *   `published_at IS NULL` and the next tick will re-publish → DUPLICATE Telegram message.
+ *
+ *   Mitigation choices considered:
+ *   - Write `published_at` BEFORE sending: inverts to "lost message on failure" mode.
+ *     Rejected — worse UX (silent loss vs visible dup that operator can delete).
+ *   - Add `claimed_at` column with TTL: hardens correctness at cost of one migration.
+ *     Deferred to Phase E if duplicates become a real complaint.
+ *   - Accept the risk: ✓ (current). Railway redeploys are infrequent; operator can
+ *     delete the duplicate manually.
+ */
 import cron from 'node-cron'
 import type { ScheduledTask } from 'node-cron'
 import { AppDataSource } from '../config/database'
