@@ -64,6 +64,9 @@ export const contentPublicationController = {
         relations: ['channel', 'content_unit'],
       })
       if (!pub) return res.status(404).json({ error: 'Публикация не найдена' })
+      if (pub.published_at) {
+        return res.status(409).json({ error: 'Публикация уже опубликована' })
+      }
       if (!pub.channel) return res.status(400).json({ error: 'У публикации не задан channel_id' })
       if (!pub.content_unit) return res.status(400).json({ error: 'У публикации не найден content_unit' })
 
