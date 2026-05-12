@@ -97,8 +97,8 @@ export interface UnitsListParams {
   network?: string        // CSV
   review_grade?: string   // CSV: 'excellent,needs_work' or special 'null'
   stage?: StageKey
-  ready_at_from?: string  // YYYY-MM-DD
-  ready_at_to?: string    // YYYY-MM-DD
+  scheduled_at_from?: string  // YYYY-MM-DD — matches units with ANY publication scheduled >= this
+  scheduled_at_to?: string    // YYYY-MM-DD — end-of-day inclusive
   search?: string
   sort?: 'created_at' | 'title' | 'status' | 'scheduled_at' | 'ready_at'
   page?: number

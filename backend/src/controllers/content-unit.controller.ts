@@ -19,8 +19,8 @@ export const contentUnitController = {
         network,
         review_grade,
         stage,
-        ready_at_from,
-        ready_at_to,
+        scheduled_at_from,
+        scheduled_at_to,
         search,
         sort = 'created_at',
       } = req.query as Record<string, string | undefined>
@@ -100,18 +100,26 @@ export const contentUnitController = {
             break
         }
       }
-      // Date range filter on ready_at (plan-готовности). Each bound is
-      // independent — caller can send one or both. Empty string treated as
-      // no-filter (same as undefined).
-      if (ready_at_from && ready_at_from.trim()) {
-        qb.andWhere('u.ready_at >= :readyAtFrom', { readyAtFrom: ready_at_from })
-      }
-      if (ready_at_to && ready_at_to.trim()) {
-        // Inclusive upper bound — treat the provided date as end-of-day so
-        // a unit with ready_at = '2026-05-12T15:00Z' matches ?ready_at_to=2026-05-12.
-        qb.andWhere("u.ready_at <= (:readyAtTo::date + interval '1 day' - interval '1 second')", {
-          readyAtTo: ready_at_to,
-        })
+      // Date range filter on content_publications.scheduled_at. A unit
+      // matches if it has AT LEAST ONE publication scheduled within the
+      // range. Each bound independent. Alias cp_date distinct from cp
+      // (network filter), cp_sort (scheduled_at sort), cp_stage (stage
+      // filter) to avoid collisions when combined.
+      // Inclusive upper bound — end-of-day so a publication scheduled at
+      // 15:00 still matches ?scheduled_at_to=YYYY-MM-DD.
+      const hasFrom = scheduled_at_from && scheduled_at_from.trim()
+      const hasTo = scheduled_at_to && scheduled_at_to.trim()
+      if (hasFrom || hasTo) {
+        const conds = ['cp_date.content_unit_id = u.id', 'cp_date.scheduled_at IS NOT NULL']
+        if (hasFrom) conds.push('cp_date.scheduled_at >= :schedFrom')
+        if (hasTo) {
+          conds.push("cp_date.scheduled_at <= (:schedTo::date + interval '1 day' - interval '1 second')")
+        }
+        qb.andWhere(
+          `EXISTS (SELECT 1 FROM content_publications cp_date WHERE ${conds.join(' AND ')})`,
+        )
+        if (hasFrom) qb.setParameter('schedFrom', scheduled_at_from)
+        if (hasTo) qb.setParameter('schedTo', scheduled_at_to)
       }
       if (search) {
         qb.andWhere(

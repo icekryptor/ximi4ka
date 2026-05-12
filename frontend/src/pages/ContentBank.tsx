@@ -133,8 +133,8 @@ export default function ContentBank() {
       | 'scheduled_at') ||
     'created_at'
   const stage = (searchParams.get('stage') as StageKey | null) || null
-  const readyAtFrom = searchParams.get('ready_at_from') || ''
-  const readyAtTo = searchParams.get('ready_at_to') || ''
+  const schedFrom = searchParams.get('scheduled_at_from') || ''
+  const schedTo = searchParams.get('scheduled_at_to') || ''
   const page = parseInt(searchParams.get('page') || '1', 10) || 1
 
   // Local search input mirrors URL but updates with debounce
@@ -172,8 +172,8 @@ export default function ContentBank() {
       if (reviewGradeFilter.length > 0) params.review_grade = reviewGradeFilter.join(',')
       if (searchFromUrl) params.search = searchFromUrl
       if (stage) params.stage = stage
-      if (readyAtFrom) params.ready_at_from = readyAtFrom
-      if (readyAtTo) params.ready_at_to = readyAtTo
+      if (schedFrom) params.scheduled_at_from = schedFrom
+      if (schedTo) params.scheduled_at_to = schedTo
       const r = await unitsApi.list(params)
       if (reqId !== reqIdRef.current) return
       setItems(r.data)
@@ -367,53 +367,55 @@ export default function ContentBank() {
             <option value="ready_at">📅 По дате готовности</option>
             <option value="scheduled_at">🚀 По дате публикации</option>
           </select>
-          {/* Date range filter on ready_at — both bounds optional, URL-stateful */}
+          {/* Date range filter on content_publications.scheduled_at — both
+              bounds optional, URL-stateful. Matches units with ANY publication
+              scheduled in range. */}
           <div
             className="flex items-center gap-1 text-xs text-brand-text-secondary shrink-0"
-            title="Фильтр по дате готовности"
+            title="Фильтр по дате запланированной публикации"
           >
-            <span aria-hidden>📅</span>
+            <span aria-hidden>🚀</span>
             <input
               type="date"
-              value={readyAtFrom}
+              value={schedFrom}
               onChange={(e) => {
                 const v = e.target.value
                 setSearchParams((prev) => {
                   const sp = new URLSearchParams(prev)
-                  if (v) sp.set('ready_at_from', v)
-                  else sp.delete('ready_at_from')
+                  if (v) sp.set('scheduled_at_from', v)
+                  else sp.delete('scheduled_at_from')
                   sp.delete('page')
                   return sp
                 })
               }}
               className="text-xs px-2 py-1 rounded border border-brand-border bg-card text-brand-text"
-              title="Дата готовности: от"
+              title="Дата публикации: от"
             />
             <span aria-hidden>—</span>
             <input
               type="date"
-              value={readyAtTo}
+              value={schedTo}
               onChange={(e) => {
                 const v = e.target.value
                 setSearchParams((prev) => {
                   const sp = new URLSearchParams(prev)
-                  if (v) sp.set('ready_at_to', v)
-                  else sp.delete('ready_at_to')
+                  if (v) sp.set('scheduled_at_to', v)
+                  else sp.delete('scheduled_at_to')
                   sp.delete('page')
                   return sp
                 })
               }}
               className="text-xs px-2 py-1 rounded border border-brand-border bg-card text-brand-text"
-              title="Дата готовности: до"
+              title="Дата публикации: до"
             />
-            {(readyAtFrom || readyAtTo) && (
+            {(schedFrom || schedTo) && (
               <button
                 type="button"
                 onClick={() => {
                   setSearchParams((prev) => {
                     const sp = new URLSearchParams(prev)
-                    sp.delete('ready_at_from')
-                    sp.delete('ready_at_to')
+                    sp.delete('scheduled_at_from')
+                    sp.delete('scheduled_at_to')
                     sp.delete('page')
                     return sp
                   })
