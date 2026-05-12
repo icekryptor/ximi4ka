@@ -14,6 +14,9 @@ import {
 } from '../../api/contentBank'
 import { StatusPicker } from './StatusPicker'
 import { PublicationsEditor } from './PublicationsEditor'
+import { RecipeView } from './RecipeView'
+import { recipesApi } from '../../api/recipes'
+import type { Recipe } from '../../api/types'
 import { useToast } from '../../contexts/ToastContext'
 
 interface Props {
@@ -89,6 +92,24 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
   const [unitInternal, setUnitInternal] = useState<ContentUnit | null>(
     unit !== 'new' ? unit : null,
   )
+  const [recipe, setRecipe] = useState<Recipe | null>(null)
+
+  // Load recipe (if registered for this content_type) whenever the type changes
+  useEffect(() => {
+    let cancelled = false
+    setRecipe(null)
+    recipesApi
+      .getByType(formData.content_type)
+      .then((r) => {
+        if (!cancelled) setRecipe(r)
+      })
+      .catch(() => {
+        if (!cancelled) setRecipe(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [formData.content_type])
 
   // Load rubrics once
   useEffect(() => {
@@ -499,6 +520,20 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
               }
             />
           </div>
+
+          {/* Recipe view — shown when a recipe is registered for this content_type AND unit is persisted */}
+          {recipe && unitInternal && (
+            <div className="border-t border-brand-border pt-4">
+              <RecipeView
+                unit={unitInternal}
+                recipe={recipe}
+                onChange={(updatedUnit) => {
+                  setUnitInternal(updatedUnit)
+                  onSaved?.(updatedUnit)
+                }}
+              />
+            </div>
+          )}
 
           {/* Production section */}
           <section className="space-y-3 border-t border-brand-border pt-4">
