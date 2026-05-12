@@ -752,7 +752,9 @@ const MarketingStrategy = () => {
   const [editingBudgetForm, setEditingBudgetForm] = useState<Partial<ChannelBudget>>({})
 
   const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
+  const [submittingSegment, setSubmittingSegment] = useState(false)
+  const [submittingTheme, setSubmittingTheme] = useState(false)
+  const [submittingBudget, setSubmittingBudget] = useState(false)
 
   const closeSegmentEdit = () => {
     setEditingSegmentId(null)
@@ -821,7 +823,7 @@ const MarketingStrategy = () => {
       return
     }
     try {
-      setSubmitting(true)
+      setSubmittingSegment(true)
       const payload: Partial<IcpSegment> = {
         slug: newSegment.slug.trim(),
         name: newSegment.name.trim(),
@@ -837,7 +839,7 @@ const MarketingStrategy = () => {
       console.error('Ошибка создания сегмента:', error)
       toast.error(errorMessage(error, 'Не удалось создать сегмент'))
     } finally {
-      setSubmitting(false)
+      setSubmittingSegment(false)
     }
   }
 
@@ -849,7 +851,7 @@ const MarketingStrategy = () => {
       return
     }
     try {
-      setSubmitting(true)
+      setSubmittingSegment(true)
       const payload: Partial<IcpSegment> = {
         slug: editingSegmentForm.slug!.toString().trim(),
         name: editingSegmentForm.name!.toString().trim(),
@@ -870,7 +872,7 @@ const MarketingStrategy = () => {
       console.error('Ошибка обновления сегмента:', error)
       toast.error(errorMessage(error, 'Не удалось обновить сегмент'))
     } finally {
-      setSubmitting(false)
+      setSubmittingSegment(false)
     }
   }
 
@@ -901,7 +903,7 @@ const MarketingStrategy = () => {
       return
     }
     try {
-      setSubmitting(true)
+      setSubmittingTheme(true)
       const payload: Partial<StrategicTheme> = {
         slug: newTheme.slug.trim(),
         name: newTheme.name.trim(),
@@ -916,7 +918,7 @@ const MarketingStrategy = () => {
       console.error('Ошибка создания темы:', error)
       toast.error(errorMessage(error, 'Не удалось создать тему'))
     } finally {
-      setSubmitting(false)
+      setSubmittingTheme(false)
     }
   }
 
@@ -928,7 +930,7 @@ const MarketingStrategy = () => {
       return
     }
     try {
-      setSubmitting(true)
+      setSubmittingTheme(true)
       const payload: Partial<StrategicTheme> = {
         slug: editingThemeForm.slug!.toString().trim(),
         name: editingThemeForm.name!.toString().trim(),
@@ -950,7 +952,7 @@ const MarketingStrategy = () => {
       console.error('Ошибка обновления темы:', error)
       toast.error(errorMessage(error, 'Не удалось обновить тему'))
     } finally {
-      setSubmitting(false)
+      setSubmittingTheme(false)
     }
   }
 
@@ -981,7 +983,7 @@ const MarketingStrategy = () => {
       return
     }
     try {
-      setSubmitting(true)
+      setSubmittingBudget(true)
       const payload: Partial<ChannelBudget> = {
         channel_id: newBudget.channel_id,
         period_start: newBudget.period_start.toString(),
@@ -997,7 +999,7 @@ const MarketingStrategy = () => {
       console.error('Ошибка создания бюджета:', error)
       toast.error(errorMessage(error, 'Не удалось создать бюджет'))
     } finally {
-      setSubmitting(false)
+      setSubmittingBudget(false)
     }
   }
 
@@ -1016,7 +1018,7 @@ const MarketingStrategy = () => {
       return
     }
     try {
-      setSubmitting(true)
+      setSubmittingBudget(true)
       const payload: Partial<ChannelBudget> = {
         channel_id: editingBudgetForm.channel_id.toString(),
         period_start: editingBudgetForm.period_start.toString(),
@@ -1034,7 +1036,7 @@ const MarketingStrategy = () => {
       console.error('Ошибка обновления бюджета:', error)
       toast.error(errorMessage(error, 'Не удалось обновить бюджет'))
     } finally {
-      setSubmitting(false)
+      setSubmittingBudget(false)
     }
   }
 
@@ -1098,7 +1100,7 @@ const MarketingStrategy = () => {
         onUpdate={handleUpdateSegment}
         onDelete={handleDeleteSegment}
         onCancelEdit={closeSegmentEdit}
-        submitting={submitting}
+        submitting={submittingSegment}
       />
 
       <ThemesSection
@@ -1113,7 +1115,7 @@ const MarketingStrategy = () => {
         onUpdate={handleUpdateTheme}
         onDelete={handleDeleteTheme}
         onCancelEdit={closeThemeEdit}
-        submitting={submitting}
+        submitting={submittingTheme}
       />
 
       <BudgetsSection
@@ -1129,7 +1131,7 @@ const MarketingStrategy = () => {
         onUpdate={handleUpdateBudget}
         onDelete={handleDeleteBudget}
         onCancelEdit={closeBudgetEdit}
-        submitting={submitting}
+        submitting={submittingBudget}
       />
     </div>
   )
