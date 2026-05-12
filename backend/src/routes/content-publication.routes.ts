@@ -6,5 +6,6 @@ const router = Router()
 router.post('/', contentPublicationController.create)
 router.put('/:id', contentPublicationController.update)
 router.delete('/:id', contentPublicationController.delete)
+router.post('/:id/publish-now', contentPublicationController.publishNow)
 
 export default router
