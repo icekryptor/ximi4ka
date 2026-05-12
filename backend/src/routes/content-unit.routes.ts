@@ -20,5 +20,6 @@ router.get('/:id', contentUnitController.getOne)
 router.post('/', contentUnitController.create)
 router.put('/:id', contentUnitController.update)
 router.delete('/:id', contentUnitController.delete)
+router.post('/:id/recipe-init', contentUnitController.recipeInit)
 
 export default router

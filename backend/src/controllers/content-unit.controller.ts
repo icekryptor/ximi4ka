@@ -5,6 +5,7 @@ import { ContentUnit } from '../entities/ContentUnit'
 import { ContentRubric } from '../entities/ContentRubric'
 import { ContentPublication } from '../entities/ContentPublication'
 import { saveImportPlan, getImportPlan, deleteImportPlan, ImportPlan } from '../services/import-token-store'
+import { recipeEngine } from '../services/recipe-engine'
 
 const repo = AppDataSource.getRepository(ContentUnit)
 
@@ -626,6 +627,32 @@ export const contentUnitController = {
     } catch (e) {
       console.error('Error deleting unit:', e)
       res.status(500).json({ error: 'Ошибка удаления' })
+    }
+  },
+
+  async recipeInit(req: Request, res: Response) {
+    try {
+      const { id } = req.params
+      const unit = await AppDataSource.getRepository(ContentUnit).findOne({ where: { id } })
+      if (!unit) return res.status(404).json({ error: 'Контент-юнит не найден' })
+
+      // Idempotent: если recipe_state уже инициализирован под тот же content_type — возвращаем как есть.
+      if (unit.recipe_state && (unit.recipe_state as any).recipe_content_type === unit.content_type) {
+        return res.json(unit)
+      }
+
+      const initial = recipeEngine.initialState(unit.content_type)
+      if (!initial) {
+        return res.status(400).json({ error: `Рецепт для типа "${unit.content_type}" не зарегистрирован` })
+      }
+
+      unit.recipe_state = initial as unknown as Record<string, unknown>
+      unit.production_started_at = unit.production_started_at ?? new Date()
+      await AppDataSource.getRepository(ContentUnit).save(unit)
+      res.json(unit)
+    } catch (error) {
+      console.error('Ошибка инициализации рецепта:', error)
+      res.status(500).json({ error: 'Ошибка инициализации рецепта' })
     }
   },
 }
