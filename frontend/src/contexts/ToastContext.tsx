@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useState } from 'react'
+import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import { ToastContainer, ToastItem, ToastType } from '../components/ui/Toast'
 
 interface ToastInput {
@@ -59,8 +59,20 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
     [showToast],
   )
 
+  // Memoise the context value so consumers don't see a new reference on
+  // every provider render. Without this, ANY toast.error() triggers a state
+  // update → provider re-render → new {} value → every consumer's useToast()
+  // hook returns a fresh ref → any consumer with `toast` in a useCallback /
+  // useEffect dep array recreates → its effect fires → if that effect calls
+  // toast.error() again on failure (e.g. ContentBank load() retry on backend
+  // error), we get an infinite loop of toasts.
+  const value = useMemo<ToastContextType>(
+    () => ({ showToast, success, error, warning, info }),
+    [showToast, success, error, warning, info],
+  )
+
   return (
-    <ToastContext.Provider value={{ showToast, success, error, warning, info }}>
+    <ToastContext.Provider value={value}>
       {children}
       <ToastContainer toasts={toasts} onDismiss={dismiss} />
     </ToastContext.Provider>

@@ -127,6 +127,11 @@ export default function ContentBank() {
   const [ungraded, setUngraded] = useState(0)
   const [rejectedCount, setRejectedCount] = useState(0)
   const reqIdRef = useRef(0)
+  // Ref to toast so load() can read it without making toast a dep. Prevents
+  // an infinite retry loop if the toast context ever returns a new reference
+  // on a re-render (an old footgun with non-memoised provider values).
+  const toastRef = useRef(toast)
+  toastRef.current = toast
 
   // Filters from URL
   const statusFilter =
@@ -193,13 +198,16 @@ export default function ContentBank() {
       setPagination(r.pagination)
     } catch {
       if (reqId !== reqIdRef.current) return
-      toast.error('Ошибка загрузки контент-банка')
+      toastRef.current.error('Ошибка загрузки контент-банка')
     } finally {
       if (reqId === reqIdRef.current) setLoading(false)
     }
-    // searchParams covers all filter/sort/page state since they're derived from it
+    // searchParams covers all filter/sort/page state since they're derived from it.
+    // toast is intentionally NOT in deps — we read it through toastRef so an
+    // unstable toast reference (if it ever happens) doesn't cause load to
+    // recreate and trigger an infinite retry loop.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, toast])
+  }, [searchParams])
 
   useEffect(() => {
     load()
