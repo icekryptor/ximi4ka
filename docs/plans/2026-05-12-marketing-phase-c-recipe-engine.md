@@ -2,6 +2,8 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** ✅ Phase C complete on 2026-05-12. Ready for Phase D (Telegram Bot Publisher + auto-publication worker).
+
 **Goal:** Реализовать recipe-engine (YAML-определяемые per-type пайплайны производства) и первый рецепт для `content_type='short_post'` — минимальный путь Идея → Draft (AI) → Final (manual). Existing short_video pipeline (Voiceover Studio) не трогаем — для него рецепт появится в отдельной фазе.
 
 **Architecture:** Recipe = YAML-файл в `backend/src/content/recipes/<content_type>.yaml`, описывающий шаги (id, artifact_kind, default_executor, ai_assist_key). При загрузке сервера парсятся все YAML-файлы, кэшируются в памяти. `content_unit.recipe_state` (JSONB-колонка из Phase A) хранит per-unit состояние шагов. Новый generic-endpoint `POST /api/claude/recipe-step` маршрутизирует AI-assist вызовы по `(content_type, step_id)` к prompt-builder функциям. UI: новый компонент `RecipeView.tsx` показывается в `UnitEditModal` для типов с зарегистрированным рецептом (на v1 — только `short_post`); для остальных типов модалка работает как раньше.
