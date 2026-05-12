@@ -78,6 +78,7 @@ const StrategyDocSection = ({ doc, content, onContentChange, onSave, saving }: S
         onChange={(e) => onContentChange(e.target.value)}
         placeholder="# Маркетинг-стратегия&#10;&#10;## Позиционирование&#10;..."
         spellCheck={false}
+        aria-label="Стратегический документ (markdown)"
       />
     </section>
   )
@@ -134,6 +135,7 @@ const SegmentsSection = ({
           value={newSegment.slug ?? ''}
           onChange={(e) => setNewSegment({ ...newSegment, slug: e.target.value })}
           required
+          aria-label="Slug"
         />
         <input
           type="text"
@@ -142,6 +144,7 @@ const SegmentsSection = ({
           value={newSegment.name ?? ''}
           onChange={(e) => setNewSegment({ ...newSegment, name: e.target.value })}
           required
+          aria-label="Название"
         />
         <input
           type="text"
@@ -149,6 +152,7 @@ const SegmentsSection = ({
           placeholder="Возраст (например 8-12)"
           value={newSegment.age_range ?? ''}
           onChange={(e) => setNewSegment({ ...newSegment, age_range: e.target.value })}
+          aria-label="Возраст"
         />
         <input
           type="text"
@@ -156,6 +160,7 @@ const SegmentsSection = ({
           placeholder="Роль (родитель/ребёнок/педагог)"
           value={newSegment.role ?? ''}
           onChange={(e) => setNewSegment({ ...newSegment, role: e.target.value })}
+          aria-label="Роль"
         />
         <button type="submit" className="btn btn-primary flex items-center justify-center space-x-2" disabled={submitting}>
           <Plus className="h-4 w-4" />
@@ -238,6 +243,7 @@ const SegmentsSection = ({
                               value={editForm.slug ?? ''}
                               onChange={(e) => setEditForm({ ...editForm, slug: e.target.value })}
                               required
+                              aria-label="Slug"
                             />
                             <input
                               type="text"
@@ -246,6 +252,7 @@ const SegmentsSection = ({
                               value={editForm.name ?? ''}
                               onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                               required
+                              aria-label="Название"
                             />
                             <input
                               type="text"
@@ -253,6 +260,7 @@ const SegmentsSection = ({
                               placeholder="Возраст"
                               value={editForm.age_range ?? ''}
                               onChange={(e) => setEditForm({ ...editForm, age_range: e.target.value })}
+                              aria-label="Возраст"
                             />
                             <input
                               type="text"
@@ -260,6 +268,7 @@ const SegmentsSection = ({
                               placeholder="Роль"
                               value={editForm.role ?? ''}
                               onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                              aria-label="Роль"
                             />
                           </div>
                           <textarea
@@ -267,6 +276,7 @@ const SegmentsSection = ({
                             placeholder="Описание сегмента"
                             value={editForm.description ?? ''}
                             onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                            aria-label="Описание сегмента"
                           />
                           <label className="flex items-center space-x-2 cursor-pointer">
                             <input
@@ -350,6 +360,7 @@ const ThemesSection = ({
           value={newTheme.slug ?? ''}
           onChange={(e) => setNewTheme({ ...newTheme, slug: e.target.value })}
           required
+          aria-label="Slug"
         />
         <input
           type="text"
@@ -358,18 +369,21 @@ const ThemesSection = ({
           value={newTheme.name ?? ''}
           onChange={(e) => setNewTheme({ ...newTheme, name: e.target.value })}
           required
+          aria-label="Название темы"
         />
         <input
           type="date"
           className="input"
           value={newTheme.active_from ?? ''}
           onChange={(e) => setNewTheme({ ...newTheme, active_from: e.target.value })}
+          aria-label="Дата начала"
         />
         <input
           type="date"
           className="input"
           value={newTheme.active_to ?? ''}
           onChange={(e) => setNewTheme({ ...newTheme, active_to: e.target.value })}
+          aria-label="Дата окончания"
         />
         <button type="submit" className="btn btn-primary flex items-center justify-center space-x-2" disabled={submitting}>
           <Plus className="h-4 w-4" />
@@ -447,6 +461,7 @@ const ThemesSection = ({
                               value={editForm.slug ?? ''}
                               onChange={(e) => setEditForm({ ...editForm, slug: e.target.value })}
                               required
+                              aria-label="Slug"
                             />
                             <input
                               type="text"
@@ -455,18 +470,21 @@ const ThemesSection = ({
                               value={editForm.name ?? ''}
                               onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                               required
+                              aria-label="Название"
                             />
                             <input
                               type="date"
                               className="input"
                               value={editForm.active_from ?? ''}
                               onChange={(e) => setEditForm({ ...editForm, active_from: e.target.value })}
+                              aria-label="Дата начала"
                             />
                             <input
                               type="date"
                               className="input"
                               value={editForm.active_to ?? ''}
                               onChange={(e) => setEditForm({ ...editForm, active_to: e.target.value })}
+                              aria-label="Дата окончания"
                             />
                           </div>
                           <textarea
@@ -474,6 +492,7 @@ const ThemesSection = ({
                             placeholder="Описание темы"
                             value={editForm.description ?? ''}
                             onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                            aria-label="Описание темы"
                           />
                           <div className="flex justify-end space-x-2">
                             <button type="button" onClick={onCancelEdit} className="btn btn-secondary" disabled={submitting}>
@@ -551,6 +570,7 @@ const BudgetsSection = ({
           value={newBudget.channel_id ?? ''}
           onChange={(e) => setNewBudget({ ...newBudget, channel_id: e.target.value })}
           required
+          aria-label="Канал"
         >
           <option value="">— Канал —</option>
           {channels.map((c) => (
@@ -565,6 +585,7 @@ const BudgetsSection = ({
           value={newBudget.period_start ?? ''}
           onChange={(e) => setNewBudget({ ...newBudget, period_start: e.target.value })}
           required
+          aria-label="Дата начала"
         />
         <input
           type="date"
@@ -572,6 +593,7 @@ const BudgetsSection = ({
           value={newBudget.period_end ?? ''}
           onChange={(e) => setNewBudget({ ...newBudget, period_end: e.target.value })}
           required
+          aria-label="Дата окончания"
         />
         <input
           type="number"
@@ -582,6 +604,7 @@ const BudgetsSection = ({
           value={newBudget.amount_rub ?? ''}
           onChange={(e) => setNewBudget({ ...newBudget, amount_rub: e.target.value })}
           required
+          aria-label="Сумма в рублях"
         />
         <button type="submit" className="btn btn-primary flex items-center justify-center space-x-2" disabled={submitting}>
           <Plus className="h-4 w-4" />
@@ -663,6 +686,7 @@ const BudgetsSection = ({
                                 value={editForm.channel_id ?? ''}
                                 onChange={(e) => setEditForm({ ...editForm, channel_id: e.target.value })}
                                 required
+                                aria-label="Канал"
                               >
                                 <option value="">— Канал —</option>
                                 {channels.map((c) => (
@@ -677,6 +701,7 @@ const BudgetsSection = ({
                                 value={editForm.period_start ?? ''}
                                 onChange={(e) => setEditForm({ ...editForm, period_start: e.target.value })}
                                 required
+                                aria-label="Дата начала"
                               />
                               <input
                                 type="date"
@@ -684,6 +709,7 @@ const BudgetsSection = ({
                                 value={editForm.period_end ?? ''}
                                 onChange={(e) => setEditForm({ ...editForm, period_end: e.target.value })}
                                 required
+                                aria-label="Дата окончания"
                               />
                               <input
                                 type="number"
@@ -694,6 +720,7 @@ const BudgetsSection = ({
                                 value={editForm.amount_rub ?? ''}
                                 onChange={(e) => setEditForm({ ...editForm, amount_rub: e.target.value })}
                                 required
+                                aria-label="Сумма в рублях"
                               />
                             </div>
                             <textarea
@@ -701,6 +728,7 @@ const BudgetsSection = ({
                               placeholder="Заметки"
                               value={editForm.notes ?? ''}
                               onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                              aria-label="Заметки"
                             />
                             <div className="flex justify-end space-x-2">
                               <button type="button" onClick={onCancelEdit} className="btn btn-secondary" disabled={submitting}>
