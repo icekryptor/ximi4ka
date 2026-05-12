@@ -2,6 +2,8 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+**Status:** ✅ Phase B complete on 2026-05-12. Ready for Phase C (recipe-engine + per-type content pipelines).
+
 **Goal:** Поднять UX-слой над schema-фундаментом Phase A: backend CRUD для 4 новых сущностей + brand_docs, две новые страницы (`/marketing/strategy` и `/settings/channels`), реорганизация sidebar в новую секцию «Маркетинг».
 
 **Architecture:** Backend следует существующему паттерну Counterparty (routes/* → controllers/* → AppDataSource.getRepository → JSON). Frontend использует существующий `createCrudApi<T>` фактори для API-клиентов; страницы строятся по образцу `Counterparties.tsx` (простая таблица с inline-формой). Markdown-редактор стратегии — две вкладки в одной странице: редактор (`<textarea>`) + preview (через простой markdown→HTML, можно использовать существующий `react-markdown` если установлен, иначе остановиться на чистом textarea без preview на v1).
