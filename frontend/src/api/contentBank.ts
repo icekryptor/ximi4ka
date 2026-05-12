@@ -1,5 +1,6 @@
 import { apiClient } from './client'
 import type { StageKey } from './contentEngine'
+import type { RecipeState } from './types'
 
 export type ContentType = 'short_video' | 'text_post' | 'other'
 
@@ -65,6 +66,10 @@ export interface ContentUnit {
   created_at: string
   updated_at: string
   publications: ContentPublication[]
+  recipe_state: RecipeState | null
+  production_started_at: string | null
+  target_segment_id: string | null
+  theme_id: string | null
 }
 
 export interface UnitsListParams {

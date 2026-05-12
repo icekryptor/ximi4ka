@@ -374,3 +374,42 @@ export interface ChannelBudget {
   created_at: string
   updated_at: string
 }
+
+// ─── Recipe engine (Phase C) ─────────────────────────────────────────────────
+
+export type ExecutorType = 'self' | 'ai_agent' | 'contractor'
+export type ArtifactKind = 'text' | 'script_text' | 'image' | 'audio' | 'video_external' | 'pdf' | 'other'
+export type RecipeStepStatus = 'pending' | 'in_progress' | 'awaiting_review' | 'completed' | 'skipped'
+
+export interface RecipeStep {
+  id: string
+  display_name: string
+  artifact_kind: ArtifactKind
+  default_executor: ExecutorType
+  ai_assist_key: string | null
+  description: string
+}
+
+export interface Recipe {
+  content_type: string
+  display_name: string
+  description: string
+  steps: RecipeStep[]
+}
+
+export interface RecipeStepState {
+  step_id: string
+  status: RecipeStepStatus
+  executor_type: ExecutorType
+  artifact_text: string | null
+  artifact_asset_id: string | null
+  ai_run_count: number
+  completed_at: string | null
+}
+
+export interface RecipeState {
+  version: 1
+  recipe_content_type: string
+  started_at: string
+  steps: RecipeStepState[]
+}
