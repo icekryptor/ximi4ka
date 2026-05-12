@@ -45,6 +45,25 @@ function loadAll(): Map<string, Recipe> {
         console.error(`[recipe-engine] ${file}: missing content_type or steps`)
         continue
       }
+      const requiredStepFields = ['id', 'display_name', 'artifact_kind', 'default_executor', 'description']
+      let stepsValid = true
+      for (const s of doc.steps as unknown as Array<Record<string, unknown>>) {
+        for (const f of requiredStepFields) {
+          if (typeof s[f] !== 'string' || !s[f]) {
+            console.error(`[recipe-engine] ${file}: step missing required string field "${f}":`, s)
+            stepsValid = false
+            break
+          }
+        }
+        if (!stepsValid) break
+        // ai_assist_key is nullable but must be string | null
+        if (s.ai_assist_key !== null && typeof s.ai_assist_key !== 'string') {
+          console.error(`[recipe-engine] ${file}: step.ai_assist_key must be string or null:`, s)
+          stepsValid = false
+          break
+        }
+      }
+      if (!stepsValid) continue
       map.set(doc.content_type, doc)
       console.log(`[recipe-engine] loaded ${doc.content_type} (${doc.steps.length} steps) from ${file}`)
     } catch (e) {
