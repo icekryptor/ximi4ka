@@ -44,7 +44,10 @@ export const channelBudgetController = {
       res.status(201).json(saved)
     } catch (error: unknown) {
       console.error('Ошибка при создании бюджета:', error)
-      res.status(500).json({ error: 'Ошибка при создании бюджета' })
+      const msg = error instanceof Error && error.message.includes('duplicate key')
+        ? 'Бюджет на этот период для канала уже задан'
+        : 'Ошибка при создании бюджета'
+      res.status(500).json({ error: msg })
     }
   },
 
