@@ -27,9 +27,11 @@ export const telegramPublisher: ChannelPublisher = {
     if (!chatId) throw new Error(`У канала "${ctx.channel.slug}" не задан chat_id в config_json`)
 
     const rawText = extractPublishText(ctx.unit)
-    const escaped = escapeHtml(rawText)
-    // Telegram limit: 4096 chars for text message. Truncate with marker if longer.
-    const safe = escaped.length > 4000 ? escaped.slice(0, 4000) + '\n…' : escaped
+    // Truncate the RAW text first, then escape — slicing escaped HTML can sever
+    // multi-char entities like `&amp;` and break parse_mode: 'HTML'.
+    // 3900 char budget leaves headroom for worst-case escape expansion.
+    const truncated = rawText.length > 3900 ? rawText.slice(0, 3900) + '\n…' : rawText
+    const safe = escapeHtml(truncated)
 
     const msg = await bot.sendMessage(String(chatId), safe, {
       parse_mode: 'HTML',
