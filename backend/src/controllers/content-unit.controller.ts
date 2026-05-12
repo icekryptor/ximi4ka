@@ -655,4 +655,26 @@ export const contentUnitController = {
       res.status(500).json({ error: 'Ошибка инициализации рецепта' })
     }
   },
+
+  async patchRecipeState(req: Request, res: Response) {
+    try {
+      const { id } = req.params
+      const newState = req.body as Record<string, unknown>
+      if (!newState || typeof newState !== 'object') {
+        return res.status(400).json({ error: 'Тело запроса должно быть JSON-объектом recipe_state' })
+      }
+      if (typeof newState.version !== 'number' || !Array.isArray((newState as any).steps)) {
+        return res.status(400).json({ error: 'recipe_state должен содержать version (number) и steps (array)' })
+      }
+      const repo = AppDataSource.getRepository(ContentUnit)
+      const unit = await repo.findOne({ where: { id } })
+      if (!unit) return res.status(404).json({ error: 'Контент-юнит не найден' })
+      unit.recipe_state = newState
+      await repo.save(unit)
+      res.json(unit)
+    } catch (error) {
+      console.error('Ошибка сохранения recipe_state:', error)
+      res.status(500).json({ error: 'Ошибка сохранения recipe_state' })
+    }
+  },
 }
