@@ -38,6 +38,11 @@ import channelPresetRoutes from './routes/channel-preset.routes';
 import contentUnitRoutes from './routes/content-unit.routes';
 import contentRubricRoutes from './routes/content-rubric.routes';
 import contentPublicationRoutes from './routes/content-publication.routes';
+import brandDocRoutes from './routes/brand-doc.routes';
+import icpSegmentRoutes from './routes/icp-segment.routes';
+import strategicThemeRoutes from './routes/strategic-theme.routes';
+import channelBudgetRoutes from './routes/channel-budget.routes';
+import channelRoutes from './routes/channel.routes';
 import n8nRoutes from './routes/n8n.routes';
 import telegramRoutes from './routes/telegram.routes';
 import publicProjectRoutes from './routes/publicProject.routes';
@@ -134,6 +139,11 @@ app.use('/api/cashflow', authMiddleware, cashflowRoutes);
 app.use('/api/voiceover', authMiddleware, voiceoverRoutes);
 app.use('/api/content-engine', authMiddleware, contentEngineRoutes);
 app.use('/api/claude', authMiddleware, claudeRoutes);
+app.use('/api/brand-docs', authMiddleware, brandDocRoutes);
+app.use('/api/icp-segments', authMiddleware, icpSegmentRoutes);
+app.use('/api/strategic-themes', authMiddleware, strategicThemeRoutes);
+app.use('/api/channel-budgets', authMiddleware, channelBudgetRoutes);
+app.use('/api/channels', authMiddleware, channelRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
