@@ -3,6 +3,8 @@ import { AppDataSource } from '../config/database'
 import { ContentPublication } from '../entities/ContentPublication'
 import { Channel } from '../entities/Channel'
 import { getPublisher } from '../services/publishers/registry'
+import type { PublisherLog } from '../services/publishers/types'
+import { emptyPublisherLog } from '../services/publishers/types'
 
 const repo = AppDataSource.getRepository(ContentPublication)
 
@@ -84,18 +86,21 @@ export const contentPublicationController = {
         publication: pub,
       })
 
-      const attempts = (pub.publisher_log as any)?.attempts ?? 0
+      const prev = (pub.publisher_log as PublisherLog | null) ?? emptyPublisherLog()
       await repo.update(pub.id, {
         published_at: new Date(),
         published_url: result.published_url,
         publisher_log: {
-          ...((pub.publisher_log as any) || {}),
+          ...prev,
+          attempts: prev.attempts + 1,
           success: true,
-          attempts: attempts + 1,
+          last_error: null,
+          last_attempt_at: new Date().toISOString(),
           completed_at: new Date().toISOString(),
-          raw: result.raw_response,
+          gave_up: false,
           manual: true,
-        } as any,
+          raw: result.raw_response,
+        } satisfies PublisherLog as unknown as Record<string, unknown> as any,
       })
       const updated = await repo.findOne({ where: { id } })
       res.json(updated)

@@ -3,6 +3,8 @@ import type { ScheduledTask } from 'node-cron'
 import { AppDataSource } from '../config/database'
 import { ContentPublication } from '../entities/ContentPublication'
 import { getPublisher } from './publishers/registry'
+import type { PublisherLog } from './publishers/types'
+import { emptyPublisherLog } from './publishers/types'
 
 const MAX_ATTEMPTS = 3
 const inFlight = new Set<string>() // process-local mutex by publication.id
@@ -43,17 +45,19 @@ async function processPublication(pub: ContentPublication): Promise<void> {
   if (!channel || !unit) return // shouldn't happen with the joins above
 
   const publisher = getPublisher(channel.platform)
-  const attempts = (pub.publisher_log as any)?.attempts ?? 0
+  const prev = (pub.publisher_log as PublisherLog | null) ?? emptyPublisherLog()
 
   if (!publisher) {
     await repo.update(pub.id, {
       auto_publish: false,
       publisher_log: {
-        ...((pub.publisher_log as any) || {}),
+        ...prev,
+        attempts: prev.attempts + 1,
+        success: false,
         last_error: `Publisher для платформы "${channel.platform}" не зарегистрирован`,
-        attempts,
         last_attempt_at: new Date().toISOString(),
-      } as any,
+        gave_up: true,
+      } satisfies PublisherLog as unknown as Record<string, unknown> as any,
     })
     return
   }
@@ -64,26 +68,30 @@ async function processPublication(pub: ContentPublication): Promise<void> {
       published_at: new Date(),
       published_url: result.published_url,
       publisher_log: {
-        ...((pub.publisher_log as any) || {}),
+        ...prev,
+        attempts: prev.attempts + 1,
         success: true,
-        attempts: attempts + 1,
+        last_error: null,
+        last_attempt_at: new Date().toISOString(),
         completed_at: new Date().toISOString(),
+        gave_up: false,
         raw: result.raw_response,
-      } as any,
+      } satisfies PublisherLog as unknown as Record<string, unknown> as any,
     })
     console.log(`[publish-worker] ${pub.id} published to ${channel.slug}`)
   } catch (e: any) {
-    const newAttempts = attempts + 1
+    const newAttempts = prev.attempts + 1
     const giveUp = newAttempts >= MAX_ATTEMPTS
     await repo.update(pub.id, {
       auto_publish: giveUp ? false : true,
       publisher_log: {
-        ...((pub.publisher_log as any) || {}),
-        last_error: String(e?.message ?? e),
+        ...prev,
         attempts: newAttempts,
+        success: false,
+        last_error: String(e?.message ?? e),
         last_attempt_at: new Date().toISOString(),
         gave_up: giveUp,
-      } as any,
+      } satisfies PublisherLog as unknown as Record<string, unknown> as any,
     })
     console.error(`[publish-worker] ${pub.id} attempt ${newAttempts} failed:`, e?.message ?? e)
   }
