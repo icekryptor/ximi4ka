@@ -11,8 +11,10 @@ export const channelBudgetController = {
       const { channel_id, from, to } = req.query
       const where: Record<string, unknown> = {}
       if (channel_id) where.channel_id = channel_id
-      if (from) where.period_start = MoreThanOrEqual(from as string)
-      if (to) where.period_end = LessThanOrEqual(to as string)
+      // Filter is OVERLAP semantic: budget touching the requested [from, to] range, not contained in it.
+      // Operator mental model: "show budgets active during this period" → overlap. Adjust if you need containment.
+      if (from) where.period_end = MoreThanOrEqual(from as string)
+      if (to) where.period_start = LessThanOrEqual(to as string)
       const budgets = await repo.find({
         where,
         relations: ['channel'],
