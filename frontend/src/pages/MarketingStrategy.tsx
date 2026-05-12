@@ -96,6 +96,7 @@ interface SegmentsSectionProps {
   setEditForm: (s: Partial<IcpSegment>) => void
   onUpdate: (e: FormEvent) => Promise<void>
   onDelete: (s: IcpSegment) => Promise<void>
+  onCancelEdit: () => void
   submitting: boolean
 }
 
@@ -110,6 +111,7 @@ const SegmentsSection = ({
   setEditForm,
   onUpdate,
   onDelete,
+  onCancelEdit,
   submitting,
 }: SegmentsSectionProps) => {
   return (
@@ -196,7 +198,7 @@ const SegmentsSection = ({
                         <button
                           onClick={() => {
                             if (editingId === s.id) {
-                              setEditingId(null)
+                              onCancelEdit()
                             } else {
                               setEditForm({
                                 slug: s.slug,
@@ -276,7 +278,7 @@ const SegmentsSection = ({
                             <span className="text-sm text-brand-text">Активен</span>
                           </label>
                           <div className="flex justify-end space-x-2">
-                            <button type="button" onClick={() => setEditingId(null)} className="btn btn-secondary" disabled={submitting}>
+                            <button type="button" onClick={onCancelEdit} className="btn btn-secondary" disabled={submitting}>
                               Отмена
                             </button>
                             <button type="submit" className="btn btn-primary" disabled={submitting}>
@@ -310,6 +312,7 @@ interface ThemesSectionProps {
   setEditForm: (t: Partial<StrategicTheme>) => void
   onUpdate: (e: FormEvent) => Promise<void>
   onDelete: (t: StrategicTheme) => Promise<void>
+  onCancelEdit: () => void
   submitting: boolean
 }
 
@@ -324,6 +327,7 @@ const ThemesSection = ({
   setEditForm,
   onUpdate,
   onDelete,
+  onCancelEdit,
   submitting,
 }: ThemesSectionProps) => {
   return (
@@ -404,7 +408,7 @@ const ThemesSection = ({
                         <button
                           onClick={() => {
                             if (editingId === t.id) {
-                              setEditingId(null)
+                              onCancelEdit()
                             } else {
                               setEditForm({
                                 slug: t.slug,
@@ -472,7 +476,7 @@ const ThemesSection = ({
                             onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                           />
                           <div className="flex justify-end space-x-2">
-                            <button type="button" onClick={() => setEditingId(null)} className="btn btn-secondary" disabled={submitting}>
+                            <button type="button" onClick={onCancelEdit} className="btn btn-secondary" disabled={submitting}>
                               Отмена
                             </button>
                             <button type="submit" className="btn btn-primary" disabled={submitting}>
@@ -507,6 +511,7 @@ interface BudgetsSectionProps {
   setEditForm: (b: Partial<ChannelBudget>) => void
   onUpdate: (e: FormEvent) => Promise<void>
   onDelete: (b: ChannelBudget) => Promise<void>
+  onCancelEdit: () => void
   submitting: boolean
 }
 
@@ -522,6 +527,7 @@ const BudgetsSection = ({
   setEditForm,
   onUpdate,
   onDelete,
+  onCancelEdit,
   submitting,
 }: BudgetsSectionProps) => {
   const channelById = (id: string | undefined): PublishChannel | undefined =>
@@ -620,7 +626,7 @@ const BudgetsSection = ({
                           <button
                             onClick={() => {
                               if (editingId === b.id) {
-                                setEditingId(null)
+                                onCancelEdit()
                               } else {
                                 setEditForm({
                                   channel_id: b.channel_id,
@@ -697,7 +703,7 @@ const BudgetsSection = ({
                               onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
                             />
                             <div className="flex justify-end space-x-2">
-                              <button type="button" onClick={() => setEditingId(null)} className="btn btn-secondary" disabled={submitting}>
+                              <button type="button" onClick={onCancelEdit} className="btn btn-secondary" disabled={submitting}>
                                 Отмена
                               </button>
                               <button type="submit" className="btn btn-primary" disabled={submitting}>
@@ -747,6 +753,19 @@ const MarketingStrategy = () => {
 
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+
+  const closeSegmentEdit = () => {
+    setEditingSegmentId(null)
+    setEditingSegmentForm({})
+  }
+  const closeThemeEdit = () => {
+    setEditingThemeId(null)
+    setEditingThemeForm({})
+  }
+  const closeBudgetEdit = () => {
+    setEditingBudgetId(null)
+    setEditingBudgetForm({})
+  }
 
   useEffect(() => {
     void loadAll()
@@ -845,8 +864,7 @@ const MarketingStrategy = () => {
       }
       const updated = await icpSegmentsApi.update(editingSegmentId, payload)
       setSegments((prev) => prev.map((s) => (s.id === editingSegmentId ? updated : s)))
-      setEditingSegmentId(null)
-      setEditingSegmentForm({})
+      closeSegmentEdit()
       toast.success('Сегмент обновлён')
     } catch (error) {
       console.error('Ошибка обновления сегмента:', error)
@@ -867,7 +885,7 @@ const MarketingStrategy = () => {
     try {
       await icpSegmentsApi.delete(s.id)
       setSegments((prev) => prev.filter((x) => x.id !== s.id))
-      if (editingSegmentId === s.id) setEditingSegmentId(null)
+      if (editingSegmentId === s.id) closeSegmentEdit()
       toast.success('Сегмент удалён')
     } catch (error) {
       console.error('Ошибка удаления сегмента:', error)
@@ -926,8 +944,7 @@ const MarketingStrategy = () => {
       }
       const updated = await strategicThemesApi.update(editingThemeId, payload)
       setThemes((prev) => prev.map((t) => (t.id === editingThemeId ? updated : t)))
-      setEditingThemeId(null)
-      setEditingThemeForm({})
+      closeThemeEdit()
       toast.success('Тема обновлена')
     } catch (error) {
       console.error('Ошибка обновления темы:', error)
@@ -948,7 +965,7 @@ const MarketingStrategy = () => {
     try {
       await strategicThemesApi.delete(t.id)
       setThemes((prev) => prev.filter((x) => x.id !== t.id))
-      if (editingThemeId === t.id) setEditingThemeId(null)
+      if (editingThemeId === t.id) closeThemeEdit()
       toast.success('Тема удалена')
     } catch (error) {
       console.error('Ошибка удаления темы:', error)
@@ -1011,8 +1028,7 @@ const MarketingStrategy = () => {
       }
       const updated = await channelBudgetsApi.update(editingBudgetId, payload)
       setBudgets((prev) => prev.map((b) => (b.id === editingBudgetId ? updated : b)))
-      setEditingBudgetId(null)
-      setEditingBudgetForm({})
+      closeBudgetEdit()
       toast.success('Бюджет обновлён')
     } catch (error) {
       console.error('Ошибка обновления бюджета:', error)
@@ -1033,7 +1049,7 @@ const MarketingStrategy = () => {
     try {
       await channelBudgetsApi.delete(b.id)
       setBudgets((prev) => prev.filter((x) => x.id !== b.id))
-      if (editingBudgetId === b.id) setEditingBudgetId(null)
+      if (editingBudgetId === b.id) closeBudgetEdit()
       toast.success('Бюджет удалён')
     } catch (error) {
       console.error('Ошибка удаления бюджета:', error)
@@ -1081,6 +1097,7 @@ const MarketingStrategy = () => {
         setEditForm={setEditingSegmentForm}
         onUpdate={handleUpdateSegment}
         onDelete={handleDeleteSegment}
+        onCancelEdit={closeSegmentEdit}
         submitting={submitting}
       />
 
@@ -1095,6 +1112,7 @@ const MarketingStrategy = () => {
         setEditForm={setEditingThemeForm}
         onUpdate={handleUpdateTheme}
         onDelete={handleDeleteTheme}
+        onCancelEdit={closeThemeEdit}
         submitting={submitting}
       />
 
@@ -1110,6 +1128,7 @@ const MarketingStrategy = () => {
         setEditForm={setEditingBudgetForm}
         onUpdate={handleUpdateBudget}
         onDelete={handleDeleteBudget}
+        onCancelEdit={closeBudgetEdit}
         submitting={submitting}
       />
     </div>
