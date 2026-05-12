@@ -1,0 +1,16 @@
+content_type: short_post
+display_name: "Короткий пост"
+description: "Текстовый пост для Telegram / VK / X. 1-2 факта + мысль."
+steps:
+  - id: draft
+    display_name: "Драфт текста"
+    artifact_kind: text
+    default_executor: ai_agent
+    ai_assist_key: short_post_draft
+    description: "Claude генерит первый драфт по идее, рубрике и стиль-гайду."
+  - id: final
+    display_name: "Финальный текст"
+    artifact_kind: text
+    default_executor: self
+    ai_assist_key: null
+    description: "Оператор правит драфт и подтверждает финал."
