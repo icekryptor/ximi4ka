@@ -9,5 +9,6 @@ router.post('/style', claudeController.style)
 router.post('/edit', claudeController.edit)
 router.post('/edit-with-learning', claudeController.editWithLearning)
 router.post('/preprocess', claudeController.preprocess)
+router.post('/recipe-step', claudeController.recipeStep)
 
 export default router

@@ -2,6 +2,10 @@ import { Request, Response } from 'express'
 import Anthropic from '@anthropic-ai/sdk'
 import { getPromptCache } from '../services/prompt-cache'
 import { parseClaudeJson, splitIntoSentenceChunks } from '../lib/parse-claude-json'
+import { AppDataSource } from '../config/database'
+import { ContentUnit } from '../entities/ContentUnit'
+import { ContentRubric } from '../entities/ContentRubric'
+import { recipeEngine } from '../services/recipe-engine'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY ?? '' })
 const MODEL = 'claude-sonnet-4-5-20250929'
@@ -53,6 +57,47 @@ function handleClaudeError(e: any, res: Response, defaultMsg: string) {
       .json({ error: 'Закончились кредиты Anthropic — пополни баланс в console.anthropic.com → Billing' })
   }
   return res.status(500).json({ error: defaultMsg })
+}
+
+interface RecipeStepContext {
+  unit: ContentUnit
+  rubric: ContentRubric | null
+  cache: Awaited<ReturnType<typeof getPromptCache>>
+  custom_prompt?: string
+}
+
+/** Returns { system, user, maxTokens } for a given (content_type, step_id), or null if not implemented. */
+async function buildRecipeStepPrompt(
+  contentType: string,
+  stepId: string,
+  ctx: RecipeStepContext,
+): Promise<{ system: string; user: string; maxTokens: number } | null> {
+  // (short_post, draft)
+  if (contentType === 'short_post' && stepId === 'draft') {
+    const guide = ctx.cache.brandDocs.style_guide_text ?? ''
+    const rubrics = ctx.cache.brandDocs.rubrics_matrix ?? ''
+    const customBlock = ctx.custom_prompt ? `\nДополнительные инструкции: ${ctx.custom_prompt}` : ''
+    const system = `Ты — копирайтер бренда Химичка (наборы для химических опытов, ximi4ka.ru, продажи на WB и Ozon).
+
+## Стилевой гайд (обязательно к исполнению)
+${guide || '(не задан — используй нейтральный познавательный тон)'}
+
+## Матрица рубрик
+${rubrics}
+
+## Задача
+Напиши короткий пост для Telegram / VK / X на основе идеи ниже.
+Структура: хук (одна сильная первая строка) + 1-2 факта или мысль + закрытие.
+Длина: 400-800 символов. Без хэштегов и markdown-разметки.
+Только текст поста, без пояснений.
+Перед написанием определи рубрику и тональную группу из матрицы.`
+    const user = `Идея: ${ctx.unit.title}
+Рубрика: ${ctx.rubric?.title ?? 'не выбрана'}
+Заметки: ${ctx.unit.notes ?? ''}${customBlock}`
+    return { system, user, maxTokens: 2048 }
+  }
+  // (short_post, final) is manual — no AI prompt
+  return null
 }
 
 export const claudeController = {
@@ -315,6 +360,50 @@ ${cache.brandDocs.style_guide_video}
       res.json({ chunks })
     } catch (e: any) {
       handleClaudeError(e, res, 'Ошибка препроцессинга')
+    }
+  },
+
+  async recipeStep(req: Request, res: Response) {
+    try {
+      const { unit_id, step_id, custom_prompt } = req.body as {
+        unit_id?: string
+        step_id?: string
+        custom_prompt?: string
+      }
+      if (!unit_id || !step_id) {
+        return res.status(400).json({ error: 'unit_id и step_id обязательны' })
+      }
+      const unitRepo = AppDataSource.getRepository(ContentUnit)
+      const unit = await unitRepo.findOne({
+        where: { id: unit_id },
+        relations: ['rubric'],
+      })
+      if (!unit) return res.status(404).json({ error: 'Контент-юнит не найден' })
+
+      const recipe = recipeEngine.get(unit.content_type)
+      if (!recipe) return res.status(400).json({ error: `Рецепт для "${unit.content_type}" не зарегистрирован` })
+
+      const step = recipe.steps.find((s) => s.id === step_id)
+      if (!step) return res.status(400).json({ error: `Шаг "${step_id}" не найден в рецепте` })
+      if (step.default_executor !== 'ai_agent' || !step.ai_assist_key) {
+        return res.status(400).json({ error: 'Шаг не предусматривает AI-исполнение' })
+      }
+
+      const cache = await getPromptCache()
+      const prompt = await buildRecipeStepPrompt(unit.content_type, step.id, {
+        unit,
+        rubric: unit.rubric,
+        cache,
+        custom_prompt,
+      })
+      if (!prompt) {
+        return res.status(501).json({ error: `Prompt builder для (${unit.content_type}, ${step.id}) не реализован` })
+      }
+
+      const text = await callClaude(prompt.system, prompt.user, prompt.maxTokens)
+      res.json({ text, model: MODEL })
+    } catch (e: any) {
+      handleClaudeError(e, res, 'Ошибка выполнения шага рецепта')
     }
   },
 }

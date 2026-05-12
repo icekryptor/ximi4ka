@@ -7,7 +7,7 @@ export const ETALON_UNIT_ID = 'f25b0c52-c5e7-4c5b-9fcf-881fa8e7838a'
 export const CACHE_TTL_MS = 30 * 60 * 1000 // 30 minutes
 
 interface PromptCache {
-  brandDocs: { style_guide_video: string; rubrics_matrix: string }
+  brandDocs: { style_guide_video: string; style_guide_text: string; rubrics_matrix: string }
   etalonScript: string | null
   fetchedAt: number
 }
@@ -19,7 +19,7 @@ async function loadFromDB(): Promise<PromptCache> {
   const unitRepo = AppDataSource.getRepository(ContentUnit)
 
   const docs = await docRepo.find({
-    where: { slug: In(['style_guide_video', 'rubrics_matrix']) },
+    where: { slug: In(['style_guide_video', 'style_guide_text', 'rubrics_matrix']) },
   })
   const docMap: Record<string, string> = {}
   for (const d of docs) docMap[d.slug] = d.content
@@ -32,6 +32,7 @@ async function loadFromDB(): Promise<PromptCache> {
   return {
     brandDocs: {
       style_guide_video: docMap.style_guide_video ?? '',
+      style_guide_text: docMap.style_guide_text ?? '',
       rubrics_matrix: docMap.rubrics_matrix ?? '',
     },
     etalonScript: etalon?.script_text || null,
