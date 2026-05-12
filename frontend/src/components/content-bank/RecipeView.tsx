@@ -233,6 +233,7 @@ export function RecipeView({ unit, recipe, onChange }: Props) {
             {/* awaiting_review (AI returned) or in_progress (manual edit) — editable textarea */}
             {(stepState.status === 'awaiting_review' || (stepState.status === 'in_progress' && !isAiStep)) && (
               <StepEditor
+                key={`${step.id}-${stepState.ai_run_count}-${stepState.status}`}
                 initialText={stepState.artifact_text ?? ''}
                 onAccept={(text) => handleAcceptStep(step.id, text)}
                 onSaveDraft={(text) => handleSaveDraft(step.id, text)}
