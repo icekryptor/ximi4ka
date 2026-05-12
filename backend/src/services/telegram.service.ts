@@ -87,7 +87,7 @@ function formatBudget(v: number | string | null | undefined): string {
 
 let _bot: TelegramBot | null = null
 
-function getBot(): TelegramBot | null {
+export function getBot(): TelegramBot | null {
   if (_bot) return _bot
   const token = process.env.TELEGRAM_BOT_TOKEN
   if (!token) return null
