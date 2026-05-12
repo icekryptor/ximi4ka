@@ -1,13 +1,23 @@
 import { Request, Response } from 'express'
 import { AppDataSource } from '../config/database'
 import { ContentPublication } from '../entities/ContentPublication'
+import { Channel } from '../entities/Channel'
 import { getPublisher } from '../services/publishers/registry'
 
 const repo = AppDataSource.getRepository(ContentPublication)
 
+async function resolveChannelId(body: Record<string, unknown>): Promise<void> {
+  if (body.channel_id || !body.network) return // already resolved or no slug
+  const channel = await AppDataSource.getRepository(Channel).findOne({
+    where: { slug: String(body.network) },
+  })
+  if (channel) body.channel_id = channel.id
+}
+
 export const contentPublicationController = {
   async create(req: Request, res: Response) {
     try {
+      await resolveChannelId(req.body)
       const item = repo.create(req.body)
       const saved = await repo.save(item)
       res.status(201).json(saved)
@@ -23,6 +33,7 @@ export const contentPublicationController = {
 
   async update(req: Request, res: Response) {
     try {
+      await resolveChannelId(req.body)
       const item = await repo.findOne({ where: { id: req.params.id } })
       if (!item) return res.status(404).json({ error: 'Публикация не найдена' })
       await repo.update(req.params.id, req.body)
