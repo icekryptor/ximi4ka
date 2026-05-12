@@ -666,6 +666,21 @@ export const contentUnitController = {
       if (typeof newState.version !== 'number' || !Array.isArray((newState as any).steps)) {
         return res.status(400).json({ error: 'recipe_state должен содержать version (number) и steps (array)' })
       }
+      if ((newState as any).steps.length === 0) {
+        return res.status(400).json({ error: 'recipe_state.steps не может быть пустым' })
+      }
+      const validStatuses = ['pending', 'in_progress', 'awaiting_review', 'completed', 'skipped']
+      for (const step of (newState as any).steps) {
+        if (typeof step !== 'object' || step === null) {
+          return res.status(400).json({ error: 'Каждый шаг должен быть объектом' })
+        }
+        if (typeof step.step_id !== 'string' || !step.step_id) {
+          return res.status(400).json({ error: 'У шага отсутствует step_id' })
+        }
+        if (!validStatuses.includes(step.status)) {
+          return res.status(400).json({ error: `Недопустимый status: ${step.status}` })
+        }
+      }
       const repo = AppDataSource.getRepository(ContentUnit)
       const unit = await repo.findOne({ where: { id } })
       if (!unit) return res.status(404).json({ error: 'Контент-юнит не найден' })
