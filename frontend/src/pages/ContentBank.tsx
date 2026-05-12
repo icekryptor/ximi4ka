@@ -133,6 +133,8 @@ export default function ContentBank() {
       | 'scheduled_at') ||
     'created_at'
   const stage = (searchParams.get('stage') as StageKey | null) || null
+  const readyAtFrom = searchParams.get('ready_at_from') || ''
+  const readyAtTo = searchParams.get('ready_at_to') || ''
   const page = parseInt(searchParams.get('page') || '1', 10) || 1
 
   // Local search input mirrors URL but updates with debounce
@@ -170,6 +172,8 @@ export default function ContentBank() {
       if (reviewGradeFilter.length > 0) params.review_grade = reviewGradeFilter.join(',')
       if (searchFromUrl) params.search = searchFromUrl
       if (stage) params.stage = stage
+      if (readyAtFrom) params.ready_at_from = readyAtFrom
+      if (readyAtTo) params.ready_at_to = readyAtTo
       const r = await unitsApi.list(params)
       if (reqId !== reqIdRef.current) return
       setItems(r.data)
@@ -350,11 +354,11 @@ export default function ContentBank() {
             </div>
           )}
         </div>
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center flex-wrap">
           <select
             value={sort}
             onChange={(e) => updateSort(e.target.value)}
-            className="input text-sm py-1.5"
+            className="input text-sm py-1.5 shrink-0"
             title="Сортировка"
           >
             <option value="created_at">Сначала новые</option>
@@ -363,9 +367,67 @@ export default function ContentBank() {
             <option value="ready_at">📅 По дате готовности</option>
             <option value="scheduled_at">🚀 По дате публикации</option>
           </select>
+          {/* Date range filter on ready_at — both bounds optional, URL-stateful */}
+          <div
+            className="flex items-center gap-1 text-xs text-brand-text-secondary shrink-0"
+            title="Фильтр по дате готовности"
+          >
+            <span aria-hidden>📅</span>
+            <input
+              type="date"
+              value={readyAtFrom}
+              onChange={(e) => {
+                const v = e.target.value
+                setSearchParams((prev) => {
+                  const sp = new URLSearchParams(prev)
+                  if (v) sp.set('ready_at_from', v)
+                  else sp.delete('ready_at_from')
+                  sp.delete('page')
+                  return sp
+                })
+              }}
+              className="text-xs px-2 py-1 rounded border border-brand-border bg-card text-brand-text"
+              title="Дата готовности: от"
+            />
+            <span aria-hidden>—</span>
+            <input
+              type="date"
+              value={readyAtTo}
+              onChange={(e) => {
+                const v = e.target.value
+                setSearchParams((prev) => {
+                  const sp = new URLSearchParams(prev)
+                  if (v) sp.set('ready_at_to', v)
+                  else sp.delete('ready_at_to')
+                  sp.delete('page')
+                  return sp
+                })
+              }}
+              className="text-xs px-2 py-1 rounded border border-brand-border bg-card text-brand-text"
+              title="Дата готовности: до"
+            />
+            {(readyAtFrom || readyAtTo) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchParams((prev) => {
+                    const sp = new URLSearchParams(prev)
+                    sp.delete('ready_at_from')
+                    sp.delete('ready_at_to')
+                    sp.delete('page')
+                    return sp
+                  })
+                }}
+                className="px-1.5 py-1 rounded hover:bg-subtle text-brand-text-secondary"
+                title="Сбросить фильтр по датам"
+              >
+                ✕
+              </button>
+            )}
+          </div>
           <button
             onClick={() => navigate('/content-bank/triage')}
-            className="btn btn-secondary flex items-center gap-2"
+            className="btn btn-secondary flex items-center gap-2 whitespace-nowrap shrink-0"
             title="Режим триажа — оценка идей"
           >
             <Sparkles size={16} />
@@ -375,7 +437,7 @@ export default function ContentBank() {
           {rejectedCount > 0 && (
             <button
               onClick={handlePurgeRejected}
-              className="btn flex items-center gap-2 border border-red-300 text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 dark:border-red-800 dark:text-red-400"
+              className="btn flex items-center gap-2 border border-red-300 text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 dark:border-red-800 dark:text-red-400 whitespace-nowrap shrink-0"
               title="Удалить все идеи со статусом «отказ»"
             >
               <Trash2 size={16} />
@@ -385,7 +447,7 @@ export default function ContentBank() {
 
           <button
             onClick={() => setImportModalOpen(true)}
-            className="btn btn-secondary flex items-center gap-2"
+            className="btn btn-secondary flex items-center gap-2 whitespace-nowrap shrink-0"
             title="Импорт из JSON"
           >
             <Upload size={16} />
@@ -415,7 +477,7 @@ export default function ContentBank() {
                 toast.error('Ошибка экспорта')
               }
             }}
-            className="btn btn-secondary flex items-center gap-2"
+            className="btn btn-secondary flex items-center gap-2 whitespace-nowrap shrink-0"
             title="Экспорт в JSON"
           >
             <Download size={16} />
@@ -424,14 +486,14 @@ export default function ContentBank() {
 
           <button
             onClick={() => setRubricsManagerOpen(true)}
-            className="btn btn-secondary flex items-center gap-2"
+            className="btn btn-secondary flex items-center gap-2 whitespace-nowrap shrink-0"
           >
             <Settings size={16} />
             <span className="hidden sm:inline">Рубрики</span>
           </button>
           <button
             onClick={() => setEditingUnit('new')}
-            className="btn btn-primary flex items-center gap-2"
+            className="btn btn-primary flex items-center gap-2 whitespace-nowrap shrink-0"
           >
             <Plus size={16} />
             <span>Добавить</span>

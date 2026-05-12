@@ -19,6 +19,8 @@ export const contentUnitController = {
         network,
         review_grade,
         stage,
+        ready_at_from,
+        ready_at_to,
         search,
         sort = 'created_at',
       } = req.query as Record<string, string | undefined>
@@ -97,6 +99,19 @@ export const contentUnitController = {
             qb.andWhere("(u.status = 'rejected' OR u.review_grade = 'rejected')")
             break
         }
+      }
+      // Date range filter on ready_at (plan-готовности). Each bound is
+      // independent — caller can send one or both. Empty string treated as
+      // no-filter (same as undefined).
+      if (ready_at_from && ready_at_from.trim()) {
+        qb.andWhere('u.ready_at >= :readyAtFrom', { readyAtFrom: ready_at_from })
+      }
+      if (ready_at_to && ready_at_to.trim()) {
+        // Inclusive upper bound — treat the provided date as end-of-day so
+        // a unit with ready_at = '2026-05-12T15:00Z' matches ?ready_at_to=2026-05-12.
+        qb.andWhere("u.ready_at <= (:readyAtTo::date + interval '1 day' - interval '1 second')", {
+          readyAtTo: ready_at_to,
+        })
       }
       if (search) {
         qb.andWhere(
