@@ -44,6 +44,7 @@ interface FormState {
   profile_url: string
   integration_status: ChannelIntegrationStatus
   active: boolean
+  config_json: Record<string, unknown> | null
 }
 
 const emptyForm: FormState = {
@@ -54,6 +55,7 @@ const emptyForm: FormState = {
   profile_url: '',
   integration_status: 'manual',
   active: true,
+  config_json: null,
 }
 
 const PublishChannels = () => {
@@ -104,6 +106,7 @@ const PublishChannels = () => {
       profile_url: channel.profile_url ?? '',
       integration_status: channel.integration_status,
       active: channel.active,
+      config_json: channel.config_json ?? null,
     })
     setEditingId(channel.id)
     setIsFormOpen(true)
@@ -124,6 +127,7 @@ const PublishChannels = () => {
       profile_url: form.profile_url.trim() ? form.profile_url.trim() : null,
       integration_status: form.integration_status,
       active: form.active,
+      config_json: form.config_json,
     }
 
     try {
@@ -314,6 +318,31 @@ const PublishChannels = () => {
                 <span className="text-sm text-brand-text">Активен</span>
               </label>
             </div>
+
+            {form.platform === 'telegram' && (
+              <div className="md:col-span-2 mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
+                <label className="block text-sm font-medium text-brand-text mb-1">
+                  Telegram chat ID
+                </label>
+                <input
+                  type="text"
+                  value={(form.config_json as { chat_id?: string } | null)?.chat_id ?? ''}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      config_json: { ...(form.config_json || {}), chat_id: e.target.value },
+                    })
+                  }
+                  aria-label="Telegram chat ID"
+                  placeholder="-1001234567890 или username"
+                  className="input"
+                />
+                <p className="text-xs text-brand-text-secondary mt-1">
+                  Для приватных каналов — числовой ID (с минусом). Для публичных — @username.
+                  После заполнения и сохранения переключи статус интеграции на «API подключён».
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end space-x-2 pt-2 border-t border-brand-border">
