@@ -54,6 +54,7 @@ import voiceoverRoutes from './routes/voiceover.routes';
 import contentEngineRoutes from './routes/content-engine.routes';
 import claudeRoutes from './routes/claude.routes';
 import recipeRoutes from './routes/recipe.routes';
+import contentMetricSnapshotRoutes, { analyticsHandler } from './routes/content-metric-snapshot.routes';
 import { unitEconomicsController } from './controllers/unit-economics.controller';
 import { startPublishWorker } from './services/publish-worker';
 
@@ -147,6 +148,8 @@ app.use('/api/strategic-themes', authMiddleware, strategicThemeRoutes);
 app.use('/api/channel-budgets', authMiddleware, channelBudgetRoutes);
 app.use('/api/channels', authMiddleware, channelRoutes);
 app.use('/api/recipes', authMiddleware, recipeRoutes);
+app.use('/api/content-metric-snapshots', authMiddleware, contentMetricSnapshotRoutes);
+app.get('/api/marketing/analytics', authMiddleware, analyticsHandler);
 
 // Health check
 app.get('/health', (req, res) => {
