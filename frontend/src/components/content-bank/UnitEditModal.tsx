@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { X } from 'lucide-react'
+import axios from 'axios'
 import {
   ContentUnit,
   ContentRubric,
@@ -103,8 +104,15 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
       .then((r) => {
         if (!cancelled) setRecipe(r)
       })
-      .catch(() => {
-        if (!cancelled) setRecipe(null)
+      .catch((e) => {
+        if (cancelled) return
+        setRecipe(null)
+        // 404 is already mapped to null inside recipesApi.getByType.
+        // Anything reaching here is unexpected — surface to operator.
+        const msg = axios.isAxiosError(e) && e.response?.data?.error
+          ? String(e.response.data.error)
+          : 'Не удалось загрузить рецепт'
+        toast.error(msg)
       })
     return () => {
       cancelled = true
