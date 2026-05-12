@@ -53,6 +53,7 @@ import cashflowRoutes from './routes/cashflow.routes';
 import voiceoverRoutes from './routes/voiceover.routes';
 import contentEngineRoutes from './routes/content-engine.routes';
 import claudeRoutes from './routes/claude.routes';
+import recipeRoutes from './routes/recipe.routes';
 import { unitEconomicsController } from './controllers/unit-economics.controller';
 
 // Middleware
@@ -144,6 +145,7 @@ app.use('/api/icp-segments', authMiddleware, icpSegmentRoutes);
 app.use('/api/strategic-themes', authMiddleware, strategicThemeRoutes);
 app.use('/api/channel-budgets', authMiddleware, channelBudgetRoutes);
 app.use('/api/channels', authMiddleware, channelRoutes);
+app.use('/api/recipes', authMiddleware, recipeRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
