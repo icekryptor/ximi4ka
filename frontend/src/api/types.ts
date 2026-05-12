@@ -413,3 +413,55 @@ export interface RecipeState {
   started_at: string
   steps: RecipeStepState[]
 }
+
+// ─── Metrics + Analytics (Phase E) ──────────────────────────────────────────
+
+export interface ContentMetricSnapshot {
+  id: string
+  publication_id: string
+  captured_at: string
+  captured_by: 'worker' | 'manual'
+  views: number | null
+  likes: number | null
+  comments: number | null
+  shares: number | null
+  saves: number | null
+  profile_clicks: number | null
+  marketplace_clicks: number | null
+  raw_json: Record<string, unknown> | null
+}
+
+export type AnalyticsGroupBy =
+  | 'content_type'
+  | 'channel_id'
+  | 'rubric_id'
+  | 'target_segment_id'
+  | 'theme_id'
+
+export interface AnalyticsRow {
+  group_key: string | null
+  publications: number
+  views: number
+  likes: number
+  comments: number
+  shares: number
+  saves: number
+  profile_clicks: number
+  marketplace_clicks: number
+}
+
+export interface AnalyticsResponse {
+  group_by: AnalyticsGroupBy
+  rows: AnalyticsRow[]
+}
+
+export interface AnalyticsFilters {
+  group_by?: AnalyticsGroupBy
+  content_type?: string
+  channel_id?: string
+  rubric_id?: string
+  target_segment_id?: string
+  theme_id?: string
+  period_start?: string  // ISO
+  period_end?: string
+}
