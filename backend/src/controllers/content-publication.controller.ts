@@ -106,6 +106,26 @@ export const contentPublicationController = {
       res.json(updated)
     } catch (e: any) {
       console.error('Ошибка ручной публикации:', e)
+      try {
+        if (req.params.id) {
+          const pub = await repo.findOne({ where: { id: req.params.id } })
+          if (pub) {
+            const prev = (pub.publisher_log as PublisherLog | null) ?? emptyPublisherLog()
+            await repo.update(pub.id, {
+              publisher_log: {
+                ...prev,
+                attempts: prev.attempts + 1,
+                success: false,
+                last_error: String(e?.message ?? e),
+                last_attempt_at: new Date().toISOString(),
+                manual: true,
+              } satisfies PublisherLog as unknown as Record<string, unknown> as any,
+            })
+          }
+        }
+      } catch (logErr) {
+        console.error('Не удалось записать publisher_log:', logErr)
+      }
       res.status(500).json({ error: e?.message || 'Ошибка публикации' })
     }
   },
