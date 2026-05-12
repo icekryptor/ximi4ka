@@ -116,3 +116,18 @@ export interface RecipeState {
   started_at: string
   steps: RecipeStepState[]
 }
+
+/**
+ * Runtime type guard for recipe_state JSONB read from DB.
+ * Use when treating `unit.recipe_state` (typed Record<string, unknown> | null by TypeORM)
+ * as a structured RecipeState.
+ */
+export function isRecipeState(v: unknown): v is RecipeState {
+  if (!v || typeof v !== 'object') return false
+  const o = v as Record<string, unknown>
+  return (
+    o.version === 1 &&
+    typeof o.recipe_content_type === 'string' &&
+    Array.isArray(o.steps)
+  )
+}

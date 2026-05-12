@@ -5,7 +5,7 @@ import { ContentUnit } from '../entities/ContentUnit'
 import { ContentRubric } from '../entities/ContentRubric'
 import { ContentPublication } from '../entities/ContentPublication'
 import { saveImportPlan, getImportPlan, deleteImportPlan, ImportPlan } from '../services/import-token-store'
-import { recipeEngine } from '../services/recipe-engine'
+import { recipeEngine, isRecipeState } from '../services/recipe-engine'
 
 const repo = AppDataSource.getRepository(ContentUnit)
 
@@ -637,7 +637,7 @@ export const contentUnitController = {
       if (!unit) return res.status(404).json({ error: 'Контент-юнит не найден' })
 
       // Idempotent: если recipe_state уже инициализирован под тот же content_type — возвращаем как есть.
-      if (unit.recipe_state && (unit.recipe_state as any).recipe_content_type === unit.content_type) {
+      if (isRecipeState(unit.recipe_state) && unit.recipe_state.recipe_content_type === unit.content_type) {
         return res.json(unit)
       }
 
