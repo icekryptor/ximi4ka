@@ -54,6 +54,8 @@ function loadAll(): Map<string, Recipe> {
   return map
 }
 
+// Synchronous lazy init — relies on fs.readFileSync / yaml.load being sync.
+// Do NOT change to async fs.promises without converting cache to Promise<Map>.
 function getCache(): Map<string, Recipe> {
   if (!cache) cache = loadAll()
   return cache
