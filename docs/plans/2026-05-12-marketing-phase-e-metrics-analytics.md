@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Status:** TBD — populated by Task 8.
+**Status:** ✅ Phase E complete on 2026-05-12. End of Marketing-юнита MVP. Next: реальная эксплуатация + Phase F (auto-metrics через MTProto или scraper, если нужно).
 
 **Goal:** Закрыть аналитическую петлю маркетинг-юнита: per-publication `content_metric_snapshot` через UI manual entry для всех каналов, агрегирующая страница `/marketing/analytics` с фильтрами и срезами, + два carryover-фикса из Phase D (`publisher_log` badge, `trimChatId` для `@username`).
 
