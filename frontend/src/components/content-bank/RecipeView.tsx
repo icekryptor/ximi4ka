@@ -36,8 +36,17 @@ function errorMessage(e: unknown, fallback: string): string {
 export function RecipeView({ unit, recipe, onChange }: Props) {
   const toast = useToast()
   const [initLoading, setInitLoading] = useState(false)
-  const [runningStepId, setRunningStepId] = useState<string | null>(null)
+  const [runningSteps, setRunningSteps] = useState<Set<string>>(new Set())
   const [customPrompts, setCustomPrompts] = useState<Record<string, string>>({})
+
+  function setStepRunning(stepId: string, isRunning: boolean) {
+    setRunningSteps((prev) => {
+      const next = new Set(prev)
+      if (isRunning) next.add(stepId)
+      else next.delete(stepId)
+      return next
+    })
+  }
 
   const state = unit.recipe_state as RecipeState | null
 
@@ -68,7 +77,8 @@ export function RecipeView({ unit, recipe, onChange }: Props) {
   }
 
   async function handleRunAi(step: RecipeStep) {
-    setRunningStepId(step.id)
+    if (runningSteps.has(step.id)) return
+    setStepRunning(step.id, true)
     try {
       const { text } = await recipesApi.runStep(unit.id, step.id, customPrompts[step.id])
       const cur = state?.steps.find((s) => s.step_id === step.id)
@@ -82,7 +92,7 @@ export function RecipeView({ unit, recipe, onChange }: Props) {
     } catch (e) {
       toast.error(errorMessage(e, 'Ошибка генерации'))
     } finally {
-      setRunningStepId(null)
+      setStepRunning(step.id, false)
     }
   }
 
@@ -175,7 +185,7 @@ export function RecipeView({ unit, recipe, onChange }: Props) {
         const stepState = state.steps.find((s) => s.step_id === step.id)
         if (!stepState) return null
         const ExecutorIcon = stepState.executor_type === 'ai_agent' ? Bot : User
-        const isRunning = runningStepId === step.id
+        const isRunning = runningSteps.has(step.id)
         const isAiStep = step.default_executor === 'ai_agent' && !!step.ai_assist_key
         const canRunAi = isAiStep && (stepState.status === 'pending' || stepState.status === 'in_progress')
 
