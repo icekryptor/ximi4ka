@@ -5,9 +5,11 @@ import {
   publicationsApi,
 } from '../../api/contentBank'
 import { publishChannelsApi } from '../../api/publishChannels'
-import type { PublishChannel } from '../../api/types'
+import { metricSnapshotsApi } from '../../api/metricSnapshots'
+import type { ContentMetricSnapshot, PublishChannel } from '../../api/types'
 import { getNetworkDef, KNOWN_NETWORKS } from '../../lib/networks'
 import { useToast } from '../../contexts/ToastContext'
+import { MetricsModal } from './MetricsModal'
 
 interface Props {
   unitId: string
@@ -20,10 +22,33 @@ export function PublicationsEditor({ unitId, publications, onChange }: Props) {
   const [adding, setAdding] = useState(false)
   const [newNetwork, setNewNetwork] = useState('')
   const [channels, setChannels] = useState<PublishChannel[]>([])
+  const [metricsModalFor, setMetricsModalFor] = useState<string | null>(null)
+  const [latestByPub, setLatestByPub] = useState<Record<string, ContentMetricSnapshot | null>>({})
 
   useEffect(() => {
     publishChannelsApi.getAll().then(setChannels).catch(() => {})
   }, [])
+
+  // Load latest snapshot per publication on mount + when publications list changes
+  useEffect(() => {
+    let cancelled = false
+    const loadLatest = async () => {
+      const result: Record<string, ContentMetricSnapshot | null> = {}
+      for (const pub of publications) {
+        try {
+          const all = await metricSnapshotsApi.listByPublication(pub.id)
+          result[pub.id] = all[0] ?? null  // first = latest (DESC by captured_at)
+        } catch {
+          result[pub.id] = null
+        }
+        if (cancelled) return
+      }
+      if (!cancelled) setLatestByPub(result)
+    }
+    if (publications.length > 0) loadLatest()
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [publications.map((p) => p.id).join(',')])
 
   const channelForRow = (p: ContentPublication): PublishChannel | null => {
     if (p.channel_id) return channels.find((c) => c.id === p.channel_id) ?? null
@@ -221,9 +246,72 @@ export function PublicationsEditor({ unitId, publications, onChange }: Props) {
                 </label>
               )
             })()}
+            {(() => {
+              const latest = latestByPub[p.id]
+              const formatN = (n: number | null | undefined) =>
+                n == null ? '—' : new Intl.NumberFormat('ru-RU', { notation: 'compact' }).format(n)
+              return (
+                <div className="flex items-center gap-2 text-xs flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => setMetricsModalFor(p.id)}
+                    className="btn btn-secondary text-xs"
+                    aria-label="Открыть метрики публикации"
+                  >
+                    📊 Метрики
+                  </button>
+                  {latest ? (
+                    <span className="text-brand-text-secondary">
+                      👁 {formatN(latest.views)} · ❤️ {formatN(latest.likes)} · 💬 {formatN(latest.comments)}
+                      {' · '}
+                      <span title={new Date(latest.captured_at).toLocaleString('ru-RU')}>
+                        {new Date(latest.captured_at).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })}
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="text-brand-text-secondary">метрики не введены</span>
+                  )}
+                </div>
+              )
+            })()}
+            {p.publisher_log && (() => {
+              const log = p.publisher_log as { success?: boolean; gave_up?: boolean; attempts?: number; last_error?: string | null } | null
+              if (!log) return null
+              if (log.gave_up) {
+                return (
+                  <span
+                    className="inline-block text-xs px-2 py-0.5 rounded bg-red-100 text-red-700"
+                    title={log.last_error ?? ''}
+                  >
+                    ❌ Авто-публикация остановлена
+                  </span>
+                )
+              }
+              if ((log.attempts ?? 0) > 0 && !log.success) {
+                return (
+                  <span
+                    className="inline-block text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-700"
+                    title={log.last_error ?? ''}
+                  >
+                    ⚠ Попыток: {log.attempts}
+                  </span>
+                )
+              }
+              return null
+            })()}
           </div>
         )
       })}
+
+      {metricsModalFor && (
+        <MetricsModal
+          publicationId={metricsModalFor}
+          onClose={() => setMetricsModalFor(null)}
+          onSnapshotSaved={(snap) => {
+            setLatestByPub((prev) => ({ ...prev, [snap.publication_id]: snap }))
+          }}
+        />
+      )}
     </div>
   )
 }

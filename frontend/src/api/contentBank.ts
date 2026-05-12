@@ -54,6 +54,7 @@ export interface ContentPublication {
   notes: string | null
   sort_order: number
   auto_publish: boolean
+  publisher_log: Record<string, unknown> | null
   created_at: string
   updated_at: string
 }
