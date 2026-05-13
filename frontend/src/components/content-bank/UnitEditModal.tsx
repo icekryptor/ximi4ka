@@ -94,6 +94,8 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
     unit !== 'new' ? unit : null,
   )
   const [recipe, setRecipe] = useState<Recipe | null>(null)
+  type Tab = 'idea' | 'production' | 'publications'
+  const [tab, setTab] = useState<Tab>('idea')
 
   // Load recipe (if registered for this content_type) whenever the type changes
   useEffect(() => {
@@ -400,7 +402,34 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
           </button>
         </div>
 
+        {/* Tab strip */}
+        <div className="flex border-b border-brand-border sticky top-[73px] bg-card z-10 px-6">
+          {([
+            { id: 'idea', label: 'Идея', disabled: false, hint: '' },
+            { id: 'production', label: 'Производство', disabled: false, hint: '' },
+            { id: 'publications', label: `Публикации${publications.length ? ` (${publications.length})` : ''}`, disabled: isNewUnsaved, hint: isNewUnsaved ? 'Сохраните юнит, чтобы добавить публикации' : '' },
+          ] as Array<{ id: Tab; label: string; disabled: boolean; hint: string }>).map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              disabled={t.disabled}
+              title={t.hint}
+              onClick={() => setTab(t.id)}
+              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors -mb-px ${
+                tab === t.id
+                  ? 'border-primary-600 text-primary-700'
+                  : t.disabled
+                    ? 'border-transparent text-brand-text-secondary/40 cursor-not-allowed'
+                    : 'border-transparent text-brand-text-secondary hover:text-brand-text'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
         <div className="p-6 space-y-5">
+          {tab === 'idea' && (<>
           {/* Type + Rubric */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -536,6 +565,21 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
 
           {/* Conditional fields */}
           {renderTypeFields()}
+          </>)}
+
+          {tab === 'production' && (<>
+          {/* Recipe-driven types: nothing on this tab until the unit is persisted */}
+          {!recipe && !isVideoProducing && (
+            <div className="text-center py-12 text-brand-text-secondary text-sm">
+              Тип контента не использует производственные поля. Перейдите во вкладку «Публикации».
+            </div>
+          )}
+
+          {recipe && !unitInternal && (
+            <div className="text-center py-12 text-brand-text-secondary text-sm">
+              Сохраните юнит, чтобы запустить рецепт.
+            </div>
+          )}
 
           {/* Master video URL — only for video-producing types */}
           {isVideoProducing && (
@@ -621,25 +665,27 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
             </div>
           </section>
           )}
+          </>)}
 
-          {/* Publications section */}
-          <div className="pt-4 border-t border-brand-border">
-            {showPublications ? (
-              <PublicationsEditor
-                unitId={publicationsUnitId}
-                publications={publications}
-                onChange={(next) => {
-                  if (unitInternal) {
-                    setUnitInternal({ ...unitInternal, publications: next })
-                  }
-                }}
-              />
-            ) : (
-              <p className="text-xs text-brand-text-secondary italic">
-                Сохраните единицу, чтобы добавить публикации
-              </p>
-            )}
-          </div>
+          {tab === 'publications' && (
+            <div>
+              {showPublications ? (
+                <PublicationsEditor
+                  unitId={publicationsUnitId}
+                  publications={publications}
+                  onChange={(next) => {
+                    if (unitInternal) {
+                      setUnitInternal({ ...unitInternal, publications: next })
+                    }
+                  }}
+                />
+              ) : (
+                <p className="text-sm text-brand-text-secondary italic">
+                  Сохраните единицу, чтобы добавить публикации
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Footer */}
           <div className="flex justify-end space-x-3 pt-4 border-t border-brand-border">
