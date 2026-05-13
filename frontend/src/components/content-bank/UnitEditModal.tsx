@@ -203,8 +203,30 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
   const publications =
     unitInternal?.publications || (unit !== 'new' ? unit.publications : [])
 
+  // Production block (script / brief / voiceover / master-video URL) only makes
+  // sense for video-producing types. Legacy `other` falls back to "show all".
+  const VIDEO_TYPES: ContentType[] = ['short_video', 'long_video', 'stream', 'podcast', 'other']
+  const isVideoProducing = VIDEO_TYPES.includes(formData.content_type)
+
   // ---- conditional fields by content_type ----
   const renderTypeFields = () => {
+    // Recipe-driven types own their text artifacts via RecipeView — only show
+    // operator-facing notes here (used by the AI prompt builder as context).
+    if (formData.content_type === 'short_post') {
+      return (
+        <div>
+          <label className="label">Заметки</label>
+          <textarea
+            className="input"
+            rows={3}
+            placeholder="Контекст идеи, ключевые факты — подставляются в AI-промпт рецепта"
+            value={formData.notes}
+            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+          />
+        </div>
+      )
+    }
+
     if (formData.content_type === 'short_video') {
       return (
         <>
@@ -515,19 +537,21 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
           {/* Conditional fields */}
           {renderTypeFields()}
 
-          {/* Master video URL */}
-          <div>
-            <label className="label">Master-видео URL</label>
-            <input
-              type="url"
-              className="input"
-              placeholder="https://..."
-              value={formData.video_url}
-              onChange={(e) =>
-                setFormData({ ...formData, video_url: e.target.value })
-              }
-            />
-          </div>
+          {/* Master video URL — only for video-producing types */}
+          {isVideoProducing && (
+            <div>
+              <label className="label">Master-видео URL</label>
+              <input
+                type="url"
+                className="input"
+                placeholder="https://..."
+                value={formData.video_url}
+                onChange={(e) =>
+                  setFormData({ ...formData, video_url: e.target.value })
+                }
+              />
+            </div>
+          )}
 
           {/* Recipe view — shown when a recipe is registered for this content_type AND unit is persisted */}
           {recipe && unitInternal && (
@@ -543,7 +567,8 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
             </div>
           )}
 
-          {/* Production section */}
+          {/* Production section — only for video-producing types */}
+          {isVideoProducing && (
           <section className="space-y-3 border-t border-brand-border pt-4">
             <h3 className="text-sm font-semibold text-brand-text">🎬 Производство</h3>
 
@@ -595,6 +620,7 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
               </div>
             </div>
           </section>
+          )}
 
           {/* Publications section */}
           <div className="pt-4 border-t border-brand-border">
