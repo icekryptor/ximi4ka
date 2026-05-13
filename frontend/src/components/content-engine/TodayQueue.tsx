@@ -4,6 +4,12 @@ import { QueueItem } from '../../api/contentEngine'
 
 interface Props {
   queue: QueueItem[]
+  /**
+   * If provided, called with the QueueItem's unit_id instead of navigating
+   * to /content-bank?search=. Lets the parent open the edit modal directly
+   * when TodayQueue is rendered inside the content-bank page itself.
+   */
+  onUnitClick?: (unitId: string) => void
 }
 
 const NETWORK_LABEL: Record<string, string> = {
@@ -22,7 +28,7 @@ function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
 }
 
-export function TodayQueue({ queue }: Props) {
+export function TodayQueue({ queue, onUnitClick }: Props) {
   const navigate = useNavigate()
 
   if (queue.length === 0) {
@@ -44,7 +50,10 @@ export function TodayQueue({ queue }: Props) {
           <li key={q.id}>
             <button
               type="button"
-              onClick={() => navigate(`/content-bank?search=${encodeURIComponent(q.unit_title)}`)}
+              onClick={() => {
+                if (onUnitClick) onUnitClick(q.unit_id)
+                else navigate(`/content-bank?search=${encodeURIComponent(q.unit_title)}`)
+              }}
               className="w-full text-left flex items-center gap-3 p-2 rounded-lg hover:bg-subtle transition-colors"
             >
               <span className="font-mono text-sm text-brand-text-secondary w-12 shrink-0">

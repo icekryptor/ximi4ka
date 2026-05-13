@@ -528,7 +528,17 @@ export default function ContentBank() {
         <div className="space-y-4 mb-4">
           <MetricsRow stats={dashboard.stats} />
           <Bottlenecks counts={dashboard.stats.counts} />
-          <TodayQueue queue={dashboard.today_queue} />
+          <TodayQueue
+            queue={dashboard.today_queue}
+            onUnitClick={async (unitId) => {
+              try {
+                const unit = await unitsApi.getOne(unitId)
+                setEditingUnit(unit)
+              } catch {
+                toastRef.current.error('Не удалось загрузить юнит')
+              }
+            }}
+          />
         </div>
       )}
 
