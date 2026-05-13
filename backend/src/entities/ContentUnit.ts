@@ -102,6 +102,12 @@ export class ContentUnit {
   @Column({ type: 'text', nullable: true })
   voiceover_text: string | null
 
+  @Column({ type: 'text', nullable: true })
+  body_caption: string | null
+
+  @Column({ type: 'jsonb', nullable: true })
+  slides: Array<{ text: string; visual: string }> | null
+
   @Column({ type: 'timestamptz', nullable: true })
   ready_at: Date | null
 
