@@ -4,6 +4,7 @@ import { contentMetricSnapshotController } from '../controllers/content-metric-s
 const router = Router()
 
 router.get('/', contentMetricSnapshotController.listByPublication)
+router.get('/latest', contentMetricSnapshotController.latestForPublications)
 router.post('/', contentMetricSnapshotController.create)
 router.delete('/:id', contentMetricSnapshotController.delete)
 // Analytics endpoint — separate path; mount under /api/marketing/analytics in server.ts

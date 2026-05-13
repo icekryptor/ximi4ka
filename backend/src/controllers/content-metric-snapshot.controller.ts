@@ -25,6 +25,28 @@ export const contentMetricSnapshotController = {
     }
   },
 
+  async latestForPublications(req: Request, res: Response) {
+    try {
+      const raw = req.query.publication_ids
+      const idsStr = typeof raw === 'string' ? raw : ''
+      const ids = idsStr.split(',').map((s) => s.trim()).filter(Boolean)
+      if (ids.length === 0) return res.json([])
+      // DISTINCT ON returns latest snapshot per publication_id in a single round-trip.
+      // Composite index (publication_id, captured_at DESC) makes this an index-only scan.
+      const rows = await AppDataSource.query(
+        `SELECT DISTINCT ON (publication_id) *
+         FROM content_metric_snapshot
+         WHERE publication_id = ANY($1::uuid[])
+         ORDER BY publication_id, captured_at DESC`,
+        [ids],
+      )
+      res.json(rows)
+    } catch (error) {
+      console.error('Ошибка получения последних снимков:', error)
+      res.status(500).json({ error: 'Ошибка получения последних снимков' })
+    }
+  },
+
   async create(req: Request, res: Response) {
     try {
       const body = req.body as Record<string, unknown>

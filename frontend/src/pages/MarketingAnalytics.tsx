@@ -58,26 +58,30 @@ export default function MarketingAnalytics() {
       .catch((e) => toast.error(errorMessage(e, 'Ошибка загрузки справочников')))
   }, [])
 
-  // Fetch analytics on filter change
+  // Fetch analytics on filter change, debounced 300ms so date-input keystrokes
+  // and select-changes don't fire a DISTINCT ON + 3-join SQL per char.
   useEffect(() => {
     let cancelled = false
     setLoading(true)
-    marketingAnalyticsApi
-      .fetch(filters)
-      .then((r) => {
-        if (!cancelled) {
-          setData(r)
-          setLoading(false)
-        }
-      })
-      .catch((e) => {
-        if (!cancelled) {
-          setLoading(false)
-          toast.error(errorMessage(e, 'Ошибка загрузки аналитики'))
-        }
-      })
+    const timer = setTimeout(() => {
+      marketingAnalyticsApi
+        .fetch(filters)
+        .then((r) => {
+          if (!cancelled) {
+            setData(r)
+            setLoading(false)
+          }
+        })
+        .catch((e) => {
+          if (!cancelled) {
+            setLoading(false)
+            toast.error(errorMessage(e, 'Ошибка загрузки аналитики'))
+          }
+        })
+    }, 300)
     return () => {
       cancelled = true
+      clearTimeout(timer)
     }
   }, [JSON.stringify(filters)])
 

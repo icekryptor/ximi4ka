@@ -29,23 +29,22 @@ export function PublicationsEditor({ unitId, publications, onChange }: Props) {
     publishChannelsApi.getAll().then(setChannels).catch(() => {})
   }, [])
 
-  // Load latest snapshot per publication on mount + when publications list changes
+  // Load latest snapshot per publication on mount + when publications list changes.
+  // Single batched round-trip — server returns DISTINCT ON per publication_id.
   useEffect(() => {
     let cancelled = false
-    const loadLatest = async () => {
-      const result: Record<string, ContentMetricSnapshot | null> = {}
-      for (const pub of publications) {
-        try {
-          const all = await metricSnapshotsApi.listByPublication(pub.id)
-          result[pub.id] = all[0] ?? null  // first = latest (DESC by captured_at)
-        } catch {
-          result[pub.id] = null
-        }
+    if (publications.length === 0) return
+    metricSnapshotsApi
+      .latestForPublications(publications.map((p) => p.id))
+      .then((map) => {
         if (cancelled) return
-      }
-      if (!cancelled) setLatestByPub(result)
-    }
-    if (publications.length > 0) loadLatest()
+        const result: Record<string, ContentMetricSnapshot | null> = {}
+        for (const pub of publications) result[pub.id] = map[pub.id] ?? null
+        setLatestByPub(result)
+      })
+      .catch(() => {
+        if (!cancelled) setLatestByPub({})
+      })
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [publications.map((p) => p.id).join(',')])
