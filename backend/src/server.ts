@@ -57,6 +57,7 @@ import recipeRoutes from './routes/recipe.routes';
 import contentMetricSnapshotRoutes, { analyticsHandler } from './routes/content-metric-snapshot.routes';
 import { unitEconomicsController } from './controllers/unit-economics.controller';
 import { startPublishWorker } from './services/publish-worker';
+import { recipeEngine } from './services/recipe-engine';
 
 // Middleware
 import { authMiddleware } from './middleware/auth';
@@ -180,6 +181,10 @@ async function bootstrap() {
 
   // SAFETY: Never auto-synchronize Supabase — use migrations instead
   // synchronize() can drop columns and cause data loss
+
+  // Eager-load recipes so YAML parse errors surface at boot (not on first API call)
+  // and operators can verify deploy via "[recipe-engine] loaded …" lines in logs.
+  recipeEngine.list();
 
   startPublishWorker();
 
