@@ -30,6 +30,11 @@ export type ContentStatus =
 
 export type ReviewGrade = 'excellent' | 'needs_work' | 'rejected'
 
+export interface CarouselSlide {
+  text: string
+  visual: string
+}
+
 export interface ContentRubric {
   id: string
   slug: string
@@ -88,6 +93,8 @@ export interface ContentUnit {
   production_started_at: string | null
   target_segment_id: string | null
   theme_id: string | null
+  body_caption: string | null
+  slides: CarouselSlide[] | null
 }
 
 export interface UnitsListParams {
@@ -202,6 +209,11 @@ export const unitsApi = {
 
   purgeRejected: async (): Promise<{ deleted: number }> => {
     const r = await apiClient.delete<{ deleted: number }>('/content-units/purge-rejected')
+    return r.data
+  },
+
+  scriptPrompt: async (id: string): Promise<{ prompt: string }> => {
+    const r = await apiClient.post<{ prompt: string }>(`/content-units/${id}/script-prompt`)
     return r.data
   },
 }
