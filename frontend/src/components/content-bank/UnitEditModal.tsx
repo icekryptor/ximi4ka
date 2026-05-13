@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
-import { X } from 'lucide-react'
+import { X, Sparkles, ArrowUp, ArrowDown } from 'lucide-react'
 import axios from 'axios'
 import {
   ContentUnit,
@@ -146,7 +146,7 @@ function CarouselSlideList({
                     className="p-1 rounded hover:bg-subtle disabled:opacity-30"
                     aria-label="Вверх"
                   >
-                    ⬆
+                    <ArrowUp size={14} />
                   </button>
                   <button
                     type="button"
@@ -155,7 +155,7 @@ function CarouselSlideList({
                     className="p-1 rounded hover:bg-subtle disabled:opacity-30"
                     aria-label="Вниз"
                   >
-                    ⬇
+                    <ArrowDown size={14} />
                   </button>
                   <button
                     type="button"
@@ -163,7 +163,7 @@ function CarouselSlideList({
                     className="p-1 rounded hover:bg-red-50 text-red-600"
                     aria-label="Удалить"
                   >
-                    ✕
+                    <X size={14} />
                   </button>
                 </div>
               </div>
@@ -195,6 +195,7 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
   const [formData, setFormData] = useState<FormData>(() => initialFormData(unit))
   const [rubrics, setRubrics] = useState<ContentRubric[]>([])
   const [saving, setSaving] = useState(false)
+  const [scriptBusy, setScriptBusy] = useState(false)
   // Tracks the unit after first save in 'new' mode so PublicationsEditor can render
   const [unitInternal, setUnitInternal] = useState<ContentUnit | null>(
     unit !== 'new' ? unit : null,
@@ -246,14 +247,14 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
 
   const selectedRubric = rubrics.find((r) => r.id === formData.rubric_id) || null
 
-  const handleSave = async () => {
+  const handleSave = async (opts?: { silent?: boolean }): Promise<ContentUnit | null> => {
     let title = formData.title.trim()
     if (!title && formData.hook.trim()) {
       title = formData.hook.trim().slice(0, 80)
     }
     if (!title) {
       toast.error('Укажите заголовок или крючок')
-      return
+      return null
     }
 
     const payload: Partial<ContentUnit> = {
@@ -284,8 +285,8 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
         setUnitInternal(created)
         // Sync formData.title in case backend trimmed/normalized it
         setFormData((prev) => ({ ...prev, title: created.title }))
-        toast.success('Создано')
-        return
+        if (!opts?.silent) toast.success('Создано')
+        return created
       }
 
       // Update path (existing unit, or 'new' that was already created and is being re-saved)
@@ -297,13 +298,64 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
         publications: unitInternal?.publications ?? updated.publications,
       }
       setUnitInternal(merged)
-      toast.success('Сохранено')
+      if (!opts?.silent) toast.success('Сохранено')
       onSaved?.(merged)
-      onClose()
+      if (!opts?.silent) onClose()
+      return merged
     } catch (e: any) {
       toast.error(e?.response?.data?.error || 'Не удалось сохранить')
+      return null
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleWriteScript = async () => {
+    // Юнит должен быть сохранён, иначе нет id для запроса.
+    const persistedId = unitInternal?.id ?? (unit !== 'new' ? unit.id : null)
+    if (!persistedId) {
+      toast.error('Сначала сохрани юнит')
+      return
+    }
+
+    setScriptBusy(true)
+    try {
+      // Автосейв на случай несохранённых изменений caption/slides — иначе
+      // в промпт уйдёт «вчерашняя» версия.
+      const saved = await handleSave({ silent: true })
+      const targetId = saved?.id ?? persistedId
+
+      const { prompt } = await unitsApi.scriptPrompt(targetId)
+
+      try {
+        await navigator.clipboard.writeText(prompt)
+      } catch {
+        // clipboard API недоступен (HTTP, или браузер отказал) — fallback
+        // через legacy execCommand.
+        const textarea = document.createElement('textarea')
+        textarea.value = prompt
+        textarea.style.position = 'fixed'
+        textarea.style.top = '-1000px'
+        document.body.appendChild(textarea)
+        textarea.select()
+        try {
+          document.execCommand('copy')
+        } finally {
+          document.body.removeChild(textarea)
+        }
+      }
+
+      const opened = window.open('https://claude.ai/new', '_blank', 'noopener,noreferrer')
+      if (!opened) {
+        toast.info('Промпт в буфере. Открой claude.ai и вставь (Cmd/Ctrl+V).')
+      } else {
+        toast.success('Промпт скопирован — вставь в Claude (Cmd/Ctrl+V)')
+      }
+    } catch (e: any) {
+      const msg = e?.response?.data?.error || 'Не удалось собрать промпт'
+      toast.error(msg)
+    } finally {
+      setScriptBusy(false)
     }
   }
 
@@ -326,7 +378,23 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
       return (
         <>
           <div>
-            <label className="label">Подпись поста</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="label mb-0">Подпись поста</label>
+              <button
+                type="button"
+                onClick={handleWriteScript}
+                disabled={scriptBusy || saving || (unit === 'new' && !unitInternal)}
+                className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg border border-primary-300 text-primary-700 hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                title={
+                  unit === 'new' && !unitInternal
+                    ? 'Сначала сохрани юнит'
+                    : 'Сборка промпта и открытие Claude'
+                }
+              >
+                <Sparkles size={14} />
+                {scriptBusy ? 'Готовлю промпт…' : 'Написать сценарий'}
+              </button>
+            </div>
             <textarea
               className="input"
               rows={6}
@@ -334,7 +402,6 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
               value={formData.body_caption}
               onChange={(e) => setFormData({ ...formData, body_caption: e.target.value })}
             />
-            {/* Кнопка «Написать сценарий» будет добавлена в Task 6 */}
           </div>
           <CarouselSlideList
             slides={formData.slides}
@@ -838,7 +905,7 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
             </button>
             <button
               type="button"
-              onClick={handleSave}
+              onClick={() => handleSave()}
               className="btn btn-primary"
               disabled={saving}
             >
