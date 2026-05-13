@@ -323,10 +323,12 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
       // Автосейв на случай несохранённых изменений caption/slides — иначе
       // в промпт уйдёт «вчерашняя» версия.
       const saved = await handleSave({ silent: true })
-      const targetId = saved?.id ?? persistedId
+      if (!saved) return // validation toast already fired by handleSave
+      const targetId = saved.id
 
       const { prompt } = await unitsApi.scriptPrompt(targetId)
 
+      let copied = true
       try {
         await navigator.clipboard.writeText(prompt)
       } catch {
@@ -339,10 +341,15 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
         document.body.appendChild(textarea)
         textarea.select()
         try {
-          document.execCommand('copy')
+          copied = document.execCommand('copy')
         } finally {
           document.body.removeChild(textarea)
         }
+      }
+
+      if (!copied) {
+        toast.error('Не удалось скопировать промпт в буфер. Проверь права доступа к буферу.')
+        return // не открываем Claude — там нечего вставлять
       }
 
       const opened = window.open('https://claude.ai/new', '_blank', 'noopener,noreferrer')
@@ -351,8 +358,10 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
       } else {
         toast.success('Промпт скопирован — вставь в Claude (Cmd/Ctrl+V)')
       }
-    } catch (e: any) {
-      const msg = e?.response?.data?.error || 'Не удалось собрать промпт'
+    } catch (e: unknown) {
+      const msg = axios.isAxiosError(e) && e.response?.data?.error
+        ? String(e.response.data.error)
+        : 'Не удалось собрать промпт'
       toast.error(msg)
     } finally {
       setScriptBusy(false)
@@ -386,9 +395,10 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
                 disabled={scriptBusy || saving || (unit === 'new' && !unitInternal)}
                 className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg border border-primary-300 text-primary-700 hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 title={
-                  unit === 'new' && !unitInternal
-                    ? 'Сначала сохрани юнит'
-                    : 'Сборка промпта и открытие Claude'
+                  scriptBusy ? 'Готовлю промпт…' :
+                  saving ? 'Дождись завершения сохранения' :
+                  (unit === 'new' && !unitInternal) ? 'Сначала сохрани юнит' :
+                  'Сборка промпта и открытие Claude'
                 }
               >
                 <Sparkles size={14} />
