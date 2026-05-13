@@ -141,12 +141,20 @@ export const contentUnitController = {
       } else if (sort === 'scheduled_at') {
         // Sort by earliest scheduled publication. Per-network filter is mirrored
         // inside the subquery so team workflows can sort per platform.
+        //
+        // CRITICAL: addSelect-then-orderBy-by-alias is required (not raw SQL
+        // directly in orderBy). TypeORM's getManyAndCount validates that each
+        // orderBy expression is a known column-alias from SELECT — passing a
+        // raw subquery string triggers `'"(SELECT MIN(cp_sort" alias was not
+        // found'`. Registering via addSelect with a named alias satisfies
+        // the validator. The extra column ends up in raw results only, not on
+        // the entity, which is fine — we never read it back from JS.
         const networkClause = network ? ' AND cp_sort.network IN (:...networks_sort)' : ''
-        qb.orderBy(
+        qb.addSelect(
           `(SELECT MIN(cp_sort.scheduled_at) FROM content_publications cp_sort WHERE cp_sort.content_unit_id = u.id${networkClause})`,
-          'ASC',
-          'NULLS LAST',
-        ).addOrderBy('u.created_at', 'DESC')
+          'u_min_scheduled',
+        )
+        qb.orderBy('u_min_scheduled', 'ASC', 'NULLS LAST').addOrderBy('u.created_at', 'DESC')
         if (network) qb.setParameter('networks_sort', network.split(','))
       } else {
         qb.orderBy('u.created_at', 'DESC')
