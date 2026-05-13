@@ -12,6 +12,7 @@ import {
   rubricsApi,
   CONTENT_TYPE_LABELS,
   COMPLEXITY_LABELS,
+  CarouselSlide,
 } from '../../api/contentBank'
 import { StatusPicker } from './StatusPicker'
 import { PublicationsEditor } from './PublicationsEditor'
@@ -42,6 +43,8 @@ interface FormData {
   video_brief: string
   voiceover_text: string
   ready_at: string
+  body_caption: string
+  slides: CarouselSlide[]
 }
 
 function initialFormData(unit: ContentUnit | 'new'): FormData {
@@ -62,6 +65,8 @@ function initialFormData(unit: ContentUnit | 'new'): FormData {
       video_brief: '',
       voiceover_text: '',
       ready_at: '',
+      body_caption: '',
+      slides: [],
     }
   }
   return {
@@ -80,7 +85,108 @@ function initialFormData(unit: ContentUnit | 'new'): FormData {
     video_brief: unit.video_brief ?? '',
     voiceover_text: unit.voiceover_text ?? '',
     ready_at: unit.ready_at ? new Date(unit.ready_at).toISOString().slice(0, 10) : '',
+    body_caption: unit.body_caption ?? '',
+    slides: Array.isArray(unit.slides) ? unit.slides : [],
   }
+}
+
+function CarouselSlideList({
+  slides,
+  onChange,
+}: {
+  slides: CarouselSlide[]
+  onChange: (next: CarouselSlide[]) => void
+}) {
+  const move = (idx: number, dir: -1 | 1) => {
+    const next = [...slides]
+    const target = idx + dir
+    if (target < 0 || target >= next.length) return
+    ;[next[idx], next[target]] = [next[target], next[idx]]
+    onChange(next)
+  }
+
+  const update = (idx: number, patch: Partial<CarouselSlide>) => {
+    onChange(slides.map((s, i) => (i === idx ? { ...s, ...patch } : s)))
+  }
+
+  const remove = (idx: number) => {
+    onChange(slides.filter((_, i) => i !== idx))
+  }
+
+  const add = () => {
+    onChange([...slides, { text: '', visual: '' }])
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <label className="label mb-0">Слайды</label>
+        <button
+          type="button"
+          onClick={add}
+          className="text-xs px-2 py-1 rounded-lg border border-brand-border hover:bg-subtle"
+        >
+          + Добавить слайд
+        </button>
+      </div>
+
+      {slides.length === 0 ? (
+        <p className="text-sm text-brand-text-secondary">Слайдов пока нет</p>
+      ) : (
+        <ul className="space-y-3">
+          {slides.map((slide, i) => (
+            <li key={i} className="border border-brand-border rounded-lg p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-brand-text">Слайд {i + 1}</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => move(i, -1)}
+                    disabled={i === 0}
+                    className="p-1 rounded hover:bg-subtle disabled:opacity-30"
+                    aria-label="Вверх"
+                  >
+                    ⬆
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => move(i, 1)}
+                    disabled={i === slides.length - 1}
+                    className="p-1 rounded hover:bg-subtle disabled:opacity-30"
+                    aria-label="Вниз"
+                  >
+                    ⬇
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => remove(i)}
+                    className="p-1 rounded hover:bg-red-50 text-red-600"
+                    aria-label="Удалить"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+              <textarea
+                className="input"
+                rows={2}
+                placeholder="Текст на слайде"
+                value={slide.text}
+                onChange={(e) => update(i, { text: e.target.value })}
+              />
+              <textarea
+                className="input"
+                rows={2}
+                placeholder="Визуал / бриф для дизайнера"
+                value={slide.visual}
+                onChange={(e) => update(i, { visual: e.target.value })}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
 }
 
 export function UnitEditModal({ unit, onClose, onSaved }: Props) {
@@ -166,6 +272,8 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
       video_brief: formData.video_brief.trim() || null,
       voiceover_text: formData.voiceover_text.trim() || null,
       ready_at: formData.ready_at ? new Date(formData.ready_at).toISOString() : null,
+      body_caption: formData.body_caption.trim() || null,
+      slides: formData.slides.filter((s) => s.text.trim() || s.visual.trim()),
     }
 
     setSaving(true)
@@ -214,6 +322,37 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
   const renderTypeFields = () => {
     // Recipe-driven types own their text artifacts via RecipeView — only show
     // operator-facing notes here (used by the AI prompt builder as context).
+    if (formData.content_type === 'carousel') {
+      return (
+        <>
+          <div>
+            <label className="label">Подпись поста</label>
+            <textarea
+              className="input"
+              rows={6}
+              placeholder="Текст под каруселью — что увидит читатель в ленте"
+              value={formData.body_caption}
+              onChange={(e) => setFormData({ ...formData, body_caption: e.target.value })}
+            />
+            {/* Кнопка «Написать сценарий» будет добавлена в Task 6 */}
+          </div>
+          <CarouselSlideList
+            slides={formData.slides}
+            onChange={(slides) => setFormData({ ...formData, slides })}
+          />
+          <div>
+            <label className="label">Заметки</label>
+            <textarea
+              className="input"
+              rows={2}
+              placeholder="Любые внутренние заметки"
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+            />
+          </div>
+        </>
+      )
+    }
     if (formData.content_type === 'short_post') {
       return (
         <div>
