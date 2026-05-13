@@ -22,5 +22,6 @@ router.put('/:id', contentUnitController.update)
 router.delete('/:id', contentUnitController.delete)
 router.post('/:id/recipe-init', contentUnitController.recipeInit)
 router.patch('/:id/recipe-state', contentUnitController.patchRecipeState)
+router.post('/:id/script-prompt', contentUnitController.scriptPrompt)
 
 export default router

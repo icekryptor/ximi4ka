@@ -6,6 +6,7 @@ import { ContentRubric } from '../entities/ContentRubric'
 import { ContentPublication } from '../entities/ContentPublication'
 import { saveImportPlan, getImportPlan, deleteImportPlan, ImportPlan } from '../services/import-token-store'
 import { recipeEngine, isRecipeState } from '../services/recipe-engine'
+import { buildScriptPrompt } from '../services/script-prompt-builder'
 
 const repo = AppDataSource.getRepository(ContentUnit)
 
@@ -734,6 +735,28 @@ export const contentUnitController = {
     } catch (error) {
       console.error('Ошибка сохранения recipe_state:', error)
       res.status(500).json({ error: 'Ошибка сохранения recipe_state' })
+    }
+  },
+
+  async scriptPrompt(req: Request, res: Response) {
+    try {
+      const { id } = req.params
+      const prompt = await buildScriptPrompt(id)
+      res.json({ prompt })
+    } catch (e: any) {
+      if (e?.message === 'unit_not_found') {
+        return res.status(404).json({ error: 'Юнит не найден' })
+      }
+      if (e?.message === 'not_carousel') {
+        return res.status(400).json({ error: 'Сценарий пока доступен только для каруселей' })
+      }
+      console.error(
+        '[content-units.scriptPrompt] FAILED',
+        'name=', e?.name,
+        'message=', e?.message,
+        '\nstack=', e?.stack,
+      )
+      res.status(500).json({ error: 'Не удалось собрать промпт' })
     }
   },
 }
