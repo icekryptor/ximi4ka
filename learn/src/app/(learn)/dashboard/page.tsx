@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { getUserStats } from "@/lib/queries/progress";
 import Link from "next/link";
-import { Star, Flame, CheckCircle2, Target, Award } from "lucide-react";
+import { Star, Flame, CheckCircle2, Target, Award, BookOpen, Calendar } from "lucide-react";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -15,6 +15,31 @@ export default async function DashboardPage() {
   const accuracy = stats.totalAttempts > 0
     ? Math.round((stats.correctAttempts / stats.totalAttempts) * 100)
     : 0;
+
+  // Fetch user's kit-based access (user_modules)
+  const { data: myUserModules } = await supabase
+    .from("user_modules")
+    .select("expires_at, source, modules(id, slug, title, description)")
+    .eq("user_id", user.id)
+    .gt("expires_at", new Date().toISOString())
+    .order("expires_at", { ascending: false });
+
+  // If user has any active access, fetch all base-tier modules they can access
+  const hasAnyAccess = (myUserModules?.length ?? 0) > 0;
+  let accessibleModules: Array<{ id: string; slug: string; title: string; description: string | null }> = [];
+  if (hasAnyAccess) {
+    const { data } = await supabase
+      .from("modules")
+      .select("id, slug, title, description")
+      .eq("is_published", true)
+      .eq("tier", "base")
+      .order("order_index");
+    accessibleModules = data ?? [];
+  }
+  const oldestExpiry = myUserModules?.[myUserModules.length - 1]?.expires_at;
+  const expiresInDays = oldestExpiry
+    ? Math.ceil((new Date(oldestExpiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
@@ -63,6 +88,40 @@ export default async function DashboardPage() {
           <p className="text-sm text-dark-text-muted mt-1">точность</p>
         </Card>
       </div>
+
+      {/* Доступные модули — visible only when user has active access */}
+      {hasAnyAccess && accessibleModules.length > 0 && (
+        <div className="mb-8">
+          <div className="flex items-baseline justify-between mb-4">
+            <h2 className="text-lg font-bold text-dark-text">Доступные модули</h2>
+            {expiresInDays !== null && (
+              <span className="inline-flex items-center gap-1 text-xs text-dark-text-muted">
+                <Calendar className="w-3 h-3" />
+                Доступ ещё {expiresInDays} дн.
+              </span>
+            )}
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {accessibleModules.map((m) => (
+              <Link key={m.id} href={`/learn/${m.slug}`}>
+                <Card theme="dark" hover className="p-5 h-full">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <BookOpen className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-dark-text">{m.title}</h3>
+                      {m.description && (
+                        <p className="text-xs text-dark-text-muted line-clamp-2 mt-1">{m.description}</p>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid md:grid-cols-2 gap-6">
         {/* Recent achievements */}

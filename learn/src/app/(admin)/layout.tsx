@@ -8,6 +8,7 @@ const adminNav = [
   { href: "/admin/promo", label: "Промокоды" },
   { href: "/admin/users", label: "Ученики" },
   { href: "/admin/achievements", label: "Достижения" },
+  { href: "/admin/kits", label: "Партии наборов" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

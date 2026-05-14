@@ -23,6 +23,13 @@
       "runtimeArgs": ["run", "dev"],
       "port": 3000,
       "cwd": "learn"
+    },
+    {
+      "name": "concept",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "4173"],
+      "port": 4173,
+      "autoPort": false
     }
   ]
 }

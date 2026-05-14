@@ -1,10 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { FlaskConical, Lock, ArrowRight } from "lucide-react";
+import { FlaskConical, Lock, ArrowRight, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
+import { canAccessModule } from "@/lib/services/access";
 import type { Module, Lesson } from "@/lib/types";
 
 interface Props {
@@ -43,6 +44,10 @@ export default async function ModuleDetailPage({ params }: Props) {
 
   const isPremium = m.tier === "premium";
 
+  // Check if user already has access
+  const { data: { user } } = await supabase.auth.getUser();
+  const hasAccess = user ? await canAccessModule(supabase, user.id, m.id, m.tier) : false;
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 md:py-16">
       {/* Module hero */}
@@ -71,33 +76,45 @@ export default async function ModuleDetailPage({ params }: Props) {
           Уроки ({lessons.length})
         </h2>
         <div className="space-y-3">
-          {lessons.map((lesson, i) => (
-            <Link key={lesson.id} href={`/modules/${m.slug}/${lesson.slug}`}>
-              <Card
-                hover
-                className="p-5 cursor-pointer flex items-center gap-4 group"
-              >
-                <span className="text-2xl font-bold text-primary/30 font-display tabular-nums w-8 flex-shrink-0">
-                  {i + 1}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-text-primary group-hover:text-primary transition-colors">
-                    {lesson.title}
-                  </h3>
-                  {lesson.duration_minutes && (
-                    <p className="text-sm text-text-muted">{lesson.duration_minutes} мин</p>
-                  )}
-                </div>
-                <ArrowRight className="w-4 h-4 text-text-muted group-hover:text-primary transition-colors flex-shrink-0" />
-              </Card>
-            </Link>
-          ))}
+          {lessons.map((lesson, i) => {
+            const lessonHref = hasAccess
+              ? `/learn/${m.slug}/${lesson.slug}`
+              : `/modules/${m.slug}/${lesson.slug}`;
+            return (
+              <Link key={lesson.id} href={lessonHref}>
+                <Card
+                  hover
+                  className="p-5 cursor-pointer flex items-center gap-4 group"
+                >
+                  <span className="text-2xl font-bold text-primary/30 font-display tabular-nums w-8 flex-shrink-0">
+                    {i + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-text-primary group-hover:text-primary transition-colors">
+                      {lesson.title}
+                    </h3>
+                    {lesson.duration_minutes && (
+                      <p className="text-sm text-text-muted">{lesson.duration_minutes} мин</p>
+                    )}
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-text-muted group-hover:text-primary transition-colors flex-shrink-0" />
+                </Card>
+              </Link>
+            );
+          })}
         </div>
       </div>
 
       {/* CTA */}
       <div className="text-center">
-        {isPremium ? (
+        {hasAccess ? (
+          <Link href={`/learn/${m.slug}`}>
+            <Button size="lg" glow>
+              <BookOpen className="w-4 h-4 mr-2" />
+              Перейти к обучению
+            </Button>
+          </Link>
+        ) : isPremium ? (
           <Link href={`/checkout/module/${m.id}`}>
             <Button size="lg" glow>
               <Lock className="w-4 h-4 mr-2" />

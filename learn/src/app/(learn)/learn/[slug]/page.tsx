@@ -32,6 +32,20 @@ export default async function LearnModulePage({ params }: Props) {
     .filter((l: any) => l.is_published)
     .sort((a: any, b: any) => a.order_index - b.order_index);
 
+  // If this module has no lessons of its own (e.g. OGE bundle module),
+  // surface other base-tier modules the user can access.
+  let bundleModules: Array<{ id: string; slug: string; title: string; description: string | null }> = [];
+  if (lessons.length === 0) {
+    const { data: others } = await supabase
+      .from("modules")
+      .select("id, slug, title, description")
+      .eq("is_published", true)
+      .eq("tier", "base")
+      .neq("id", module.id)
+      .order("order_index");
+    bundleModules = others ?? [];
+  }
+
   const { data: progress } = await supabase
     .from("lesson_progress")
     .select("lesson_id, status")
@@ -61,44 +75,74 @@ export default async function LearnModulePage({ params }: Props) {
         {completedCount} из {lessons.length} уроков пройдено
       </p>
 
-      <div className="space-y-3">
-        {lessons.map((lesson: any, _i: number) => {
-          const status = progressMap.get(lesson.id) ?? "not_started";
-          const isDone = status === "done";
-          const isInProgress = status === "in_progress";
+      {lessons.length > 0 ? (
+        <div className="space-y-3">
+          {lessons.map((lesson: any, _i: number) => {
+            const status = progressMap.get(lesson.id) ?? "not_started";
+            const isDone = status === "done";
+            const isInProgress = status === "in_progress";
 
-          return (
-            <Link key={lesson.id} href={`/learn/${params.slug}/${lesson.slug}`}>
-              <Card
-                theme="dark"
-                hover
-                className="flex items-center gap-4 px-5 py-4 cursor-pointer"
-              >
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                  isDone ? "bg-success-dark/10" : "bg-primary/10"
-                }`}>
-                  {isDone
-                    ? <CheckCircle2 className="w-5 h-5 text-success-dark" />
-                    : <BookOpen className="w-5 h-5 text-primary" />
-                  }
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-dark-text truncate">{lesson.title}</h3>
-                  {lesson.duration_minutes && (
-                    <p className="text-sm text-dark-text-muted">{lesson.duration_minutes} мин</p>
-                  )}
-                </div>
-                <Badge
+            return (
+              <Link key={lesson.id} href={`/learn/${params.slug}/${lesson.slug}`}>
+                <Card
                   theme="dark"
-                  variant={isDone ? "xp" : isInProgress ? "streak" : "default"}
+                  hover
+                  className="flex items-center gap-4 px-5 py-4 cursor-pointer"
                 >
-                  {isDone ? "Пройден" : isInProgress ? "В процессе" : "Не начат"}
-                </Badge>
-              </Card>
-            </Link>
-          );
-        })}
-      </div>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                    isDone ? "bg-success-dark/10" : "bg-primary/10"
+                  }`}>
+                    {isDone
+                      ? <CheckCircle2 className="w-5 h-5 text-success-dark" />
+                      : <BookOpen className="w-5 h-5 text-primary" />
+                    }
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-dark-text truncate">{lesson.title}</h3>
+                    {lesson.duration_minutes && (
+                      <p className="text-sm text-dark-text-muted">{lesson.duration_minutes} мин</p>
+                    )}
+                  </div>
+                  <Badge
+                    theme="dark"
+                    variant={isDone ? "xp" : isInProgress ? "streak" : "default"}
+                  >
+                    {isDone ? "Пройден" : isInProgress ? "В процессе" : "Не начат"}
+                  </Badge>
+                </Card>
+              </Link>
+            );
+          })}
+        </div>
+      ) : (
+        <div>
+          <p className="text-sm text-dark-text-secondary mb-4">
+            Этот модуль открывает доступ к программе подготовки. Начни с любого из модулей ниже:
+          </p>
+          <div className="grid md:grid-cols-2 gap-4">
+            {bundleModules.map((bm) => (
+              <Link key={bm.id} href={`/learn/${bm.slug}`}>
+                <Card theme="dark" hover className="p-5 h-full">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <BookOpen className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-dark-text">{bm.title}</h3>
+                      {bm.description && (
+                        <p className="text-xs text-dark-text-muted line-clamp-2 mt-1">{bm.description}</p>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            ))}
+          </div>
+          {bundleModules.length === 0 && (
+            <p className="text-sm text-dark-text-muted">Контент пока готовится.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

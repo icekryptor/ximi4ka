@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope, Unbounded, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { DeviceIdInitializer } from "@/components/DeviceIdInitializer";
 
 const manrope = Manrope({
   subsets: ["latin", "cyrillic"],
@@ -36,6 +37,7 @@ export default function RootLayout({
   return (
     <html lang="ru" className={`${manrope.variable} ${unbounded.variable} ${jetbrainsMono.variable}`}>
       <body className="font-sans text-text-primary bg-bg-base min-h-screen flex flex-col antialiased">
+        <DeviceIdInitializer />
         {children}
       </body>
     </html>

@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
+import { BindEmailBanner } from "@/components/profile/BindEmailBanner";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<any>(null);
@@ -16,6 +17,7 @@ export default function ProfilePage() {
   const [promoMessage, setPromoMessage] = useState("");
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isKitEmail, setIsKitEmail] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -23,6 +25,8 @@ export default function ProfilePage() {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/login"); return; }
+
+      setIsKitEmail(user.email?.endsWith("@kits.ximi4ka.ru") ?? false);
 
       const [{ data: p }, { data: s }] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user.id).single(),
@@ -79,6 +83,8 @@ export default function ProfilePage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6 text-dark-text">Профиль</h1>
+
+      {isKitEmail && <BindEmailBanner />}
 
       <Card theme="dark" className="p-6 mb-6">
         <h2 className="text-lg font-bold mb-4 text-dark-text">Личные данные</h2>
