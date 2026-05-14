@@ -120,6 +120,7 @@ export function BrandDocEditorModal({ slug, title, onClose, onSaved }: Props) {
           ) : (
             <>
               <textarea
+                autoFocus
                 className="w-full min-h-[60vh] p-4 border border-brand-border rounded-2xl font-mono text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-400/40"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
