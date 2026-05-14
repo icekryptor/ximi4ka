@@ -3,42 +3,39 @@
 @tailwind utilities;
 
 :root {
-  --background: #0f0a1a;
-  --foreground: #e8e5ef;
+  --background: #ffffff;
+  --foreground: #1c1528;
+}
+
+[data-theme="dark"] {
+  --background: #0f0915;
+  --foreground: #f0eaff;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
+  font-feature-settings: "ss01", "cv11";
 }
 
-/* Global noise overlay */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9999;
-  opacity: 0.04;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 256px 256px;
+/* Display font utility */
+.font-display {
+  font-family: var(--font-display), system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }
 
-/* Pixelated rendering for pixel-art SVGs */
-.image-rendering-pixelated {
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
+/* Tabular numbers for counters */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
-/* Shimmer gradient for text */
+/* Shimmer gradient — purple only */
 .text-shimmer {
   background: linear-gradient(
     90deg,
-    rgba(141, 103, 255, 1) 0%,
-    rgba(200, 86, 255, 1) 40%,
-    rgba(0, 240, 255, 1) 60%,
-    rgba(141, 103, 255, 1) 100%
+    rgba(131, 110, 254, 1) 0%,
+    rgba(200, 86, 255, 1) 50%,
+    rgba(131, 110, 254, 1) 100%
   );
   background-size: 200% auto;
   -webkit-background-clip: text;
@@ -46,21 +43,25 @@ body::after {
   -webkit-text-fill-color: transparent;
 }
 
-/* Neon text shadows */
-.text-glow-cyan {
-  text-shadow: 0 0 10px rgba(0, 240, 255, 0.5), 0 0 20px rgba(0, 240, 255, 0.2);
-}
-.text-glow-lime {
-  text-shadow: 0 0 10px rgba(160, 255, 0, 0.5), 0 0 20px rgba(160, 255, 0, 0.2);
-}
-.text-glow-magenta {
-  text-shadow: 0 0 10px rgba(255, 0, 229, 0.5), 0 0 20px rgba(255, 0, 229, 0.2);
-}
+/* Purple text glow (used in dark learn-zone) */
 .text-glow-purple {
-  text-shadow: 0 0 10px rgba(131, 110, 254, 0.5), 0 0 20px rgba(131, 110, 254, 0.2);
+  text-shadow: 0 0 12px rgba(131, 110, 254, 0.5), 0 0 24px rgba(131, 110, 254, 0.2);
 }
 
-/* Accessibility: disable animations for users who prefer reduced motion */
+/* Hero radial gradient backgrounds */
+.bg-hero-light {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(131, 110, 254, 0.06) 0%, transparent 60%),
+    #ffffff;
+}
+
+.bg-hero-dark {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(131, 110, 254, 0.18) 0%, transparent 60%),
+    #0f0915;
+}
+
+/* Accessibility: reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -74,5 +75,8 @@ body::after {
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
   }
 }
