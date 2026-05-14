@@ -211,11 +211,6 @@ export const unitsApi = {
     const r = await apiClient.delete<{ deleted: number }>('/content-units/purge-rejected')
     return r.data
   },
-
-  scriptPrompt: async (id: string): Promise<{ prompt: string }> => {
-    const r = await apiClient.post<{ prompt: string }>(`/content-units/${id}/script-prompt`)
-    return r.data
-  },
 }
 
 // === Publications ===
