@@ -410,11 +410,16 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
         return
       }
 
-      const opened = window.open('https://claude.ai/new', '_blank', 'noopener,noreferrer')
+      // claude.ai/new?q=<prompt> предзаполняет ввод — оператору остаётся только
+      // нажать Enter. Clipboard выше — defense-in-depth: если Anthropic уберёт
+      // поддержку ?q (это недокументированная фишка), у юзера всё равно промпт
+      // в буфере и сработает Cmd/Ctrl+V.
+      const claudeUrl = `https://claude.ai/new?q=${encodeURIComponent(trigger)}`
+      const opened = window.open(claudeUrl, '_blank', 'noopener,noreferrer')
       if (!opened) {
         toast.info('Промпт в буфере. Открой claude.ai и вставь (Cmd/Ctrl+V).')
       } else {
-        toast.success('Промпт скопирован — вставь в Claude (Cmd/Ctrl+V)')
+        toast.success('Промпт открыт в Claude — нажми Enter для отправки')
       }
     } catch (e: unknown) {
       const msg =
