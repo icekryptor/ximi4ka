@@ -138,7 +138,15 @@ function buildScriptTrigger(unit: ContentUnit): string {
 
   const styleList = styleSlugs.map((s) => `brand_docs.${s}`).join(' и ')
 
-  return `Запусти сценариста для юнита ${unit.id}.
+  // Distinctive first line — claude.ai auto-titles a new chat by the opening
+  // content, so making line 1 unit-specific prevents the «Запусти сценариста…»
+  // duplicate-chat soup when the operator generates 20 units per week.
+  const rubricPart = unit.rubric?.title ? ` · ${unit.rubric.title}` : ''
+  const titleLine = `📝 ${unit.title} [${unit.content_type}${rubricPart}]`
+
+  return `${titleLine}
+
+Запусти сценариста для юнита ${unit.id}.
 
 Контекст (читай через Supabase MCP, project jubkezbvccwvujregkfq):
 - Стратегия: brand_docs.strategy_current
@@ -149,7 +157,9 @@ function buildScriptTrigger(unit: ContentUnit): string {
 - SKU (если рубрика product_himichka или явно упомянут SKU): kits + kit_unique_features + kit_reviews_curated + kit_use_cases + brand_docs.kit_himichka / kit_mini_himichka / kit_electrohimichka
 - Эталон рубрики: SELECT script FROM content_units WHERE rubric_id = u.rubric_id AND notes ILIKE '%ЭТАЛОН%' LIMIT 1
 
-Действуй по agent_scriptwriter_prompt §0.5 (определи CREATE vs AUDIT по наличию script_text/voiceover_text), §1 (выбор артефактов по format_type), §2 (применение правил). Перед UPDATE — snapshot_content_unit().`
+Действуй по agent_scriptwriter_prompt §0.5 (определи CREATE vs AUDIT по наличию script_text/voiceover_text), §1 (выбор артефактов по format_type), §2 (применение правил). Перед UPDATE — snapshot_content_unit().
+
+После записи в БД выведи в чат полный финальный текст всех записанных артефактов (script_text / voiceover_text / video_brief / publications.notes — по применимости для format_type) кодовыми блоками. Это нужно чтобы оператор видел результат прямо в чате, не переключаясь в UI.`
 }
 
 function CarouselSlideList({
