@@ -19,7 +19,7 @@ export function TextBlockEditor({ content, onSave }: TextBlockEditorProps) {
         value={html}
         onChange={(e) => { setHtml(e.target.value); setDirty(true); }}
         placeholder="HTML-контент блока..."
-        className="w-full px-4 py-3 rounded-xl border border-border bg-white text-text-dark font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+        className="w-full px-4 py-3 rounded-xl border border-border bg-white text-text-primary font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
         rows={6}
       />
       {dirty && (

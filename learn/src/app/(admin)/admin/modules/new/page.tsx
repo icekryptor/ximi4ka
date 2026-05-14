@@ -60,20 +60,20 @@ export default function NewModulePage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input id="title" label="Название" value={title} onChange={(e) => setTitle(e.target.value)} required />
           <div>
-            <label className="block text-sm font-medium text-text-dark mb-1">Описание</label>
+            <label className="block text-sm font-medium text-text-primary mb-1">Описание</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl border border-border bg-white text-text-dark focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="w-full px-4 py-3 rounded-2xl border border-border bg-white text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
               rows={3}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-text-dark mb-1">Тип</label>
+            <label className="block text-sm font-medium text-text-primary mb-1">Тип</label>
             <select
               value={tier}
               onChange={(e) => setTier(e.target.value as "base" | "premium")}
-              className="w-full px-4 py-3 rounded-2xl border border-border bg-white text-text-dark"
+              className="w-full px-4 py-3 rounded-2xl border border-border bg-white text-text-primary"
             >
               <option value="base">Базовый</option>
               <option value="premium">Продвинутый (платный)</option>

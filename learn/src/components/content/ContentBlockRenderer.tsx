@@ -13,7 +13,7 @@ export function ContentBlockRenderer({ block, isPreview }: ContentBlockRendererP
     case "text":
       return (
         <div
-          className="prose prose-sm max-w-none text-text-dark"
+          className="prose prose-sm max-w-none text-text-primary"
           dangerouslySetInnerHTML={{ __html: content.html || "" }}
         />
       );

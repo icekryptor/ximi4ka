@@ -42,7 +42,7 @@ export default async function AdminUsersPage() {
                   <tr key={u.id} className="border-b border-border/50">
                     <td className="py-3 pr-4 font-medium">{u.display_name || "—"}</td>
                     <td className="py-3 pr-4">
-                      <Badge variant={u.role === "admin" ? "premium" : "base"}>
+                      <Badge variant={u.role === "admin" ? "premium" : "default"}>
                         {u.role === "admin" ? "Админ" : "Ученик"}
                       </Badge>
                     </td>

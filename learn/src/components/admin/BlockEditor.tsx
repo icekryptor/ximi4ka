@@ -112,8 +112,8 @@ export function BlockEditor({ lessonId, initialBlocks }: BlockEditorProps) {
               {block.type === "text" ? "Текст" : block.type === "formula" ? "Формула" : block.type === "image" ? "Изображение" : "Задача"}
             </span>
             <div className="flex gap-1">
-              <button onClick={() => moveBlock(i, "up")} disabled={i === 0} className="px-2 py-1 hover:bg-bg-light rounded disabled:opacity-30">↑</button>
-              <button onClick={() => moveBlock(i, "down")} disabled={i === blocks.length - 1} className="px-2 py-1 hover:bg-bg-light rounded disabled:opacity-30">↓</button>
+              <button onClick={() => moveBlock(i, "up")} disabled={i === 0} className="px-2 py-1 hover:bg-bg-tertiary rounded disabled:opacity-30">↑</button>
+              <button onClick={() => moveBlock(i, "down")} disabled={i === blocks.length - 1} className="px-2 py-1 hover:bg-bg-tertiary rounded disabled:opacity-30">↓</button>
               <button onClick={() => deleteBlock(block.id)} className="px-2 py-1 hover:bg-red-50 text-red-500 rounded">✕</button>
             </div>
           </div>

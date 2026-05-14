@@ -13,7 +13,7 @@ const adminNav = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
-      <aside className="w-64 bg-text-dark text-white p-6">
+      <aside className="w-64 bg-text-primary text-white p-6">
         <Link href="/admin" className="text-xl font-bold text-primary mb-8 block">
           XimiLearn Admin
         </Link>
@@ -29,7 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           ))}
         </nav>
       </aside>
-      <main className="flex-1 bg-bg-light text-text-dark p-8">{children}</main>
+      <main className="flex-1 bg-bg-secondary text-text-primary p-8">{children}</main>
     </div>
   );
 }

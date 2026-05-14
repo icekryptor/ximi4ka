@@ -40,14 +40,16 @@ export default async function LessonPage({ params }: Props) {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <p className="text-sm text-gray-400 mb-2">
-        <Link href={`/learn/${params.slug}`} className="hover:text-primary">
+      {/* Dark breadcrumb — outside the white panel */}
+      <p className="text-sm text-dark-text-secondary mb-2">
+        <Link href={`/learn/${params.slug}`} className="hover:text-primary transition-colors">
           &larr; {lessonModule.title}
         </Link>
       </p>
-      <h1 className="text-2xl font-bold mb-8">{lesson.title}</h1>
+      <h1 className="text-2xl font-bold mb-8 text-dark-text">{lesson.title}</h1>
 
-      <div className="bg-white/95 rounded-3xl p-6 md:p-8 text-text-dark space-y-6">
+      {/* Light content panel — preserves readability for lesson body */}
+      <div className="max-w-3xl mx-auto bg-white/95 backdrop-blur-sm rounded-3xl p-6 md:p-10 text-text-primary space-y-6">
         {blocks.map((block) => {
           if (block.type === "task" && block.tasks?.[0]) {
             const task = block.tasks[0];
@@ -59,7 +61,7 @@ export default async function LessonPage({ params }: Props) {
 
       <div className="mt-12 text-center">
         <Link href={`/api/lessons/${lesson.id}/complete`}>
-          <Button size="lg">Урок пройден \u2713</Button>
+          <Button theme="dark" size="lg">Урок пройден ✓</Button>
         </Link>
       </div>
     </div>

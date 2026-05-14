@@ -70,64 +70,69 @@ export default function ProfilePage() {
     router.refresh();
   }
 
-  if (loading) return <div className="max-w-2xl mx-auto px-4 py-8"><p className="text-gray-400">Загрузка...</p></div>;
+  if (loading) return (
+    <div className="max-w-2xl mx-auto px-4 py-8">
+      <p className="text-dark-text-muted">Загрузка...</p>
+    </div>
+  );
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Профиль</h1>
+      <h1 className="text-2xl font-bold mb-6 text-dark-text">Профиль</h1>
 
-      <Card className="mb-6">
-        <h2 className="text-lg font-bold mb-4">Личные данные</h2>
+      <Card theme="dark" className="p-6 mb-6">
+        <h2 className="text-lg font-bold mb-4 text-dark-text">Личные данные</h2>
         <div className="space-y-4">
-          <Input id="name" label="Имя" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-          <Button onClick={handleSave} disabled={saving} size="sm">
+          <Input theme="dark" id="name" label="Имя" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+          <Button theme="dark" onClick={handleSave} disabled={saving} size="sm">
             {saving ? "Сохранение..." : "Сохранить"}
           </Button>
         </div>
       </Card>
 
-      <Card className="mb-6">
-        <h2 className="text-lg font-bold mb-4">Подписка</h2>
+      <Card theme="dark" className="p-6 mb-6">
+        <h2 className="text-lg font-bold mb-4 text-dark-text">Подписка</h2>
         {subscription ? (
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <Badge variant="xp">Активна</Badge>
-              <span className="text-sm text-gray-400">
+              <Badge theme="dark" variant="xp">Активна</Badge>
+              <span className="text-sm text-dark-text-secondary">
                 План: {subscription.plan === "base_promo" ? "499 ₽/мес (промо)" : "999 ₽/мес"}
               </span>
             </div>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-dark-text-muted">
               Действует до: {new Date(subscription.expires_at).toLocaleDateString("ru-RU")}
             </p>
           </div>
         ) : (
           <div>
-            <p className="text-gray-400 text-sm mb-4">У вас нет активной подписки</p>
+            <p className="text-dark-text-muted text-sm mb-4">У вас нет активной подписки</p>
             <div className="flex items-end gap-3">
               <Input
+                theme="dark"
                 id="promo"
                 label="Активировать промокод"
                 value={promoCode}
                 onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                 placeholder="XIMI-XXXX-XXXX"
               />
-              <Button size="sm" onClick={handleActivatePromo} disabled={!promoCode}>
+              <Button theme="dark" size="sm" onClick={handleActivatePromo} disabled={!promoCode}>
                 Активировать
               </Button>
             </div>
             {promoMessage && (
-              <p className={`text-sm mt-2 ${promoMessage.includes("Ошибка") ? "text-red-500" : "text-green-600"}`}>
+              <p className={`text-sm mt-2 ${promoMessage.includes("Ошибка") ? "text-error-dark" : "text-success-dark"}`}>
                 {promoMessage}
               </p>
             )}
-            <Button variant="secondary" className="mt-4 w-full" onClick={() => router.push("/pricing")}>
+            <Button theme="dark" variant="secondary" className="mt-4 w-full" onClick={() => router.push("/pricing")}>
               Оформить подписку
             </Button>
           </div>
         )}
       </Card>
 
-      <Button variant="ghost" onClick={handleLogout} className="text-red-500 hover:text-red-700">
+      <Button theme="dark" variant="ghost" onClick={handleLogout} className="text-error-dark hover:text-error">
         Выйти из аккаунта
       </Button>
     </div>

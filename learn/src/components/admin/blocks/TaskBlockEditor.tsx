@@ -85,11 +85,11 @@ export function TaskBlockEditor({ blockId, task: initialTask }: TaskBlockEditorP
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-text-dark mb-1">Тип задачи</label>
+        <label className="block text-sm font-medium text-text-primary mb-1">Тип задачи</label>
         <select
           value={taskType}
           onChange={(e) => setTaskType(e.target.value as TaskType)}
-          className="w-full px-4 py-3 rounded-xl border border-border bg-white text-text-dark"
+          className="w-full px-4 py-3 rounded-xl border border-border bg-white text-text-primary"
         >
           {taskTypes.map((t) => (
             <option key={t.value} value={t.value}>{t.label}</option>
@@ -98,18 +98,18 @@ export function TaskBlockEditor({ blockId, task: initialTask }: TaskBlockEditorP
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-text-dark mb-1">Вопрос</label>
+        <label className="block text-sm font-medium text-text-primary mb-1">Вопрос</label>
         <textarea
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl border border-border bg-white text-text-dark text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          className="w-full px-4 py-3 rounded-xl border border-border bg-white text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
           rows={2}
         />
       </div>
 
       {(taskType === "single_choice" || taskType === "multiple_choice") && (
         <div>
-          <label className="block text-sm font-medium text-text-dark mb-2">Варианты ответов</label>
+          <label className="block text-sm font-medium text-text-primary mb-2">Варианты ответов</label>
           {options.map((opt, i) => (
             <div key={i} className="flex items-center gap-2 mb-2">
               <input
@@ -135,7 +135,7 @@ export function TaskBlockEditor({ blockId, task: initialTask }: TaskBlockEditorP
 
       {taskType === "numeric_input" && (
         <div>
-          <label className="block text-sm font-medium text-text-dark mb-2">Правильный ответ (число)</label>
+          <label className="block text-sm font-medium text-text-primary mb-2">Правильный ответ (число)</label>
           <input
             value={options[0]?.text || ""}
             onChange={(e) => {
@@ -150,7 +150,7 @@ export function TaskBlockEditor({ blockId, task: initialTask }: TaskBlockEditorP
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-text-dark mb-1">Сложность (1-5)</label>
+          <label className="block text-sm font-medium text-text-primary mb-1">Сложность (1-5)</label>
           <input
             type="range"
             min={1}
@@ -165,11 +165,11 @@ export function TaskBlockEditor({ blockId, task: initialTask }: TaskBlockEditorP
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-text-dark mb-1">Пояснение (после ответа)</label>
+        <label className="block text-sm font-medium text-text-primary mb-1">Пояснение (после ответа)</label>
         <textarea
           value={explanation}
           onChange={(e) => setExplanation(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl border border-border bg-white text-text-dark text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          className="w-full px-4 py-3 rounded-xl border border-border bg-white text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
           rows={2}
           placeholder="Объяснение правильного ответа..."
         />

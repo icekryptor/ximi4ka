@@ -44,7 +44,7 @@ export default async function AdminModuleDetailPage({ params }: Props) {
             <div className="space-y-2">
               {lessons.map((lesson: any, i: number) => (
                 <Link key={lesson.id} href={`/admin/modules/${params.id}/${lesson.id}`}>
-                  <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-bg-light transition-colors cursor-pointer">
+                  <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-bg-tertiary transition-colors cursor-pointer">
                     <span className="text-sm font-bold text-primary/50 w-6">{i + 1}</span>
                     <span className="flex-1 font-medium text-sm">{lesson.title}</span>
                     <Badge variant={lesson.is_published ? "xp" : "streak"} className="text-xs">

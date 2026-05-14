@@ -19,8 +19,8 @@ export default async function AdminDashboardPage() {
   const stats = [
     { label: "Учеников", value: totalUsers ?? 0, color: "text-primary" },
     { label: "Активных подписок", value: activeSubs ?? 0, color: "text-green-600" },
-    { label: "Модулей", value: totalModules ?? 0, color: "text-text-dark" },
-    { label: "Уроков", value: totalLessons ?? 0, color: "text-text-dark" },
+    { label: "Модулей", value: totalModules ?? 0, color: "text-text-primary" },
+    { label: "Уроков", value: totalLessons ?? 0, color: "text-text-primary" },
   ];
 
   return (

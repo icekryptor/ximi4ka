@@ -82,7 +82,7 @@ export default function AdminAchievementsPage() {
           <Card>
             <div className="space-y-3">
               {achievements.map((a) => (
-                <div key={a.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-bg-light">
+                <div key={a.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-bg-tertiary">
                   <span className="text-2xl">{a.icon_url || "🏆"}</span>
                   <div className="flex-1">
                     <p className="font-medium text-sm">{a.title}</p>
@@ -110,7 +110,7 @@ export default function AdminAchievementsPage() {
             <Input id="icon" label="Иконка (emoji)" value={iconUrl} onChange={(e) => setIconUrl(e.target.value)} placeholder="🧪" />
             <Input id="points" label="XP" type="number" value={points} onChange={(e) => setPoints(e.target.value)} />
             <div>
-              <label className="block text-sm font-medium text-text-dark mb-1">Условие</label>
+              <label className="block text-sm font-medium text-text-primary mb-1">Условие</label>
               <select value={conditionType} onChange={(e) => setConditionType(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl border border-border text-sm mb-2">
                 <option value="tasks_solved">Задач решено</option>

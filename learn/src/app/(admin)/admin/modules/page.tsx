@@ -29,7 +29,7 @@ export default async function AdminModulesPage() {
                 <h3 className="font-bold">{m.title}</h3>
                 <p className="text-sm text-text-secondary">{m.lessons?.length ?? 0} уроков</p>
               </div>
-              <Badge variant={m.tier === "premium" ? "premium" : "base"}>
+              <Badge variant={m.tier === "premium" ? "premium" : "default"}>
                 {m.tier === "premium" ? `Премиум • ${m.price} ₽` : "Базовый"}
               </Badge>
               <Badge variant={m.is_published ? "xp" : "streak"}>

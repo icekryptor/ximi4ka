@@ -42,7 +42,7 @@ export function ImageBlockEditor({ content, lessonId, onSave }: ImageBlockEditor
   return (
     <div className="space-y-3">
       <div>
-        <label className="block text-sm font-medium text-text-dark mb-1">Изображение</label>
+        <label className="block text-sm font-medium text-text-primary mb-1">Изображение</label>
         <input
           type="file"
           accept="image/*"

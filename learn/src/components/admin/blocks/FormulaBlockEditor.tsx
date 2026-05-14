@@ -32,11 +32,11 @@ export function FormulaBlockEditor({ content, onSave }: FormulaBlockEditorProps)
         value={latex}
         onChange={(e) => { setLatex(e.target.value); setDirty(true); }}
         placeholder="LaTeX формула, например: \ce{H2O} или \frac{1}{2}"
-        className="w-full px-4 py-3 rounded-xl border border-border bg-white text-text-dark font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+        className="w-full px-4 py-3 rounded-xl border border-border bg-white text-text-primary font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
         rows={3}
       />
       {latex && (
-        <div className="mt-2 p-4 bg-bg-light rounded-xl">
+        <div className="mt-2 p-4 bg-bg-tertiary rounded-xl">
           <p className="text-xs text-text-secondary mb-1">Превью:</p>
           <div ref={previewRef} className="text-center overflow-x-auto" />
         </div>
