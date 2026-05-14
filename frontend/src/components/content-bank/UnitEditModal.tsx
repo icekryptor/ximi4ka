@@ -90,6 +90,63 @@ function initialFormData(unit: ContentUnit | 'new'): FormData {
   }
 }
 
+/**
+ * Maps a unit's networks + content_type to brand-doc slugs the agent should
+ * consult, then assembles a short trigger phrase pointing claude.ai at the
+ * agent-scriptwriter workflow stored in brand_docs.
+ *
+ * No backend involved — Claude reads brand_docs via Supabase MCP.
+ */
+function buildScriptTrigger(unit: ContentUnit): string {
+  // Style cluster by network — see design doc §3
+  const networks = new Set(unit.publications.map((p) => p.network))
+  const styleSlugs: string[] = []
+  if (networks.has('instagram')) styleSlugs.push('style_instagram')
+  if (networks.has('telegram')) styleSlugs.push('style_telegram')
+  if (
+    networks.has('tiktok') ||
+    networks.has('youtube') ||
+    networks.has('youtube_shorts')
+  ) {
+    styleSlugs.push('style_tiktok_youtube')
+  }
+  if (styleSlugs.length === 0) styleSlugs.push('style_tiktok_youtube')
+
+  // Format by content_type — see design doc §3
+  const FORMAT_SLUG: Record<string, string> = {
+    short_video: 'format_short_video',
+    long_video: 'format_long_video',
+    carousel: 'format_carousel',
+    short_post: 'format_post',
+    long_post: 'format_longread',
+    seo_article: 'format_seo_article',
+    stream: 'format_long_video',
+    podcast: 'format_long_video',
+    email_newsletter: 'format_longread',
+    lead_magnet_pdf: 'format_longread',
+    marketplace_card: 'format_post',
+    ad_creative: 'format_post',
+    text_post: 'format_post',
+    other: 'format_post',
+  }
+  const formatSlug = FORMAT_SLUG[unit.content_type] ?? 'format_post'
+
+  const styleList = styleSlugs.map((s) => `brand_docs.${s}`).join(' и ')
+
+  return `Запусти сценариста для юнита ${unit.id}.
+
+Контекст (читай через Supabase MCP, project jubkezbvccwvujregkfq):
+- Стратегия: brand_docs.strategy_current
+- Рубрики: brand_docs.rubrics_matrix
+- Стиль по кластеру сетей: ${styleList}
+- Формат: brand_docs.${formatSlug}
+- ICP: icp_segment (id = u.target_segment_id) + channel_segment_priority
+- SKU (если рубрика product_himichka или явно упомянут SKU): kits + kit_unique_features + kit_reviews_curated + kit_use_cases + brand_docs.kit_himichka / kit_mini_himichka / kit_electrohimichka
+- Эталон рубрики: SELECT script FROM content_units WHERE rubric_id = u.rubric_id AND notes ILIKE '%ЭТАЛОН%' LIMIT 1
+
+Действуй по agent_scriptwriter_prompt §0.5 (определи CREATE vs AUDIT по наличию script_text/voiceover_text), §1 (выбор артефактов по format_type), §2 (применение правил). Перед UPDATE — snapshot_content_unit().`
+}
+
 function CarouselSlideList({
   slides,
   onChange,
@@ -310,8 +367,7 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
     }
   }
 
-  const handleWriteScript = async () => {
-    // Юнит должен быть сохранён, иначе нет id для запроса.
+  const handleGenerate = async () => {
     const persistedId = unitInternal?.id ?? (unit !== 'new' ? unit.id : null)
     if (!persistedId) {
       toast.error('Сначала сохрани юнит')
@@ -320,22 +376,19 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
 
     setScriptBusy(true)
     try {
-      // Автосейв на случай несохранённых изменений caption/slides — иначе
-      // в промпт уйдёт «вчерашняя» версия.
+      // Autosave — flushes any unsaved edits to script_text / caption / slides
+      // so they make it into the unit row before the agent reads.
       const saved = await handleSave({ silent: true })
-      if (!saved) return // validation toast already fired by handleSave
-      const targetId = saved.id
+      if (!saved) return // validation toast fired by handleSave
 
-      const { prompt } = await unitsApi.scriptPrompt(targetId)
+      const trigger = buildScriptTrigger(saved)
 
       let copied = true
       try {
-        await navigator.clipboard.writeText(prompt)
+        await navigator.clipboard.writeText(trigger)
       } catch {
-        // clipboard API недоступен (HTTP, или браузер отказал) — fallback
-        // через legacy execCommand.
         const textarea = document.createElement('textarea')
-        textarea.value = prompt
+        textarea.value = trigger
         textarea.style.position = 'fixed'
         textarea.style.top = '-1000px'
         document.body.appendChild(textarea)
@@ -348,8 +401,8 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
       }
 
       if (!copied) {
-        toast.error('Не удалось скопировать промпт в буфер. Проверь права доступа к буферу.')
-        return // не открываем Claude — там нечего вставлять
+        toast.error('Не удалось скопировать промпт в буфер.')
+        return
       }
 
       const opened = window.open('https://claude.ai/new', '_blank', 'noopener,noreferrer')
@@ -359,9 +412,13 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
         toast.success('Промпт скопирован — вставь в Claude (Cmd/Ctrl+V)')
       }
     } catch (e: unknown) {
-      const msg = axios.isAxiosError(e) && e.response?.data?.error
-        ? String(e.response.data.error)
-        : 'Не удалось собрать промпт'
+      const msg =
+        typeof e === 'object' && e && 'response' in e
+          ? String(
+              (e as { response?: { data?: { error?: string } } }).response?.data
+                ?.error ?? 'Не удалось подготовить триггер',
+            )
+          : 'Не удалось подготовить триггер'
       toast.error(msg)
     } finally {
       setScriptBusy(false)
@@ -387,24 +444,7 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
       return (
         <>
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="label mb-0">Подпись поста</label>
-              <button
-                type="button"
-                onClick={handleWriteScript}
-                disabled={scriptBusy || saving || (unit === 'new' && !unitInternal)}
-                className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg border border-primary-300 text-primary-700 hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                title={
-                  scriptBusy ? 'Готовлю промпт…' :
-                  saving ? 'Дождись завершения сохранения' :
-                  (unit === 'new' && !unitInternal) ? 'Сначала сохрани юнит' :
-                  'Сборка промпта и открытие Claude'
-                }
-              >
-                <Sparkles size={14} />
-                {scriptBusy ? 'Готовлю промпт…' : 'Написать сценарий'}
-              </button>
-            </div>
+            <label className="label">Подпись поста</label>
             <textarea
               className="input"
               rows={6}
@@ -784,6 +824,29 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
           </>)}
 
           {tab === 'production' && (<>
+          <div className="flex items-center justify-between mb-4 pb-4 border-b border-brand-border">
+            <div>
+              <h3 className="text-sm font-semibold text-brand-text">🎬 Производство</h3>
+              <p className="text-xs text-brand-text-secondary">
+                Сгенерировать через агента-сценариста или редактировать вручную.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleGenerate}
+              disabled={scriptBusy || saving || (unit === 'new' && !unitInternal)}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              title={
+                scriptBusy ? 'Готовлю промпт…' :
+                saving ? 'Дождись завершения сохранения' :
+                (unit === 'new' && !unitInternal) ? 'Сначала сохрани юнит' :
+                'Сборка триггера и открытие Claude'
+              }
+            >
+              <Sparkles size={16} />
+              {scriptBusy ? 'Готовлю промпт…' : 'Сгенерить сценарий'}
+            </button>
+          </div>
           {/* Recipe-driven types: nothing on this tab until the unit is persisted */}
           {!recipe && !isVideoProducing && (
             <div className="text-center py-12 text-brand-text-secondary text-sm">
@@ -829,9 +892,7 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
 
           {/* Production section — only for video-producing types */}
           {isVideoProducing && (
-          <section className="space-y-3 border-t border-brand-border pt-4">
-            <h3 className="text-sm font-semibold text-brand-text">🎬 Производство</h3>
-
+          <section className="space-y-3">
             <div>
               <label className="text-xs text-brand-text-secondary uppercase tracking-wider">
                 Сценарий
