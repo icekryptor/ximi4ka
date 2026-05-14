@@ -1,33 +1,35 @@
 "use client";
-
 import { useEffect, useState } from "react";
 
-interface XPPopupProps {
-  points: number;
-  trigger: boolean;
-}
+type XPPopupProps = {
+  amount: number;
+  show: boolean;
+  onComplete?: () => void;
+};
 
-export function XPPopup({ points, trigger }: XPPopupProps) {
-  const [show, setShow] = useState(false);
-  const [key, setKey] = useState(0);
+export function XPPopup({ amount, show, onComplete }: XPPopupProps) {
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (trigger && points > 0) {
-      setKey((k) => k + 1);
-      setShow(true);
-      const t = setTimeout(() => setShow(false), 800);
+    if (show) {
+      setVisible(true);
+      const t = setTimeout(() => {
+        setVisible(false);
+        onComplete?.();
+      }, 800);
       return () => clearTimeout(t);
     }
-  }, [trigger, points]);
+  }, [show, onComplete]);
 
-  if (!show) return null;
+  if (!visible) return null;
 
   return (
-    <span
-      key={key}
-      className="inline-block font-mono font-bold text-neon-cyan text-glow-cyan animate-xp-pop"
-    >
-      +{points} XP
-    </span>
+    <div className="fixed inset-0 pointer-events-none flex items-center justify-center z-[60]">
+      <div className="font-mono font-bold text-4xl text-primary text-glow-purple animate-xp-pop tabular-nums">
+        +{amount} XP
+      </div>
+    </div>
   );
 }
+
+export default XPPopup;
