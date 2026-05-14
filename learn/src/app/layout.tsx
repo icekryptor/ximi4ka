@@ -1,30 +1,41 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Manrope, Unbounded, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const plexSans = IBM_Plex_Sans({
+const manrope = Manrope({
   subsets: ["latin", "cyrillic"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-plex",
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-sans",
   display: "swap",
 });
 
-const plexMono = IBM_Plex_Mono({
+const unbounded = Unbounded({
   subsets: ["latin", "cyrillic"],
+  weight: ["400", "600", "700"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
   weight: ["400", "500", "700"],
-  variable: "--font-plex-mono",
+  variable: "--font-mono",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "XimiLearn — Химия для школьников",
-  description: "Образовательная платформа по химии от Ximi4ka. Теория, реакции, задачи из школьной программы.",
+  title: "XimiLearn — химия это просто",
+  description: "Интерактивная платформа для изучения химии",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="ru" className={`${plexSans.variable} ${plexMono.variable}`}>
-      <body className="font-sans text-gray-100 bg-bg-dark min-h-screen flex flex-col">
+    <html lang="ru" className={`${manrope.variable} ${unbounded.variable} ${jetbrainsMono.variable}`}>
+      <body className="font-sans text-text-primary bg-bg-base min-h-screen flex flex-col antialiased">
         {children}
       </body>
     </html>
