@@ -1,6 +1,7 @@
 import { StrategyDocSection } from '../components/marketing/StrategyDocSection'
 import { SegmentsSection } from '../components/marketing/SegmentsSection'
 import { ThemesSection } from '../components/marketing/ThemesSection'
+import { BrandDocCardsSection } from '../components/marketing/BrandDocCardsSection'
 import { BudgetsSection } from '../components/marketing/BudgetsSection'
 
 const MarketingStrategy = () => {
@@ -16,6 +17,7 @@ const MarketingStrategy = () => {
       <StrategyDocSection />
       <SegmentsSection />
       <ThemesSection />
+      <BrandDocCardsSection />
       <BudgetsSection />
     </div>
   )
