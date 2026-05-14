@@ -98,22 +98,27 @@ function initialFormData(unit: ContentUnit | 'new'): FormData {
  * No backend involved — Claude reads brand_docs via Supabase MCP.
  */
 function buildScriptTrigger(unit: ContentUnit): string {
-  // Style cluster by network — see design doc §3
+  // Style cluster by network — see design doc §3.
+  // Unmapped networks fall through to style_tiktok_youtube as a safe default
+  // (the short-form-video cluster is the most common production target).
   const networks = new Set(unit.publications.map((p) => p.network))
   const styleSlugs: string[] = []
-  if (networks.has('instagram')) styleSlugs.push('style_instagram')
+  if (networks.has('instagram') || networks.has('reels')) styleSlugs.push('style_instagram')
   if (networks.has('telegram')) styleSlugs.push('style_telegram')
   if (
     networks.has('tiktok') ||
     networks.has('youtube') ||
-    networks.has('youtube_shorts')
+    networks.has('youtube_shorts') ||
+    networks.has('vk')
   ) {
     styleSlugs.push('style_tiktok_youtube')
   }
   if (styleSlugs.length === 0) styleSlugs.push('style_tiktok_youtube')
 
-  // Format by content_type — see design doc §3
-  const FORMAT_SLUG: Record<string, string> = {
+  // Format by content_type — see design doc §3. Record<ContentType, string>
+  // gives exhaustiveness check: TS will warn if a new content_type is added
+  // and we forget to map it here.
+  const FORMAT_SLUG: Record<ContentType, string> = {
     short_video: 'format_short_video',
     long_video: 'format_long_video',
     carousel: 'format_carousel',
