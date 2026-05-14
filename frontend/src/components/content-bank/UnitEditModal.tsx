@@ -445,6 +445,11 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
   // sense for video-producing types. Legacy `other` falls back to "show all".
   const VIDEO_TYPES: ContentType[] = ['short_video', 'long_video', 'stream', 'podcast', 'other']
   const isVideoProducing = VIDEO_TYPES.includes(formData.content_type)
+  const isCarousel = formData.content_type === 'carousel'
+  // Types whose generated content lives on content_units.* fields (script_text /
+  // video_brief / voiceover_text). Other types (post / longread / story) get
+  // their text directly into content_publications.notes — see agent_scriptwriter_prompt §1.
+  const hasUnitLevelProductionFields = isVideoProducing || isCarousel
 
   // ---- conditional fields by content_type ----
   const renderTypeFields = () => {
@@ -857,10 +862,11 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
               {scriptBusy ? 'Готовлю промпт…' : 'Сгенерить сценарий'}
             </button>
           </div>
-          {/* Recipe-driven types: nothing on this tab until the unit is persisted */}
-          {!recipe && !isVideoProducing && (
+          {/* For types whose generated content lives on content_publications.notes
+              (post / longread / story) — direct the operator to the right tab. */}
+          {!recipe && !hasUnitLevelProductionFields && (
             <div className="text-center py-12 text-brand-text-secondary text-sm">
-              Тип контента не использует производственные поля. Перейдите во вкладку «Публикации».
+              Текст этого типа контента живёт в публикациях. Перейди в таб «Публикации» — там агент пишет caption/текст для каждой сети.
             </div>
           )}
 
@@ -900,55 +906,74 @@ export function UnitEditModal({ unit, onClose, onSaved }: Props) {
             </div>
           )}
 
-          {/* Production section — only for video-producing types */}
-          {isVideoProducing && (
+          {/* Production section — for video-producing types AND carousel.
+              Carousel: script_text = слайды как текст "Слайд 1: ...", video_brief = дизайн-бриф.
+              Voiceover-studio button + voiceover_text field only for video types. */}
+          {hasUnitLevelProductionFields && (
           <section className="space-y-3">
             <div>
               <label className="text-xs text-brand-text-secondary uppercase tracking-wider">
-                Сценарий
+                {isCarousel ? 'Слайды (от агента)' : 'Сценарий'}
               </label>
               <textarea
                 value={formData.script_text}
                 onChange={(e) => setFormData({ ...formData, script_text: e.target.value })}
                 rows={10}
-                placeholder="Полный текст сценария — проговаривается при съёмке."
+                placeholder={
+                  isCarousel
+                    ? 'Агент впишет 8–10 слайдов в формате:\nСлайд 1: ...\nСлайд 2: ...'
+                    : 'Полный текст сценария — проговаривается при съёмке.'
+                }
                 className="w-full mt-1 px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text outline-none focus:border-primary-400 resize-y font-mono text-sm whitespace-pre-line"
               />
-              <button
-                type="button"
-                onClick={() => unit !== 'new' && navigate(`/voiceover/${unit.id}`)}
-                disabled={unit === 'new'}
-                className="text-xs text-primary-600 hover:text-primary-700 mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                🎙 Открыть в войсовер-студии →
-              </button>
+              {isVideoProducing && (
+                <button
+                  type="button"
+                  onClick={() => unit !== 'new' && navigate(`/voiceover/${unit.id}`)}
+                  disabled={unit === 'new'}
+                  className="text-xs text-primary-600 hover:text-primary-700 mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  🎙 Открыть в войсовер-студии →
+                </button>
+              )}
+              {isCarousel && (
+                <p className="text-xs text-brand-text-secondary mt-1">
+                  Это canonical-выход агента. Поля «Подпись поста» + «Слайды» во вкладке «Идея» — твой draft-вход в промпт; финал агента живёт здесь.
+                </p>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className={isVideoProducing ? 'grid grid-cols-1 md:grid-cols-2 gap-3' : ''}>
               <div>
                 <label className="text-xs text-brand-text-secondary uppercase tracking-wider">
-                  ТЗ для видео
+                  {isCarousel ? 'Дизайн-бриф' : 'ТЗ для видео'}
                 </label>
                 <textarea
                   value={formData.video_brief}
                   onChange={(e) => setFormData({ ...formData, video_brief: e.target.value })}
                   rows={5}
-                  placeholder="Что снимаем, ракурсы, реквизит, локация…"
+                  placeholder={
+                    isCarousel
+                      ? 'Дизайн каждого слайда: фон, акценты, иконки/визуал, шрифт.'
+                      : 'Что снимаем, ракурсы, реквизит, локация…'
+                  }
                   className="w-full mt-1 px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text outline-none focus:border-primary-400 resize-y text-sm"
                 />
               </div>
-              <div>
-                <label className="text-xs text-brand-text-secondary uppercase tracking-wider">
-                  Озвучка
-                </label>
-                <textarea
-                  value={formData.voiceover_text}
-                  onChange={(e) => setFormData({ ...formData, voiceover_text: e.target.value })}
-                  rows={5}
-                  placeholder="Текст голоса за кадром."
-                  className="w-full mt-1 px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text outline-none focus:border-primary-400 resize-y text-sm"
-                />
-              </div>
+              {isVideoProducing && (
+                <div>
+                  <label className="text-xs text-brand-text-secondary uppercase tracking-wider">
+                    Озвучка
+                  </label>
+                  <textarea
+                    value={formData.voiceover_text}
+                    onChange={(e) => setFormData({ ...formData, voiceover_text: e.target.value })}
+                    rows={5}
+                    placeholder="Текст голоса за кадром."
+                    className="w-full mt-1 px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text outline-none focus:border-primary-400 resize-y text-sm"
+                  />
+                </div>
+              )}
             </div>
           </section>
           )}
