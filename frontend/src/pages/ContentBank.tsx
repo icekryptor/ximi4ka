@@ -88,7 +88,11 @@ function FilterChipBar<T extends string>({
 
 function formatShortDate(iso: string): string {
   const d = new Date(iso)
-  return d.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' })
+  return d.toLocaleDateString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
 }
 
 /**
@@ -633,24 +637,14 @@ export default function ContentBank() {
                     onClick={() => setEditingUnit(u)}
                     className="border-b border-brand-border hover:bg-subtle cursor-pointer"
                   >
-                    <td className="py-3 px-4">
-                      <div className="flex flex-wrap items-center gap-1.5 mb-1">
-                        {u.rubric && (
-                          <UnitChip variant="rubric">
-                            {u.rubric.emoji} {u.rubric.title}
-                          </UnitChip>
-                        )}
+                    <td className="py-2 px-4">
+                      <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
                         <UnitChip variant="status" status={u.status}>
                           {STATUS_LABELS[u.status]}
                         </UnitChip>
                         <UnitChip variant="type" contentType={u.content_type}>
                           {CONTENT_TYPE_LABELS[u.content_type]}
                         </UnitChip>
-                        {u.complexity != null && COMPLEXITY_LABELS[u.complexity] && (
-                          <UnitChip variant="complexity">
-                            {COMPLEXITY_LABELS[u.complexity]}
-                          </UnitChip>
-                        )}
                         {(() => {
                           // Show earliest scheduled publication date — the
                           // content-bank doubles as a publication calendar.
@@ -679,16 +673,11 @@ export default function ContentBank() {
                           )
                         })()}
                       </div>
-                      <div className="font-semibold text-brand-text leading-snug">
+                      <div className="font-medium text-brand-text text-sm leading-tight line-clamp-1">
                         {u.title}
                       </div>
-                      {u.hook && (
-                        <div className="text-sm text-brand-text-secondary mt-0.5 line-clamp-1">
-                          → {u.hook}
-                        </div>
-                      )}
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-2 px-4">
                       <div className="flex flex-wrap gap-1">
                         {/* Cap visible chips at 3. When publications.length > 3,
                             the third slot becomes a counter "+N" showing the
@@ -733,7 +722,7 @@ export default function ContentBank() {
                       </div>
                     </td>
                     <td
-                      className="py-3 px-4 text-right whitespace-nowrap"
+                      className="py-2 px-4 text-right whitespace-nowrap"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="flex justify-end gap-1">
