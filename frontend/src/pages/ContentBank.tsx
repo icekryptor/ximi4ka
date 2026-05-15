@@ -687,11 +687,6 @@ export default function ContentBank() {
                           → {u.hook}
                         </div>
                       )}
-                      {u.script_text && (
-                        <div className="text-xs text-brand-text-secondary mt-1.5 line-clamp-3 whitespace-pre-line">
-                          {u.script_text}
-                        </div>
-                      )}
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex flex-wrap gap-1">
