@@ -8,14 +8,15 @@ export async function canAccessModule(
 ): Promise<boolean> {
   if (moduleTier === "base") {
     // 1. Kit-based access via user_modules (OGE kit, etc.)
-    const { data: kitModule } = await supabase
+    // Any active user_modules row grants access to all base-tier modules.
+    const { data: kitModules } = await supabase
       .from("user_modules")
-      .select("id")
+      .select("module_id")
       .eq("user_id", userId)
       .gt("expires_at", new Date().toISOString())
-      .maybeSingle();
+      .limit(1);
 
-    if (kitModule) return true;
+    if (kitModules && kitModules.length > 0) return true;
 
     // 2. Legacy subscription (paid / promo)
     const { data: sub } = await supabase

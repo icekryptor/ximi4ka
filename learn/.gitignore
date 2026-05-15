@@ -34,3 +34,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Kit credentials CSVs (contain plaintext passwords)
+batch-*.csv

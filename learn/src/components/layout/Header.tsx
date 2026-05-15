@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FlaskConical } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { ProfilePreview } from "@/components/layout/ProfilePreview";
 
 export default async function Header() {
   const supabase = await createClient();
@@ -51,12 +52,7 @@ export default async function Header() {
 
         <div className="flex items-center gap-3">
           {user ? (
-            <Link
-              href="/profile"
-              className="text-sm font-semibold text-white px-5 py-2 rounded-full bg-gradient-to-r from-primary-gradient-start to-primary-gradient-end hover:shadow-glow-purple transition-shadow"
-            >
-              Профиль
-            </Link>
+            <ProfilePreview theme="light" />
           ) : (
             <>
               <Link

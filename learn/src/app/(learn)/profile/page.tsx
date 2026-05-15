@@ -13,6 +13,8 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<any>(null);
   const [subscription, setSubscription] = useState<any>(null);
   const [displayName, setDisplayName] = useState("");
+  const [telegram, setTelegram] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
   const [promoCode, setPromoCode] = useState("");
   const [promoMessage, setPromoMessage] = useState("");
   const [saving, setSaving] = useState(false);
@@ -36,6 +38,8 @@ export default function ProfilePage() {
       setProfile(p);
       setSubscription(s);
       setDisplayName(p?.display_name || "");
+      setTelegram(p?.telegram || "");
+      setAvatarUrl(p?.avatar_url || "");
       setLoading(false);
     }
     load();
@@ -43,7 +47,15 @@ export default function ProfilePage() {
 
   async function handleSave() {
     setSaving(true);
-    await supabase.from("profiles").update({ display_name: displayName }).eq("id", profile.id);
+    await supabase
+      .from("profiles")
+      .update({
+        display_name: displayName.trim() || null,
+        telegram: telegram.trim() || null,
+        avatar_url: avatarUrl.trim() || null,
+      })
+      .eq("id", profile.id);
+    router.refresh();
     setSaving(false);
   }
 
@@ -89,7 +101,39 @@ export default function ProfilePage() {
       <Card theme="dark" className="p-6 mb-6">
         <h2 className="text-lg font-bold mb-4 text-dark-text">Личные данные</h2>
         <div className="space-y-4">
-          <Input theme="dark" id="name" label="Имя" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+          <Input
+            theme="dark"
+            id="name"
+            label="Имя"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            placeholder="Иван Петров"
+          />
+          <Input
+            theme="dark"
+            id="telegram"
+            label="Telegram"
+            value={telegram}
+            onChange={(e) => setTelegram(e.target.value)}
+            placeholder="@username"
+          />
+          <Input
+            theme="dark"
+            id="avatar"
+            label="Аватар (URL картинки)"
+            value={avatarUrl}
+            onChange={(e) => setAvatarUrl(e.target.value)}
+            placeholder="https://..."
+          />
+          {avatarUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={avatarUrl}
+              alt="Превью аватара"
+              className="w-16 h-16 rounded-full object-cover border border-white/10"
+              referrerPolicy="no-referrer"
+            />
+          )}
           <Button theme="dark" onClick={handleSave} disabled={saving} size="sm">
             {saving ? "Сохранение..." : "Сохранить"}
           </Button>
