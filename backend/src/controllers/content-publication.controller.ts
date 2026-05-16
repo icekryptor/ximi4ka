@@ -18,6 +18,60 @@ async function resolveChannelId(body: Record<string, unknown>): Promise<void> {
 
 export const contentPublicationController = {
   /**
+   * Returns simple activity counters for the dashboard «Пульс» strip:
+   *  - scheduled_today: publications with scheduled_at falling within today
+   *  - published_today: publications with published_at falling within today
+   *  - avg_published_7d: average daily published count over the last 7 days
+   *
+   * Used by the «Пульс» inline component in the content-bank header to
+   * surface a single-line activity heartbeat with delta vs 7-day average.
+   */
+  async pulse(_req: Request, res: Response) {
+    try {
+      const result = await repo.manager.query<Array<{
+        scheduled_today: string
+        published_today: string
+        avg_published_7d: string
+      }>>(
+        `WITH today AS (
+           SELECT
+             COUNT(*) FILTER (
+               WHERE scheduled_at >= date_trunc('day', NOW())
+                 AND scheduled_at < date_trunc('day', NOW()) + INTERVAL '1 day'
+             ) AS scheduled_today,
+             COUNT(*) FILTER (
+               WHERE published_at >= date_trunc('day', NOW())
+                 AND published_at < date_trunc('day', NOW()) + INTERVAL '1 day'
+             ) AS published_today
+           FROM content_publications
+         ),
+         last7 AS (
+           SELECT
+             COUNT(*) FILTER (
+               WHERE published_at >= date_trunc('day', NOW()) - INTERVAL '7 days'
+                 AND published_at < date_trunc('day', NOW())
+             ) AS published_last_7
+           FROM content_publications
+         )
+         SELECT
+           today.scheduled_today,
+           today.published_today,
+           (last7.published_last_7::float / 7) AS avg_published_7d
+         FROM today, last7`,
+      )
+      const row = result[0] ?? { scheduled_today: '0', published_today: '0', avg_published_7d: '0' }
+      res.json({
+        scheduled_today: Number(row.scheduled_today),
+        published_today: Number(row.published_today),
+        avg_published_7d: Number(row.avg_published_7d),
+      })
+    } catch (e: any) {
+      console.error('[content-publications.pulse] FAILED', 'message=', e?.message, '\nstack=', e?.stack)
+      res.status(500).json({ error: 'Не удалось загрузить пульс' })
+    }
+  },
+
+  /**
    * Returns all publications whose scheduled_at falls within "today" (UTC).
    * Joined with content_units for unit title and `script_text` (used to
    * derive has_video flag client-side via video_url presence).

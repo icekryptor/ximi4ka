@@ -232,6 +232,18 @@ export const publicationsApi = {
     )
     return r.data
   },
+  pulse: async (): Promise<{
+    scheduled_today: number
+    published_today: number
+    avg_published_7d: number
+  }> => {
+    const r = await apiClient.get<{
+      scheduled_today: number
+      published_today: number
+      avg_published_7d: number
+    }>('/content-publications/pulse')
+    return r.data
+  },
 }
 
 // === Status / Type metadata for UI ===

@@ -31,6 +31,7 @@ import { MetricsRow } from '../components/content-engine/MetricsRow'
 import { PipelineRow } from '../components/content-engine/PipelineRow'
 import { Bottlenecks } from '../components/content-engine/Bottlenecks'
 import { TodayQueue } from '../components/content-engine/TodayQueue'
+import { Pulse } from '../components/content-engine/Pulse'
 import { RecentPublished } from '../components/content-engine/RecentPublished'
 import { KNOWN_NETWORKS } from '../lib/networks'
 import { useToast } from '../contexts/ToastContext'
@@ -315,22 +316,26 @@ export default function ContentBank() {
         <div className="flex flex-col gap-1">
           <h1 className="text-lg sm:text-xl font-bold text-brand-text">Контент-банк</h1>
           {dashboard && (
-            <div className="flex items-center gap-2 text-xs text-brand-text-secondary">
-              <span
-                className={
-                  'inline-block w-2 h-2 rounded-full ' +
-                  (dashboardFetching ? 'bg-primary-500 animate-pulse' : 'bg-green-500')
-                }
-                aria-label={dashboardFetching ? 'Обновляется' : 'Актуально'}
-              />
-              <span>Обновлено: {new Date(dashboard.generated_at).toLocaleTimeString('ru-RU')}</span>
-              <button
-                onClick={refreshDashboard}
-                disabled={dashboardFetching}
-                className="ml-2 flex items-center gap-1 px-2 py-1 rounded-lg border border-brand-border hover:bg-subtle disabled:opacity-50"
-              >
-                <RefreshCw size={12} className={dashboardFetching ? 'animate-spin' : ''} /> Обновить
-              </button>
+            <div className="flex items-center gap-3 text-xs text-brand-text-secondary flex-wrap">
+              <div className="flex items-center gap-2">
+                <span
+                  className={
+                    'inline-block w-2 h-2 rounded-full ' +
+                    (dashboardFetching ? 'bg-primary-500 animate-pulse' : 'bg-green-500')
+                  }
+                  aria-label={dashboardFetching ? 'Обновляется' : 'Актуально'}
+                />
+                <span>Обновлено: {new Date(dashboard.generated_at).toLocaleTimeString('ru-RU')}</span>
+                <button
+                  onClick={refreshDashboard}
+                  disabled={dashboardFetching}
+                  className="ml-1 flex items-center gap-1 px-2 py-1 rounded-lg border border-brand-border hover:bg-subtle disabled:opacity-50"
+                >
+                  <RefreshCw size={12} className={dashboardFetching ? 'animate-spin' : ''} /> Обновить
+                </button>
+              </div>
+              <span className="text-brand-border">|</span>
+              <Pulse />
             </div>
           )}
         </div>
