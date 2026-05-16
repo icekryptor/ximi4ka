@@ -392,14 +392,8 @@ export default function ContentBank() {
             <option value="ready_at">📅 По дате готовности</option>
             <option value="scheduled_at">🚀 По дате публикации</option>
           </select>
-          {/* Date range filter on content_publications.scheduled_at — both
-              bounds optional, URL-stateful. Matches units with ANY publication
-              scheduled in range. */}
-          <div
-            className="flex items-center gap-1 text-xs text-brand-text-secondary shrink-0"
-            title="Фильтр по дате запланированной публикации"
-          >
-            <span aria-hidden>🚀</span>
+          {/* Date range — compact 3-col: [from] [to] [✕] */}
+          <div className="flex items-center gap-1 shrink-0">
             <input
               type="date"
               value={schedFrom}
@@ -413,10 +407,9 @@ export default function ContentBank() {
                   return sp
                 })
               }}
-              className="text-xs px-2 py-1 rounded border border-brand-border bg-card text-brand-text"
+              className="text-xs px-2 py-1 rounded border border-brand-border bg-card text-brand-text w-32"
               title="Дата публикации: от"
             />
-            <span aria-hidden>—</span>
             <input
               type="date"
               value={schedTo}
@@ -430,7 +423,7 @@ export default function ContentBank() {
                   return sp
                 })
               }}
-              className="text-xs px-2 py-1 rounded border border-brand-border bg-card text-brand-text"
+              className="text-xs px-2 py-1 rounded border border-brand-border bg-card text-brand-text w-32"
               title="Дата публикации: до"
             />
             {(schedFrom || schedTo) && (
@@ -445,40 +438,47 @@ export default function ContentBank() {
                     return sp
                   })
                 }}
-                className="px-1.5 py-1 rounded hover:bg-subtle text-brand-text-secondary"
+                className="px-1.5 py-1 rounded hover:bg-subtle text-brand-text-secondary text-xs"
                 title="Сбросить фильтр по датам"
               >
                 ✕
               </button>
             )}
           </div>
+
+          {/* Mini icon-only action buttons. Tooltip shows full label. */}
           <button
             onClick={() => navigate('/content-bank/triage')}
-            className="btn btn-secondary flex items-center gap-2 whitespace-nowrap shrink-0"
-            title="Режим триажа — оценка идей"
+            className="relative p-2 rounded-lg border border-brand-border hover:bg-subtle shrink-0"
+            title={`Триаж — оценка идей${ungraded > 0 ? ` (${ungraded})` : ''}`}
           >
             <Sparkles size={16} />
-            <span className="hidden sm:inline">Триаж{ungraded > 0 ? ` (${ungraded})` : ''}</span>
+            {ungraded > 0 && (
+              <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-[10px] font-semibold rounded-full min-w-[16px] h-4 px-1 flex items-center justify-center">
+                {ungraded}
+              </span>
+            )}
           </button>
 
           {rejectedCount > 0 && (
             <button
               onClick={handlePurgeRejected}
-              className="btn flex items-center gap-2 border border-red-300 text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 dark:border-red-800 dark:text-red-400 whitespace-nowrap shrink-0"
-              title="Удалить все идеи со статусом «отказ»"
+              className="relative p-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 dark:border-red-800 dark:text-red-400 shrink-0"
+              title={`Удалить все идеи со статусом «отказ» (${rejectedCount})`}
             >
               <Trash2 size={16} />
-              <span className="hidden sm:inline">Отказы ({rejectedCount})</span>
+              <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-semibold rounded-full min-w-[16px] h-4 px-1 flex items-center justify-center">
+                {rejectedCount}
+              </span>
             </button>
           )}
 
           <button
             onClick={() => setImportModalOpen(true)}
-            className="btn btn-secondary flex items-center gap-2 whitespace-nowrap shrink-0"
+            className="p-2 rounded-lg border border-brand-border hover:bg-subtle shrink-0"
             title="Импорт из JSON"
           >
             <Upload size={16} />
-            <span className="hidden sm:inline">Импорт</span>
           </button>
 
           <button
@@ -504,19 +504,18 @@ export default function ContentBank() {
                 toast.error('Ошибка экспорта')
               }
             }}
-            className="btn btn-secondary flex items-center gap-2 whitespace-nowrap shrink-0"
+            className="p-2 rounded-lg border border-brand-border hover:bg-subtle shrink-0"
             title="Экспорт в JSON"
           >
             <Download size={16} />
-            <span className="hidden sm:inline">Экспорт</span>
           </button>
 
           <button
             onClick={() => setRubricsManagerOpen(true)}
-            className="btn btn-secondary flex items-center gap-2 whitespace-nowrap shrink-0"
+            className="p-2 rounded-lg border border-brand-border hover:bg-subtle shrink-0"
+            title="Управление рубриками"
           >
             <Settings size={16} />
-            <span className="hidden sm:inline">Рубрики</span>
           </button>
           <button
             onClick={() => setEditingUnit('new')}
