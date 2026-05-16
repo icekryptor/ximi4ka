@@ -487,7 +487,6 @@ export default function ContentBank() {
         <div className="space-y-4 mb-4">
           <MetricsRow stats={dashboard.stats} />
           <TodayQueue
-            queue={dashboard.today_queue}
             onUnitClick={async (unitId) => {
               try {
                 const unit = await unitsApi.getOne(unitId)

@@ -17,6 +17,35 @@ async function resolveChannelId(body: Record<string, unknown>): Promise<void> {
 }
 
 export const contentPublicationController = {
+  /**
+   * Returns all publications whose scheduled_at falls within "today" (UTC).
+   * Joined with content_units for unit title and `script_text` (used to
+   * derive has_video flag client-side via video_url presence).
+   *
+   * Used by TodayQueue on the content-bank dashboard. Bypasses the Edge
+   * Function dashboard cache so the queue reflects publish-state changes
+   * immediately after operator action.
+   */
+  async todayList(_req: Request, res: Response) {
+    try {
+      const items = await repo
+        .createQueryBuilder('p')
+        .leftJoinAndSelect('p.content_unit', 'u')
+        .where("p.scheduled_at >= date_trunc('day', NOW())")
+        .andWhere("p.scheduled_at < date_trunc('day', NOW()) + INTERVAL '1 day'")
+        .orderBy('p.scheduled_at', 'ASC')
+        .getMany()
+      res.json(items)
+    } catch (e: any) {
+      console.error(
+        '[content-publications.todayList] FAILED',
+        'message=', e?.message,
+        '\nstack=', e?.stack,
+      )
+      res.status(500).json({ error: 'Не удалось загрузить очередь публикаций' })
+    }
+  },
+
   async create(req: Request, res: Response) {
     try {
       await resolveChannelId(req.body)

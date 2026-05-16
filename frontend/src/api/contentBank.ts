@@ -226,6 +226,12 @@ export const publicationsApi = {
   delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/content-publications/${id}`)
   },
+  todayList: async (): Promise<Array<ContentPublication & { content_unit: ContentUnit }>> => {
+    const r = await apiClient.get<Array<ContentPublication & { content_unit: ContentUnit }>>(
+      '/content-publications/today',
+    )
+    return r.data
+  },
 }
 
 // === Status / Type metadata for UI ===
