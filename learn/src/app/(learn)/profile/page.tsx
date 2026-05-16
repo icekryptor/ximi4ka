@@ -12,9 +12,12 @@ import { BindEmailBanner } from "@/components/profile/BindEmailBanner";
 export default function ProfilePage() {
   const [profile, setProfile] = useState<any>(null);
   const [subscription, setSubscription] = useState<any>(null);
+  const [kitModule, setKitModule] = useState<any>(null);
   const [displayName, setDisplayName] = useState("");
   const [telegram, setTelegram] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const [promoCode, setPromoCode] = useState("");
   const [promoMessage, setPromoMessage] = useState("");
   const [saving, setSaving] = useState(false);
@@ -30,13 +33,23 @@ export default function ProfilePage() {
 
       setIsKitEmail(user.email?.endsWith("@kits.ximi4ka.ru") ?? false);
 
-      const [{ data: p }, { data: s }] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", user.id).single(),
-        supabase.from("subscriptions").select("*").eq("user_id", user.id).eq("status", "active").single(),
+      const nowIso = new Date().toISOString();
+      const [{ data: p }, { data: s }, { data: km }] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
+        supabase.from("subscriptions").select("*").eq("user_id", user.id).eq("status", "active").gt("expires_at", nowIso).maybeSingle(),
+        supabase
+          .from("user_modules")
+          .select("expires_at, source, modules(slug, title)")
+          .eq("user_id", user.id)
+          .gt("expires_at", nowIso)
+          .order("expires_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
       ]);
 
       setProfile(p);
       setSubscription(s);
+      setKitModule(km);
       setDisplayName(p?.display_name || "");
       setTelegram(p?.telegram || "");
       setAvatarUrl(p?.avatar_url || "");
@@ -44,6 +57,43 @@ export default function ProfilePage() {
     }
     load();
   }, []);
+
+  async function handleAvatarUpload(file: File) {
+    setUploadError("");
+    if (!profile?.id) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("Файл больше 5 МБ — выбери поменьше");
+      return;
+    }
+    if (!/^image\/(jpeg|png|webp|gif)$/.test(file.type)) {
+      setUploadError("Только JPG, PNG, WEBP или GIF");
+      return;
+    }
+    setUploadingAvatar(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${profile.id}/avatar-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: file.type,
+      });
+      if (upErr) {
+        setUploadError(upErr.message);
+        setUploadingAvatar(false);
+        return;
+      }
+      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+      const url = pub.publicUrl;
+      setAvatarUrl(url);
+      // Persist to profiles immediately so header updates
+      await supabase.from("profiles").update({ avatar_url: url }).eq("id", profile.id);
+      router.refresh();
+    } catch (e: any) {
+      setUploadError(e?.message || "Не удалось загрузить");
+    }
+    setUploadingAvatar(false);
+  }
 
   async function handleSave() {
     setSaving(true);
@@ -117,23 +167,55 @@ export default function ProfilePage() {
             onChange={(e) => setTelegram(e.target.value)}
             placeholder="@username"
           />
-          <Input
-            theme="dark"
-            id="avatar"
-            label="Аватар (URL картинки)"
-            value={avatarUrl}
-            onChange={(e) => setAvatarUrl(e.target.value)}
-            placeholder="https://..."
-          />
-          {avatarUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={avatarUrl}
-              alt="Превью аватара"
-              className="w-16 h-16 rounded-full object-cover border border-white/10"
-              referrerPolicy="no-referrer"
-            />
-          )}
+          <div>
+            <label className="block mb-2 text-sm font-medium text-dark-text-secondary">
+              Аватар
+            </label>
+            <div className="flex items-center gap-4">
+              {avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={avatarUrl}
+                  alt="Аватар"
+                  className="w-20 h-20 rounded-full object-cover border border-white/10 flex-shrink-0"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-gradient-start to-primary-gradient-end flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
+                  {(displayName || "?").slice(0, 2).toUpperCase()}
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <label className="inline-flex items-center justify-center text-sm font-semibold text-dark-text px-4 py-2 rounded-full bg-white/10 border border-white/10 cursor-pointer hover:bg-white/15 transition-colors">
+                  {uploadingAvatar ? "Загрузка..." : avatarUrl ? "Заменить" : "Загрузить с устройства"}
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className="hidden"
+                    disabled={uploadingAvatar}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleAvatarUpload(f);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+                {avatarUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setAvatarUrl("")}
+                    className="ml-3 text-sm text-dark-text-muted hover:text-error-dark transition-colors"
+                  >
+                    Удалить
+                  </button>
+                )}
+                <p className="mt-2 text-xs text-dark-text-muted">JPG, PNG, WEBP, GIF · до 5 МБ</p>
+                {uploadError && (
+                  <p className="mt-1 text-xs text-error-dark">{uploadError}</p>
+                )}
+              </div>
+            </div>
+          </div>
           <Button theme="dark" onClick={handleSave} disabled={saving} size="sm">
             {saving ? "Сохранение..." : "Сохранить"}
           </Button>
@@ -141,17 +223,29 @@ export default function ProfilePage() {
       </Card>
 
       <Card theme="dark" className="p-6 mb-6">
-        <h2 className="text-lg font-bold mb-4 text-dark-text">Подписка</h2>
+        <h2 className="text-lg font-bold mb-4 text-dark-text">Доступ</h2>
         {subscription ? (
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <Badge theme="dark" variant="xp">Активна</Badge>
+              <Badge theme="dark" variant="xp">Подписка активна</Badge>
               <span className="text-sm text-dark-text-secondary">
                 План: {subscription.plan === "base_promo" ? "499 ₽/мес (промо)" : "999 ₽/мес"}
               </span>
             </div>
             <p className="text-sm text-dark-text-muted">
               Действует до: {new Date(subscription.expires_at).toLocaleDateString("ru-RU")}
+            </p>
+          </div>
+        ) : kitModule ? (
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <Badge theme="dark" variant="xp">Доступ из набора</Badge>
+              <span className="text-sm text-dark-text-secondary">
+                {kitModule.modules?.title ?? "Модуль"}
+              </span>
+            </div>
+            <p className="text-sm text-dark-text-muted">
+              Действует до: {new Date(kitModule.expires_at).toLocaleDateString("ru-RU")}
             </p>
           </div>
         ) : (
