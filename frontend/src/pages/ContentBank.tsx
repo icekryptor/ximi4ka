@@ -638,13 +638,20 @@ export default function ContentBank() {
                     className="border-b border-brand-border hover:bg-subtle cursor-pointer"
                   >
                     <td className="py-2 px-4">
-                      <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
-                        <UnitChip variant="status" status={u.status}>
-                          {STATUS_LABELS[u.status]}
-                        </UnitChip>
-                        <UnitChip variant="type" contentType={u.content_type}>
-                          {CONTENT_TYPE_LABELS[u.content_type]}
-                        </UnitChip>
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
+                            <UnitChip variant="status" status={u.status}>
+                              {STATUS_LABELS[u.status]}
+                            </UnitChip>
+                            <UnitChip variant="type" contentType={u.content_type}>
+                              {CONTENT_TYPE_LABELS[u.content_type]}
+                            </UnitChip>
+                          </div>
+                          <div className="font-medium text-brand-text text-sm leading-tight line-clamp-1">
+                            {u.title}
+                          </div>
+                        </div>
                         {(() => {
                           // Show earliest scheduled publication date — the
                           // content-bank doubles as a publication calendar.
@@ -661,7 +668,7 @@ export default function ContentBank() {
                           return (
                             <span
                               className={
-                                'ml-auto text-xs ' +
+                                'text-xs shrink-0 ' +
                                 (highlighted
                                   ? 'text-primary-600 font-medium'
                                   : 'text-brand-text-secondary')
@@ -672,9 +679,6 @@ export default function ContentBank() {
                             </span>
                           )
                         })()}
-                      </div>
-                      <div className="font-medium text-brand-text text-sm leading-tight line-clamp-1">
-                        {u.title}
                       </div>
                     </td>
                     <td className="py-2 px-4">
