@@ -392,6 +392,7 @@ export default function ContentBank() {
             <option value="ready_at">📅 По дате готовности</option>
             <option value="scheduled_at">🚀 По дате публикации</option>
           </select>
+          {dashboard && <Bottlenecks counts={dashboard.stats.counts} />}
           {/* Date range — compact 3-col: [from] [to] [✕] */}
           <div className="flex items-center gap-1 shrink-0">
             <input
@@ -530,7 +531,6 @@ export default function ContentBank() {
       {dashboard && (
         <div className="space-y-4 mb-4">
           <MetricsRow stats={dashboard.stats} />
-          <Bottlenecks counts={dashboard.stats.counts} />
           <TodayQueue
             queue={dashboard.today_queue}
             onUnitClick={async (unitId) => {
