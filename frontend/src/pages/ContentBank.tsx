@@ -24,7 +24,6 @@ import {
   STATUS_LABELS,
   CONTENT_TYPE_LABELS,
   COMPLEXITY_LABELS,
-  REVIEW_GRADE_LABELS,
   ReviewGrade,
 } from '../api/contentBank'
 import { contentEngineApi, DashboardData, StageKey } from '../api/contentEngine'
@@ -40,51 +39,7 @@ import { UnitChip } from '../components/content-bank/UnitChip'
 import { UnitEditModal } from '../components/content-bank/UnitEditModal'
 import { RubricsManagerModal } from '../components/content-bank/RubricsManagerModal'
 import ImportJsonModal from '../components/content-bank/ImportJsonModal'
-
-function FilterChipBar<T extends string>({
-  label,
-  options,
-  selected,
-  onChange,
-}: {
-  label: string
-  options: { value: T; label: string }[]
-  selected: T[]
-  onChange: (next: T[]) => void
-}) {
-  const toggle = (v: T) => {
-    if (selected.includes(v)) onChange(selected.filter((x) => x !== v))
-    else onChange([...selected, v])
-  }
-  return (
-    <div className="flex items-center gap-2 flex-wrap">
-      <span className="text-xs text-brand-text-secondary w-20 shrink-0">{label}:</span>
-      <button
-        onClick={() => onChange([])}
-        className={`px-2.5 py-1 text-xs rounded-full border transition-colors ${
-          selected.length === 0
-            ? 'bg-primary-100 dark:bg-primary-900/40 border-primary-300 text-primary-700'
-            : 'bg-card border-brand-border text-brand-text-secondary hover:border-primary-300'
-        }`}
-      >
-        Все
-      </button>
-      {options.map((o) => (
-        <button
-          key={o.value}
-          onClick={() => toggle(o.value)}
-          className={`px-2.5 py-1 text-xs rounded-full border transition-colors ${
-            selected.includes(o.value)
-              ? 'bg-primary-100 dark:bg-primary-900/40 border-primary-300 text-primary-700'
-              : 'bg-card border-brand-border text-brand-text-secondary hover:border-primary-300'
-          }`}
-        >
-          {o.label}
-        </button>
-      ))}
-    </div>
-  )
-}
+import { MultiSelectDropdown } from '../components/content-bank/MultiSelectDropdown'
 
 function formatShortDate(iso: string): string {
   const d = new Date(iso)
@@ -569,9 +524,9 @@ export default function ContentBank() {
         </div>
       )}
 
-      {/* Filters */}
-      <div className="mb-6 space-y-3">
-        <div className="relative">
+      {/* Filters — search at half-width, multi-select dropdowns next to it. */}
+      <div className="mb-6 flex flex-wrap items-center gap-2">
+        <div className="relative w-full md:w-1/2 md:flex-1 md:max-w-xl">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-text-secondary" />
           <input
             type="text"
@@ -581,28 +536,17 @@ export default function ContentBank() {
             onChange={(e) => setSearchInput(e.target.value)}
           />
         </div>
-        <FilterChipBar
+        <MultiSelectDropdown
           label="Тип"
           options={typeOptions}
           selected={typeFilter}
           onChange={(next) => updateParam('content_type', next)}
         />
-        <FilterChipBar
+        <MultiSelectDropdown
           label="Сети"
           options={networkOptions}
           selected={networkFilter}
           onChange={(next) => updateParam('network', next)}
-        />
-        <FilterChipBar
-          label="Оценка"
-          options={[
-            { value: 'excellent', label: REVIEW_GRADE_LABELS.excellent },
-            { value: 'needs_work', label: REVIEW_GRADE_LABELS.needs_work },
-            { value: 'rejected', label: REVIEW_GRADE_LABELS.rejected },
-            { value: 'null', label: '— не оценено —' },
-          ]}
-          selected={reviewGradeFilter}
-          onChange={(next) => updateParam('review_grade', next)}
         />
       </div>
 
