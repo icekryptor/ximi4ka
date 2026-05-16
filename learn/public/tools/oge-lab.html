@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Лаборатория качественных реакций · ОГЭ химия · задание 23</title>
+<style>
+  :root {
+    --bg: #FAFAF7; --surface: #FFFFFF; --surface-2: #F1EFE8;
+    --text: #1A1A1A; --text-secondary: #5F5E5A; --text-tertiary: #888780;
+    --border: rgba(0,0,0,0.12); --border-strong: rgba(0,0,0,0.25);
+    --accent: #534AB7; --accent-bg: #EEEDFE; --accent-text: #3C3489;
+    --success-bg: #EAF3DE; --success-text: #27500A; --success-border: #C0DD97;
+    --danger-bg: #FCEBEB; --danger-text: #791F1F; --danger-border: #F7C1C1;
+    --warning-bg: #FAEEDA; --warning-text: #854F0B;
+    --info-bg: #E6F1FB; --info-text: #0C447C;
+    --radius-md: 8px; --radius-lg: 12px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", system-ui, sans-serif;
+    --font-mono: "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1A1A1A; --surface: #242422; --surface-2: #2C2C2A;
+      --text: #F1EFE8; --text-secondary: #B4B2A9; --text-tertiary: #888780;
+      --border: rgba(255,255,255,0.12); --border-strong: rgba(255,255,255,0.25);
+      --accent-bg: #26215C; --accent-text: #CECBF6;
+      --success-bg: #173404; --success-text: #C0DD97;
+      --danger-bg: #501313; --danger-text: #F7C1C1;
+      --warning-bg: #412402; --warning-text: #FAC775;
+      --info-bg: #042C53; --info-text: #B5D4F4;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.5; font-size: 15px; -webkit-font-smoothing: antialiased; }
+  .page { max-width: 100%; margin: 0 auto; padding: 18px 18px 32px; }
+  
+  /* Compact header */
+  .page-header { margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .page-header-left { min-width: 0; }
+  .page-header .badge { display: inline-block; background: var(--accent-bg); color: var(--accent-text); font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 999px; letter-spacing: 0.04em; margin-right: 8px; vertical-align: middle; }
+  .page-header h1 { font-size: 17px; font-weight: 500; margin: 0; display: inline-block; vertical-align: middle; }
+  .page-header-right { display: flex; gap: 6px; align-items: center; }
+  
+  /* Safety toggle */
+  /* Safety + Tutorial — две плашки в ряд */
+  .info-strips { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  @media (max-width: 720px) { .info-strips { grid-template-columns: 1fr; } }
+  details.safety, details.tutorial { border-radius: var(--radius-md); padding: 0 14px; font-size: 12px; border: 1px solid transparent; transition: border-color 0.15s, box-shadow 0.15s; }
+  details.safety { background: var(--warning-bg); color: var(--warning-text); border-color: rgba(133,79,11,0.18); }
+  details.tutorial { background: var(--info-bg); color: var(--info-text); border-color: rgba(12,68,124,0.18); }
+  details.safety:not([open]):hover, details.tutorial:not([open]):hover { box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  details.safety summary, details.tutorial summary {
+    cursor: pointer; padding: 9px 0; font-weight: 600; list-style: none; user-select: none;
+    display: flex; align-items: center; gap: 8px;
+  }
+  details.safety summary::-webkit-details-marker, details.tutorial summary::-webkit-details-marker { display: none; }
+  details.safety summary::before, details.tutorial summary::before {
+    content: ""; flex-shrink: 0; width: 16px; height: 16px;
+    background-color: currentColor;
+    -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='4 6 8 10 12 6'/></svg>");
+            mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='4 6 8 10 12 6'/></svg>");
+    -webkit-mask-size: contain; mask-size: contain;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-position: center; mask-position: center;
+    transition: transform 0.18s ease;
+  }
+  details.safety[open] summary::before, details.tutorial[open] summary::before { transform: rotate(180deg); }
+  details.safety summary::after, details.tutorial summary::after {
+    content: "развернуть"; margin-left: auto; font-size: 10px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.6;
+    padding: 2px 7px; border-radius: 999px; background: rgba(255,255,255,0.35);
+  }
+  details.safety[open] summary::after, details.tutorial[open] summary::after { content: "свернуть"; }
+  @media (prefers-color-scheme: dark) {
+    details.safety summary::after, details.tutorial summary::after { background: rgba(255,255,255,0.08); }
+  }
+  details.safety ul { margin: 0 0 10px; padding-left: 18px; line-height: 1.6; }
+  details.safety li { margin-bottom: 3px; }
+  details.tutorial ol { margin: 0 0 10px; padding-left: 22px; line-height: 1.6; }
+  details.tutorial li { margin-bottom: 4px; }
+  details.tutorial li strong { font-weight: 500; }
+  details.tutorial .tut-tip { margin: 8px 0 10px; padding: 7px 10px; background: rgba(255,255,255,0.4); border-radius: 5px; font-size: 11px; line-height: 1.5; }
+  @media (prefers-color-scheme: dark) { details.tutorial .tut-tip { background: rgba(0,0,0,0.2); } }
+  
+  /* Tabs */
+  .lab-tabs { display: inline-flex; gap: 2px; background: var(--surface-2); border-radius: var(--radius-md); padding: 3px; }
+  .lab-tab { padding: 5px 14px; font-size: 13px; cursor: pointer; border: none; background: transparent; color: var(--text-secondary); border-radius: 6px; font-family: inherit; }
+  .lab-tab.active { color: var(--text); background: var(--surface); font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+  
+  /* Difficulty chips */
+  .difficulty-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--text-secondary); }
+  .diff-chip { font-size: 11px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; color: var(--text-secondary); font-family: inherit; }
+  .diff-chip:hover { border-color: var(--border-strong); }
+  .diff-chip.active { background: var(--accent-bg); color: var(--accent-text); border-color: var(--accent-bg); }
+  
+  /* Task strip — компактная горизонтальная плашка */
+  .task-strip { display: none; gap: 14px; align-items: stretch; margin: 10px 0 12px; padding: 10px 14px; background: var(--accent-bg); color: var(--accent-text); border-radius: var(--radius-lg); font-size: 13px; }
+  .task-strip.visible { display: flex; }
+  .task-strip-main { flex: 1; min-width: 0; }
+  .task-strip-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.75; margin-bottom: 2px; }
+  .task-strip-text { font-size: 13px; line-height: 1.4; }
+  .task-strip-text strong { font-weight: 500; }
+  .task-strip-progress { font-size: 12px; opacity: 0.85; margin-top: 4px; }
+  .task-strip-criteria { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding-left: 14px; border-left: 1px solid rgba(60,52,137,0.2); }
+  .task-strip-criteria .crit-mini { font-size: 11px; padding: 2px 7px; border-radius: 4px; background: rgba(255,255,255,0.4); color: var(--accent-text); white-space: nowrap; opacity: 0.55; }
+  .task-strip-criteria .crit-mini.done { background: var(--success-text); color: var(--success-bg); opacity: 1; font-weight: 500; }
+  @media (prefers-color-scheme: dark) {
+    .task-strip-criteria { border-left-color: rgba(206,203,246,0.2); }
+    .task-strip-criteria .crit-mini { background: rgba(0,0,0,0.25); }
+  }
+  
+  /* ============ ОСНОВНОЙ LAYOUT: 2 КОЛОНКИ ============ */
+  .workspace { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; margin-top: 14px; }
+  
+  .shelf-col { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px; }
+  .shelf-col-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .shelf-col-title { font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; }
+  .shelf-col-pill { background: var(--surface-2); color: var(--text-secondary); font-size: 10px; padding: 2px 7px; border-radius: 999px; }
+  
+  .shelf-section-label { font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin: 8px 0 5px; padding-left: 2px; }
+  .shelf-section-label:first-child { margin-top: 0; }
+  .lab-shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 5px; }
+  
+  .bottle { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 6px 3px 5px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; transition: all 0.12s; min-height: 64px; font-family: inherit; position: relative; }
+  .bottle:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+  .bottle.selected { border: 2px solid var(--accent); padding: 5px 2px 4px; box-shadow: 0 0 0 2px var(--accent-bg); }
+  .bottle.unknown { background: var(--surface-2); }
+  .bottle.unknown .bottle-formula { color: var(--text-tertiary); font-style: italic; }
+  .bottle .badge-num { position: absolute; top: 2px; left: 4px; font-size: 9px; color: var(--text-tertiary); font-weight: 500; }
+  .bottle.solid .bottle-liquid { background: linear-gradient(45deg, currentColor 25%, transparent 25%, transparent 50%, currentColor 50%, currentColor 75%, transparent 75%); background-size: 5px 5px; opacity: 0.7; }
+  .bottle-liquid { width: 18px; height: 22px; border-radius: 2px 2px 4px 4px; border: 1px solid rgba(0,0,0,0.15); }
+  .bottle-formula { font-size: 11px; font-weight: 500; line-height: 1; text-align: center; color: var(--text); }
+  .bottle-name { font-size: 9px; color: var(--text-tertiary); text-align: center; line-height: 1.1; }
+  
+  /* ============ ПРАВАЯ КОЛОНКА: ВЕРСТАК ============ */
+  .bench-col { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  
+  .lab-bench { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tube-card { background: var(--surface-2); border-radius: var(--radius-lg); padding: 14px; display: flex; gap: 14px; align-items: center; }
+  .tube { width: 38px; height: 100px; border: 2px solid var(--text-secondary); border-top: none; border-radius: 0 0 19px 19px; position: relative; flex-shrink: 0; overflow: hidden; background: var(--surface); cursor: pointer; }
+  .tube-content { position: absolute; bottom: 0; left: 0; right: 0; transition: height 0.4s ease, background 0.4s; }
+  .tube-precipitate { position: absolute; bottom: 0; left: 0; right: 0; opacity: 0; transition: opacity 0.5s, height 0.5s; }
+  .tube-bubbles { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); font-size: 11px; opacity: 0; transition: opacity 0.3s; color: var(--text-secondary); letter-spacing: 1px; animation: bubble 1.6s infinite ease-in-out; }
+  @keyframes bubble { 0%, 100% { transform: translate(-50%, 0); opacity: 0.7; } 50% { transform: translate(-50%, -8px); opacity: 1; } }
+  .tube-info { flex: 1; min-width: 0; font-size: 12px; }
+  .tube-info-label { font-size: 9px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px; }
+  .tube-info .components { display: flex; flex-direction: column; gap: 2px; }
+  .tube-info .comp { font-size: 11px; color: var(--text-secondary); line-height: 1.3; }
+  .tube-info .comp strong { color: var(--text); font-weight: 500; }
+  .tube-empty { color: var(--text-tertiary); font-style: italic; font-size: 11px; }
+  .tube-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 5px; }
+  .tube-actions button { font-size: 10px; color: var(--text-secondary); cursor: pointer; background: none; border: none; padding: 0; text-decoration: underline; font-family: inherit; }
+  .tube-actions button:hover { color: var(--text); }
+  
+  .lab-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  button.action { font-size: 12px; padding: 6px 12px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-family: inherit; transition: all 0.12s; }
+  button.action:hover { border-color: var(--border-strong); }
+  button.action:active { transform: scale(0.98); }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.primary:hover { background: #423aa3; border-color: #423aa3; }
+  .pour-mode-label { font-size: 11px; color: var(--text-tertiary); margin-left: auto; padding: 3px 7px; background: var(--surface-2); border-radius: 999px; }
+  
+  /* Результат — компактнее */
+  .result-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 11px 14px; min-height: 56px; }
+  .result-empty { color: var(--text-tertiary); font-size: 12px; }
+  .result-signs { font-size: 13px; margin-bottom: 8px; line-height: 1.45; }
+  .result-signs strong { font-weight: 500; }
+  .result-noreact { color: var(--text-secondary); font-style: italic; font-size: 12px; padding: 4px 0; }
+  .result-extra { font-size: 11px; color: var(--text-secondary); padding: 5px 9px; background: var(--info-bg); color: var(--info-text); border-radius: var(--radius-md); margin-top: 8px; line-height: 1.45; }
+  .eq-line { font-family: var(--font-mono); font-size: 12px; padding: 3px 0; line-height: 1.5; word-break: break-word; }
+  .eq-label { display: inline-block; min-width: 100px; font-family: var(--font); color: var(--text-tertiary); font-size: 9px; text-transform: uppercase; letter-spacing: 0.04em; vertical-align: top; }
+  .eq-content strong { font-weight: 500; color: var(--text); }
+  
+  /* Финальный ответ — внутри результата */
+  .final-answer { margin-top: 10px; padding: 11px 12px; background: var(--info-bg); color: var(--info-text); border-radius: var(--radius-md); }
+  .final-answer p { margin: 0 0 8px; font-size: 12px; }
+  .final-answer .opts { display: flex; gap: 6px; flex-wrap: wrap; }
+  .final-answer button { font-size: 11px; padding: 5px 10px; border-radius: var(--radius-md); border: 1px solid var(--info-text); background: transparent; color: var(--info-text); cursor: pointer; font-family: inherit; }
+  .final-answer button:hover { background: rgba(0,0,0,0.05); }
+  .quiz-feedback { font-size: 12px; margin-top: 8px; padding: 9px 11px; border-radius: var(--radius-md); line-height: 1.45; }
+  .quiz-feedback.ok { background: var(--success-bg); color: var(--success-text); border: 1px solid var(--success-border); }
+  .quiz-feedback.bad { background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); }
+  .quiz-feedback button { margin-top: 8px; background: var(--success-text); color: var(--success-bg); border: none; padding: 5px 12px; border-radius: var(--radius-md); font-size: 11px; cursor: pointer; font-family: inherit; }
+  
+  /* ============ ТАБЛИЦА НАБЛЮДЕНИЙ — НИЖЕ FOLD ============ */
+  .observations { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 13px 16px; }
+  .observations-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; gap: 10px; }
+  .observations-title { font-size: 13px; font-weight: 500; margin: 0; }
+  .observations-sub { font-size: 11px; color: var(--text-tertiary); }
+  .obs-table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+  .obs-table th { text-align: left; font-size: 10px; font-weight: 500; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; padding: 7px 10px 7px 0; border-bottom: 1px solid var(--border); }
+  .obs-table td { padding: 8px 10px 8px 0; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.45; }
+  .obs-table td:last-child, .obs-table th:last-child { padding-right: 0; }
+  .obs-table .obs-empty { color: var(--text-tertiary); font-style: italic; text-align: center; padding: 14px 0; }
+  .obs-conclusion { margin-top: 11px; padding: 9px 11px; background: var(--success-bg); color: var(--success-text); border-radius: var(--radius-md); font-size: 12px; }
+  .obs-conclusion strong { font-weight: 500; }
+  
+  .footer-note { margin-top: 22px; font-size: 11px; color: var(--text-tertiary); line-height: 1.5; }
+  
+  /* ============ MOBILE / TABLET ============ */
+  @media (max-width: 880px) {
+    .workspace { grid-template-columns: 1fr; }
+    .shelf-col { max-height: 320px; overflow-y: auto; }
+    .task-strip { flex-direction: column; gap: 8px; }
+    .task-strip-criteria { padding-left: 0; border-left: none; padding-top: 6px; border-top: 1px solid rgba(60,52,137,0.2); }
+  }
+  @media (max-width: 600px) {
+    /* Keep 2 tubes side-by-side on mobile (compact card padding) */
+    .lab-bench { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .tube-card { padding: 8px; gap: 8px; flex-direction: column; align-items: stretch; }
+    .tube { width: 32px; height: 84px; align-self: center; }
+    .tube-info { font-size: 11px; }
+    .tube-info .comp { font-size: 10px; }
+    .page { padding: 14px 12px 24px; }
+    .page-header h1 { font-size: 15px; }
+    .obs-table { font-size: 11px; }
+    .eq-label { display: block; min-width: 0; margin-bottom: 2px; }
+    .lab-shelf { grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <header class="page-header">
+    <div class="page-header-left">
+      <span class="badge">ОГЭ 2026 · задание 23</span>
+      <h1>Лаборатория качественных реакций</h1>
+    </div>
+    <div class="page-header-right">
+      <div class="lab-tabs">
+        <button class="lab-tab active" data-mode="sandbox">Песочница</button>
+        <button class="lab-tab" data-mode="task">Задание 23</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="info-strips">
+    <details class="tutorial">
+      <summary>Как пользоваться</summary>
+      <ol>
+        <li><strong>Кликните склянку</strong> на полке слева — она подсветится</li>
+        <li><strong>Кликните пустую пробирку</strong> — реактив наливается</li>
+        <li>Выберите следующий реактив и <strong>кликните ту же пробирку</strong> — он добавится, реакция пойдёт сразу</li>
+        <li>Чтобы начать заново — нажмите <strong>«Опустошить»</strong> под пробиркой или <strong>«Очистить всё»</strong></li>
+      </ol>
+      <div class="tut-tip">
+        <strong>Кнопка «Слить в одну пробирку»</strong> нужна для классической схемы экзамена: налить два реактива в разные пробирки, потом слить вместе.
+      </div>
+      <div class="tut-tip">
+        В режиме <strong>«Задание 23»</strong> в пробирке 1 — неизвестное вещество. Цель — двумя реакциями доказать, что это именно то, что указано в задании. Прогресс отслеживается по чипам критериев сверху.
+      </div>
+    </details>
+    <details class="safety">
+      <summary>Техника безопасности — обязательно прочитать</summary>
+      <ul>
+        <li>Избыток отобранного реактива <strong>не возвращать</strong> в исходную склянку — поместить в резервную пробирку</li>
+        <li>Склянку <strong>сразу закрывать</strong> пробкой от этой же ёмкости</li>
+        <li>Запах определять <strong>движением руки от горлышка к себе</strong>, не вдыхать прямо</li>
+        <li>При попадании реактива на стол, кожу или одежду — <strong>сразу к лаборанту</strong></li>
+        <li>При ухудшении самочувствия — сообщить организатору</li>
+        <li>За грубое нарушение ТБ могут отстранить от эксперимента и удалить с экзамена</li>
+      </ul>
+    </details>
+  </div>
+
+  <div id="difficulty-row" class="difficulty-row" style="display:none; margin-top: 10px;">
+    <span>Сложность:</span>
+    <button class="diff-chip active" data-diff="easy">Базовая · 5</button>
+    <button class="diff-chip" data-diff="medium">Средняя · 6</button>
+    <button class="diff-chip" data-diff="hard">Высокая · 7</button>
+  </div>
+
+  <div id="task-strip" class="task-strip">
+    <div class="task-strip-main" id="task-strip-main">
+      <div class="task-strip-label">Задание 23</div>
+      <div class="task-strip-text" id="task-strip-text"></div>
+      <div class="task-strip-progress" id="task-strip-progress"></div>
+    </div>
+    <div class="task-strip-criteria">
+      <div class="crit-mini" id="crit-1">Реактивы</div>
+      <div class="crit-mini" id="crit-2">Наблюдения</div>
+      <div class="crit-mini" id="crit-3">Уравнения</div>
+      <div class="crit-mini" id="crit-4">Вывод</div>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <aside class="shelf-col">
+      <div class="shelf-col-header">
+        <span class="shelf-col-title" id="shelf-label-text">Полка реактивов</span>
+        <span class="shelf-col-pill" id="shelf-pill" style="display:none;"></span>
+      </div>
+      <div id="shelf-wrap"></div>
+    </aside>
+
+    <section class="bench-col">
+      <div class="lab-bench">
+        <div class="tube-card">
+          <div class="tube" id="tube-1">
+            <div class="tube-content" id="tube-1-liquid" style="height:0;"></div>
+            <div class="tube-precipitate" id="tube-1-precip"></div>
+            <div class="tube-bubbles" id="tube-1-gas">○ ○ ○</div>
+          </div>
+          <div class="tube-info">
+            <div class="tube-info-label">Пробирка 1</div>
+            <div id="tube-1-info" class="tube-empty">Пусто</div>
+            <div class="tube-actions" id="tube-1-actions"></div>
+          </div>
+        </div>
+        <div class="tube-card">
+          <div class="tube" id="tube-2">
+            <div class="tube-content" id="tube-2-liquid" style="height:0;"></div>
+            <div class="tube-precipitate" id="tube-2-precip"></div>
+            <div class="tube-bubbles" id="tube-2-gas">○ ○ ○</div>
+          </div>
+          <div class="tube-info">
+            <div class="tube-info-label">Пробирка 2</div>
+            <div id="tube-2-info" class="tube-empty">Пусто</div>
+            <div class="tube-actions" id="tube-2-actions"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lab-actions">
+        <button class="action primary" onclick="window.lab.mix()">Слить в одну пробирку →</button>
+        <button class="action" onclick="window.lab.clearAll()">Очистить всё</button>
+        <span class="pour-mode-label" id="pour-mode-label">Клик по пробирке = долить реактив</span>
+      </div>
+
+      <div class="result-panel" id="result">
+        <div class="result-empty">Выберите реактив и кликните пробирку — потом второй реактив в ту же пробирку. Или налейте в обе и нажмите «Слить».</div>
+      </div>
+
+      <div class="observations" id="observations">
+        <div class="observations-header">
+          <p class="observations-title">Таблица наблюдений</p>
+          <span class="observations-sub">заполняется автоматически — как в бланке</span>
+        </div>
+        <table class="obs-table">
+          <thead>
+            <tr>
+              <th style="width: 30%;">Реагенты</th>
+              <th style="width: 40%;">Признак реакции</th>
+              <th style="width: 30%;">Сокращённое ионное</th>
+            </tr>
+          </thead>
+          <tbody id="obs-body">
+            <tr><td colspan="3" class="obs-empty">Опытов ещё не было</td></tr>
+          </tbody>
+        </table>
+        <div id="obs-conclusion-wrap"></div>
+      </div>
+    </section>
+  </div>
+
+  <p class="footer-note">
+    По формату ФИПИ ОГЭ 2026: задание 23 — экспериментальное, до 5 первичных баллов. 32 реактива (соли, кислоты, щёлочи, металлы, индикаторы), движок поддерживает реакции ионного обмена, ОВР и индикаторные реакции.
+  </p>
+</div>
+
+<script>
+(function(){
+
+
+  // ============ РЕАКТИВЫ (24 шт.) ============
+  const reagents = {
+    'HCl':       { name: 'Соляная к-та', category: 'acid', cation: 'H',   anion: 'Cl',  color: '#F1EFE8' },
+    'H2SO4':     { name: 'Серная к-та',  category: 'acid', cation: 'H',   anion: 'SO4', color: '#F1EFE8' },
+    'HNO3':      { name: 'Азотная к-та', category: 'acid', cation: 'H',   anion: 'NO3', color: '#F1EFE8' },
+    'NaOH':      { name: 'Гидроксид Na',  category: 'alkali', cation: 'Na', anion: 'OH', color: '#F1EFE8' },
+    'KOH':       { name: 'Гидроксид K',   category: 'alkali', cation: 'K',  anion: 'OH', color: '#F1EFE8' },
+    'Ca(OH)2':   { name: 'Известк. вода', category: 'alkali', cation: 'Ca', anion: 'OH', color: '#F1EFE8' },
+    'Na2CO3':    { name: 'Карбонат Na', category: 'salt', cation: 'Na', anion: 'CO3', color: '#F1EFE8' },
+    'K2CO3':     { name: 'Карбонат K',  category: 'salt', cation: 'K',  anion: 'CO3', color: '#F1EFE8' },
+    'NaCl':      { name: 'Хлорид Na',   category: 'salt', cation: 'Na', anion: 'Cl',  color: '#F1EFE8' },
+    'Na2SO4':    { name: 'Сульфат Na',  category: 'salt', cation: 'Na', anion: 'SO4', color: '#F1EFE8' },
+    'Na3PO4':    { name: 'Фосфат Na',   category: 'salt', cation: 'Na', anion: 'PO4', color: '#F1EFE8' },
+    'Na2SiO3':   { name: 'Силикат Na',  category: 'salt', cation: 'Na', anion: 'SiO3', color: '#F1EFE8' },
+    'KI':        { name: 'Иодид K',     category: 'salt', cation: 'K',  anion: 'I',   color: '#F1EFE8' },
+    'KBr':       { name: 'Бромид K',    category: 'salt', cation: 'K',  anion: 'Br',  color: '#F1EFE8' },
+    'NH4Cl':     { name: 'Хлорид NH₄',  category: 'salt', cation: 'NH4', anion: 'Cl', color: '#F1EFE8' },
+    'BaCl2':     { name: 'Хлорид Ba',     category: 'salt', cation: 'Ba',  anion: 'Cl',  color: '#F1EFE8' },
+    'CaCl2':     { name: 'Хлорид Ca',     category: 'salt', cation: 'Ca',  anion: 'Cl',  color: '#F1EFE8' },
+    'MgCl2':     { name: 'Хлорид Mg',     category: 'salt', cation: 'Mg',  anion: 'Cl',  color: '#F1EFE8' },
+    'CuSO4':     { name: 'Сульфат Cu',    category: 'salt', cation: 'Cu',  anion: 'SO4', color: '#9FD4F4' },
+    'FeCl3':     { name: 'Хлорид Fe(III)', category: 'salt', cation: 'Fe3', anion: 'Cl', color: '#F0C77A' },
+    'FeSO4':     { name: 'Сульфат Fe(II)', category: 'salt', cation: 'Fe2', anion: 'SO4', color: '#A8C97D' },
+    'AlCl3':     { name: 'Хлорид Al',     category: 'salt', cation: 'Al',  anion: 'Cl',  color: '#F1EFE8' },
+    'ZnCl2':     { name: 'Хлорид Zn',     category: 'salt', cation: 'Zn',  anion: 'Cl',  color: '#F1EFE8' },
+    'AgNO3':     { name: 'Нитрат Ag',     category: 'salt', cation: 'Ag',  anion: 'NO3', color: '#F1EFE8' },
+    'Pb(NO3)2':  { name: 'Нитрат Pb',     category: 'salt', cation: 'Pb',  anion: 'NO3', color: '#F1EFE8' },
+    'Zn':        { name: 'Цинк (гран.)',  category: 'metal', element: 'Zn', activity: 4, color: '#A0A0A0', solid: true },
+    'Fe':        { name: 'Железо',        category: 'metal', element: 'Fe', activity: 6, color: '#7A7A7A', solid: true },
+    'Mg':        { name: 'Магний',        category: 'metal', element: 'Mg', activity: 2, color: '#C0C0C0', solid: true },
+    'Cu':        { name: 'Медь',          category: 'metal', element: 'Cu', activity: 12, color: '#C87533', solid: true },
+    'lakmus':    { name: 'Лакмус',        category: 'indicator', indicator: 'lakmus',     color: '#9B7BB8' },
+    'phenolphtaleinе': { name: 'Фенолфталеин', category: 'indicator', indicator: 'phenol', color: '#FAFAFA' },
+    'methylorange': { name: 'Метилоранж', category: 'indicator', indicator: 'methyl',     color: '#F0A050' }
+  };
+
+  const rules = [
+    { c: 'Cu',  a: 'OH',  type: 'precipitate', color: '#3B82CC', sign: 'голубой студенистый осадок Cu(OH)₂' },
+    { c: 'Fe2', a: 'OH',  type: 'precipitate', color: '#5A8A4D', sign: 'зеленоватый осадок Fe(OH)₂' },
+    { c: 'Fe3', a: 'OH',  type: 'precipitate', color: '#A0522D', sign: 'бурый осадок Fe(OH)₃' },
+    { c: 'Al',  a: 'OH',  type: 'precipitate', color: '#E0E0E0', sign: 'белый студенистый осадок Al(OH)₃', amphoteric: true },
+    { c: 'Zn',  a: 'OH',  type: 'precipitate', color: '#E8E8E8', sign: 'белый осадок Zn(OH)₂', amphoteric: true },
+    { c: 'Mg',  a: 'OH',  type: 'precipitate', color: '#F5F5F5', sign: 'белый осадок Mg(OH)₂' },
+    { c: 'Pb',  a: 'OH',  type: 'precipitate', color: '#F0F0F0', sign: 'белый осадок Pb(OH)₂', amphoteric: true },
+    { c: 'Ba',  a: 'SO4', type: 'precipitate', color: '#FAFAFA', sign: 'белый осадок BaSO₄ (не растворим в кислотах)' },
+    { c: 'Pb',  a: 'SO4', type: 'precipitate', color: '#FAFAFA', sign: 'белый осадок PbSO₄' },
+    { c: 'Ca',  a: 'SO4', type: 'precipitate', color: '#FAFAFA', sign: 'белый осадок CaSO₄' },
+    { c: 'Ag',  a: 'Cl',  type: 'precipitate', color: '#F0F0F0', sign: 'белый творожистый осадок AgCl' },
+    { c: 'Ag',  a: 'Br',  type: 'precipitate', color: '#F4E090', sign: 'желтоватый осадок AgBr' },
+    { c: 'Ag',  a: 'I',   type: 'precipitate', color: '#E8C658', sign: 'жёлтый осадок AgI' },
+    { c: 'Pb',  a: 'I',   type: 'precipitate', color: '#F0C840', sign: 'ярко-жёлтый осадок PbI₂' },
+    { c: 'Pb',  a: 'Cl',  type: 'precipitate', color: '#F0F0F0', sign: 'белый осадок PbCl₂' },
+    { c: 'Ba',  a: 'CO3', type: 'precipitate', color: '#FAFAFA', sign: 'белый осадок BaCO₃' },
+    { c: 'Ca',  a: 'CO3', type: 'precipitate', color: '#FAFAFA', sign: 'белый осадок CaCO₃' },
+    { c: 'Mg',  a: 'CO3', type: 'precipitate', color: '#FAFAFA', sign: 'белый осадок MgCO₃' },
+    { c: 'Cu',  a: 'CO3', type: 'precipitate', color: '#3B9C7A', sign: 'зелёный осадок (CuOH)₂CO₃' },
+    { c: 'Ag',  a: 'PO4', type: 'precipitate', color: '#E8C658', sign: 'жёлтый осадок Ag₃PO₄' },
+    { c: 'Ca',  a: 'PO4', type: 'precipitate', color: '#FAFAFA', sign: 'белый осадок Ca₃(PO₄)₂' },
+    { c: 'Ba',  a: 'PO4', type: 'precipitate', color: '#FAFAFA', sign: 'белый осадок Ba₃(PO₄)₂' },
+    { c: 'H',   a: 'SiO3',type: 'precipitate', color: '#E8E8F0', sign: 'студенистый осадок H₂SiO₃' },
+    { c: 'H',   a: 'CO3', type: 'gas',         sign: 'выделение CO₂ без запаха (вскипание)' },
+    { c: 'NH4', a: 'OH',  type: 'gas',         sign: 'запах аммиака NH₃ (при нагревании)' },
+    { c: 'H',   a: 'OH',  type: 'water',       sign: 'нейтрализация (видимых изменений нет, но реакция идёт)' }
+  ];
+
+  const metalAcidRules = {
+    'Zn+HCl':   { product: 'ZnCl₂',  gas: 'H₂', mol: 'Zn + 2HCl → ZnCl₂ + H₂↑',  full: 'Zn + 2H⁺ + 2Cl⁻ → Zn²⁺ + 2Cl⁻ + H₂↑', short: 'Zn + 2H⁺ → Zn²⁺ + H₂↑', sign: 'выделение бесцветного газа (H₂), металл растворяется' },
+    'Zn+H2SO4': { product: 'ZnSO₄',  gas: 'H₂', mol: 'Zn + H₂SO₄ → ZnSO₄ + H₂↑',  full: 'Zn + 2H⁺ + SO₄²⁻ → Zn²⁺ + SO₄²⁻ + H₂↑', short: 'Zn + 2H⁺ → Zn²⁺ + H₂↑', sign: 'выделение бесцветного газа (H₂), металл растворяется' },
+    'Fe+HCl':   { product: 'FeCl₂',  gas: 'H₂', mol: 'Fe + 2HCl → FeCl₂ + H₂↑',  full: 'Fe + 2H⁺ + 2Cl⁻ → Fe²⁺ + 2Cl⁻ + H₂↑', short: 'Fe + 2H⁺ → Fe²⁺ + H₂↑', sign: 'выделение газа (H₂), раствор становится зеленоватым' },
+    'Fe+H2SO4': { product: 'FeSO₄',  gas: 'H₂', mol: 'Fe + H₂SO₄ → FeSO₄ + H₂↑',  full: 'Fe + 2H⁺ + SO₄²⁻ → Fe²⁺ + SO₄²⁻ + H₂↑', short: 'Fe + 2H⁺ → Fe²⁺ + H₂↑', sign: 'выделение газа (H₂), раствор становится зеленоватым' },
+    'Mg+HCl':   { product: 'MgCl₂',  gas: 'H₂', mol: 'Mg + 2HCl → MgCl₂ + H₂↑',  full: 'Mg + 2H⁺ + 2Cl⁻ → Mg²⁺ + 2Cl⁻ + H₂↑', short: 'Mg + 2H⁺ → Mg²⁺ + H₂↑', sign: 'бурное выделение газа (H₂), металл быстро растворяется' },
+    'Mg+H2SO4': { product: 'MgSO₄',  gas: 'H₂', mol: 'Mg + H₂SO₄ → MgSO₄ + H₂↑',  full: 'Mg + 2H⁺ + SO₄²⁻ → Mg²⁺ + SO₄²⁻ + H₂↑', short: 'Mg + 2H⁺ → Mg²⁺ + H₂↑', sign: 'бурное выделение газа (H₂)' }
+  };
+
+  const indicatorReactions = {
+    'lakmus': {
+      acid:    { color: '#E24B4A', text: 'красный' },
+      neutral: { color: '#9B7BB8', text: 'фиолетовый' },
+      base:    { color: '#3B82CC', text: 'синий' }
+    },
+    'phenol': {
+      acid:    { color: '#FAFAFA', text: 'бесцветный' },
+      neutral: { color: '#FAFAFA', text: 'бесцветный' },
+      base:    { color: '#D4537E', text: 'малиновый' }
+    },
+    'methyl': {
+      acid:    { color: '#E24B4A', text: 'красный' },
+      neutral: { color: '#F0A050', text: 'оранжевый' },
+      base:    { color: '#F0C840', text: 'жёлтый' }
+    }
+  };
+
+  const ionDisplay = {
+    'H':'H⁺','Na':'Na⁺','K':'K⁺','Ca':'Ca²⁺','Ba':'Ba²⁺','Mg':'Mg²⁺',
+    'Cu':'Cu²⁺','Fe2':'Fe²⁺','Fe3':'Fe³⁺','Ag':'Ag⁺','Al':'Al³⁺','Zn':'Zn²⁺','Pb':'Pb²⁺','NH4':'NH₄⁺',
+    'Cl':'Cl⁻','Br':'Br⁻','I':'I⁻','OH':'OH⁻','SO4':'SO₄²⁻','CO3':'CO₃²⁻','NO3':'NO₃⁻','PO4':'PO₄³⁻','SiO3':'SiO₃²⁻'
+  };
+  const formulaDisplay = {
+    'HCl':'HCl','H2SO4':'H₂SO₄','HNO3':'HNO₃','NaOH':'NaOH','KOH':'KOH','Ca(OH)2':'Ca(OH)₂',
+    'Na2CO3':'Na₂CO₃','K2CO3':'K₂CO₃','NaCl':'NaCl','Na2SO4':'Na₂SO₄','Na3PO4':'Na₃PO₄','Na2SiO3':'Na₂SiO₃',
+    'KI':'KI','KBr':'KBr','NH4Cl':'NH₄Cl','BaCl2':'BaCl₂','CaCl2':'CaCl₂','MgCl2':'MgCl₂',
+    'CuSO4':'CuSO₄','FeCl3':'FeCl₃','FeSO4':'FeSO₄','AlCl3':'AlCl₃','ZnCl2':'ZnCl₂',
+    'AgNO3':'AgNO₃','Pb(NO3)2':'Pb(NO₃)₂',
+    'Zn':'Zn','Fe':'Fe','Mg':'Mg','Cu':'Cu',
+    'lakmus':'Лакмус','phenolphtaleinе':'Фенолфт.','methylorange':'Метилор.'
+  };
+  const ruleProducts = {
+    'Cu+OH':'Cu(OH)₂','Fe2+OH':'Fe(OH)₂','Fe3+OH':'Fe(OH)₃','Al+OH':'Al(OH)₃','Zn+OH':'Zn(OH)₂',
+    'Mg+OH':'Mg(OH)₂','Pb+OH':'Pb(OH)₂',
+    'Ba+SO4':'BaSO₄','Pb+SO4':'PbSO₄','Ca+SO4':'CaSO₄',
+    'Ag+Cl':'AgCl','Ag+Br':'AgBr','Ag+I':'AgI','Pb+I':'PbI₂','Pb+Cl':'PbCl₂',
+    'Ba+CO3':'BaCO₃','Ca+CO3':'CaCO₃','Mg+CO3':'MgCO₃','Cu+CO3':'(CuOH)₂CO₃',
+    'Ag+PO4':'Ag₃PO₄','Ca+PO4':'Ca₃(PO₄)₂','Ba+PO4':'Ba₃(PO₄)₂',
+    'H+SiO3':'H₂SiO₃'
+  };
+
+  // molecularEqs / fullIonicEqs больше не нужны — уравнения генерируются автоматически в buildEquations()
+
+  const tasks = {
+    easy: [
+      { target: 'CuSO4', goal: 'Докажите, что в склянке №1 находится сульфат меди(II)',
+        shelfKeys: ['CuSO4', 'NaOH', 'BaCl2', 'NaCl', 'AlCl3'],
+        proofCations: ['NaOH', 'KOH'], proofAnions: ['BaCl2', 'Pb(NO3)2'],
+        hint: 'Нужны две реакции: одна на катион Cu²⁺, другая на анион SO₄²⁻.' },
+      { target: 'FeCl3', goal: 'Докажите, что в склянке №1 находится хлорид железа(III)',
+        shelfKeys: ['FeCl3', 'NaOH', 'AgNO3', 'Na2SO4', 'NH4Cl'],
+        proofCations: ['NaOH', 'KOH'], proofAnions: ['AgNO3', 'Pb(NO3)2'],
+        hint: 'Нужны две реакции: одна на Fe³⁺, другая на Cl⁻.' },
+      { target: 'BaCl2', goal: 'Докажите, что в склянке №1 находится хлорид бария',
+        shelfKeys: ['BaCl2', 'H2SO4', 'AgNO3', 'NaOH', 'Na2CO3'],
+        proofCations: ['H2SO4', 'Na2SO4', 'Na2CO3', 'K2CO3', 'CuSO4', 'FeSO4'],
+        proofAnions: ['AgNO3', 'Pb(NO3)2'],
+        hint: 'Нужны две реакции: одна на Ba²⁺, другая на Cl⁻.' },
+      { target: 'AlCl3', goal: 'Докажите, что в склянке №1 находится хлорид алюминия',
+        shelfKeys: ['AlCl3', 'NaOH', 'AgNO3', 'Na2CO3', 'H2SO4'],
+        proofCations: ['NaOH', 'KOH'], proofAnions: ['AgNO3', 'Pb(NO3)2'],
+        hint: 'Нужны две реакции: на Al³⁺ и на Cl⁻. Помни про амфотерность Al(OH)₃.' },
+      { target: 'NH4Cl', goal: 'Докажите, что в склянке №1 находится хлорид аммония',
+        shelfKeys: ['NH4Cl', 'NaOH', 'AgNO3', 'BaCl2', 'Na2SO4'],
+        proofCations: ['NaOH', 'KOH', 'Ca(OH)2'], proofAnions: ['AgNO3', 'Pb(NO3)2'],
+        hint: 'Нужны две реакции: на NH₄⁺ (по запаху) и на Cl⁻.' }
+    ],
+    medium: [
+      { target: 'FeSO4', goal: 'Докажите, что в склянке №1 находится сульфат железа(II)',
+        shelfKeys: ['FeSO4', 'NaOH', 'BaCl2', 'NaCl', 'KI', 'NH4Cl'],
+        proofCations: ['NaOH', 'KOH'], proofAnions: ['BaCl2', 'Pb(NO3)2'],
+        hint: 'Сначала докажите Fe²⁺ (зелёный осадок Fe(OH)₂), затем SO₄²⁻ (белый BaSO₄).' },
+      { target: 'Pb(NO3)2', goal: 'Докажите, что в склянке №1 находится нитрат свинца',
+        shelfKeys: ['Pb(NO3)2', 'KI', 'H2SO4', 'NaOH', 'NaCl', 'BaCl2'],
+        proofCations: ['KI', 'H2SO4', 'Na2SO4', 'NaCl', 'KBr', 'BaCl2'], proofAnions: [],
+        cationOnly: true,
+        hint: 'Pb²⁺ — один из самых характерных катионов: с KI даёт жёлтый осадок PbI₂, с H₂SO₄ — белый PbSO₄. Достаточно двух реакций на катион.' },
+      { target: 'ZnCl2', goal: 'Докажите, что в склянке №1 находится хлорид цинка',
+        shelfKeys: ['ZnCl2', 'NaOH', 'AgNO3', 'Na2CO3', 'H2SO4', 'NH4Cl'],
+        proofCations: ['NaOH', 'KOH'], proofAnions: ['AgNO3', 'Pb(NO3)2'],
+        hint: 'Zn²⁺ + щёлочь → белый Zn(OH)₂. В избытке щёлочи растворяется (амфотерность).' }
+    ],
+    hard: [
+      { target: 'MgCl2', goal: 'Докажите, что в склянке №1 находится хлорид магния',
+        shelfKeys: ['MgCl2', 'NaOH', 'AgNO3', 'Na2CO3', 'H2SO4', 'NH4Cl', 'KI'],
+        proofCations: ['NaOH', 'KOH', 'Na2CO3', 'K2CO3', 'Na3PO4'], proofAnions: ['AgNO3', 'Pb(NO3)2'],
+        hint: 'Mg²⁺ можно доказать осадком Mg(OH)₂ или MgCO₃. Анион Cl⁻ — реакцией с AgNO₃.' },
+      { target: 'CaCl2', goal: 'Докажите, что в склянке №1 находится хлорид кальция',
+        shelfKeys: ['CaCl2', 'Na2CO3', 'AgNO3', 'H2SO4', 'NaOH', 'NH4Cl', 'KI'],
+        proofCations: ['Na2CO3', 'K2CO3', 'Na3PO4'], proofAnions: ['AgNO3', 'Pb(NO3)2'],
+        hint: 'Ca²⁺ лучше доказывать карбонатом или фосфатом (Ca(OH)₂ растворим).' }
+    ]
+  };
+
+
+    // Скрипт ниже использует переменные из части 2 (reagents, rules, etc.)
+  // В финальном файле обе части будут в одном замыкании.
+
+  // ============ ДВИЖОК РЕАКЦИЙ ============
+
+  function findIonExchangeReaction(r1, r2) {
+    const hits = [];
+    for (const rule of rules) {
+      if ((r1.cation === rule.c && r2.anion === rule.a) || (r2.cation === rule.c && r1.anion === rule.a)) hits.push(rule);
+    }
+    return hits;
+  }
+
+  function findMetalAcidReaction(r1, r2) {
+    // Ищем металл и кислоту
+    let metal = null, acid = null, metalKey = null, acidKey = null;
+    if (r1.category === 'metal' && r2.category === 'acid') { metal = r1; acid = r2; metalKey = r1._key; acidKey = r2._key; }
+    else if (r2.category === 'metal' && r1.category === 'acid') { metal = r2; acid = r1; metalKey = r2._key; acidKey = r1._key; }
+    if (!metal || !acid) return null;
+    const key = metal._key + '+' + acid._key;
+    if (metalAcidRules[key]) {
+      return { type: 'metalAcid', data: metalAcidRules[key], metal: metal, acid: acid };
+    }
+    // Cu / Ag в HCl и H₂SO₄ — не реагируют
+    if (metal.activity >= 12) {
+      return { type: 'metalAcidNoReact', metal: metal, acid: acid,
+               sign: `${metal.element} стоит в ряду активности правее H₂ — с разбавленной ${acid.cation === 'H' ? 'кислотой' : ''} не реагирует.` };
+    }
+    return null;
+  }
+
+  function findIndicatorReaction(r1, r2) {
+    let indicator = null, solution = null;
+    if (r1.category === 'indicator') { indicator = r1; solution = r2; }
+    else if (r2.category === 'indicator') { indicator = r2; solution = r1; }
+    if (!indicator) return null;
+
+    let env = 'neutral';
+    if (solution.category === 'acid') env = 'acid';
+    else if (solution.category === 'alkali') env = 'base';
+    // Соли с гидролизом — упрощённо нейтральная (для ОГЭ обычно достаточно)
+    
+    const ind = indicatorReactions[indicator.indicator];
+    return {
+      type: 'indicator',
+      indicator: indicator,
+      env: env,
+      result: ind[env],
+      sign: `Индикатор ${indicator.name.toLowerCase()} стал ${ind[env].text} — среда ${env === 'acid' ? 'кислая' : env === 'base' ? 'щелочная' : 'нейтральная'}`
+    };
+  }
+
+  // Главный диспетчер
+  function resolveReaction(r1, r2) {
+    // Приоритет: индикатор > металл+кислота > ионный обмен
+    const indReact = findIndicatorReaction(r1, r2);
+    if (indReact) return indReact;
+    const metalReact = findMetalAcidReaction(r1, r2);
+    if (metalReact) return metalReact;
+    const hits = findIonExchangeReaction(r1, r2);
+    if (hits.length > 0) return { type: 'ionExchange', rule: hits[0] };
+    return null;
+  }
+
+  // ============ ГЕНЕРАЦИЯ УРАВНЕНИЙ ============
+  function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+  // ============ АВТОГЕНЕРАТОР УРАВНЕНИЙ ============
+
+  // Заряды ионов (модули)
+  const ionCharges = {
+    'H':1,'Na':1,'K':1,'Ba':2,'Ca':2,'Mg':2,'Cu':2,'Fe2':2,'Fe3':3,'Ag':1,'Al':3,'Zn':2,'Pb':2,'NH4':1,
+    'Cl':1,'Br':1,'I':1,'OH':1,'SO4':2,'CO3':2,'NO3':1,'PO4':3,'SiO3':2
+  };
+
+  // Растворимость пары катион-анион. true = растворимо, false = нет, 'gas' = разлагается на газ+воду,
+  // 'low' = малорастворимо (для ОГЭ считаем как осадок)
+  const solubility = {
+    // OH (щёлочи и основания)
+    'Na+OH':true,'K+OH':true,'NH4+OH':'gas','Ca+OH':'low','Ba+OH':true,
+    'Mg+OH':false,'Cu+OH':false,'Fe2+OH':false,'Fe3+OH':false,'Al+OH':false,'Zn+OH':false,'Pb+OH':false,'Ag+OH':false,
+    // Cl
+    'Na+Cl':true,'K+Cl':true,'NH4+Cl':true,'Ca+Cl':true,'Ba+Cl':true,'Mg+Cl':true,
+    'Cu+Cl':true,'Fe2+Cl':true,'Fe3+Cl':true,'Al+Cl':true,'Zn+Cl':true,'H+Cl':true,
+    'Ag+Cl':false,'Pb+Cl':false,
+    // Br
+    'Na+Br':true,'K+Br':true,'H+Br':true,'Ag+Br':false,'Pb+Br':false,
+    // I
+    'Na+I':true,'K+I':true,'H+I':true,'Ag+I':false,'Pb+I':false,'Cu+I':false,
+    // SO4
+    'Na+SO4':true,'K+SO4':true,'NH4+SO4':true,'Mg+SO4':true,'Cu+SO4':true,'Fe2+SO4':true,'Fe3+SO4':true,'Al+SO4':true,'Zn+SO4':true,'H+SO4':true,
+    'Ba+SO4':false,'Pb+SO4':false,'Ca+SO4':'low','Ag+SO4':'low',
+    // CO3 — кислоты с CO3 разлагаются на CO2+H2O
+    'Na+CO3':true,'K+CO3':true,'NH4+CO3':true,'H+CO3':'gas',
+    'Ca+CO3':false,'Ba+CO3':false,'Mg+CO3':false,'Cu+CO3':false,'Fe2+CO3':false,'Zn+CO3':false,
+    'Ag+CO3':false,'Pb+CO3':false,
+    // NO3
+    'Na+NO3':true,'K+NO3':true,'NH4+NO3':true,'Ca+NO3':true,'Ba+NO3':true,'Mg+NO3':true,
+    'Cu+NO3':true,'Fe2+NO3':true,'Fe3+NO3':true,'Al+NO3':true,'Zn+NO3':true,'Pb+NO3':true,'Ag+NO3':true,'H+NO3':true,
+    // PO4
+    'Na+PO4':true,'K+PO4':true,'NH4+PO4':true,'H+PO4':true,
+    'Ca+PO4':false,'Ba+PO4':false,'Mg+PO4':false,'Ag+PO4':false,'Pb+PO4':false,'Cu+PO4':false,'Fe3+PO4':false,'Al+PO4':false,'Zn+PO4':false,
+    // SiO3 — кислоты дают студенистый H2SiO3
+    'Na+SiO3':true,'K+SiO3':true,'H+SiO3':false
+  };
+
+  // Сабскрипты Unicode (для красивого отображения)
+  const subDigits = { '1':'','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉' };
+  function sub(n) { return n === 1 ? '' : subDigits[String(n)] || String(n); }
+
+  // Базовое отображение группы катиона/аниона (без зарядов, для формул)
+  const ionFormula = {
+    'H':'H','Na':'Na','K':'K','Ba':'Ba','Ca':'Ca','Mg':'Mg','Cu':'Cu','Fe2':'Fe','Fe3':'Fe',
+    'Ag':'Ag','Al':'Al','Zn':'Zn','Pb':'Pb','NH4':'NH₄',
+    'Cl':'Cl','Br':'Br','I':'I','OH':'OH','SO4':'SO₄','CO3':'CO₃','NO3':'NO₃','PO4':'PO₄','SiO3':'SiO₃'
+  };
+  // Сложные анионы — должны быть в скобках, если их больше 1
+  const polyAnion = { 'OH':true,'SO4':true,'CO3':true,'NO3':true,'PO4':true,'SiO3':true };
+
+  function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+  function lcm(a, b) { return a * b / gcd(a, b); }
+
+  // Сформировать формулу соединения из катиона и аниона
+  function makeFormula(c, a) {
+    const cc = ionCharges[c], ac = ionCharges[a];
+    const L = lcm(cc, ac);
+    const nC = L / cc, nA = L / ac;
+    const cf = ionFormula[c], af = ionFormula[a];
+    const aPart = (nA > 1 && polyAnion[a]) ? `(${af})${sub(nA)}` : `${af}${sub(nA)}`;
+    return `${cf}${sub(nC)}${aPart}`;
+  }
+
+  // Минимальные коэффициенты соли C_x A_y → возвращает [x, y]
+  function saltStoich(c, a) {
+    const cc = ionCharges[c], ac = ionCharges[a];
+    const L = lcm(cc, ac);
+    return [L / cc, L / ac];
+  }
+
+  // Балансировка обмена: x C1A1 + y C2A2 → ... 
+  // C1 имеет валентность v1, A1 — v_a1; C2 — v2, A2 — v_a2.
+  // Всё определяется балансом ионов в реактивах и продуктах.
+  // Простой метод: в реакторе должно быть одинаковое количество молей каждого иона до и после.
+  // Берём коэффициенты так, чтобы число катионов C1 и анионов A2 в продукте = в реактиве, и т.д.
+  function balanceExchange(c1, a1, c2, a2) {
+    // Реактивы: формулы C1_p A1_q  и  C2_r A2_s, где (p,q) и (r,s) — стехиометрия
+    const [p, q] = saltStoich(c1, a1);
+    const [r, s] = saltStoich(c2, a2);
+    // Продукты: C1_m A2_n  и  C2_k A2_? — нет, новые продукты:  C1_m' A2_n'  и  C2_k' A1_l'
+    const [m, n] = saltStoich(c1, a2);
+    const [k, l] = saltStoich(c2, a1);
+
+    // Уравнение: α (C1_p A1_q) + β (C2_r A2_s) → γ (C1_m A2_n) + δ (C2_k A1_l)
+    // Балансы по 4 элементам:
+    //   C1: α·p = γ·m
+    //   A1: α·q = δ·l
+    //   C2: β·r = δ·k
+    //   A2: β·s = γ·n
+    // Возьмём α = НОК(m, p) / p, тогда γ = α·p/m. Дальше δ из A1, β из C2.
+    // Чтобы все были целыми — найдём общий масштаб.
+
+    // Простой числовой перебор α от 1 до 6 — для школьных уравнений хватает
+    for (let alpha = 1; alpha <= 6; alpha++) {
+      const Cgamma = alpha * p / m;
+      if (!Number.isInteger(Cgamma)) continue;
+      const gamma = Cgamma;
+      const Cdelta = alpha * q / l;
+      if (!Number.isInteger(Cdelta)) continue;
+      const delta = Cdelta;
+      const Cbeta = delta * k / r;
+      if (!Number.isInteger(Cbeta)) continue;
+      const beta = Cbeta;
+      // Проверка A2: β·s = γ·n
+      if (beta * s !== gamma * n) continue;
+      return { alpha, beta, gamma, delta, p, q, r, s, m, n, k, l };
+    }
+    return null;
+  }
+
+  // Префикс коэффициента (1 → пусто, 2+ → "2", "3" и т.д.)
+  function coef(n) { return n === 1 ? '' : String(n); }
+
+  // Формат соединения с состоянием (↓ — осадок, ↑ — газ)
+  function formulaWithState(c, a, state) {
+    let f = makeFormula(c, a);
+    if (state === 'precipitate') f += '↓';
+    return f;
+  }
+
+  // Подразумевается, что соединение растворимо в воде (true | 'low' трактуем как растворимое для уравнения)
+  function isSoluble(c, a) {
+    const v = solubility[c + '+' + a];
+    if (v === true) return true;
+    if (v === 'low') return false; // на ОГЭ малорастворимое = осадок
+    return false;
+  }
+
+  // Особые случаи: продукты-газы и кислоты-разлагатели
+  // H + CO3 → H2CO3 → H2O + CO2↑
+  // H + SO3 → H2O + SO2↑ (не используется в нашей базе)
+  // NH4 + OH → NH3↑ + H2O
+  // H + SiO3 → H2SiO3↓
+  function specialPair(c, a) {
+    const k = c + '+' + a;
+    if (k === 'H+CO3') return { type: 'gas+water', gas: 'CO₂', mol: 'CO₂↑ + H₂O', shortIonic: '2H⁺ + CO₃²⁻ → CO₂↑ + H₂O', fullIonicProduct: 'CO₂↑ + H₂O' };
+    if (k === 'NH4+OH') return { type: 'gas+water', gas: 'NH₃', mol: 'NH₃↑ + H₂O', shortIonic: 'NH₄⁺ + OH⁻ → NH₃↑ + H₂O', fullIonicProduct: 'NH₃↑ + H₂O' };
+    if (k === 'H+OH') return { type: 'water', mol: 'H₂O', shortIonic: 'H⁺ + OH⁻ → H₂O', fullIonicProduct: 'H₂O' };
+    return null;
+  }
+
+  // Ион с зарядом и коэффициентом для полного/сокращённого ионного
+  function ionStr(ion, count) {
+    return (count === 1 ? '' : count) + ionDisplay[ion];
+  }
+
+  // Главная функция: строит молекулярное, полное ионное и сокращённое ионное уравнения
+  function buildEquations(r1Key, r2Key, rule) {
+    const r1 = reagents[r1Key], r2 = reagents[r2Key];
+
+    // Определяем порядок: какой реактив даёт катион rule.c, какой — анион rule.a
+    let cReag, aReag;  // cReag = тот, кто даёт характерный катион (rule.c); aReag = тот, кто даёт характерный анион (rule.a)
+    if (r1.cation === rule.c) { cReag = r1; aReag = r2; }
+    else { cReag = r2; aReag = r1; }
+    // Реактивы: cReag = (c1=rule.c, a1=cReag.anion); aReag = (c2=aReag.cation, a2=rule.a)
+    const c1 = rule.c, a1 = cReag.anion;
+    const c2 = aReag.cation, a2 = rule.a;
+
+    // Особый случай продукта c1+a2 (например H+CO3, NH4+OH, H+OH)
+    const special = specialPair(c1, a2);
+
+    // Балансируем реакцию обмена с обычным ионным образованием продукта (c1, a2) и (c2, a1)
+    let bal;
+    if (special) {
+      // Для газо/водных случаев структура продуктов другая. Балансируем «вручную»:
+      // x (cReag) + y (aReag) → z (special) + w (c2 a1)
+      // Считаем стехиометрии исходных солей и побочной соли c2 a1:
+      const [p, q] = saltStoich(c1, a1);  // C1_p A1_q
+      const [r, s] = saltStoich(c2, a2);  // C2_r A2_s
+      const [k, l] = saltStoich(c2, a1);  // C2_k A1_l (побочная соль)
+      // Газо/водный продукт даёт по 1 c1 и 1 a2 (для H+CO3: 2 H⁺ + 1 CO3 → ...; для NH4+OH: 1 NH4 + 1 OH → ...)
+      // Стехиометрия в специальном продукте: используем стехиометрию ионного уравнения
+      // H+CO3: 2H⁺ + CO3²⁻ — на 1 CO3 нужно 2 H. Это уже учтено в saltStoich(H, CO3) = [2, 1]
+      const [pSp, qSp] = saltStoich(c1, a2);  // pSp катионов c1 на 1 газо-продукт, qSp = 1 для CO3, 2 для NH4+OH? нет, NH4+OH = [1,1]
+      // На α α(C1Aq) даёт αp катионов C1 → потребует αp/pSp единиц спецпродукта = z
+      // Аналогично балансим
+      for (let alpha = 1; alpha <= 6; alpha++) {
+        const z = alpha * p / pSp;
+        if (!Number.isInteger(z) || z < 1) continue;
+        // Из z единиц спецпродукта потребляется z*qSp анионов A2
+        const beta_s = z * qSp;
+        const beta = beta_s / s;
+        if (!Number.isInteger(beta) || beta < 1) continue;
+        // Побочная соль w единиц C2_k A1_l: balance C2: β·r = w·k, A1: α·q = w·l
+        const w_from_C2 = beta * r / k;
+        const w_from_A1 = alpha * q / l;
+        if (!Number.isInteger(w_from_C2) || w_from_C2 !== w_from_A1) continue;
+        bal = { special: true, alpha, beta, z, w: w_from_C2, p, q, r, s, k, l, pSp, qSp };
+        break;
+      }
+      if (!bal) return { molecular: '—', fullIonic: '—', shortIonic: special.shortIonic };
+    } else {
+      bal = balanceExchange(c1, a1, c2, a2);
+      if (!bal) return { molecular: '—', fullIonic: '—', shortIonic: '—' };
+      bal.special = false;
+    }
+
+    const cReagFormula = makeFormula(c1, a1);
+    const aReagFormula = makeFormula(c2, a2);
+
+    // ============ МОЛЕКУЛЯРНОЕ ============
+    let molecular;
+    if (bal.special) {
+      // Побочная соль с учётом её осадочности
+      const sideIsPrecip = !isSoluble(c2, a1);
+      const sideF = makeFormula(c2, a1) + (sideIsPrecip ? '↓' : '');
+      molecular = `${coef(bal.alpha)}${cReagFormula} + ${coef(bal.beta)}${aReagFormula} → ${coef(bal.z)}${special.mol}${bal.w > 0 ? ` + ${coef(bal.w)}${sideF}` : ''}`;
+    } else {
+      const product1IsPrecip = !isSoluble(c1, a2);  // продукт C1A2 — это, как правило, целевой
+      const product2IsPrecip = !isSoluble(c2, a1);
+      const p1 = makeFormula(c1, a2) + (product1IsPrecip ? '↓' : '');
+      const p2 = makeFormula(c2, a1) + (product2IsPrecip ? '↓' : '');
+      molecular = `${coef(bal.alpha)}${cReagFormula} + ${coef(bal.beta)}${aReagFormula} → ${coef(bal.gamma)}${p1} + ${coef(bal.delta)}${p2}`;
+    }
+
+    // ============ ПОЛНОЕ ИОННОЕ ============
+    // Растворимые соединения распадаются на ионы; нерастворимые остаются как есть.
+    function dissociate(c, a, count) {
+      if (!isSoluble(c, a)) return `${coef(count)}${makeFormula(c, a)}↓`;
+      const [nc, na] = saltStoich(c, a);
+      return `${ionStr(c, count * nc)} + ${ionStr(a, count * na)}`;
+    }
+    const left = `${dissociate(c1, a1, bal.alpha)} + ${dissociate(c2, a2, bal.beta)}`;
+    let right;
+    if (bal.special) {
+      const sideIsPrecip = !isSoluble(c2, a1);
+      const sideRight = sideIsPrecip
+        ? `${coef(bal.w)}${makeFormula(c2, a1)}↓`
+        : (bal.w > 0 ? dissociate(c2, a1, bal.w) : '');
+      right = `${coef(bal.z)}${special.fullIonicProduct}${sideRight ? ' + ' + sideRight : ''}`;
+    } else {
+      const p1IsPrecip = !isSoluble(c1, a2);
+      const p2IsPrecip = !isSoluble(c2, a1);
+      const p1Side = p1IsPrecip ? `${coef(bal.gamma)}${makeFormula(c1, a2)}↓` : dissociate(c1, a2, bal.gamma);
+      const p2Side = p2IsPrecip ? `${coef(bal.delta)}${makeFormula(c2, a1)}↓` : dissociate(c2, a1, bal.delta);
+      right = `${p1Side} + ${p2Side}`;
+    }
+    const fullIonic = `${left} → ${right}`;
+
+    // ============ СОКРАЩЁННОЕ ИОННОЕ ============
+    // Для специальных случаев (газ/вода) — берётся из таблицы. Иначе — из rule.type:
+    let shortIonic;
+    if (special) {
+      shortIonic = special.shortIonic;
+    } else if (rule.type === 'precipitate') {
+      // X·c1 + Y·a2 → 1·формула_продукта↓
+      const [pc, pa] = saltStoich(c1, a2);
+      shortIonic = `${ionStr(c1, pc)} + ${ionStr(a2, pa)} → ${makeFormula(c1, a2)}↓`;
+    } else {
+      shortIonic = '—';
+    }
+
+    return { molecular, fullIonic, shortIonic };
+  }
+
+  // Алиас для совместимости со старым кодом
+  function buildIonExchangeEquations(r1Key, r2Key, rule) {
+    return buildEquations(r1Key, r2Key, rule);
+  }
+
+  // ============ СОСТОЯНИЕ ============
+  // tubes теперь — это массив компонентов (для опции «добавить ещё»)
+  // tubes[1] = [{key: 'CuSO4', mode: 'reagent'}, {key: 'NaOH', mode: 'added'}]
+  const state = {
+    selected: null,
+    tubes: { 1: [], 2: [] },
+    mode: 'sandbox',
+    difficulty: 'easy',
+    task: null,
+    observations: [],
+    proofsDone: { cation: false, anion: false }
+  };
+
+  // ============ РЕНДЕР ПОЛКИ ============
+  function renderShelf() {
+    const wrap = document.getElementById('shelf-wrap');
+    wrap.innerHTML = '';
+
+    let keys;
+    if (state.mode === 'task' && state.task) {
+      keys = state.task.shelfKeys;
+    } else {
+      keys = Object.keys(reagents);
+    }
+
+    if (state.mode === 'sandbox') {
+      // Группируем: кислоты, щёлочи, соли, металлы, индикаторы
+      const groups = [
+        { label: 'Кислоты', filter: r => r.category === 'acid' },
+        { label: 'Щёлочи и основания', filter: r => r.category === 'alkali' },
+        { label: 'Соли', filter: r => r.category === 'salt' },
+        { label: 'Металлы', filter: r => r.category === 'metal' },
+        { label: 'Индикаторы', filter: r => r.category === 'indicator' }
+      ];
+      groups.forEach(g => {
+        const groupKeys = keys.filter(k => g.filter(reagents[k]));
+        if (groupKeys.length === 0) return;
+        const label = document.createElement('div');
+        label.className = 'shelf-section-label';
+        label.textContent = g.label + ' · ' + groupKeys.length;
+        wrap.appendChild(label);
+        const grid = document.createElement('div');
+        grid.className = 'lab-shelf compact';
+        groupKeys.forEach((k, idx) => grid.appendChild(makeBottle(k, idx, false)));
+        wrap.appendChild(grid);
+      });
+    } else {
+      const grid = document.createElement('div');
+      grid.className = 'lab-shelf';
+      keys.forEach((k, idx) => grid.appendChild(makeBottle(k, idx, true)));
+      wrap.appendChild(grid);
+    }
+
+    const pill = document.getElementById('shelf-pill');
+    const labelText = document.getElementById('shelf-label-text');
+    if (state.mode === 'task') {
+      pill.style.display = 'inline-block';
+      pill.textContent = `${keys.length} склянок · как на экзамене`;
+      labelText.textContent = 'Реактивы из вашего комплекта · склянка №1 — неизвестное';
+    } else {
+      pill.style.display = 'none';
+      labelText.textContent = 'Полка реактивов · клик выбирает, потом клик по пробирке';
+    }
+  }
+
+  function makeBottle(key, idx, withNumber) {
+    const r = reagents[key];
+    const btn = document.createElement('button');
+    btn.className = 'bottle';
+    btn.dataset.key = key;
+    if (r.solid) btn.classList.add('solid');
+    const isUnknown = state.mode === 'task' && state.task && key === state.task.target;
+    const numLabel = withNumber ? `№${idx + 1}` : '';
+    const isMetal = r.category === 'metal';
+    btn.innerHTML = `
+      ${numLabel ? `<span class="badge-num">${numLabel}</span>` : ''}
+      <div class="bottle-liquid" style="background:${isUnknown ? '#D3D1C7' : r.color}; color:${isMetal ? r.color : 'transparent'};"></div>
+      <div class="bottle-formula">${isUnknown ? '?' : formulaDisplay[key]}</div>
+      <div class="bottle-name">${isUnknown ? 'неизвестное' : r.name}</div>
+    `;
+    if (isUnknown) btn.classList.add('unknown');
+    btn.addEventListener('click', () => selectReagent(key));
+    return btn;
+  }
+
+  // ============ РЕНДЕР ПРОБИРОК ============
+  function renderTube(num) {
+    const components = state.tubes[num];
+    const liquid = document.getElementById(`tube-${num}-liquid`);
+    const precip = document.getElementById(`tube-${num}-precip`);
+    const gas = document.getElementById(`tube-${num}-gas`);
+    const info = document.getElementById(`tube-${num}-info`);
+    const actions = document.getElementById(`tube-${num}-actions`);
+    precip.style.opacity = 0; gas.style.opacity = 0;
+
+    if (!components || components.length === 0) {
+      liquid.style.height = '0';
+      info.className = 'tube-empty';
+      info.textContent = 'Пусто';
+      actions.innerHTML = '';
+      return;
+    }
+
+    // Цвет: смесь всех компонентов
+    let color = '#F1EFE8';
+    let hasUnknown = false;
+    if (components.length === 1) {
+      const r = reagents[components[0].key];
+      const isTaskUnknown = state.mode === 'task' && state.task && components[0].key === state.task.target;
+      color = isTaskUnknown ? '#D3D1C7' : r.color;
+      hasUnknown = isTaskUnknown;
+    } else {
+      // смесь — усредняем цвета
+      const colors = components.map(c => {
+        const r = reagents[c.key];
+        const isTaskUnknown = state.mode === 'task' && state.task && c.key === state.task.target;
+        return isTaskUnknown ? '#D3D1C7' : r.color;
+      });
+      color = mixColorsArr(colors);
+    }
+    liquid.style.background = color;
+    liquid.style.height = (50 + components.length * 15) + '%';
+
+    info.className = '';
+    const compsHtml = components.map(c => {
+      const r = reagents[c.key];
+      const isTaskUnknown = state.mode === 'task' && state.task && c.key === state.task.target;
+      if (isTaskUnknown) return `<div class="comp"><strong>Склянка №1</strong> <span style="color:var(--text-tertiary);">(неизвестное)</span></div>`;
+      return `<div class="comp"><strong>${formulaDisplay[c.key]}</strong> <span style="color:var(--text-tertiary);">${r.name}</span></div>`;
+    }).join('');
+    info.innerHTML = `<div class="components">${compsHtml}</div>`;
+
+    // Кнопка «Опустошить» — единственное явное действие на пробирке.
+    // Налить и долить — оба делаются кликом по самой пробирке.
+    actions.innerHTML = '';
+    if (components.length > 0) {
+      const clearBtn = document.createElement('button');
+      clearBtn.textContent = 'Опустошить';
+      clearBtn.addEventListener('click', () => window.lab.clearTube(num));
+      actions.appendChild(clearBtn);
+    }
+  }
+
+  function mixColorsArr(colors) {
+    if (colors.length === 0) return '#F1EFE8';
+    const p = h => { const n = parseInt(h.slice(1), 16); return [(n>>16)&255, (n>>8)&255, n&255]; };
+    const sums = [0, 0, 0];
+    colors.forEach(c => { const rgb = p(c); rgb.forEach((v, i) => sums[i] += v); });
+    const avg = sums.map(s => Math.round(s / colors.length));
+    return '#' + avg.map(v => v.toString(16).padStart(2, '0')).join('');
+  }
+  function mixColors(c1, c2) { return mixColorsArr([c1, c2]); }
+
+  // ============ ДЕЙСТВИЯ ============
+  function selectReagent(key) {
+    state.selected = key;
+    document.querySelectorAll('.bottle').forEach(b => b.classList.toggle('selected', b.dataset.key === key));
+    // Перерендерим actions у пробирок (чтобы появилась кнопка «добавить»)
+    renderTube(1); renderTube(2);
+  }
+
+  function addToTube(tubeNum) {
+    if (!state.selected) {
+      flashResult('Сначала выберите реактив с полки');
+      return;
+    }
+    // Защита от дубликата
+    if (state.tubes[tubeNum].some(c => c.key === state.selected)) {
+      flashResult('Этот реактив уже есть в пробирке — выберите другой или нажмите «Опустошить»');
+      return;
+    }
+
+    const wasEmpty = state.tubes[tubeNum].length === 0;
+    state.tubes[tubeNum].push({ key: state.selected, mode: wasEmpty ? 'reagent' : 'added' });
+    const justAddedKey = state.selected;
+    state.selected = null;
+    document.querySelectorAll('.bottle').forEach(b => b.classList.remove('selected'));
+    renderTube(tubeNum);
+
+    if (!wasEmpty) {
+      const components = state.tubes[tubeNum];
+      const prev = components[components.length - 2];
+      runReactionInTube(tubeNum, prev.key, justAddedKey, true);
+    } else {
+      flashResult('Налито. Выберите второй реактив, кликните ту же пробирку — пройдёт реакция');
+    }
+  }
+
+  function pourInto(tubeNum) { addToTube(tubeNum); }
+
+  function clearTube(num) {
+    state.tubes[num] = [];
+    renderTube(num);
+    document.getElementById('result').innerHTML = '<div class="result-empty">Выберите реактив и кликните пробирку.</div>';
+  }
+  function clearAll() {
+    state.tubes = { 1: [], 2: [] };
+    state.selected = null;
+    renderTube(1); renderTube(2);
+    document.querySelectorAll('.bottle').forEach(b => b.classList.remove('selected'));
+    document.getElementById('result').innerHTML = '<div class="result-empty">Выберите реактив и кликните пробирку — потом второй реактив в ту же пробирку. Или налейте в обе и нажмите «Слить».</div>';
+  }
+  function flashResult(text) {
+    document.getElementById('result').innerHTML = `<div class="result-empty">${text}</div>`;
+  }
+
+  // ============ ПРОВЕДЕНИЕ РЕАКЦИИ ============
+  function runReactionInTube(tubeNum, r1Key, r2Key, isAddition) {
+    const r1 = Object.assign({}, reagents[r1Key], { _key: r1Key });
+    const r2 = Object.assign({}, reagents[r2Key], { _key: r2Key });
+    const reaction = resolveReaction(r1, r2);
+    const resultEl = document.getElementById('result');
+    const liquid = document.getElementById(`tube-${tubeNum}-liquid`);
+    const precip = document.getElementById(`tube-${tubeNum}-precip`);
+    const gas = document.getElementById(`tube-${tubeNum}-gas`);
+
+    if (!reaction) {
+      // Реакция не идёт
+      resultEl.innerHTML = `<div class="result-noreact">Видимых изменений нет. Реакция не идёт — все возможные продукты растворимы (правило Бертолле не выполнено) или реагенты не вступают в реакцию.</div>`;
+      if (state.mode === 'task') {
+        recordObservation(r1Key, r2Key, { sign: 'видимых изменений нет (реакция не идёт)' }, { shortIonic: '—' });
+        updateCriteria();
+      }
+      return null;
+    }
+
+    // ОБРАБОТКА ПО ТИПУ РЕАКЦИИ
+    if (reaction.type === 'indicator') {
+      // Меняем цвет жидкости в пробирке
+      liquid.style.background = reaction.result.color;
+      resultEl.innerHTML = `
+        <div class="result-signs"><strong>Наблюдение:</strong> ${reaction.sign}</div>
+        <div class="result-extra">Индикаторы не вступают в реакцию обмена — они меняют цвет в зависимости от среды (концентрации H⁺ или OH⁻).</div>
+      `;
+      if (state.mode !== 'task') {
+        // в песочнице — пробирка остаётся залитой
+      }
+      return reaction;
+    }
+
+    if (reaction.type === 'metalAcidNoReact') {
+      resultEl.innerHTML = `<div class="result-noreact">Реакция не идёт. ${reaction.sign}</div>`;
+      if (state.mode === 'task') {
+        recordObservation(r1Key, r2Key, { sign: reaction.sign }, { shortIonic: '—' });
+        updateCriteria();
+      }
+      return reaction;
+    }
+
+    if (reaction.type === 'metalAcid') {
+      const data = reaction.data;
+      // Газ
+      setTimeout(() => { gas.style.opacity = 1; }, 350);
+      // Если Fe + кислота — раствор зеленеет
+      if (reaction.metal._key === 'Fe') {
+        liquid.style.background = '#A8C97D';
+      }
+      resultEl.innerHTML = `
+        <div class="result-signs"><strong>Наблюдение:</strong> ${data.sign}</div>
+        <div class="eq-line"><span class="eq-label">Молекулярное</span><span class="eq-content">${data.mol}</span></div>
+        <div class="eq-line"><span class="eq-label">Полное ионное</span><span class="eq-content">${data.full}</span></div>
+        <div class="eq-line"><span class="eq-label">Сокращённое</span><span class="eq-content"><strong>${data.short}</strong></span></div>
+        <div class="result-extra">Это <strong>реакция замещения</strong> (ОВР). Металл активнее водорода в ряду активности — вытесняет H₂ из раствора кислоты.</div>
+      `;
+      if (state.mode === 'task' || state.mode === 'sandbox') {
+        recordObservation(r1Key, r2Key, { sign: data.sign }, { shortIonic: data.short });
+      }
+      return reaction;
+    }
+
+    if (reaction.type === 'ionExchange') {
+      const rule = reaction.rule;
+      const eqs = buildIonExchangeEquations(r1Key, r2Key, rule);
+
+      if (rule.type === 'precipitate') {
+        setTimeout(() => {
+          precip.style.background = rule.color;
+          precip.style.height = '40%';
+          precip.style.opacity = 0.85;
+        }, 350);
+      } else if (rule.type === 'gas') {
+        setTimeout(() => { gas.style.opacity = 1; }, 350);
+      }
+
+      let extraNote = '';
+      if (rule.amphoteric) {
+        extraNote = `<div class="result-extra"><strong>Подсказка про амфотерность:</strong> осадок ${ruleProducts[rule.c + '+' + rule.a]} растворяется в избытке щёлочи. Попробуй кликнуть NaOH или KOH ещё раз и добавить в эту же пробирку.</div>`;
+      }
+
+      resultEl.innerHTML = `
+        <div class="result-signs"><strong>Наблюдение:</strong> ${rule.sign}</div>
+        <div class="eq-line"><span class="eq-label">Молекулярное</span><span class="eq-content">${eqs.molecular}</span></div>
+        <div class="eq-line"><span class="eq-label">Полное ионное</span><span class="eq-content">${eqs.fullIonic}</span></div>
+        <div class="eq-line"><span class="eq-label">Сокращённое</span><span class="eq-content"><strong>${eqs.shortIonic}</strong></span></div>
+        ${extraNote}
+      `;
+
+      recordObservation(r1Key, r2Key, rule, eqs);
+      if (state.mode === 'task') checkProof(r1Key, r2Key, rule);
+      return reaction;
+    }
+
+    return null;
+  }
+
+  // ============ ТАБЛИЦА НАБЛЮДЕНИЙ ============
+  function recordObservation(r1Key, r2Key, ruleOrSign, eqs) {
+    state.observations.push({
+      reagents: `${formulaDisplay[r1Key]} + ${formulaDisplay[r2Key]}`,
+      sign: ruleOrSign.sign,
+      shortIonic: (eqs && eqs.shortIonic) || '—'
+    });
+    renderObservations();
+  }
+  function renderObservations() {
+    const body = document.getElementById('obs-body');
+    if (state.observations.length === 0) {
+      body.innerHTML = '<tr><td colspan="3" class="obs-empty">Опытов ещё не было</td></tr>';
+    } else {
+      body.innerHTML = state.observations.map((obs, i) => `
+        <tr>
+          <td><strong>Опыт ${i + 1}.</strong> ${obs.reagents}</td>
+          <td>${obs.sign}</td>
+          <td style="font-family: var(--font-mono); font-size: 12px;">${obs.shortIonic || '—'}</td>
+        </tr>
+      `).join('');
+    }
+    const wrap = document.getElementById('obs-conclusion-wrap');
+    if (state.mode === 'task' && isProofComplete()) {
+      wrap.innerHTML = `
+        <div class="obs-conclusion">
+          <strong>Вывод:</strong> в склянке №1 находится <strong>${formulaDisplay[state.task.target]}</strong> (${reagents[state.task.target].name.toLowerCase()}).
+          ${state.task.cationOnly ? 'Катион подтверждён двумя реакциями.' : 'Доказано наличие катиона и аниона двумя качественными реакциями.'}
+        </div>
+      `;
+    } else {
+      wrap.innerHTML = '';
+    }
+  }
+  function isProofComplete() {
+    if (!state.task) return false;
+    if (state.task.cationOnly) {
+      // Нужно 2 разные реакции на катион
+      return state.proofsDone.cationCount >= 2;
+    }
+    return state.proofsDone.cation && state.proofsDone.anion;
+  }
+
+  function updateCriteria() {
+    if (!state.task) return;
+    const c1 = state.observations.length >= 1;
+    const c2 = state.observations.length >= 1;
+    const c3 = state.observations.length >= 2;
+    const c4 = isProofComplete();
+    document.getElementById('crit-1').classList.toggle('done', c1);
+    document.getElementById('crit-2').classList.toggle('done', c2);
+    document.getElementById('crit-3').classList.toggle('done', c3);
+    document.getElementById('crit-4').classList.toggle('done', c4);
+  }
+
+  function checkProof(r1Key, r2Key, rule) {
+    if (!state.task) return;
+    const t = state.task;
+    const target = t.target;
+    const usedKey = (r1Key === target) ? r2Key : (r2Key === target ? r1Key : null);
+    if (!usedKey) return;
+    const targetCation = reagents[target].cation;
+    const targetAnion = reagents[target].anion;
+
+    if (t.cationOnly) {
+      // считаем уникальные реактивы для катиона
+      if (rule.c === targetCation && t.proofCations.includes(usedKey)) {
+        if (!state.proofsDone.cationReagents) state.proofsDone.cationReagents = new Set();
+        state.proofsDone.cationReagents.add(usedKey);
+        state.proofsDone.cationCount = state.proofsDone.cationReagents.size;
+      }
+    } else {
+      if (rule.c === targetCation && t.proofCations.includes(usedKey)) state.proofsDone.cation = true;
+      if (rule.a === targetAnion && t.proofAnions.includes(usedKey)) state.proofsDone.anion = true;
+    }
+    updateCriteria();
+    updateTaskProgress();
+    renderObservations();
+    if (isProofComplete()) showFinalAnswerStep();
+  }
+
+  function updateTaskProgress() {
+    if (!state.task) return;
+    const t = state.task;
+    let txt;
+    if (t.cationOnly) {
+      const n = state.proofsDone.cationCount || 0;
+      txt = `Прогресс: ${n}/2 реакций на катион`;
+    } else {
+      const cs = state.proofsDone.cation ? '✓' : '○';
+      const as = state.proofsDone.anion ? '✓' : '○';
+      txt = `Прогресс: ${cs} катион · ${as} анион`;
+    }
+    const el = document.getElementById('task-strip-progress');
+    if (el) el.innerHTML = txt;
+  }
+
+  function showFinalAnswerStep() {
+    const result = document.getElementById('result');
+    if (result.querySelector('.final-answer')) return;
+    const distractors = Object.keys(reagents)
+      .filter(k => k !== state.task.target && reagents[k].category === 'salt')
+      .sort(() => Math.random() - 0.5).slice(0, 3);
+    const opts = [...distractors, state.task.target].sort(() => Math.random() - 0.5);
+    const finalEl = document.createElement('div');
+    finalEl.className = 'final-answer';
+    finalEl.innerHTML = `
+      <p><strong>Доказательство собрано.</strong> Какое вещество в склянке №1?</p>
+      <div class="opts">${opts.map(k => `<button data-ans="${k}">${formulaDisplay[k]}</button>`).join('')}</div>
+    `;
+    finalEl.querySelectorAll('button').forEach(b => {
+      b.addEventListener('click', () => {
+        const correct = b.dataset.ans === state.task.target;
+        const card = document.getElementById('task-strip-main');
+        card.innerHTML = `
+          <div class="task-strip-label">Задание 23 · результат</div>
+          <div class="task-strip-text">${state.task.goal}</div>
+          <div class="quiz-feedback ${correct ? 'ok' : 'bad'}">
+            ${correct ? '✓ Верно! ' : '✗ Не верно. Правильный ответ: ' + formulaDisplay[state.task.target] + '. '}
+            Реакции вы провели правильно — это и есть нужное вещество.
+            <button onclick="window.lab.nextTask()">Следующее задание →</button>
+          </div>
+        `;
+        if (correct) awardLabXp({ task_target: state.task.target, difficulty: state.difficulty });
+      });
+    });
+    result.appendChild(finalEl);
+  }
+
+  // ============ XP INTEGRATION (XimiLearn) ============
+  // Same-origin POST to /api/tools/lab-xp; cookies travel automatically.
+  // Standalone-safe: if endpoint missing (e.g. tool opened directly), fails silently.
+  async function awardLabXp(meta) {
+    fireConfetti();
+    try {
+      const res = await fetch('/api/tools/lab-xp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(meta || {}),
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data && data.xp_awarded) showXpToast(data.xp_awarded);
+    } catch (e) {
+      // silently ignore — tool stays usable in standalone mode
+    }
+  }
+
+  // Tiny self-contained confetti — no external deps. Purple/violet palette to match XimiLearn brand.
+  function fireConfetti() {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let canvas = document.getElementById('xim-confetti-canvas');
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.id = 'xim-confetti-canvas';
+      canvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:9999;';
+      document.body.appendChild(canvas);
+    }
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    const colors = ['#836efe', '#c856ff', '#ad7afe', '#9d8aff', '#8d67ff', '#ffffff'];
+    const count = 110;
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight * 0.45;
+    const particles = [];
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
+      const speed = 6 + Math.random() * 8;
+      particles.push({
+        x: cx, y: cy,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 3,
+        rot: Math.random() * Math.PI,
+        vrot: (Math.random() - 0.5) * 0.4,
+        size: 6 + Math.random() * 6,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        life: 0,
+      });
+    }
+    let frame = 0;
+    function tick() {
+      frame++;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let alive = false;
+      particles.forEach(p => {
+        p.vy += 0.32; // gravity
+        p.vx *= 0.99;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vrot;
+        p.life++;
+        const age = p.life / 110;
+        if (age < 1) {
+          alive = true;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.globalAlpha = Math.max(0, 1 - age);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+          ctx.restore();
+        }
+      });
+      if (alive) requestAnimationFrame(tick);
+      else canvas.remove();
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function showXpToast(amount) {
+    let toast = document.getElementById('xp-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'xp-toast';
+      toast.style.cssText = `
+        position: fixed; top: 24px; right: 24px; z-index: 10000;
+        padding: 12px 18px; border-radius: 999px;
+        background: linear-gradient(135deg, #836efe, #c856ff);
+        color: white; font-weight: 700; font-size: 16px;
+        box-shadow: 0 8px 24px rgba(131,110,254,0.4), 0 0 0 1px rgba(255,255,255,0.1);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+        opacity: 0; transform: translateY(-12px) scale(0.95);
+        transition: opacity 0.25s ease, transform 0.25s ease;
+        pointer-events: none;
+      `;
+      document.body.appendChild(toast);
+    }
+    toast.textContent = '+' + amount + ' XP';
+    requestAnimationFrame(() => {
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateY(0) scale(1)';
+    });
+    clearTimeout(toast._hideTimeout);
+    toast._hideTimeout = setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-12px) scale(0.95)';
+    }, 2200);
+  }
+
+  function startTask() {
+    const pool = tasks[state.difficulty];
+    const t = pool[Math.floor(Math.random() * pool.length)];
+    state.task = t;
+    state.observations = [];
+    state.proofsDone = { cation: false, anion: false, cationCount: 0, cationReagents: new Set() };
+    state.tubes = { 1: [], 2: [] };
+    state.selected = null;
+    document.getElementById('task-strip').classList.add('visible');
+    document.getElementById('task-strip-text').innerHTML = `<strong>${t.goal}.</strong> ${t.hint}`;
+    updateTaskProgress();
+    ['crit-1', 'crit-2', 'crit-3', 'crit-4'].forEach(id => document.getElementById(id).classList.remove('done'));
+    renderShelf();
+    state.tubes[1] = [{ key: t.target, mode: 'reagent' }];
+    renderTube(1); renderTube(2);
+    renderObservations();
+    document.getElementById('result').innerHTML = '<div class="result-empty">Выберите второй реактив и слейте в пробирку 2, чтобы провести реакцию</div>';
+  }
+
+  // ============ ОБРАБОТЧИКИ ============
+  document.querySelectorAll('.tube').forEach(t => {
+    t.addEventListener('click', () => addToTube(+t.id.split('-')[1]));
+  });
+  document.querySelectorAll('.lab-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.lab-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      state.mode = tab.dataset.mode;
+      if (state.mode === 'task') {
+        document.getElementById('difficulty-row').style.display = 'flex';
+        startTask();
+      } else {
+        document.getElementById('difficulty-row').style.display = 'none';
+        document.getElementById('task-strip').classList.remove('visible');
+        state.observations = [];
+        clearAll();
+        renderShelf();
+        renderObservations();
+      }
+    });
+  });
+  document.querySelectorAll('.diff-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.diff-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      state.difficulty = chip.dataset.diff;
+      if (state.mode === 'task') startTask();
+    });
+  });
+
+  // ============ ГЛАВНЫЙ ОБРАБОТЧИК «СЛИТЬ» ============
+  window.lab = {
+    clearTube: clearTube,
+    clearAll: clearAll,
+    nextTask: startTask,
+    mix() {
+      const c1 = state.tubes[1], c2 = state.tubes[2];
+      if (!c1.length || !c2.length) {
+        flashResult('Заполните обе пробирки');
+        return;
+      }
+      // Берём первый компонент из каждой пробирки
+      const r1Key = c1[0].key, r2Key = c2[0].key;
+      
+      const reaction = runReactionInTube(1, r1Key, r2Key, false);
+
+      if (state.mode !== 'task') {
+        // в песочнице — после слива пробирка 2 пустеет, в 1 остаётся смесь
+        setTimeout(() => {
+          state.tubes[2] = [];
+          renderTube(2);
+          // содержимое пробирки 1 — теперь "смесь"
+          state.tubes[1] = [{ key: r1Key, mode: 'reagent' }, { key: r2Key, mode: 'mixed' }];
+          renderTube(1);
+        }, 1200);
+      } else {
+        // в задании — очищаем пробирку 2, восстанавливаем неизвестное в 1
+        setTimeout(() => {
+          state.tubes[2] = [];
+          state.tubes[1] = [{ key: state.task.target, mode: 'reagent' }];
+          renderTube(1); renderTube(2);
+        }, 1800);
+      }
+    }
+  };
+
+  // ============ ИНИЦИАЛИЗАЦИЯ ============
+  renderShelf();
+  renderObservations();
+  renderTube(1); renderTube(2);
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e23]:
+    - complementary [ref=e24]:
+      - generic [ref=e25]: Ximi4ka Admin
+      - navigation "Админ навигация" [ref=e26]:
+        - list [ref=e27]:
+          - listitem [ref=e28]:
+            - link "Главная" [ref=e29] [cursor=pointer]:
+              - /url: /admin
+          - listitem [ref=e30]:
+            - link "Товары" [ref=e31] [cursor=pointer]:
+              - /url: /admin/products
+          - listitem [ref=e32]:
+            - link "Категории" [ref=e33] [cursor=pointer]:
+              - /url: /admin/categories
+          - listitem [ref=e34]:
+            - link "Страницы" [ref=e35] [cursor=pointer]:
+              - /url: /admin/pages
+          - listitem [ref=e36]:
+            - link "Заказы" [ref=e37] [cursor=pointer]:
+              - /url: /admin/orders
+          - listitem [ref=e38]:
+            - link "Редиректы" [ref=e39] [cursor=pointer]:
+              - /url: /admin/redirects
+          - listitem [ref=e40]:
+            - link "Медиа" [ref=e41] [cursor=pointer]:
+              - /url: /admin/media
+          - listitem [ref=e42]:
+            - link "Настройки" [ref=e43] [cursor=pointer]:
+              - /url: /admin/settings
+    - generic [ref=e44]:
+      - banner [ref=e45]:
+        - generic [ref=e46]: admin@ximi4ka.localadmin
+        - button "Выйти" [ref=e47]
+      - generic [ref=e49]:
+        - heading "Добро пожаловать" [level=1] [ref=e50]
+        - paragraph [ref=e51]: Используйте меню слева, чтобы перейти к управлению товарами, категориями, страницами и заказами.
+  - button "Open Next.js Dev Tools" [ref=e19] [cursor=pointer]:
+    - img [ref=e20]
+  - alert [ref=e13]

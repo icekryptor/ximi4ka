@@ -1,0 +1,27 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - navigation "breadcrumbs" [ref=e3]:
+      - link "Категории" [ref=e4] [cursor=pointer]:
+        - /url: /categories
+      - text: /Химические наборы
+    - heading "Химические наборы" [level=1] [ref=e5]
+    - generic [ref=e6]:
+      - link "Набор Юного Химика В наличии 2 490 ₽ 2 990 ₽" [ref=e7] [cursor=pointer]:
+        - /url: /product/nabor-yunogo-himika
+        - heading "Набор Юного Химика" [level=3] [ref=e9]
+        - paragraph [ref=e10]: В наличии
+        - paragraph [ref=e11]: 2 490 ₽
+        - paragraph [ref=e12]: 2 990 ₽
+      - link "Мыловарение Домашнее Предзаказ 1 290 ₽" [ref=e13] [cursor=pointer]:
+        - /url: /product/milokon
+        - heading "Мыловарение Домашнее" [level=3] [ref=e15]
+        - paragraph [ref=e16]: Предзаказ
+        - paragraph [ref=e17]: 1 290 ₽
+      - link "Электролиз и Металлы Нет в наличии 1 890 ₽" [ref=e18] [cursor=pointer]:
+        - /url: /product/elektroliz-nabor
+        - heading "Электролиз и Металлы" [level=3] [ref=e20]
+        - paragraph [ref=e21]: Нет в наличии
+        - paragraph [ref=e22]: 1 890 ₽
+  - button "Open Next.js Dev Tools" [ref=e28] [cursor=pointer]:
+    - img [ref=e29]
+  - alert [ref=e32]

@@ -1,0 +1,44 @@
+- main [ref=e2]:
+  - heading "Главная" [level=1] [ref=e4]
+  - generic [ref=e5]:
+    - generic [ref=e6]: "{ \"type\": \"paragraph\", \"content\": \"Добро пожаловать в Ximi4ka — магазин наборов для химических и научных экспериментов. У нас вы найдёте всё, чтобы превратить любознательность ребёнка в настоящее открытие.\" }"
+    - generic [ref=e7]: "{ \"type\": \"paragraph\", \"content\": \"Все наборы разработаны педагогами и химиками, прошли проверку безопасности и сопровождаются подробными инструкциями на русском языке.\" }"
+  - generic [ref=e8]:
+    - heading "Каталог" [level=2] [ref=e9]
+    - generic [ref=e10]:
+      - link "Набор Юного Химика В наличии 2 490 ₽ 2 990 ₽" [ref=e11] [cursor=pointer]:
+        - /url: /product/nabor-yunogo-himika
+        - heading "Набор Юного Химика" [level=3] [ref=e13]
+        - paragraph [ref=e14]: В наличии
+        - paragraph [ref=e15]: 2 490 ₽
+        - paragraph [ref=e16]: 2 990 ₽
+      - link "Извергающийся Вулкан В наличии 1 490 ₽" [ref=e17] [cursor=pointer]:
+        - /url: /product/vulkan-lavy
+        - heading "Извергающийся Вулкан" [level=3] [ref=e19]
+        - paragraph [ref=e20]: В наличии
+        - paragraph [ref=e21]: 1 490 ₽
+      - link "Цветные Кристаллы В наличии 990 ₽" [ref=e22] [cursor=pointer]:
+        - /url: /product/kristalli-cvetnye
+        - heading "Цветные Кристаллы" [level=3] [ref=e24]
+        - paragraph [ref=e25]: В наличии
+        - paragraph [ref=e26]: 990 ₽
+      - link "Умные Слизни В наличии 790 ₽" [ref=e27] [cursor=pointer]:
+        - /url: /product/slizni-razum
+        - heading "Умные Слизни" [level=3] [ref=e29]
+        - paragraph [ref=e30]: В наличии
+        - paragraph [ref=e31]: 790 ₽
+      - link "Мыловарение Домашнее Предзаказ 1 290 ₽" [ref=e32] [cursor=pointer]:
+        - /url: /product/milokon
+        - heading "Мыловарение Домашнее" [level=3] [ref=e34]
+        - paragraph [ref=e35]: Предзаказ
+        - paragraph [ref=e36]: 1 290 ₽
+      - link "Электролиз и Металлы Нет в наличии 1 890 ₽" [ref=e37] [cursor=pointer]:
+        - /url: /product/elektroliz-nabor
+        - heading "Электролиз и Металлы" [level=3] [ref=e39]
+        - paragraph [ref=e40]: Нет в наличии
+        - paragraph [ref=e41]: 1 890 ₽
+      - link "Исследуем Почву В наличии 1 690 ₽" [ref=e42] [cursor=pointer]:
+        - /url: /product/nabor-pochvy
+        - heading "Исследуем Почву" [level=3] [ref=e44]
+        - paragraph [ref=e45]: В наличии
+        - paragraph [ref=e46]: 1 690 ₽

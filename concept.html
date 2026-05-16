@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Химичка — концепт v3 · Лабораторный журнал</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Inter:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* ============================================================
+   TOKENS
+============================================================ */
+:root {
+  /* Colors — Cream Lab */
+  --cream: #F2EFE8;
+  --cream-shade: #E8E3D7;
+  --cream-line: rgba(10, 10, 10, 0.05);
+  /* Colors — Ink Lab */
+  --ink: #0A0A0A;
+  --ink-elevated: #141414;
+  --bone: #EFEDE6;
+  --bone-mute: rgba(239, 237, 230, 0.6);
+  --ink-line: rgba(239, 237, 230, 0.06);
+  /* Brand precision accent */
+  --brand: #836efe;
+  --brand-deep: #6703ff;
+  /* Rules */
+  --rule: rgba(10, 10, 10, 0.14);
+  --rule-soft: rgba(10, 10, 10, 0.08);
+  --rule-on-ink: rgba(239, 237, 230, 0.18);
+
+  /* Type */
+  --font-display: 'Unbounded', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+
+  /* Scale */
+  --text-mega: clamp(2.75rem, 9vw, 9.5rem);
+  --text-display: clamp(2.25rem, 5.5vw, 5.5rem);
+  --text-h2: clamp(2rem, 4vw, 4rem);
+  --text-body: 1.0625rem;
+  --text-mono-xs: 0.6875rem;
+  --text-mono-sm: 0.75rem;
+
+  /* Motion */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--cream);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+img, svg { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+
+/* ============================================================
+   PAGE-WIDE PRIMITIVES
+============================================================ */
+
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--cream-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cream-line) 1px, transparent 1px);
+  background-size: 64px 64px;
+  z-index: 0;
+}
+.grid-overlay--ink {
+  background-image:
+    linear-gradient(var(--ink-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--ink-line) 1px, transparent 1px);
+}
+
+/* Notebook header bar — present on every section, top corners */
+.nb-header {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  z-index: 5;
+  color: inherit;
+}
+.nb-header > div { display: flex; gap: 1.75rem; }
+.nb-header__bullet {
+  display: inline-block;
+  width: 6px; height: 6px;
+  background: var(--brand);
+  border-radius: 50%;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+section { position: relative; overflow: hidden; }
+
+/* Asymmetric thin rule — appears as section divider accent */
+.rule-asym {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 38%;
+  height: 1px;
+  background: var(--rule);
+}
+.rule-asym--ink { background: var(--rule-on-ink); }
+.rule-asym--right { left: auto; right: 0; width: 22%; }
+
+/* ============================================================
+   HERO
+============================================================ */
+.hero {
+  min-height: 100vh;
+  background: var(--cream);
+  padding: 6rem 1.5rem 5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hero__inner {
+  position: relative;
+  z-index: 2;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.hero__eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.hero__eyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 8px; height: 8px;
+  background: var(--brand);
+  border-radius: 50%;
+}
+
+.hero__headline {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: var(--text-mega);
+  line-height: 0.88;
+  letter-spacing: -0.045em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-bottom: 2.5rem;
+  position: relative;
+  z-index: 2;
+}
+.hero__headline-row { display: block; }
+.hero__headline-row--offset { padding-left: 9vw; }
+.word-brand {
+  color: var(--brand);
+  font-style: italic;
+  font-weight: 900;
+}
+.headline-trail {
+  display: block;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: clamp(0.875rem, 1vw, 1.125rem);
+  text-transform: none;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  opacity: 0.55;
+  margin-top: 1.5rem;
+  padding-left: 9vw;
+  max-width: 36ch;
+  line-height: 1.4;
+}
+
+.hero__lead {
+  max-width: 540px;
+  font-size: 1.25rem;
+  line-height: 1.45;
+  color: var(--ink);
+  opacity: 0.78;
+  margin-bottom: 3rem;
+  position: relative;
+  z-index: 2;
+}
+
+.hero__actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 2;
+}
+
+/* Hero molecule pinned far right (sits behind headline as ambient detail) */
+.hero__molecule {
+  position: absolute;
+  right: -10vw;
+  top: 48%;
+  transform: translateY(-50%);
+  width: clamp(360px, 52vh, 620px);
+  height: clamp(360px, 52vh, 620px);
+  z-index: 1;
+  opacity: 0.42;
+  animation: rotate-slow 90s linear infinite;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+@keyframes rotate-slow {
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* Bottom ticker */
+.hero__ticker {
+  position: absolute;
+  bottom: 0;
+  left: 0; right: 0;
+  border-top: 1px solid var(--rule);
+  background: var(--cream);
+  overflow: hidden;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  z-index: 4;
+}
+.ticker-track {
+  display: flex;
+  gap: 3rem;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  animation: ticker-scroll 50s linear infinite;
+  padding-left: 3rem;
+  flex-shrink: 0;
+}
+.ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.875rem;
+  flex-shrink: 0;
+}
+.ticker-item__dot {
+  width: 4px; height: 4px;
+  background: var(--brand);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+@keyframes ticker-scroll {
+  to { transform: translateX(-50%); }
+}
+
+/* Corner annotation — pretends this is a technical drawing */
+.hero__annotation {
+  position: absolute;
+  bottom: 5.5rem;
+  right: 2rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  opacity: 0.55;
+  z-index: 3;
+  text-align: right;
+  pointer-events: none;
+}
+.hero__annotation::before {
+  content: "";
+  display: block;
+  width: 80px; height: 1px;
+  background: var(--ink);
+  opacity: 0.35;
+  margin-bottom: 0.5rem;
+  margin-left: auto;
+}
+
+/* Background detail elements — micro molecule fragment, scale ruler, figure tag */
+.hero__detail {
+  position: absolute;
+  z-index: 2;
+  opacity: 0.55;
+  pointer-events: none;
+}
+.hero__detail--top-right {
+  top: 5.5rem;
+  right: 3rem;
+}
+.hero__scale {
+  position: absolute;
+  bottom: 5.5rem;
+  left: 2rem;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  opacity: 0.55;
+  pointer-events: none;
+}
+.hero__figtag {
+  position: absolute;
+  top: 5.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  gap: 1.25rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  opacity: 0.4;
+  pointer-events: none;
+}
+.hero__figtag span {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+}
+.hero__figtag span::before {
+  content: ""; width: 14px; height: 1px; background: var(--ink); opacity: 0.6;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 1.125rem 1.875rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bone);
+  cursor: pointer;
+  transition: background 0.4s var(--ease-out-quart), border-color 0.4s var(--ease-out-quart), color 0.4s var(--ease-out-quart);
+  white-space: nowrap;
+}
+.btn:hover { background: var(--brand-deep); border-color: var(--brand-deep); }
+.btn--ghost { background: transparent; color: var(--ink); }
+.btn--ghost:hover { background: var(--ink); color: var(--bone); }
+.btn-arrow {
+  width: 14px; height: 14px;
+  transition: transform 0.4s var(--ease-out-quart);
+  flex-shrink: 0;
+}
+.btn:hover .btn-arrow { transform: translateX(4px); }
+
+/* ============================================================
+   MANIFESTO
+============================================================ */
+.manifesto {
+  background: var(--ink);
+  color: var(--bone);
+  padding: 8rem 1.5rem 7rem;
+  position: relative;
+}
+.manifesto__inner {
+  position: relative;
+  z-index: 2;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Background ghost molecule */
+.manifesto__bg-molecule {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(600px, 90vmin, 1100px);
+  height: clamp(600px, 90vmin, 1100px);
+  opacity: 0.05;
+  z-index: 1;
+  animation: rotate-slow 200s linear infinite reverse;
+  pointer-events: none;
+}
+
+.manifesto__eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--bone-mute);
+  margin-bottom: 3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.manifesto__eyebrow::before {
+  content: "";
+  width: 8px; height: 8px;
+  background: var(--brand);
+  border-radius: 50%;
+}
+
+.manifesto__statement {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-display);
+  line-height: 1.0;
+  letter-spacing: -0.04em;
+  margin-bottom: 4rem;
+  max-width: 18ch;
+}
+.manifesto__statement em {
+  font-style: italic;
+  color: var(--brand);
+  font-weight: 700;
+  position: relative;
+}
+.manifesto__statement em::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 0.04em;
+  height: 5px;
+  background: var(--brand);
+  border-radius: 2px;
+  opacity: 0.5;
+}
+
+.manifesto__body {
+  max-width: 56ch;
+  font-size: 1.25rem;
+  line-height: 1.55;
+  color: rgba(239, 237, 230, 0.78);
+  margin-bottom: 6rem;
+  padding-left: 1.5rem;
+  border-left: 1px solid var(--rule-on-ink);
+}
+.manifesto__body strong {
+  color: var(--bone);
+  font-weight: 500;
+  font-style: italic;
+}
+
+/* Mendeleev cells */
+.manifesto__numbers {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+
+.num-cell {
+  border: 1px solid var(--rule-on-ink);
+  padding: 1.25rem 1.25rem 1.5rem;
+  min-height: 18rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  background: rgba(239, 237, 230, 0.015);
+  transition: background 0.5s var(--ease-out-quart), border-color 0.5s var(--ease-out-quart);
+  position: relative;
+  overflow: hidden;
+}
+.num-cell::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: var(--brand);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.6s var(--ease-out-quart);
+}
+.num-cell:hover {
+  background: rgba(131, 110, 254, 0.06);
+  border-color: rgba(131, 110, 254, 0.4);
+}
+.num-cell:hover::before { transform: scaleX(1); }
+
+.num-cell__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--bone-mute);
+}
+.num-cell__big {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(2.5rem, 4.8vw, 4.25rem);
+  line-height: 1;
+  letter-spacing: -0.045em;
+  color: var(--bone);
+}
+.num-cell__big--decimal {
+  letter-spacing: -0.06em;
+}
+
+.num-cell__viz {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+  margin: 0.25rem 0;
+}
+.num-cell__viz svg { width: 100%; height: auto; max-width: 220px; }
+.num-cell__viz--scientific {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--bone);
+  gap: 0.25rem;
+  font-size: 1.6rem;
+  letter-spacing: -0.03em;
+}
+.num-cell__viz--scientific .sci-times {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  color: var(--brand);
+  margin: 0 0.15rem;
+  font-size: 1.1rem;
+}
+.num-cell__viz--scientific .sci-exp {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--brand);
+  vertical-align: super;
+  margin-left: 0.05rem;
+}
+.num-cell__viz--scientific .sci-eq {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 0.7rem;
+  color: var(--bone-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-left: 0.5rem;
+}
+.num-cell__viz--grid svg { max-height: 110px; }
+.num-cell__bottom {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--bone-mute);
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.num-cell__atomic {
+  color: var(--brand);
+}
+
+/* ============================================================
+   PRODUCTS
+============================================================ */
+.products {
+  background: var(--cream);
+  padding: 8rem 1.5rem 10rem;
+  position: relative;
+}
+.products__inner {
+  position: relative;
+  z-index: 2;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+.products__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 6rem;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+.products__title-block { flex: 0 1 auto; }
+.products__eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.products__eyebrow::before {
+  content: "";
+  width: 8px; height: 8px;
+  background: var(--brand);
+  border-radius: 50%;
+}
+.products__title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(2.5rem, 5vw, 4.75rem);
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+}
+.products__title em {
+  font-style: italic;
+  color: var(--brand);
+  font-weight: 900;
+}
+.products__nav {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--ink);
+  cursor: pointer;
+  transition: gap 0.4s var(--ease-out-quart);
+}
+.products__nav:hover { gap: 1rem; }
+
+/* Asymmetric product grid */
+.products__grid {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr 1.1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.pcard {
+  position: relative;
+  cursor: pointer;
+  background: transparent;
+}
+.pcard:nth-child(2) { margin-top: 4rem; }
+.pcard:nth-child(3) { margin-top: 8rem; }
+
+.pcard__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.875rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.pcard__sku { color: var(--ink); opacity: 0.6; }
+.pcard__badge {
+  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  background: transparent;
+  color: var(--ink);
+}
+.pcard__badge--brand {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--bone);
+}
+.pcard__badge--ink {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bone);
+}
+
+.pcard__image {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  background: var(--cream-shade);
+  border: 1px solid var(--rule);
+  overflow: hidden;
+  transition: border-color 0.5s var(--ease-out-quart);
+}
+.pcard__image-art {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.7s var(--ease-out-quart);
+}
+.pcard__image-art svg { width: 70%; height: 70%; }
+.pcard:hover .pcard__image-art { transform: scale(1.04); }
+.pcard:hover .pcard__image { border-color: var(--ink); }
+
+.pcard__corner {
+  position: absolute;
+  top: 0.875rem;
+  left: 0.875rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  opacity: 0.55;
+}
+
+.pcard__formula {
+  position: absolute;
+  bottom: 0.875rem;
+  left: 0.875rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s var(--ease-out-quart), transform 0.5s var(--ease-out-quart);
+  background: var(--cream);
+  padding: 0.375rem 0.625rem;
+  border: 1px solid var(--ink);
+}
+.pcard:hover .pcard__formula {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pcard__body {
+  padding: 1.25rem 0 0;
+}
+.pcard__name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 2.1vw, 2rem);
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  margin-bottom: 0.875rem;
+}
+.pcard__name em {
+  font-style: italic;
+  color: var(--brand);
+  font-weight: 700;
+}
+.pcard__desc {
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--ink);
+  opacity: 0.72;
+  margin-bottom: 1.25rem;
+  max-width: 32ch;
+}
+
+/* Inline stats with progress bars */
+.pcard__stats {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.25rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 1rem;
+}
+.stat {
+  display: grid;
+  grid-template-columns: minmax(7.5rem, auto) 1fr 2.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.stat__lbl { color: var(--ink); opacity: 0.7; white-space: nowrap; }
+.stat__bar {
+  display: block;
+  height: 6px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--ink) 0,
+    var(--ink) 4px,
+    transparent 4px,
+    transparent 6px
+  );
+  background-size: 6px 100%;
+  background-repeat: repeat-x;
+  width: 0;
+  transition: width 1.2s var(--ease-out-quart);
+}
+.stat__bar.stat__bar--in { width: var(--w, 0%); }
+.stat__val {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-align: right;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.pcard__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-bottom: 1.5rem;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  text-transform: lowercase;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  background: transparent;
+  transition: background 0.4s var(--ease-out-quart), color 0.4s var(--ease-out-quart);
+}
+.pcard:hover .chip { background: var(--ink); color: var(--bone); }
+
+.pcard__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--rule);
+  padding-top: 1.25rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.pcard__price {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.875rem;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.pcard__price-unit {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 1rem;
+  margin-left: 0.25rem;
+  color: var(--ink);
+  opacity: 0.7;
+}
+.pcard__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.125rem;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.4s var(--ease-out-quart);
+  white-space: nowrap;
+}
+.pcard:hover .pcard__cta {
+  background: var(--ink);
+  color: var(--bone);
+}
+
+/* Hand-drawn callout */
+.callout {
+  position: absolute;
+  pointer-events: none;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+.callout svg { overflow: visible; }
+.callout svg path {
+  fill: none;
+  stroke: var(--brand);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 220;
+  stroke-dashoffset: 220;
+  transition: stroke-dashoffset 0.8s var(--ease-out-quart);
+}
+.pcard:hover .callout svg path { stroke-dashoffset: 0; }
+.callout__text {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--brand-deep);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.4s var(--ease-out-quart) 0.25s, transform 0.4s var(--ease-out-quart) 0.25s;
+  background: var(--cream);
+  padding: 0.125rem 0.375rem;
+}
+.pcard:hover .callout__text {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Closing footer (page-end mark) */
+.page-end {
+  background: var(--cream);
+  padding: 4rem 1.5rem 6rem;
+  position: relative;
+  border-top: 1px solid var(--rule-soft);
+}
+.page-end__inner {
+  max-width: 1600px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  opacity: 0.65;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+@media (max-width: 1024px) {
+  .products__grid { grid-template-columns: 1fr 1fr; gap: 2.5rem 1.5rem; }
+  .pcard:nth-child(2) { margin-top: 3rem; }
+  .pcard:nth-child(3) { margin-top: 0; grid-column: 1 / -1; max-width: 60%; }
+}
+
+@media (max-width: 720px) {
+  .nb-header { font-size: 0.625rem; gap: 0.75rem; }
+  .nb-header > div { gap: 0.875rem; }
+  .hero { padding: 5rem 1.25rem 5rem; }
+  .hero__headline-row--offset { padding-left: 0; }
+  .headline-trail { padding-left: 0; }
+  .hero__molecule { width: 95vw; height: 95vw; opacity: 0.35; right: -25vw; }
+  .hero__lead { font-size: 1.0625rem; }
+  .hero__annotation { display: none; }
+  .manifesto { padding: 5rem 1.25rem; }
+  .manifesto__numbers { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .manifesto__body { padding-left: 1rem; font-size: 1.0625rem; }
+  .products { padding: 5rem 1.25rem 6rem; }
+  .products__grid { grid-template-columns: 1fr; gap: 3rem; }
+  .pcard:nth-child(2), .pcard:nth-child(3) { margin-top: 0; max-width: 100%; }
+  .callout { display: none; }
+}
+
+/* Reveal animation */
+.reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.9s var(--ease-out-quart), transform 0.9s var(--ease-out-quart); }
+.reveal.in { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     HERO — CREAM
+============================================================ -->
+<section class="hero">
+  <div class="grid-overlay"></div>
+
+  <div class="nb-header">
+    <div>
+      <span><span class="nb-header__bullet"></span>№ 001 — Лабораторный журнал</span>
+    </div>
+    <div>
+      <span>Ред. 2026.04 / v3</span>
+      <span>стр. 01 / 03</span>
+    </div>
+  </div>
+
+  <!-- Benzene wireframe pinned right (clean, no labels) -->
+  <svg class="hero__molecule" viewBox="0 0 400 400" aria-hidden="true">
+    <g stroke="#0A0A0A" fill="none" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round">
+      <polygon points="200,40 348,125 348,275 200,360 52,275 52,125"/>
+      <circle cx="200" cy="200" r="86"/>
+      <!-- Six outward bonds (no atom labels) -->
+      <line x1="200" y1="40" x2="200" y2="2"/>
+      <line x1="348" y1="125" x2="386" y2="105"/>
+      <line x1="348" y1="275" x2="386" y2="295"/>
+      <line x1="200" y1="360" x2="200" y2="398"/>
+      <line x1="52" y1="275" x2="14" y2="295"/>
+      <line x1="52" y1="125" x2="14" y2="105"/>
+    </g>
+    <!-- Tech-drawing corner crosshairs -->
+    <g stroke="#0A0A0A" stroke-width="1" opacity="0.5">
+      <line x1="0" y1="0" x2="22" y2="0"/><line x1="0" y1="0" x2="0" y2="22"/>
+      <line x1="400" y1="0" x2="378" y2="0"/><line x1="400" y1="0" x2="400" y2="22"/>
+      <line x1="0" y1="400" x2="22" y2="400"/><line x1="0" y1="400" x2="0" y2="378"/>
+      <line x1="400" y1="400" x2="378" y2="400"/><line x1="400" y1="400" x2="400" y2="378"/>
+    </g>
+  </svg>
+
+  <!-- Background detail: micro molecule fragment + scale ruler + figure tag -->
+  <div class="hero__detail hero__detail--top-right" aria-hidden="true">
+    <svg viewBox="0 0 110 60" width="110" height="60">
+      <!-- H₂O bent bond -->
+      <g stroke="#0A0A0A" fill="none" stroke-width="1.2" stroke-linecap="round">
+        <line x1="20" y1="38" x2="55" y2="22"/>
+        <line x1="55" y1="22" x2="90" y2="38"/>
+      </g>
+      <text x="14" y="44" font-family="JetBrains Mono, monospace" font-size="9" fill="#0A0A0A">H</text>
+      <text x="92" y="44" font-family="JetBrains Mono, monospace" font-size="9" fill="#0A0A0A">H</text>
+      <text x="49" y="18" font-family="JetBrains Mono, monospace" font-size="9" fill="#0A0A0A">O</text>
+      <text x="14" y="58" font-family="JetBrains Mono, monospace" font-size="7" fill="#0A0A0A" opacity="0.55">fig. 002 / H₂O · 104.5°</text>
+    </svg>
+  </div>
+
+  <div class="hero__scale" aria-hidden="true">
+    <svg viewBox="0 0 200 16" width="200" height="16">
+      <line x1="2" y1="8" x2="198" y2="8" stroke="#0A0A0A" stroke-width="1"/>
+      <g stroke="#0A0A0A" stroke-width="1">
+        <line x1="2" y1="3" x2="2" y2="13"/>
+        <line x1="42" y1="5" x2="42" y2="11"/>
+        <line x1="82" y1="5" x2="82" y2="11"/>
+        <line x1="122" y1="5" x2="122" y2="11"/>
+        <line x1="162" y1="5" x2="162" y2="11"/>
+        <line x1="198" y1="3" x2="198" y2="13"/>
+      </g>
+    </svg>
+    <span>scale 1 : 1 · 200 mm</span>
+  </div>
+
+  <div class="hero__figtag" aria-hidden="true">
+    <span>fig. 001-A</span>
+    <span>arr. C₆H₆</span>
+  </div>
+
+  <div class="hero__inner">
+    <div class="hero__eyebrow">Опыты в коробке · Москва, с 2017</div>
+
+    <h1 class="hero__headline">
+      <span class="hero__headline-row"><em class="word-brand">Опыт</em></span>
+      <span class="hero__headline-row hero__headline-row--offset">вместо</span>
+      <span class="hero__headline-row">объяснений</span>
+      <span class="headline-trail">— химия, которую<br>держат в руках, а не учат наизусть.</span>
+    </h1>
+
+    <p class="hero__lead">
+      3 набора. От реакций меди до электролиза — настоящие реагенты, посуда, понятные протоколы. То, что школа показывает на видео, вы делаете руками.
+    </p>
+
+    <div class="hero__actions">
+      <a href="#products" class="btn">
+        Открыть каталог
+        <svg class="btn-arrow" viewBox="0 0 16 16"><path d="M2 8h12M9 3l5 5-5 5" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="#manifesto" class="btn btn--ghost">Что мы делаем</a>
+    </div>
+  </div>
+
+  <div class="hero__annotation">
+    рабочая область<br>
+    1080 × 1920 mm
+  </div>
+
+  <div class="hero__ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span class="ticker-item"><span class="ticker-item__dot"></span>H₂O · вода</span>
+      <span class="ticker-item"><span class="ticker-item__dot"></span>NaCl · соль</span>
+      <span class="ticker-item"><span class="ticker-item__dot"></span>CuSO₄ · медь</span>
+      <span class="ticker-item"><span class="ticker-item__dot"></span>pH 7.0 · нейтрально</span>
+      <span class="ticker-item"><span class="ticker-item__dot"></span>C₆H₁₂O₆ · глюкоза</span>
+      <span class="ticker-item"><span class="ticker-item__dot"></span>HCl · соляная</span>
+      <span class="ticker-item"><span class="ticker-item__dot"></span>Fe + S → FeS</span>
+      <span class="ticker-item"><span class="ticker-item__dot"></span>NH₃ · аммиак</span>
+      <span class="ticker-item"><span class="ticker-item__dot"></span>2 H₂O₂ → 2 H₂O + O₂</span>
+      <span class="ticker-item"><span class="ticker-item__dot"></span>K · калий</span>
+      <!-- duplicate for seamless scroll -->
+      <span class="ticker-item"><span class="ticker-item__dot"></span>H₂O · вода</span>
+      <span class="ticker-item"><span class="ticker-item__dot"></span>NaCl · соль</span>
+      <span class="ticker-item"><span class="ticker-item__dot"></span>CuSO₄ · медь</span>
+      <span class="ticker-item"><span class="ticker-item__dot"></span>pH 7.0 · нейтрально</span>
+      <span class="ticker-item"><span class="ticker-item__dot"></span>C₆H₁₂O₆ · глюкоза</span>
+      <span class="ticker-item"><span class="ticker-item__dot"></span>HCl · соляная</span>
+      <span class="ticker-item"><span class="ticker-item__dot"></span>Fe + S → FeS</span>
+      <span class="ticker-item"><span class="ticker-item__dot"></span>NH₃ · аммиак</span>
+      <span class="ticker-item"><span class="ticker-item__dot"></span>2 H₂O₂ → 2 H₂O + O₂</span>
+      <span class="ticker-item"><span class="ticker-item__dot"></span>K · калий</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     MANIFESTO — INK
+============================================================ -->
+<section class="manifesto" id="manifesto">
+  <div class="grid-overlay grid-overlay--ink"></div>
+
+  <!-- Background ghost molecule (3-fused-ring, anthracene-like) -->
+  <svg class="manifesto__bg-molecule" viewBox="0 0 600 280" aria-hidden="true">
+    <g stroke="#EFEDE6" fill="none" stroke-width="1">
+      <!-- left hexagon -->
+      <polygon points="100,40 200,90 200,190 100,240 0,190 0,90"/>
+      <circle cx="100" cy="140" r="62"/>
+      <!-- middle hexagon (shares edge) -->
+      <polygon points="300,40 400,90 400,190 300,240 200,190 200,90"/>
+      <circle cx="300" cy="140" r="62"/>
+      <!-- right hexagon -->
+      <polygon points="500,40 600,90 600,190 500,240 400,190 400,90"/>
+      <circle cx="500" cy="140" r="62"/>
+      <!-- outer bonds -->
+      <line x1="100" y1="40" x2="100" y2="10"/>
+      <line x1="100" y1="240" x2="100" y2="270"/>
+      <line x1="0" y1="90" x2="-25" y2="75"/>
+      <line x1="0" y1="190" x2="-25" y2="205"/>
+      <line x1="500" y1="40" x2="500" y2="10"/>
+      <line x1="500" y1="240" x2="500" y2="270"/>
+      <line x1="600" y1="90" x2="625" y2="75"/>
+      <line x1="600" y1="190" x2="625" y2="205"/>
+      <line x1="300" y1="40" x2="300" y2="10"/>
+      <line x1="300" y1="240" x2="300" y2="270"/>
+    </g>
+  </svg>
+
+  <div class="nb-header">
+    <div><span><span class="nb-header__bullet"></span>02 — Манифест</span></div>
+    <div><span>стр. 02 / 03</span></div>
+  </div>
+
+  <div class="manifesto__inner">
+    <div class="manifesto__eyebrow">02.0 / Принципы лаборатории</div>
+
+    <h2 class="manifesto__statement">
+      Мы делаем <em>химию</em>, а не урок.
+    </h2>
+
+    <p class="manifesto__body">
+      Каждый набор — запечатанный комплект реагентов, лабораторной посуды и понятных протоколов. <strong>Без воды, без слайдов, без «представьте, что произойдёт».</strong> Только реакция, наблюдение и вывод. Ребёнок ставит опыт, видит результат своими глазами, делает запись — и спрашивает следующий вопрос.
+    </p>
+
+    <div class="manifesto__numbers">
+
+      <!-- 2023 — год основания. Visualization: timeline from 2023 to today -->
+      <div class="num-cell">
+        <div class="num-cell__top"><span>01</span><span>год</span></div>
+        <div class="num-cell__big" data-static="2023">2023</div>
+        <div class="num-cell__viz">
+          <svg viewBox="0 0 220 36" aria-hidden="true">
+            <line x1="12" y1="18" x2="208" y2="18" stroke="rgba(239,237,230,0.25)" stroke-width="1"/>
+            <circle cx="12" cy="18" r="6" fill="#836efe"/>
+            <circle cx="78" cy="18" r="3" fill="rgba(239,237,230,0.6)"/>
+            <circle cx="144" cy="18" r="3" fill="rgba(239,237,230,0.6)"/>
+            <circle cx="208" cy="18" r="3.5" fill="none" stroke="rgba(239,237,230,0.6)" stroke-width="1.2"/>
+            <text x="12" y="34" font-family="JetBrains Mono, monospace" font-size="8" fill="rgba(239,237,230,0.55)" text-anchor="middle">'23</text>
+            <text x="78" y="34" font-family="JetBrains Mono, monospace" font-size="8" fill="rgba(239,237,230,0.55)" text-anchor="middle">'24</text>
+            <text x="144" y="34" font-family="JetBrains Mono, monospace" font-size="8" fill="rgba(239,237,230,0.55)" text-anchor="middle">'25</text>
+            <text x="208" y="34" font-family="JetBrains Mono, monospace" font-size="8" fill="#836efe" text-anchor="middle">'26</text>
+          </svg>
+        </div>
+        <div class="num-cell__bottom"><span class="num-cell__atomic">основано</span><span>3 года</span></div>
+      </div>
+
+      <!-- 20 000+ покупателей. Visualization: scientific notation 2×10⁴ as accent -->
+      <div class="num-cell">
+        <div class="num-cell__top"><span>02</span><span>купили</span></div>
+        <div class="num-cell__big" data-target="20000" data-suffix="+">20 000</div>
+        <div class="num-cell__viz num-cell__viz--scientific">
+          <span class="sci-base">2</span>
+          <span class="sci-times">×</span>
+          <span class="sci-base">10</span><sup class="sci-exp">4</sup>
+          <span class="sci-eq">= человек</span>
+        </div>
+        <div class="num-cell__bottom"><span class="num-cell__atomic">покупатели</span><span>с 2023</span></div>
+      </div>
+
+      <!-- 4.9 рейтинг из 5. Visualization: 5 circles with last one ~90% filled -->
+      <div class="num-cell">
+        <div class="num-cell__top"><span>03</span><span>рейтинг</span></div>
+        <div class="num-cell__big num-cell__big--decimal" data-static="4,9">4,9</div>
+        <div class="num-cell__viz">
+          <svg viewBox="0 0 220 28" aria-hidden="true">
+            <circle cx="22" cy="14" r="11" fill="#836efe"/>
+            <circle cx="66" cy="14" r="11" fill="#836efe"/>
+            <circle cx="110" cy="14" r="11" fill="#836efe"/>
+            <circle cx="154" cy="14" r="11" fill="#836efe"/>
+            <circle cx="198" cy="14" r="11" fill="none" stroke="#836efe" stroke-width="1.5"/>
+            <clipPath id="rating-clip"><rect x="187" y="3" width="20" height="22"/></clipPath>
+            <circle cx="198" cy="14" r="11" fill="#836efe" clip-path="url(#rating-clip)"/>
+          </svg>
+        </div>
+        <div class="num-cell__bottom"><span class="num-cell__atomic">из 5</span><span>WB &amp; Ozon</span></div>
+      </div>
+
+      <!-- 161 реакция. Visualization: literal grid of 161 dots -->
+      <div class="num-cell">
+        <div class="num-cell__top"><span>04</span><span>реакций</span></div>
+        <div class="num-cell__big" data-target="161">161</div>
+        <div class="num-cell__viz num-cell__viz--grid">
+          <svg class="reaction-grid" viewBox="0 0 230 110" aria-hidden="true"></svg>
+        </div>
+        <div class="num-cell__bottom"><span class="num-cell__atomic">в наборе</span><span>каждая ≠</span></div>
+      </div>
+
+    </div>
+  </div>
+  <div class="rule-asym rule-asym--ink rule-asym--right"></div>
+</section>
+
+<!-- ============================================================
+     PRODUCTS — CREAM
+============================================================ -->
+<section class="products" id="products">
+  <div class="grid-overlay"></div>
+
+  <div class="nb-header">
+    <div><span><span class="nb-header__bullet"></span>03 — Каталог</span></div>
+    <div>
+      <span>стр. 03 / 03</span>
+      <span>конец журнала</span>
+    </div>
+  </div>
+
+  <div class="products__inner">
+    <div class="products__head">
+      <div class="products__title-block">
+        <div class="products__eyebrow">03.0 / Что собрать сегодня</div>
+        <h2 class="products__title">Готовые<br><em>наборы</em></h2>
+      </div>
+      <a class="products__nav">
+        Все 48 наборов
+        <svg width="14" height="14" viewBox="0 0 16 16"><path d="M2 8h12M9 3l5 5-5 5" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+
+    <div class="products__grid">
+
+      <!-- CARD 1 — Химичка 3.0 (флагман) -->
+      <article class="pcard">
+        <div class="pcard__head">
+          <span class="pcard__sku">№ X-30 / Cu</span>
+          <span class="pcard__badge pcard__badge--brand">Хит</span>
+        </div>
+        <div class="pcard__image">
+          <span class="pcard__corner">arr. 01</span>
+          <div class="pcard__image-art">
+            <svg viewBox="0 0 240 280" aria-hidden="true">
+              <g stroke="#0A0A0A" fill="none" stroke-width="1.2" stroke-linejoin="round">
+                <path d="M30 90 L120 50 L210 90 L210 230 L120 270 L30 230 Z"/>
+                <path d="M30 90 L120 130 L210 90"/>
+                <line x1="120" y1="130" x2="120" y2="270"/>
+                <rect x="55" y="170" width="60" height="32" transform="skewY(-12)"/>
+              </g>
+              <g font-family="JetBrains Mono, monospace" font-size="9" fill="#0A0A0A">
+                <text x="60" y="195" transform="skewY(-12)">X-3.0</text>
+              </g>
+              <g stroke="#0A0A0A" fill="none" stroke-width="1.2" stroke-linejoin="round" transform="translate(110, 30)">
+                <path d="M0 0 L0 38 L-12 60 L22 60 L10 38 L10 0 Z"/>
+                <line x1="-2" y1="2" x2="12" y2="2" stroke-width="1.5"/>
+                <path d="M-9 50 Q 0 47 9 51 L 18 60 L -10 60 Z" fill="#836efe" fill-opacity="0.2" stroke="none"/>
+              </g>
+            </svg>
+          </div>
+          <div class="pcard__formula">Cu + 2 AgNO₃ → Cu(NO₃)₂ + 2 Ag↓</div>
+        </div>
+        <div class="pcard__body">
+          <h3 class="pcard__name"><em>Химичка</em><br>3.0</h3>
+          <p class="pcard__desc">Флагман: настоящая лаборатория у вас дома. От реакций меди до выращивания кристаллов.</p>
+          <ul class="pcard__stats">
+            <li class="stat"><span class="stat__lbl">01 / реактивов</span><span class="stat__bar" data-fill="100"></span><span class="stat__val">18</span></li>
+            <li class="stat"><span class="stat__lbl">02 / инструментов</span><span class="stat__bar" data-fill="60"></span><span class="stat__val">12</span></li>
+            <li class="stat"><span class="stat__lbl">03 / реакций</span><span class="stat__bar" data-fill="100"></span><span class="stat__val">161</span></li>
+          </ul>
+          <div class="pcard__tags">
+            <span class="chip">безопасно</span>
+            <span class="chip">ярко</span>
+            <span class="chip">от 10 лет</span>
+          </div>
+          <div class="pcard__meta">
+            <span class="pcard__price">3&thinsp;399<span class="pcard__price-unit">₽</span></span>
+            <a class="pcard__cta">Заказать набор →</a>
+          </div>
+        </div>
+        <div class="callout" style="top: 28%; right: -3.5rem; width: 110px;">
+          <svg width="110" height="60" viewBox="0 0 110 60">
+            <path d="M5,30 Q 35,5 90,18 L82,12 M90,18 L84,26"/>
+          </svg>
+          <span class="callout__text">161 реакция</span>
+        </div>
+      </article>
+
+      <!-- CARD 2 — Мини-Химичка -->
+      <article class="pcard">
+        <div class="pcard__head">
+          <span class="pcard__sku">№ X-MINI / NaCl</span>
+          <span class="pcard__badge">Старт</span>
+        </div>
+        <div class="pcard__image">
+          <span class="pcard__corner">arr. 02</span>
+          <div class="pcard__image-art">
+            <!-- Smaller box + test tube -->
+            <svg viewBox="0 0 200 280" aria-hidden="true">
+              <g stroke="#0A0A0A" fill="none" stroke-width="1.2" stroke-linejoin="round">
+                <path d="M40 130 L100 100 L160 130 L160 230 L100 260 L40 230 Z"/>
+                <path d="M40 130 L100 160 L160 130"/>
+                <line x1="100" y1="160" x2="100" y2="260"/>
+                <rect x="60" y="190" width="44" height="22" transform="skewY(-12)"/>
+              </g>
+              <g font-family="JetBrains Mono, monospace" font-size="8" fill="#0A0A0A">
+                <text x="64" y="207" transform="skewY(-12)">MINI</text>
+              </g>
+              <!-- Single test tube next to box -->
+              <g stroke="#0A0A0A" fill="none" stroke-width="1.2" stroke-linejoin="round" transform="translate(95, 50)">
+                <line x1="-10" y1="0" x2="10" y2="0" stroke-width="1.6"/>
+                <path d="M-7 2 L-7 70 Q-7 80 0 80 Q7 80 7 70 L7 2"/>
+                <path d="M-6 50 Q 0 53 6 50 L6 70 Q6 78 0 78 Q-6 78 -6 70 Z" fill="#836efe" fill-opacity="0.18" stroke="none"/>
+                <line x1="-6" y1="50" x2="6" y2="50" stroke-dasharray="2 3"/>
+              </g>
+            </svg>
+          </div>
+          <div class="pcard__formula">Pocket lab · 18 реактивов</div>
+        </div>
+        <div class="pcard__body">
+          <h3 class="pcard__name"><em>Мини-</em><br>Химичка</h3>
+          <p class="pcard__desc">Те же реакции, компактнее. Базовая посуда, идеален как первый набор или подарок.</p>
+          <ul class="pcard__stats">
+            <li class="stat"><span class="stat__lbl">01 / реактивов</span><span class="stat__bar" data-fill="100"></span><span class="stat__val">18</span></li>
+            <li class="stat"><span class="stat__lbl">02 / инструментов</span><span class="stat__bar" data-fill="20"></span><span class="stat__val">4</span></li>
+            <li class="stat"><span class="stat__lbl">03 / реакций</span><span class="stat__bar" data-fill="100"></span><span class="stat__val">161</span></li>
+          </ul>
+          <div class="pcard__tags">
+            <span class="chip">подарок</span>
+            <span class="chip">от 8 лет</span>
+          </div>
+          <div class="pcard__meta">
+            <span class="pcard__price">1&thinsp;799<span class="pcard__price-unit">₽</span></span>
+            <a class="pcard__cta">Заказать набор →</a>
+          </div>
+        </div>
+        <div class="callout" style="top: 60%; left: -3.5rem; width: 110px; align-items: flex-end;">
+          <svg width="110" height="60" viewBox="0 0 110 60" style="transform: scaleX(-1);">
+            <path d="M5,30 Q 35,5 90,18 L82,12 M90,18 L84,26"/>
+          </svg>
+          <span class="callout__text">от 1 799 ₽</span>
+        </div>
+      </article>
+
+      <!-- CARD 3 — Электрохимичка -->
+      <article class="pcard">
+        <div class="pcard__head">
+          <span class="pcard__sku">№ X-EL / e⁻</span>
+          <span class="pcard__badge pcard__badge--ink">Pro</span>
+        </div>
+        <div class="pcard__image">
+          <span class="pcard__corner">arr. 03</span>
+          <div class="pcard__image-art">
+            <!-- Battery + electrolysis cell + ammeter -->
+            <svg viewBox="0 0 260 280" aria-hidden="true">
+              <g stroke="#0A0A0A" fill="none" stroke-width="1.2" stroke-linejoin="round">
+                <!-- Bench surface -->
+                <line x1="10" y1="220" x2="250" y2="220" stroke-width="1.5"/>
+                <!-- Battery / power source -->
+                <g transform="translate(20, 165)">
+                  <rect x="0" y="0" width="80" height="50"/>
+                  <rect x="80" y="12" width="6" height="14"/>
+                  <line x1="14" y1="12" x2="14" y2="38"/>
+                  <line x1="20" y1="20" x2="20" y2="30" stroke-width="1.6"/>
+                  <text x="20" y="50" font-family="JetBrains Mono, monospace" font-size="8" fill="#0A0A0A">+</text>
+                  <text x="60" y="50" font-family="JetBrains Mono, monospace" font-size="8" fill="#0A0A0A">−</text>
+                </g>
+                <!-- Wires going up -->
+                <path d="M40 165 L40 100 L100 100"/>
+                <path d="M88 165 L88 110 L160 110"/>
+                <!-- Electrolysis beaker -->
+                <g transform="translate(120, 100)">
+                  <path d="M0 0 L0 100 L70 100 L70 0"/>
+                  <line x1="-5" y1="0" x2="75" y2="0" stroke-width="1.5"/>
+                  <path d="M0 30 Q 35 34 70 30 L70 100 L0 100 Z" fill="#836efe" fill-opacity="0.18" stroke="none"/>
+                  <line x1="0" y1="30" x2="70" y2="30" stroke-dasharray="3 4"/>
+                  <!-- Two electrodes dipped -->
+                  <line x1="22" y1="-12" x2="22" y2="80" stroke-width="1.4"/>
+                  <line x1="48" y1="-12" x2="48" y2="80" stroke-width="1.4"/>
+                  <!-- bubbles -->
+                  <circle cx="20" cy="65" r="2"/>
+                  <circle cx="24" cy="55" r="1.5"/>
+                  <circle cx="49" cy="60" r="2"/>
+                  <circle cx="45" cy="50" r="1.2"/>
+                </g>
+                <!-- Ammeter -->
+                <g transform="translate(210, 175)">
+                  <circle cx="20" cy="20" r="20"/>
+                  <line x1="20" y1="20" x2="32" y2="8" stroke-width="1.4"/>
+                  <text x="20" y="14" font-family="JetBrains Mono, monospace" font-size="7" text-anchor="middle" fill="#0A0A0A">A</text>
+                </g>
+              </g>
+              <text x="130" y="265" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#0A0A0A" opacity="0.6">ELECTROLYSIS · 20 ITEMS</text>
+            </svg>
+          </div>
+          <div class="pcard__formula">2 H₂O → 2 H₂↑ + O₂↑</div>
+        </div>
+        <div class="pcard__body">
+          <h3 class="pcard__name"><em>Электро-</em><br>химичка</h3>
+          <p class="pcard__desc">Электролиз, гальваника, батарея. Полный комплект для опытов с током.</p>
+          <ul class="pcard__stats">
+            <li class="stat"><span class="stat__lbl">01 / реактивов</span><span class="stat__bar" data-fill="78"></span><span class="stat__val">14</span></li>
+            <li class="stat"><span class="stat__lbl">02 / инструментов</span><span class="stat__bar" data-fill="100"></span><span class="stat__val">20</span></li>
+            <li class="stat"><span class="stat__lbl">03 / реакций</span><span class="stat__bar" data-fill="46"></span><span class="stat__val">74</span></li>
+          </ul>
+          <div class="pcard__tags">
+            <span class="chip">ток</span>
+            <span class="chip">гальваника</span>
+            <span class="chip">от 12 лет</span>
+          </div>
+          <div class="pcard__meta">
+            <span class="pcard__price">3&thinsp;299<span class="pcard__price-unit">₽</span></span>
+            <a class="pcard__cta">Заказать набор →</a>
+          </div>
+        </div>
+        <div class="callout" style="top: 18%; right: -3.5rem; width: 130px;">
+          <svg width="130" height="70" viewBox="0 0 130 70">
+            <path d="M5,40 Q 50,5 110,22 L100,15 M110,22 L106,32"/>
+          </svg>
+          <span class="callout__text">20 инструментов</span>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- Page-end footer -->
+<section class="page-end">
+  <div class="page-end__inner">
+    <div>— конец журнала · v3 концепт</div>
+    <div>Химичка · 2017–2026 · Москва</div>
+  </div>
+</section>
+
+<script>
+  // Generate the 161-dot reaction grid (manifesto cell 4 visualization)
+  (function buildReactionGrid(){
+    const svg = document.querySelector('.reaction-grid');
+    if (!svg) return;
+    const total = 161;
+    const cols = 23;
+    const rows = Math.ceil(total / cols); // 7
+    const cellW = 10;
+    const cellH = 14;
+    const r = 2;
+    const ns = 'http://www.w3.org/2000/svg';
+    let count = 0;
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        if (count >= total) break;
+        const c = document.createElementNS(ns, 'circle');
+        c.setAttribute('cx', col * cellW + cellW/2);
+        c.setAttribute('cy', row * cellH + cellH/2);
+        c.setAttribute('r', r);
+        c.setAttribute('fill', count === total - 1 ? '#836efe' : '#EFEDE6');
+        c.setAttribute('opacity', count === total - 1 ? '1' : '0.55');
+        svg.appendChild(c);
+        count++;
+      }
+    }
+    svg.setAttribute('viewBox', `0 0 ${cols * cellW} ${rows * cellH}`);
+  })();
+
+  // Count-up animation for manifesto stats with [data-target]
+  const numberObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !entry.target.dataset.counted) {
+        entry.target.dataset.counted = "1";
+        const target = +entry.target.dataset.target;
+        const suffix = entry.target.dataset.suffix || "";
+        const duration = 1800;
+        const start = performance.now();
+        function step(now) {
+          const t = Math.min(1, (now - start) / duration);
+          const eased = 1 - Math.pow(1 - t, 4);
+          const v = Math.floor(eased * target);
+          entry.target.textContent = v.toLocaleString('ru-RU') + suffix;
+          if (t < 1) requestAnimationFrame(step);
+          else entry.target.textContent = target.toLocaleString('ru-RU') + suffix;
+        }
+        entry.target.textContent = "0";
+        requestAnimationFrame(step);
+      }
+    });
+  }, { threshold: 0.4 });
+  document.querySelectorAll('[data-target]').forEach(el => numberObserver.observe(el));
+
+  // Animate stat bars when product cards enter view
+  const barObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const fill = entry.target.dataset.fill || 0;
+        entry.target.style.setProperty('--w', fill + '%');
+        entry.target.classList.add('stat__bar--in');
+        barObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  document.querySelectorAll('.stat__bar').forEach(el => barObserver.observe(el));
+</script>
+
+</body>
+</html>

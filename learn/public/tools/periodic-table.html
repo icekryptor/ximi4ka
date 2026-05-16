@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Интерактивная таблица Менделеева · 118 элементов</title>
+<style>
+  :root {
+    --bg: #FAFAF7; --surface: #FFFFFF; --surface-2: #F1EFE8;
+    --text: #1A1A1A; --text-secondary: #5F5E5A; --text-tertiary: #888780;
+    --border: rgba(0,0,0,0.12); --border-strong: rgba(0,0,0,0.25);
+    --accent: #534AB7; --accent-bg: #EEEDFE; --accent-text: #3C3489;
+    --info-bg: #E6F1FB; --info-text: #0C447C;
+    --warning-bg: #FAEEDA; --warning-text: #854F0B;
+    --radius-md: 6px; --radius-lg: 10px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", system-ui, sans-serif;
+    --font-mono: "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1A1A1A; --surface: #242422; --surface-2: #2C2C2A;
+      --text: #F1EFE8; --text-secondary: #B4B2A9; --text-tertiary: #888780;
+      --border: rgba(255,255,255,0.12); --border-strong: rgba(255,255,255,0.25);
+      --accent-bg: #26215C; --accent-text: #CECBF6;
+      --info-bg: #042C53; --info-text: #B5D4F4;
+      --warning-bg: #412402; --warning-text: #FAC775;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.5; font-size: 15px; -webkit-font-smoothing: antialiased; }
+  .page { max-width: 100%; margin: 0 auto; padding: 18px 18px 32px; }
+  
+  .page-header { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+  .page-header-left { min-width: 0; }
+  .page-header .badge { display: inline-block; background: var(--accent-bg); color: var(--accent-text); font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 999px; letter-spacing: 0.04em; margin-right: 8px; vertical-align: middle; }
+  .page-header h1 { font-size: 17px; font-weight: 500; margin: 0; display: inline-block; vertical-align: middle; }
+  
+  .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .search-input { font-family: inherit; font-size: 13px; padding: 7px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); color: var(--text); min-width: 220px; outline: none; transition: border-color 0.15s; }
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--text-tertiary); }
+  .filter-group { display: flex; gap: 5px; flex-wrap: wrap; }
+  .chip { font-size: 11px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; color: var(--text-secondary); font-family: inherit; transition: all 0.12s; }
+  .chip:hover { border-color: var(--border-strong); }
+  .chip.active { background: var(--accent-bg); color: var(--accent-text); border-color: var(--accent-bg); }
+  .toggle-row { display: flex; gap: 5px; margin-left: auto; }
+  
+  .pt-shell { display: grid; grid-template-columns: 1fr 320px; gap: 14px; align-items: start; }
+  @media (max-width: 980px) { .pt-shell { grid-template-columns: 1fr; } .detail-panel { position: static; } }
+  
+  .pt-table { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 10px; }
+  .pt-grid { display: grid; grid-template-columns: 28px repeat(18, 1fr); gap: 3px; }
+  .pt-grid-fblock { display: grid; grid-template-columns: 28px repeat(18, 1fr); gap: 3px; margin-top: 6px; }
+  .pt-grid .group-header, .pt-grid-classic .group-header { font-size: 11px; font-weight: 600; text-align: center; padding: 4px 0; color: var(--text-secondary); border-bottom: 1px solid var(--border); }
+  .pt-grid .period-label, .pt-grid-fblock .period-label { font-size: 11px; font-weight: 600; text-align: center; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; }
+  .pt-grid .corner, .pt-grid-fblock .corner { background: transparent; }
+
+  /* Classic Russian short-form table: 1 period-label col + 7 single groups + 1 wide group VIII (3 sub-cols) = 11 columns */
+  .pt-grid-classic { display: grid; grid-template-columns: 28px repeat(7, 1fr) repeat(3, 1fr); gap: 3px; }
+  .pt-grid-classic-fblock { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .pt-grid-classic .group-header { font-size: 11px; font-weight: 600; text-align: center; padding: 4px 0; color: var(--text-secondary); border-bottom: 1px solid var(--border); }
+  .pt-grid-classic .group-header .sub { display: block; font-size: 9px; font-weight: 500; color: var(--text-tertiary); margin-top: 2px; letter-spacing: 0.04em; }
+  .pt-grid-classic .period-label { font-size: 11px; font-weight: 600; text-align: center; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; }
+  .pt-grid-classic .corner { background: transparent; }
+  .pt-grid-classic .cell { position: relative; }
+  .pt-grid-classic .cell .sub-badge {
+    position: absolute; top: 2px; right: 3px; font-size: 8px; font-weight: 700;
+    padding: 1px 3px; border-radius: 3px; line-height: 1;
+    background: rgba(0,0,0,0.18); color: rgba(255,255,255,0.95);
+  }
+  .pt-grid-classic .cell .sub-badge.B { background: rgba(83,74,183,0.25); color: var(--accent-text); }
+  .pt-grid-classic-fblock .lf-row { display: grid; grid-template-columns: 90px repeat(15, 1fr); gap: 3px; align-items: center; }
+  .pt-grid-classic-fblock .lf-label { font-size: 11px; color: var(--text-secondary); padding-right: 6px; text-align: right; font-weight: 500; }
+  
+  .cell { aspect-ratio: 1; border-radius: var(--radius-md); border: 1px solid transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; padding: 3px 2px; transition: transform 0.1s, opacity 0.2s, box-shadow 0.15s; position: relative; overflow: hidden; user-select: none; min-height: 48px; }
+  .cell:hover { transform: scale(1.06); z-index: 5; box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+  .cell.dim { opacity: 0.2; }
+  .cell.match { box-shadow: 0 0 0 2px var(--text); z-index: 4; }
+  .cell.selected { box-shadow: 0 0 0 2px var(--accent); z-index: 6; }
+  .cell-num { font-size: 10px; line-height: 1; opacity: 0.85; align-self: flex-start; padding-left: 3px; font-weight: 500; }
+  .cell-sym { font-size: 17px; font-weight: 700; line-height: 1.05; margin: 2px 0 1px; letter-spacing: -0.01em; }
+  .cell-mass { font-size: 9px; line-height: 1; opacity: 0.75; }
+  .cell-name { font-size: 8px; line-height: 1; opacity: 0.85; text-align: center; padding: 0 2px; margin-top: 2px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  
+  .empty { aspect-ratio: 1; }
+  .placeholder { aspect-ratio: 1; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 9px; opacity: 0.7; cursor: default; }
+  
+  .legend-row { font-size: 11px; color: var(--text-tertiary); }
+  
+  /* Detail panel */
+  .detail-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px; position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; }
+  .detail-empty { color: var(--text-tertiary); font-size: 13px; text-align: center; padding: 20px 0; }
+  .detail-icon { width: 80px; height: 80px; border-radius: var(--radius-md); display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 12px; }
+  .detail-icon .di-num { font-size: 11px; opacity: 0.75; }
+  .detail-icon .di-sym { font-size: 28px; font-weight: 500; line-height: 1; margin: 2px 0; }
+  .detail-icon .di-mass { font-size: 10px; opacity: 0.7; }
+  .detail-name { font-size: 19px; font-weight: 500; margin: 0 0 2px; }
+  .detail-cat { font-size: 12px; color: var(--text-secondary); margin: 0 0 12px; }
+  .detail-stats { display: grid; grid-template-columns: 1fr; gap: 6px; margin-bottom: 12px; }
+  .stat-row { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-label { color: var(--text-tertiary); }
+  .stat-val { font-weight: 500; text-align: right; }
+  .stat-val.mono { font-family: var(--font-mono); font-size: 11px; }
+  .detail-fact { background: var(--info-bg); color: var(--info-text); border-radius: var(--radius-md); padding: 10px 12px; font-size: 12px; line-height: 1.5; margin-top: 10px; }
+  .detail-fact strong { font-weight: 500; }
+  
+  .chem-block { margin-top: 12px; padding: 11px 12px; background: var(--surface-2); border-radius: var(--radius-md); font-size: 12px; }
+  .chem-section { margin-bottom: 10px; }
+  .chem-section:last-child { margin-bottom: 0; }
+  .chem-section-title { font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 500; margin-bottom: 5px; }
+  .chem-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+  .chem-tag { font-size: 11px; padding: 2px 7px; border-radius: 4px; background: var(--surface); color: var(--text); border: 1px solid var(--border); font-family: var(--font-mono); }
+  .chem-tag.nature-metal { background: var(--accent-bg); color: var(--accent-text); border-color: transparent; }
+  .chem-tag.nature-nonmetal { background: #EAF3DE; color: #27500A; border-color: transparent; }
+  .chem-tag.nature-metalloid { background: #EEEDFE; color: #3C3489; border-color: transparent; }
+  @media (prefers-color-scheme: dark) {
+    .chem-tag.nature-nonmetal { background: #173404; color: #C0DD97; }
+    .chem-tag.nature-metalloid { background: #26215C; color: #CECBF6; }
+  }
+  .chem-reactions { display: flex; flex-direction: column; gap: 4px; }
+  .chem-reaction { font-family: var(--font-mono); font-size: 11px; padding: 4px 7px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; line-height: 1.4; word-break: break-word; color: var(--text); }
+  .chem-notes { font-size: 11px; color: var(--text-secondary); line-height: 1.5; padding-top: 8px; border-top: 1px solid var(--border); }
+  .chem-notes strong { color: var(--text); font-weight: 500; }
+  .chem-empty { font-size: 11px; color: var(--text-tertiary); font-style: italic; }
+  
+  .footer-note { margin-top: 22px; font-size: 11px; color: var(--text-tertiary); line-height: 1.5; }
+  
+  /* Compact mode hides names — denser table */
+  body.compact .cell-name { display: none; }
+  body.compact .cell-mass { display: none; }
+  body.compact .cell-sym { font-size: 15px; }
+  body.compact .cell { min-height: 38px; }
+  
+  /* Russian mode shows Russian names */
+  body.lang-en .cell-name { display: none; } /* fallback */
+  
+  @media (max-width: 760px) {
+    .cell-name { display: none; }
+    .cell-mass { display: none; }
+    .cell-sym { font-size: 11px; }
+    .cell-num { font-size: 8px; }
+    .pt-grid, .pt-grid-fblock { gap: 2px; }
+    .page { padding: 12px 10px; }
+  }
+  @media (max-width: 480px) {
+    .cell-sym { font-size: 9px; }
+    .cell { padding: 1px; min-height: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <header class="page-header">
+    <div class="page-header-left">
+      <span class="badge">118 элементов</span>
+      <h1>Интерактивная таблица Менделеева</h1>
+    </div>
+  </header>
+
+  <div class="controls">
+    <input type="text" class="search-input" id="search" placeholder="Поиск: H, гелий, 26..." />
+    <div class="filter-group" id="filters"></div>
+    <div class="toggle-row">
+      <button class="chip active" id="toggle-view-modern" data-view="modern">Современная</button>
+      <button class="chip" id="toggle-view-classic" data-view="classic">Старая (А/Б)</button>
+      <button class="chip" id="toggle-compact">Компактно</button>
+      <button class="chip active" id="toggle-lang" data-lang="ru">RU</button>
+    </div>
+  </div>
+
+  <div class="pt-shell">
+    <div class="pt-table">
+      <div class="pt-grid" id="grid"></div>
+      <div class="pt-grid-fblock" id="grid-fblock"></div>
+      <div class="pt-grid-classic" id="grid-classic" style="display:none;"></div>
+      <div class="pt-grid-classic-fblock" id="grid-classic-fblock" style="display:none;"></div>
+    </div>
+    <aside class="detail-panel" id="detail">
+      <div class="detail-empty">Кликните по элементу, чтобы увидеть его свойства</div>
+    </aside>
+  </div>
+
+  <p class="footer-note">
+    Цвет ячейки = категория элемента. Поиск работает по символу (Fe), русскому или английскому названию (железо / iron) и атомному номеру. Кнопка «Компактно» прячет названия — таблица становится плотнее, как в учебнике.
+  </p>
+</div>
+
+<script>
+(function(){
+  // ============ КАТЕГОРИИ ============
+  const cats = {
+    'alkali':       { ru: 'Щелочные металлы',     bg: '#FCEBEB', text: '#791F1F' },
+    'alkaline':     { ru: 'Щёлочноземельные',     bg: '#FAEEDA', text: '#854F0B' },
+    'transition':   { ru: 'Переходные металлы',   bg: '#E6F1FB', text: '#0C447C' },
+    'post':         { ru: 'Постпереходные',       bg: '#F1EFE8', text: '#444441' },
+    'metalloid':    { ru: 'Металлоиды',           bg: '#EEEDFE', text: '#3C3489' },
+    'nonmetal':     { ru: 'Неметаллы',            bg: '#EAF3DE', text: '#27500A' },
+    'halogen':      { ru: 'Галогены',             bg: '#FBEAF0', text: '#72243E' },
+    'noble':        { ru: 'Благородные газы',     bg: '#E1F5EE', text: '#085041' },
+    'lanthanide':   { ru: 'Лантаноиды',           bg: '#FAECE7', text: '#712B13' },
+    'actinide':     { ru: 'Актиноиды',            bg: '#F4C0D1', text: '#4B1528' },
+    'unknown':      { ru: 'Свойства неизвестны',  bg: '#F1EFE8', text: '#444441' }
+  };
+  // Dark mode color overrides
+  const catsDark = {
+    'alkali':     { bg: '#501313', text: '#F7C1C1' },
+    'alkaline':   { bg: '#412402', text: '#FAC775' },
+    'transition': { bg: '#042C53', text: '#B5D4F4' },
+    'post':       { bg: '#2C2C2A', text: '#D3D1C7' },
+    'metalloid':  { bg: '#26215C', text: '#CECBF6' },
+    'nonmetal':   { bg: '#173404', text: '#C0DD97' },
+    'halogen':    { bg: '#4B1528', text: '#F4C0D1' },
+    'noble':      { bg: '#04342C', text: '#9FE1CB' },
+    'lanthanide': { bg: '#4A1B0C', text: '#F5C4B3' },
+    'actinide':   { bg: '#4B1528', text: '#ED93B1' },
+    'unknown':    { bg: '#2C2C2A', text: '#D3D1C7' }
+  };
+  function isDark() { return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches; }
+  function getCat(key) {
+    return isDark() ? Object.assign({}, cats[key], catsDark[key]) : cats[key];
+  }
+
+  // ============ ДАННЫЕ: 118 элементов ============
+  // [num, sym, en, ru, cat, mass, period, group, phase, discoveryYear, electronConfig, fact_ru]
+  const elements = [
+    [1,'H','Hydrogen','Водород','nonmetal',1.008,1,1,'Газ','1766','1s¹','Самый распространённый элемент во Вселенной — около 75% барионной массы.'],
+    [2,'He','Helium','Гелий','noble',4.0026,1,18,'Газ','1868','1s²','Открыт сначала на Солнце по спектру (отсюда название от ἥλιος), и только потом — на Земле.'],
+    [3,'Li','Lithium','Литий','alkali',6.94,2,1,'Тв','1817','[He] 2s¹','Самый лёгкий металл — плотность 0,53 г/см³, плавает в масле. Используется в Li-ion аккумуляторах.'],
+    [4,'Be','Beryllium','Бериллий','alkaline',9.0122,2,2,'Тв','1798','[He] 2s²','Очень лёгкий, прочный и токсичный металл. Применяется в авиакосмической технике.'],
+    [5,'B','Boron','Бор','metalloid',10.81,2,13,'Тв','1808','[He] 2s² 2p¹','Бор делает стекло термостойким (боросиликатное стекло Pyrex).'],
+    [6,'C','Carbon','Углерод','nonmetal',12.011,2,14,'Тв','Древность','[He] 2s² 2p²','Основа всей органической жизни. Существует в формах графита, алмаза, фуллеренов и графена.'],
+    [7,'N','Nitrogen','Азот','nonmetal',14.007,2,15,'Газ','1772','[He] 2s² 2p³','78% атмосферы Земли. Жидкий азот при −196 °C используется для криогенной заморозки.'],
+    [8,'O','Oxygen','Кислород','nonmetal',15.999,2,16,'Газ','1774','[He] 2s² 2p⁴','21% воздуха. В жидком виде — голубой; озон (O₃) защищает от УФ.'],
+    [9,'F','Fluorine','Фтор','halogen',18.998,2,17,'Газ','1886','[He] 2s² 2p⁵','Самый электроотрицательный и реактивный элемент. Почти всё с ним горит, включая воду.'],
+    [10,'Ne','Neon','Неон','noble',20.180,2,18,'Газ','1898','[He] 2s² 2p⁶','Светится оранжево-красным в газоразрядных трубках — отсюда «неоновые вывески».'],
+    [11,'Na','Sodium','Натрий','alkali',22.990,3,1,'Тв','1807','[Ne] 3s¹','С водой реагирует со взрывом — выделяется водород. Поваренная соль — это NaCl.'],
+    [12,'Mg','Magnesium','Магний','alkaline',24.305,3,2,'Тв','1755','[Ne] 3s²','Горит ослепительно белым пламенем — раньше использовался в фотовспышках.'],
+    [13,'Al','Aluminum','Алюминий','post',26.982,3,13,'Тв','1825','[Ne] 3s² 3p¹','3-й по распространённости в земной коре. До XIX века был дороже золота.'],
+    [14,'Si','Silicon','Кремний','metalloid',28.085,3,14,'Тв','1824','[Ne] 3s² 3p²','Основа всех чипов и микросхем. 28% земной коры — второй после кислорода.'],
+    [15,'P','Phosphorus','Фосфор','nonmetal',30.974,3,15,'Тв','1669','[Ne] 3s² 3p³','Белый фосфор светится в темноте на воздухе. Основа ДНК и АТФ.'],
+    [16,'S','Sulfur','Сера','nonmetal',32.06,3,16,'Тв','Древность','[Ne] 3s² 3p⁴','Жёлтые кристаллы вокруг вулканов. Серная кислота H₂SO₄ — самое массовое промышленное вещество.'],
+    [17,'Cl','Chlorine','Хлор','halogen',35.45,3,17,'Газ','1774','[Ne] 3s² 3p⁵','Зеленовато-жёлтый ядовитый газ. В виде NaCl — поваренная соль.'],
+    [18,'Ar','Argon','Аргон','noble',39.948,3,18,'Газ','1894','[Ne] 3s² 3p⁶','3-й по содержанию в атмосфере (0,93%). Используется в лампах накаливания.'],
+    [19,'K','Potassium','Калий','alkali',39.098,4,1,'Тв','1807','[Ar] 4s¹','С водой реагирует ещё бурнее, чем натрий — пламя сиреневое. Незаменим для нервной системы.'],
+    [20,'Ca','Calcium','Кальций','alkaline',40.078,4,2,'Тв','1808','[Ar] 4s²','99% кальция в теле — в костях и зубах. Известняк, мрамор, мел — всё это CaCO₃.'],
+    [21,'Sc','Scandium','Скандий','transition',44.956,4,3,'Тв','1879','[Ar] 3d¹ 4s²','Назван в честь Скандинавии. Используется в сплавах для авиации и спортивных бит.'],
+    [22,'Ti','Titanium','Титан','transition',47.867,4,4,'Тв','1791','[Ar] 3d² 4s²','Прочнее стали и вдвое легче. SR-71 Blackbird сделан на 85% из титана.'],
+    [23,'V','Vanadium','Ванадий','transition',50.942,4,5,'Тв','1801','[Ar] 3d³ 4s²','Назван в честь скандинавской богини Ванадис. Соединения яркие — синие, зелёные, фиолетовые.'],
+    [24,'Cr','Chromium','Хром','transition',51.996,4,6,'Тв','1797','[Ar] 3d⁵ 4s¹','От греческого χρῶμα — «цвет». Хромирование делает поверхность блестящей и стойкой.'],
+    [25,'Mn','Manganese','Марганец','transition',54.938,4,7,'Тв','1774','[Ar] 3d⁵ 4s²','Делает сталь твёрдой. Перманганат калия KMnO₄ — фиолетовый антисептик «марганцовка».'],
+    [26,'Fe','Iron','Железо','transition',55.845,4,8,'Тв','Древность','[Ar] 3d⁶ 4s²','4-й по распространённости в земной коре. Ядро Земли — на 85% железо. Гемоглобин содержит Fe.'],
+    [27,'Co','Cobalt','Кобальт','transition',58.933,4,9,'Тв','1735','[Ar] 3d⁷ 4s²','Соединения дают глубокий синий цвет в стекле и керамике («кобальтовый синий»).'],
+    [28,'Ni','Nickel','Никель','transition',58.693,4,10,'Тв','1751','[Ar] 3d⁸ 4s²','Используется в монетах, нержавеющей стали и аккумуляторах. Назван от немецкого Kupfernickel — «чёртова медь».'],
+    [29,'Cu','Copper','Медь','transition',63.546,4,11,'Тв','Древность','[Ar] 3d¹⁰ 4s¹','Один из первых металлов, освоенных человеком (~9000 лет до н.э.). Бронзовый век — это Cu+Sn.'],
+    [30,'Zn','Zinc','Цинк','transition',65.38,4,12,'Тв','Древность','[Ar] 3d¹⁰ 4s²','Покрывает сталь от ржавчины (оцинковка). Латунь — это сплав Zn+Cu.'],
+    [31,'Ga','Gallium','Галлий','post',69.723,4,13,'Тв','1875','[Ar] 3d¹⁰ 4s² 4p¹','Плавится в руке (29,76 °C). Используется в полупроводниках и LED.'],
+    [32,'Ge','Germanium','Германий','metalloid',72.630,4,14,'Тв','1886','[Ar] 3d¹⁰ 4s² 4p²','Менделеев предсказал его свойства за 15 лет до открытия — назвал «экасилиций».'],
+    [33,'As','Arsenic','Мышьяк','metalloid',74.922,4,15,'Тв','Древность','[Ar] 3d¹⁰ 4s² 4p³','Знаменитый яд. Применяется в полупроводниках (GaAs).'],
+    [34,'Se','Selenium','Селен','nonmetal',78.971,4,16,'Тв','1817','[Ar] 3d¹⁰ 4s² 4p⁴','Меняет проводимость от света — основа первых ксероксов и солнечных батарей.'],
+    [35,'Br','Bromine','Бром','halogen',79.904,4,17,'Жидк','1826','[Ar] 3d¹⁰ 4s² 4p⁵','Один из двух жидких при комнатной температуре элементов (второй — ртуть). Тёмно-красная едкая жидкость.'],
+    [36,'Kr','Krypton','Криптон','noble',83.798,4,18,'Газ','1898','[Ar] 3d¹⁰ 4s² 4p⁶','Используется в высокоинтенсивных лампах, например в маяках и взлётных полосах.'],
+    [37,'Rb','Rubidium','Рубидий','alkali',85.468,5,1,'Тв','1861','[Kr] 5s¹','Открыт по красным линиям спектра (rubidus = тёмно-красный). Используется в атомных часах.'],
+    [38,'Sr','Strontium','Стронций','alkaline',87.62,5,2,'Тв','1790','[Kr] 5s²','Даёт ярко-красный цвет фейерверкам. Назван в честь шотландской деревни Стронтиан.'],
+    [39,'Y','Yttrium','Иттрий','transition',88.906,5,3,'Тв','1794','[Kr] 4d¹ 5s²','Используется в люминофорах — даёт красный цвет в старых ЭЛТ-телевизорах.'],
+    [40,'Zr','Zirconium','Цирконий','transition',91.224,5,4,'Тв','1789','[Kr] 4d² 5s²','Цирконий + Y₂O₃ = фианит — синтетический имитатор бриллианта.'],
+    [41,'Nb','Niobium','Ниобий','transition',92.906,5,5,'Тв','1801','[Kr] 4d⁴ 5s¹','Используется в сверхпроводящих магнитах для МРТ и БАК.'],
+    [42,'Mo','Molybdenum','Молибден','transition',95.95,5,6,'Тв','1778','[Kr] 4d⁵ 5s¹','Делает сталь сверхпрочной. Незаменим для некоторых ферментов в живых клетках.'],
+    [43,'Tc','Technetium','Технеций','transition',98,5,7,'Тв','1937','[Kr] 4d⁵ 5s²','Первый искусственно полученный элемент (отсюда название от τεχνητός — «искусственный»).'],
+    [44,'Ru','Ruthenium','Рутений','transition',101.07,5,8,'Тв','1844','[Kr] 4d⁷ 5s¹','Назван в честь Руси (Ruthenia на латыни). Открыт Карлом Клаусом в Казанском университете.'],
+    [45,'Rh','Rhodium','Родий','transition',102.91,5,9,'Тв','1803','[Kr] 4d⁸ 5s¹','Самый дорогой драгоценный металл. Используется в катализаторах автомобилей.'],
+    [46,'Pd','Palladium','Палладий','transition',106.42,5,10,'Тв','1803','[Kr] 4d¹⁰','Поглощает водорода в 900 раз больше своего объёма. Каталитические нейтрализаторы.'],
+    [47,'Ag','Silver','Серебро','transition',107.87,5,11,'Тв','Древность','[Kr] 4d¹⁰ 5s¹','Лучший проводник электричества и тепла. Соли серебра темнеют на свету — отсюда фотография.'],
+    [48,'Cd','Cadmium','Кадмий','transition',112.41,5,12,'Тв','1817','[Kr] 4d¹⁰ 5s²','Токсичен. Жёлтые краски «кадмий жёлтый» использовали Моне и Ван Гог.'],
+    [49,'In','Indium','Индий','post',114.82,5,13,'Тв','1863','[Kr] 4d¹⁰ 5s² 5p¹','Используется в прозрачных проводящих покрытиях для сенсорных экранов (ITO).'],
+    [50,'Sn','Tin','Олово','post',118.71,5,14,'Тв','Древность','[Kr] 4d¹⁰ 5s² 5p²','При сильном холоде превращается в порошок («оловянная чума»). С медью даёт бронзу.'],
+    [51,'Sb','Antimony','Сурьма','metalloid',121.76,5,15,'Тв','Древность','[Kr] 4d¹⁰ 5s² 5p³','Использовалась как косметика для подведения глаз ещё в Древнем Египте.'],
+    [52,'Te','Tellurium','Теллур','metalloid',127.60,5,16,'Тв','1782','[Kr] 4d¹⁰ 5s² 5p⁴','От латинского tellus — «земля». Чесночный запах, ощущаемый часами после контакта.'],
+    [53,'I','Iodine','Иод','halogen',126.90,5,17,'Тв','1811','[Kr] 4d¹⁰ 5s² 5p⁵','Фиолетовые кристаллы, сразу испаряющиеся в фиолетовый газ (сублимация). Незаменим для щитовидной железы.'],
+    [54,'Xe','Xenon','Ксенон','noble',131.29,5,18,'Газ','1898','[Kr] 4d¹⁰ 5s² 5p⁶','Используется в лампах автомобильных фар и ионных двигателях космических аппаратов.'],
+    [55,'Cs','Cesium','Цезий','alkali',132.91,6,1,'Тв','1860','[Xe] 6s¹','Самый реактивный металл — взрывается даже в холодной воде. Стандарт времени: атомные часы.'],
+    [56,'Ba','Barium','Барий','alkaline',137.33,6,2,'Тв','1808','[Xe] 6s²','Сульфат бария BaSO₄ — рентгеноконтрастное вещество. Соли дают зелёный цвет фейерверкам.'],
+    [57,'La','Lanthanum','Лантан','lanthanide',138.91,6,3,'Тв','1839','[Xe] 5d¹ 6s²','От греческого λανθάνω — «прятаться». Используется в линзах фотоаппаратов.'],
+    [58,'Ce','Cerium','Церий','lanthanide',140.12,6,3,'Тв','1803','[Xe] 4f¹ 5d¹ 6s²','Назван в честь Цереры. Самый распространённый из лантаноидов — больше, чем меди.'],
+    [59,'Pr','Praseodymium','Празеодим','lanthanide',140.91,6,3,'Тв','1885','[Xe] 4f³ 6s²','«Зелёный близнец» (от греческого). Окрашивает стекло в жёлто-зелёный.'],
+    [60,'Nd','Neodymium','Неодим','lanthanide',144.24,6,3,'Тв','1885','[Xe] 4f⁴ 6s²','«Новый близнец». Постоянные магниты Nd-Fe-B — самые сильные в мире.'],
+    [61,'Pm','Promethium','Прометий','lanthanide',145,6,3,'Тв','1945','[Xe] 4f⁵ 6s²','Радиоактивен. Использовался в светящейся краске часов и приборных панелях.'],
+    [62,'Sm','Samarium','Самарий','lanthanide',150.36,6,3,'Тв','1879','[Xe] 4f⁶ 6s²','Сплавы Sm-Co сохраняют магнитные свойства до 700 °C — для авиадвигателей.'],
+    [63,'Eu','Europium','Европий','lanthanide',151.96,6,3,'Тв','1901','[Xe] 4f⁷ 6s²','Используется в люминофорах евро-банкнот для защиты от подделок.'],
+    [64,'Gd','Gadolinium','Гадолиний','lanthanide',157.25,6,3,'Тв','1880','[Xe] 4f⁷ 5d¹ 6s²','Парамагнитен — соединения используются как контраст для МРТ.'],
+    [65,'Tb','Terbium','Тербий','lanthanide',158.93,6,3,'Тв','1843','[Xe] 4f⁹ 6s²','Назван по шведской деревне Иттербю — как и эрбий, иттербий, иттрий.'],
+    [66,'Dy','Dysprosium','Диспрозий','lanthanide',162.50,6,3,'Тв','1886','[Xe] 4f¹⁰ 6s²','«Труднодоступный». Добавляется в магниты, чтобы они работали при высоких температурах.'],
+    [67,'Ho','Holmium','Гольмий','lanthanide',164.93,6,3,'Тв','1878','[Xe] 4f¹¹ 6s²','Самый сильный магнитный момент среди элементов. Используется в лазерах для медицины.'],
+    [68,'Er','Erbium','Эрбий','lanthanide',167.26,6,3,'Тв','1843','[Xe] 4f¹² 6s²','Усилители для оптоволоконных линий связи работают на эрбии.'],
+    [69,'Tm','Thulium','Тулий','lanthanide',168.93,6,3,'Тв','1879','[Xe] 4f¹³ 6s²','Назван в честь Туле — мифического острова на севере. Самый редкий из лантаноидов.'],
+    [70,'Yb','Ytterbium','Иттербий','lanthanide',173.05,6,3,'Тв','1878','[Xe] 4f¹⁴ 6s²','Используется в самых точных атомных часах в мире — точность 1 секунда за 14 млрд лет.'],
+    [71,'Lu','Lutetium','Лютеций','lanthanide',174.97,6,3,'Тв','1907','[Xe] 4f¹⁴ 5d¹ 6s²','Назван в честь Лютеции (древнее название Парижа). Самый редкий и дорогой стабильный элемент.'],
+    [72,'Hf','Hafnium','Гафний','transition',178.49,6,4,'Тв','1923','[Xe] 4f¹⁴ 5d² 6s²','Назван в честь Хафнии (Копенгагена). Используется в ядерных реакторах — поглощает нейтроны.'],
+    [73,'Ta','Tantalum','Тантал','transition',180.95,6,5,'Тв','1802','[Xe] 4f¹⁴ 5d³ 6s²','В мобильных телефонах — конденсаторы из тантала. Назван в честь муки Тантала.'],
+    [74,'W','Tungsten','Вольфрам','transition',183.84,6,6,'Тв','1783','[Xe] 4f¹⁴ 5d⁴ 6s²','Самая высокая температура плавления среди металлов — 3422 °C. Нити ламп накаливания.'],
+    [75,'Re','Rhenium','Рений','transition',186.21,6,7,'Тв','1925','[Xe] 4f¹⁴ 5d⁵ 6s²','Один из самых редких элементов. Используется в лопатках реактивных турбин.'],
+    [76,'Os','Osmium','Осмий','transition',190.23,6,8,'Тв','1803','[Xe] 4f¹⁴ 5d⁶ 6s²','Самый плотный элемент — 22,59 г/см³. Назван от ὀσμή — «запах».'],
+    [77,'Ir','Iridium','Иридий','transition',192.22,6,9,'Тв','1803','[Xe] 4f¹⁴ 5d⁷ 6s²','Самый коррозионно-стойкий металл. Иридиевый слой в породах указывает на удар астероида 65 млн лет назад.'],
+    [78,'Pt','Platinum','Платина','transition',195.08,6,10,'Тв','1735','[Xe] 4f¹⁴ 5d⁹ 6s¹','Эталон килограмма (Pt-Ir сплав) хранился в Севре до 2019. Катализаторы.'],
+    [79,'Au','Gold','Золото','transition',196.97,6,11,'Тв','Древность','[Xe] 4f¹⁴ 5d¹⁰ 6s¹','Самый ковкий металл — 1 г можно растянуть в нить длиной 2,4 км. Не реагирует с кислородом — поэтому не тускнеет.'],
+    [80,'Hg','Mercury','Ртуть','transition',200.59,6,12,'Жидк','Древность','[Xe] 4f¹⁴ 5d¹⁰ 6s²','Единственный жидкий металл при обычной температуре. Чрезвычайно токсичен.'],
+    [81,'Tl','Thallium','Таллий','post',204.38,6,13,'Тв','1861','[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p¹','«Яд отравителей» — без вкуса и запаха. Назван от θαλλός — «зелёная ветка» (по цвету спектра).'],
+    [82,'Pb','Lead','Свинец','post',207.2,6,14,'Тв','Древность','[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p²','Древнеримские водопроводы делали из свинца — по одной из теорий, это вызывало хроническое отравление элиты.'],
+    [83,'Bi','Bismuth','Висмут','post',208.98,6,15,'Тв','1753','[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p³','Кристаллы образуют переливающиеся радужные «ступенчатые» структуры. Активная фракция — Pepto-Bismol.'],
+    [84,'Po','Polonium','Полоний','post',209,6,16,'Тв','1898','[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁴','Открыт Марией Склодовской-Кюри, названа в честь Польши. 250 миллиардов раз радиоактивнее урана.'],
+    [85,'At','Astatine','Астат','halogen',210,6,17,'Тв','1940','[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁵','Самый редкий природный элемент — на Земле всего ~25 г одновременно. Сильно радиоактивен.'],
+    [86,'Rn','Radon','Радон','noble',222,6,18,'Газ','1900','[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁶','Радиоактивный газ, выделяющийся из земли. Вторая по частоте причина рака лёгких после курения.'],
+    [87,'Fr','Francium','Франций','alkali',223,7,1,'Тв','1939','[Rn] 7s¹','Самый редкий из природных элементов — на всей Земле всего ~30 г одновременно. Названа в честь Франции.'],
+    [88,'Ra','Radium','Радий','alkaline',226,7,2,'Тв','1898','[Rn] 7s²','Открыт Кюри. До 1960-х краску с радием использовали в часах — рабочие умирали от рака.'],
+    [89,'Ac','Actinium','Актиний','actinide',227,7,3,'Тв','1899','[Rn] 6d¹ 7s²','В 150 раз радиоактивнее радия. Светится в темноте голубым из-за ионизации воздуха.'],
+    [90,'Th','Thorium','Торий','actinide',232.04,7,3,'Тв','1829','[Rn] 6d² 7s²','Назван в честь скандинавского бога Тора. Перспективное ядерное топливо — запасов в 3-4 раза больше урана.'],
+    [91,'Pa','Protactinium','Протактиний','actinide',231.04,7,3,'Тв','1913','[Rn] 5f² 6d¹ 7s²','«Перед актинием» — превращается в актиний при распаде. Один из самых редких природных элементов.'],
+    [92,'U','Uranium','Уран','actinide',238.03,7,3,'Тв','1789','[Rn] 5f³ 6d¹ 7s²','Назван в честь планеты Уран. U-235 — основа ядерных реакторов и атомных бомб.'],
+    [93,'Np','Neptunium','Нептуний','actinide',237,7,3,'Тв','1940','[Rn] 5f⁴ 6d¹ 7s²','Первый трансурановый элемент. Назван в честь Нептуна — следующей планеты после Урана.'],
+    [94,'Pu','Plutonium','Плутоний','actinide',244,7,3,'Тв','1940','[Rn] 5f⁶ 7s²','Бомба «Толстяк» над Нагасаки была плутониевой. Используется в РИТЭГах космических аппаратов.'],
+    [95,'Am','Americium','Америций','actinide',243,7,3,'Тв','1944','[Rn] 5f⁷ 7s²','Используется в большинстве дымовых датчиков — крошечная капсула α-источника.'],
+    [96,'Cm','Curium','Кюрий','actinide',247,7,3,'Тв','1944','[Rn] 5f⁷ 6d¹ 7s²','Назван в честь супругов Кюри. Светится фиолетовым из-за интенсивной радиации.'],
+    [97,'Bk','Berkelium','Берклий','actinide',247,7,3,'Тв','1949','[Rn] 5f⁹ 7s²','Назван в честь города Беркли (Калифорния), где был синтезирован.'],
+    [98,'Cf','Californium','Калифорний','actinide',251,7,3,'Тв','1950','[Rn] 5f¹⁰ 7s²','1 микрограмм Cf-252 испускает 170 миллионов нейтронов в минуту. Используется для запуска реакторов.'],
+    [99,'Es','Einsteinium','Эйнштейний','actinide',252,7,3,'Тв','1952','[Rn] 5f¹¹ 7s²','Открыт в обломках первой водородной бомбы. Назван в честь Эйнштейна.'],
+    [100,'Fm','Fermium','Фермий','actinide',257,7,3,'Тв','1952','[Rn] 5f¹² 7s²','Назван в честь физика Энрико Ферми. Тоже найден в обломках водородной бомбы.'],
+    [101,'Md','Mendelevium','Менделевий','actinide',258,7,3,'Тв','1955','[Rn] 5f¹³ 7s²','Назван в честь Дмитрия Менделеева — создателя периодической таблицы.'],
+    [102,'No','Nobelium','Нобелий','actinide',259,7,3,'Тв','1966','[Rn] 5f¹⁴ 7s²','Назван в честь Альфреда Нобеля. Получен всего в количестве нескольких атомов.'],
+    [103,'Lr','Lawrencium','Лоуренсий','actinide',266,7,3,'Тв','1961','[Rn] 5f¹⁴ 7s² 7p¹','Назван в честь Эрнеста Лоуренса — изобретателя циклотрона.'],
+    [104,'Rf','Rutherfordium','Резерфордий','transition',267,7,4,'Тв','1964','[Rn] 5f¹⁴ 6d² 7s²','Назван в честь Эрнеста Резерфорда — открывателя атомного ядра.'],
+    [105,'Db','Dubnium','Дубний','transition',268,7,5,'Тв','1968','[Rn] 5f¹⁴ 6d³ 7s²','Назван в честь подмосковной Дубны — где располагается ОИЯИ, один из лидеров в синтезе сверхтяжёлых.'],
+    [106,'Sg','Seaborgium','Сиборгий','transition',269,7,6,'Тв','1974','[Rn] 5f¹⁴ 6d⁴ 7s²','Единственный элемент, названный в честь живого человека на момент именования (Гленн Сиборг).'],
+    [107,'Bh','Bohrium','Борий','transition',270,7,7,'Тв','1981','[Rn] 5f¹⁴ 6d⁵ 7s²','Назван в честь Нильса Бора. Период полураспада самого стабильного изотопа — около 60 секунд.'],
+    [108,'Hs','Hassium','Хассий','transition',269,7,8,'Тв','1984','[Rn] 5f¹⁴ 6d⁶ 7s²','Назван в честь немецкой земли Гессен (Hassia на латыни).'],
+    [109,'Mt','Meitnerium','Мейтнерий','unknown',278,7,9,'Тв','1982','[Rn] 5f¹⁴ 6d⁷ 7s²','Назван в честь Лизы Мейтнер — открывательницы ядерного деления.'],
+    [110,'Ds','Darmstadtium','Дармштадтий','unknown',281,7,10,'Тв','1994','[Rn] 5f¹⁴ 6d⁸ 7s²','Назван в честь немецкого Дармштадта, где находится GSI — главный «фабрикант» сверхтяжёлых.'],
+    [111,'Rg','Roentgenium','Рентгений','unknown',282,7,11,'Тв','1994','[Rn] 5f¹⁴ 6d⁹ 7s²','Назван в честь Вильгельма Рентгена — первооткрывателя рентгеновских лучей.'],
+    [112,'Cn','Copernicium','Коперниций','transition',285,7,12,'Тв','1996','[Rn] 5f¹⁴ 6d¹⁰ 7s²','Назван в честь Николая Коперника. Расчёты показывают, что может быть жидким при комнатной температуре.'],
+    [113,'Nh','Nihonium','Нихоний','unknown',286,7,13,'Тв','2003','[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p¹','Первый элемент, открытый в Азии (RIKEN, Япония). Nihon — название Японии по-японски.'],
+    [114,'Fl','Flerovium','Флеровий','unknown',289,7,14,'Тв','1998','[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p²','Назван в честь Георгия Флёрова — основателя Дубнинского центра. Может находиться на «острове стабильности».'],
+    [115,'Mc','Moscovium','Московий','unknown',290,7,15,'Тв','2003','[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p³','Назван в честь Московской области (где находится Дубна).'],
+    [116,'Lv','Livermorium','Ливерморий','unknown',293,7,16,'Тв','2000','[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁴','Назван в честь Ливерморской лаборатории в Калифорнии.'],
+    [117,'Ts','Tennessine','Теннессин','unknown',294,7,17,'Тв','2009','[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁵','Назван в честь штата Теннесси (где находится Окриджская национальная лаборатория).'],
+    [118,'Og','Oganesson','Оганесон','unknown',294,7,18,'Тв','2002','[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁶','Назван в честь Юрия Оганесяна — единственный живущий учёный, в честь которого назван элемент.']
+  ];
+
+  // ============ ХИМИЧЕСКИЕ СВОЙСТВА ============
+  // Для элементов школьной программы. Поля:
+  //   en: электроотрицательность по Полингу (—  если не определена)
+  //   ox: характерные степени окисления (массив)
+  //   nature: 'metal' | 'nonmetal' | 'metalloid'
+  //   reactions: массив строк с типичными реакциями
+  //   notes: дополнительный комментарий (свойства, амфотерность и т.д.)
+  const chemistry = {
+    'H':  { en: 2.20, ox: [-1, +1], nature: 'nonmetal',
+            reactions: [
+              '2H₂ + O₂ → 2H₂O (горение, со взрывом)',
+              'H₂ + Cl₂ → 2HCl (на свету)',
+              'CuO + H₂ → Cu + H₂O (восстановление при нагревании)'
+            ],
+            notes: 'Может быть и катионом (H⁺ в кислотах), и анионом (H⁻ в гидридах металлов).' },
+    'He': { en: '—', ox: [0], nature: 'nonmetal',
+            reactions: ['Не вступает в химические реакции (благородный газ).'],
+            notes: 'Полностью инертен — внешняя оболочка заполнена.' },
+    'Li': { en: 0.98, ox: [+1], nature: 'metal',
+            reactions: [
+              '4Li + O₂ → 2Li₂O (на воздухе)',
+              '2Li + 2H₂O → 2LiOH + H₂↑',
+              '2Li + 2HCl → 2LiCl + H₂↑'
+            ],
+            notes: 'Щелочной металл — реагирует с водой, но менее бурно, чем Na/K.' },
+    'Be': { en: 1.57, ox: [+2], nature: 'metal',
+            reactions: [
+              '2Be + O₂ → 2BeO (при нагревании)',
+              'Be + 2HCl → BeCl₂ + H₂↑',
+              'Be + 2NaOH + 2H₂O → Na₂[Be(OH)₄] + H₂↑ (амфотерность)'
+            ],
+            notes: 'Амфотерный металл — растворяется и в кислотах, и в щелочах.' },
+    'C':  { en: 2.55, ox: [-4, +2, +4], nature: 'nonmetal',
+            reactions: [
+              'C + O₂ → CO₂ (полное сгорание)',
+              '2C + O₂ → 2CO (неполное сгорание)',
+              'C + 2H₂SO₄(конц) → CO₂ + 2SO₂ + 2H₂O',
+              'CuO + C → Cu + CO (металлургия)'
+            ],
+            notes: 'Основа органической химии. Даёт огромное число соединений.' },
+    'N':  { en: 3.04, ox: [-3, +1, +2, +3, +4, +5], nature: 'nonmetal',
+            reactions: [
+              'N₂ + 3H₂ ⇌ 2NH₃ (синтез аммиака, кат., t, p)',
+              'N₂ + O₂ → 2NO (при высокой t° — в грозу или ДВС)',
+              '3Mg + N₂ → Mg₃N₂ (горение в азоте)'
+            ],
+            notes: 'Тройная связь N≡N делает молекулу N₂ очень инертной при н.у.' },
+    'O':  { en: 3.44, ox: [-2, -1, 0, +2], nature: 'nonmetal',
+            reactions: [
+              '2H₂ + O₂ → 2H₂O',
+              '4Fe + 3O₂ → 2Fe₂O₃ (ржавление)',
+              'CH₄ + 2O₂ → CO₂ + 2H₂O (горение метана)'
+            ],
+            notes: 'Окислитель практически для всего. Образует оксиды, пероксиды, супероксиды.' },
+    'F':  { en: 3.98, ox: [-1], nature: 'nonmetal',
+            reactions: [
+              'H₂ + F₂ → 2HF (взрывается даже в темноте при −252 °C)',
+              '2F₂ + 2H₂O → 4HF + O₂ (вытесняет кислород из воды!)',
+              'Si + 2F₂ → SiF₄'
+            ],
+            notes: 'Самый электроотрицательный элемент. Окисляет всё, включая благородные газы и стекло.' },
+    'Ne': { en: '—', ox: [0], nature: 'nonmetal',
+            reactions: ['Соединений не образует. Используется в газоразрядных лампах.'],
+            notes: 'Полностью инертен.' },
+    'Na': { en: 0.93, ox: [+1], nature: 'metal',
+            reactions: [
+              '4Na + O₂ → 2Na₂O (или 2Na + O₂ → Na₂O₂ — пероксид)',
+              '2Na + 2H₂O → 2NaOH + H₂↑ (бурно, иногда с воспламенением)',
+              '2Na + Cl₂ → 2NaCl (горение)'
+            ],
+            notes: 'Хранят под слоем керосина — сразу окисляется на воздухе.' },
+    'Mg': { en: 1.31, ox: [+2], nature: 'metal',
+            reactions: [
+              '2Mg + O₂ → 2MgO (горит ослепительно белым пламенем)',
+              'Mg + 2HCl → MgCl₂ + H₂↑',
+              'Mg + H₂SO₄ → MgSO₄ + H₂↑',
+              '3Mg + N₂ → Mg₃N₂ (горит даже в азоте!)'
+            ],
+            notes: 'Активный металл. С холодной водой реагирует медленно, с горячей — быстро.' },
+    'Al': { en: 1.61, ox: [+3], nature: 'metal',
+            reactions: [
+              '4Al + 3O₂ → 2Al₂O₃ (но защитная плёнка предотвращает коррозию)',
+              '2Al + 6HCl → 2AlCl₃ + 3H₂↑',
+              '2Al + 2NaOH + 6H₂O → 2Na[Al(OH)₄] + 3H₂↑',
+              '2Al + Fe₂O₃ → 2Fe + Al₂O₃ (термитная реакция)'
+            ],
+            notes: 'Амфотерный металл — Al(OH)₃ растворяется и в кислоте, и в щёлочи.' },
+    'Si': { en: 1.90, ox: [-4, +4], nature: 'metalloid',
+            reactions: [
+              'Si + O₂ → SiO₂ (при сильном нагревании)',
+              'Si + 2NaOH + H₂O → Na₂SiO₃ + 2H₂↑',
+              'Si + 2F₂ → SiF₄ (с фтором — при н.у.)'
+            ],
+            notes: 'Полупроводник. С кислотами почти не реагирует, кроме HF.' },
+    'P':  { en: 2.19, ox: [-3, +3, +5], nature: 'nonmetal',
+            reactions: [
+              '4P + 5O₂ → 2P₂O₅ (горит белым фосфор сам)',
+              '2P + 3Cl₂ → 2PCl₃',
+              'P₂O₅ + 3H₂O → 2H₃PO₄ (фосфорная кислота)'
+            ],
+            notes: 'Белый фосфор очень токсичен и самовоспламеняется. Красный — стабильнее.' },
+    'S':  { en: 2.58, ox: [-2, +4, +6], nature: 'nonmetal',
+            reactions: [
+              'S + O₂ → SO₂ (горение, голубое пламя)',
+              'Fe + S → FeS (при нагревании)',
+              'H₂ + S → H₂S (при t° — пахнет тухлыми яйцами)',
+              '2H₂SO₄(конц) + Cu → CuSO₄ + SO₂↑ + 2H₂O'
+            ],
+            notes: 'Сера и её соединения дают характерный запах вулканов и тухлых яиц (H₂S).' },
+    'Cl': { en: 3.16, ox: [-1, +1, +3, +5, +7], nature: 'nonmetal',
+            reactions: [
+              'H₂ + Cl₂ → 2HCl (на свету — со взрывом)',
+              '2Fe + 3Cl₂ → 2FeCl₃ (горение железа в хлоре)',
+              'Cl₂ + 2NaBr → 2NaCl + Br₂ (вытесняет менее активные галогены)',
+              'Cl₂ + H₂O ⇌ HCl + HClO (в воде даёт «хлорную воду»)'
+            ],
+            notes: 'Сильный окислитель и дезинфектант. Ядовитый газ.' },
+    'Ar': { en: '—', ox: [0], nature: 'nonmetal',
+            reactions: ['Соединений не образует.'],
+            notes: 'Третий по содержанию газ в атмосфере. Используется как инертная среда в сварке.' },
+    'K':  { en: 0.82, ox: [+1], nature: 'metal',
+            reactions: [
+              'K + O₂ → KO₂ (супероксид — при горении)',
+              '2K + 2H₂O → 2KOH + H₂↑ (с воспламенением водорода — фиолетовое пламя)',
+              '2K + Cl₂ → 2KCl'
+            ],
+            notes: 'Реагирует с водой бурнее натрия. Хранят в керосине.' },
+    'Ca': { en: 1.00, ox: [+2], nature: 'metal',
+            reactions: [
+              '2Ca + O₂ → 2CaO',
+              'Ca + 2H₂O → Ca(OH)₂ + H₂↑ (без воспламенения)',
+              'Ca + 2HCl → CaCl₂ + H₂↑',
+              'CaO + H₂O → Ca(OH)₂ (гашение извести)'
+            ],
+            notes: 'Активный металл, но с водой реагирует спокойнее щелочных.' },
+    'Cr': { en: 1.66, ox: [+2, +3, +6], nature: 'metal',
+            reactions: [
+              '4Cr + 3O₂ → 2Cr₂O₃',
+              'Cr + 2HCl → CrCl₂ + H₂↑',
+              '2Cr + 6HCl → 2CrCl₃ + 3H₂↑ (на воздухе окисляется до +3)'
+            ],
+            notes: 'Cr(OH)₃ амфотерен. CrO₃ — сильный окислитель и канцероген.' },
+    'Mn': { en: 1.55, ox: [+2, +3, +4, +6, +7], nature: 'metal',
+            reactions: [
+              'Mn + 2HCl → MnCl₂ + H₂↑',
+              '3Mn + 2O₂ → Mn₃O₄ (при нагревании)',
+              '2KMnO₄ → K₂MnO₄ + MnO₂ + O₂↑ (разложение, t°)'
+            ],
+            notes: 'KMnO₄ («марганцовка») — фиолетовый окислитель, используется в школьной химии и медицине.' },
+    'Fe': { en: 1.83, ox: [+2, +3], nature: 'metal',
+            reactions: [
+              '4Fe + 3O₂ + 6H₂O → 4Fe(OH)₃ (ржавление)',
+              'Fe + 2HCl → FeCl₂ + H₂↑ (даёт Fe(II)!)',
+              '2Fe + 3Cl₂ → 2FeCl₃ (с галогенами — Fe(III))',
+              'Fe + CuSO₄ → FeSO₄ + Cu↓ (вытесняет менее активный металл)'
+            ],
+            notes: 'С разбавленными кислотами даёт Fe(II), с сильными окислителями — Fe(III).' },
+    'Cu': { en: 1.90, ox: [+1, +2], nature: 'metal',
+            reactions: [
+              '2Cu + O₂ → 2CuO (при нагревании, чёрный)',
+              'Cu + Cl₂ → CuCl₂ (зелёное пламя)',
+              'Cu + 2H₂SO₄(конц) → CuSO₄ + SO₂↑ + 2H₂O (с конц. кислотой)',
+              'Cu + HCl → не реагирует (Cu правее H в ряду активности)'
+            ],
+            notes: 'С разбавленными HCl и H₂SO₄ не реагирует. Реагирует только с кислотами-окислителями.' },
+    'Zn': { en: 1.65, ox: [+2], nature: 'metal',
+            reactions: [
+              '2Zn + O₂ → 2ZnO',
+              'Zn + 2HCl → ZnCl₂ + H₂↑',
+              'Zn + 2NaOH + 2H₂O → Na₂[Zn(OH)₄] + H₂↑ (амфотерность)',
+              'Zn + CuSO₄ → ZnSO₄ + Cu↓'
+            ],
+            notes: 'Амфотерный металл — растворяется в щёлочах. Zn(OH)₂ тоже амфотерен.' },
+    'Br': { en: 2.96, ox: [-1, +1, +5], nature: 'nonmetal',
+            reactions: [
+              'H₂ + Br₂ → 2HBr (медленнее, чем хлор)',
+              'Br₂ + 2KI → 2KBr + I₂ (вытесняет менее активный галоген)',
+              '2NaBr + Cl₂ → 2NaCl + Br₂ (бром вытесняется хлором)'
+            ],
+            notes: 'Тёмно-красная жидкость с резким запахом. Окислительные свойства слабее хлора.' },
+    'Ag': { en: 1.93, ox: [+1], nature: 'metal',
+            reactions: [
+              '2Ag + S → Ag₂S (потемнение серебра на воздухе)',
+              '2Ag + 2HNO₃(разб) → 2AgNO₃ + H₂↑ (нет!) — на самом деле даёт NO',
+              '3Ag + 4HNO₃(разб) → 3AgNO₃ + NO↑ + 2H₂O',
+              'AgNO₃ + NaCl → AgCl↓ + NaNO₃ (качественная реакция на Cl⁻)'
+            ],
+            notes: 'Не реагирует с HCl и разб. H₂SO₄. AgCl — белый творожистый осадок.' },
+    'I':  { en: 2.66, ox: [-1, +1, +5, +7], nature: 'nonmetal',
+            reactions: [
+              'H₂ + I₂ ⇌ 2HI (обратимо, при нагревании)',
+              'I₂ + крахмал → синее окрашивание (качественная реакция)',
+              'Br₂ + 2KI → 2KBr + I₂ (бром вытесняет иод)'
+            ],
+            notes: 'Возгоняется (сублимируется) — твёрдый сразу даёт фиолетовый пар. Слабый окислитель из галогенов.' },
+    'Ba': { en: 0.89, ox: [+2], nature: 'metal',
+            reactions: [
+              '2Ba + O₂ → 2BaO',
+              'Ba + 2H₂O → Ba(OH)₂ + H₂↑',
+              'BaCl₂ + H₂SO₄ → BaSO₄↓ + 2HCl (качественная реакция на SO₄²⁻)'
+            ],
+            notes: 'BaSO₄ — единственный сульфат, нерастворимый даже в кислотах. Используется в рентгеновской диагностике.' },
+    'Pb': { en: 1.87, ox: [+2, +4], nature: 'metal',
+            reactions: [
+              '2Pb + O₂ → 2PbO',
+              'Pb + 2HCl → PbCl₂↓ + H₂↑ (PbCl₂ малорастворим, реакция замедляется)',
+              'Pb(NO₃)₂ + 2KI → PbI₂↓ + 2KNO₃ (ярко-жёлтый осадок — качественная реакция)'
+            ],
+            notes: 'Тяжёлый токсичный металл. Pb(OH)₂ амфотерен.' },
+    'Au': { en: 2.54, ox: [+1, +3], nature: 'metal',
+            reactions: [
+              'Au + HCl → не реагирует',
+              'Au + HNO₃ → не реагирует',
+              'Au + 3HCl + HNO₃ → AuCl₃ + NO↑ + 2H₂O (только в «царской водке»)'
+            ],
+            notes: 'Самый инертный из практически встречающихся металлов. Не тускнеет на воздухе.' },
+    'Hg': { en: 2.00, ox: [+1, +2], nature: 'metal',
+            reactions: [
+              '2Hg + O₂ → 2HgO (при 350 °C, разлагается обратно при 500 °C)',
+              'Hg + S → HgS (киноварь, красная)',
+              'Hg + HCl → не реагирует (правее H в ряду активности)'
+            ],
+            notes: 'Единственный жидкий металл при н.у. Очень токсичен — пары поражают нервную систему.' }
+  };
+
+
+  const byNum = {};
+  elements.forEach(e => byNum[e[0]] = e);
+
+  const grid = document.getElementById('grid');
+  const fblock = document.getElementById('grid-fblock');
+  const gridClassic = document.getElementById('grid-classic');
+  const fblockClassic = document.getElementById('grid-classic-fblock');
+  const detailEl = document.getElementById('detail');
+  const filtersEl = document.getElementById('filters');
+  const searchEl = document.getElementById('search');
+  const compactBtn = document.getElementById('toggle-compact');
+  const langBtn = document.getElementById('toggle-lang');
+  const viewModernBtn = document.getElementById('toggle-view-modern');
+  const viewClassicBtn = document.getElementById('toggle-view-classic');
+
+  let activeFilter = 'all';
+  let activeNum = null;
+  let lang = 'ru';
+  let view = 'modern'; // 'modern' | 'classic'
+
+  function makeCell(el) {
+    const c = getCat(el[4]);
+    const cell = document.createElement('button');
+    cell.className = 'cell';
+    cell.dataset.num = el[0];
+    cell.dataset.cat = el[4];
+    cell.style.background = c.bg;
+    cell.style.color = c.text;
+    cell.style.borderColor = 'rgba(0,0,0,0.05)';
+    const displayName = lang === 'ru' ? el[3] : el[2];
+    cell.innerHTML = `
+      <div class="cell-num">${el[0]}</div>
+      <div class="cell-sym">${el[1]}</div>
+      <div class="cell-mass">${el[5]}</div>
+      <div class="cell-name">${displayName}</div>
+    `;
+    cell.addEventListener('click', () => selectElement(el[0]));
+    return cell;
+  }
+
+  // Layout: standard 18-column main + 18-column f-block (lanthanides/actinides)
+  // We position f-block items in columns 4-18 to align under La/Ac
+  function buildLayout() {
+    grid.innerHTML = '';
+    fblock.innerHTML = '';
+
+    // Group header row (1 corner + 18 group numbers)
+    const corner = document.createElement('div');
+    corner.className = 'group-header corner';
+    corner.textContent = '↓ Период · Группа →';
+    corner.style.fontSize = '8px';
+    corner.style.padding = '4px 2px';
+    grid.appendChild(corner);
+    for (let g = 1; g <= 18; g++) {
+      const h = document.createElement('div');
+      h.className = 'group-header';
+      h.textContent = g;
+      grid.appendChild(h);
+    }
+
+    // Build a 7×18 grid array
+    const layoutGrid = Array.from({length: 7}, () => Array(18).fill(null));
+
+    // Period 1: H (col 1), He (col 18)
+    layoutGrid[0][0] = byNum[1]; layoutGrid[0][17] = byNum[2];
+    // Period 2: Li, Be (cols 1-2), B-Ne (cols 13-18)
+    layoutGrid[1][0] = byNum[3]; layoutGrid[1][1] = byNum[4];
+    for (let i = 5; i <= 10; i++) layoutGrid[1][i + 7] = byNum[i];
+    // Period 3: Na, Mg (1-2), Al-Ar (13-18)
+    layoutGrid[2][0] = byNum[11]; layoutGrid[2][1] = byNum[12];
+    for (let i = 13; i <= 18; i++) layoutGrid[2][i - 1] = byNum[i];
+    // Period 4: K-Kr (1-18)
+    for (let i = 19; i <= 36; i++) layoutGrid[3][i - 19] = byNum[i];
+    // Period 5: Rb-Xe (1-18)
+    for (let i = 37; i <= 54; i++) layoutGrid[4][i - 37] = byNum[i];
+    // Period 6: Cs, Ba (1-2), placeholder La-Lu (3), Hf-Rn (4-18)
+    layoutGrid[5][0] = byNum[55]; layoutGrid[5][1] = byNum[56];
+    layoutGrid[5][2] = { placeholder: 'lanthanide', label: '57-71' };
+    for (let i = 72; i <= 86; i++) layoutGrid[5][i - 69] = byNum[i];
+    // Period 7: Fr, Ra (1-2), placeholder Ac-Lr (3), Rf-Og (4-18)
+    layoutGrid[6][0] = byNum[87]; layoutGrid[6][1] = byNum[88];
+    layoutGrid[6][2] = { placeholder: 'actinide', label: '89-103' };
+    for (let i = 104; i <= 118; i++) layoutGrid[6][i - 101] = byNum[i];
+
+    for (let r = 0; r < 7; r++) {
+      // Period label on the left
+      const lbl = document.createElement('div');
+      lbl.className = 'period-label';
+      lbl.textContent = (r + 1).toString();
+      grid.appendChild(lbl);
+
+      for (let c = 0; c < 18; c++) {
+        const item = layoutGrid[r][c];
+        if (!item) {
+          const e = document.createElement('div');
+          e.className = 'empty';
+          grid.appendChild(e);
+        } else if (item.placeholder) {
+          const cat = getCat(item.placeholder);
+          const ph = document.createElement('div');
+          ph.className = 'placeholder';
+          ph.style.background = cat.bg;
+          ph.style.color = cat.text;
+          ph.textContent = item.label;
+          grid.appendChild(ph);
+        } else {
+          grid.appendChild(makeCell(item));
+        }
+      }
+    }
+
+    // F-block: La-Lu and Ac-Lr — left label + 3 empty + 15 elements
+    // Row 1: La-Lu
+    const lbl1 = document.createElement('div');
+    lbl1.className = 'period-label';
+    lbl1.textContent = '*';
+    fblock.appendChild(lbl1);
+    for (let i = 0; i < 3; i++) {
+      const e = document.createElement('div'); e.className = 'empty';
+      fblock.appendChild(e);
+    }
+    for (let i = 57; i <= 71; i++) fblock.appendChild(makeCell(byNum[i]));
+    // Row 2: Ac-Lr
+    const lbl2 = document.createElement('div');
+    lbl2.className = 'period-label';
+    lbl2.textContent = '**';
+    fblock.appendChild(lbl2);
+    for (let i = 0; i < 3; i++) {
+      const e = document.createElement('div'); e.className = 'empty';
+      fblock.appendChild(e);
+    }
+    for (let i = 89; i <= 103; i++) fblock.appendChild(makeCell(byNum[i]));
+  }
+
+  // ============ CLASSIC (RU short-form) layout ============
+  // 8 groups (I-VIII roman). Periods 1-3 single row each. Periods 4-7 split into 'a'+'b'.
+  // Group VIII is wide (3 sub-cols) to fit Fe/Co/Ni triads.
+  // Lanthanides/actinides shown in separate fblock under main table.
+  function classicPos(el) {
+    const num = el[0], period = el[6], group = el[7], cat = el[4];
+    // Hide lanthanides (58-71) and actinides (90-103) from main grid; La (57) and Ac (89) stay as markers.
+    if ((cat === 'lanthanide' && num !== 57) || (cat === 'actinide' && num !== 89)) return null;
+
+    // Period 1 row 0: H | He
+    if (period === 1) {
+      if (num === 1) return { row: 0, col: 0, subgroup: 'A' };
+      if (num === 2) return { row: 0, col: 9, subgroup: 'A' };
+    }
+    // Periods 2-3: single row, all subgroup A
+    if (period === 2 || period === 3) {
+      const row = period - 1;
+      const colMap = { 1:0, 2:1, 13:2, 14:3, 15:4, 16:5, 17:6, 18:9 };
+      return { row, col: colMap[group], subgroup: 'A' };
+    }
+    // Periods 4-7: split into a (groups 1-10) and b (groups 11-18) sub-rows
+    const baseRow = { 4:3, 5:5, 6:7, 7:9 }[period];
+    const isRowA = group >= 1 && group <= 10;
+    const row = isRowA ? baseRow : baseRow + 1;
+    const colSubMap = {
+      1:  [0, 'A'], 2:  [1, 'A'],
+      3:  [2, 'B'], 4:  [3, 'B'], 5: [4, 'B'], 6: [5, 'B'], 7: [6, 'B'],
+      8:  [7, 'B'], 9:  [8, 'B'], 10: [9, 'B'],
+      11: [0, 'B'], 12: [1, 'B'],
+      13: [2, 'A'], 14: [3, 'A'], 15: [4, 'A'], 16: [5, 'A'], 17: [6, 'A'], 18: [9, 'A'],
+    };
+    const cs = colSubMap[group];
+    if (!cs) return null;
+    return { row, col: cs[0], subgroup: cs[1] };
+  }
+
+  function makeClassicCell(el) {
+    const cell = makeCell(el);
+    const pos = classicPos(el);
+    if (pos) {
+      const badge = document.createElement('span');
+      badge.className = 'sub-badge ' + pos.subgroup;
+      badge.textContent = pos.subgroup === 'A' ? 'А' : 'Б';
+      cell.appendChild(badge);
+    }
+    return cell;
+  }
+
+  function buildClassicLayout() {
+    gridClassic.innerHTML = '';
+    fblockClassic.innerHTML = '';
+
+    // === Header row ===
+    const corner = document.createElement('div');
+    corner.className = 'group-header corner';
+    corner.textContent = 'Гр.';
+    gridClassic.appendChild(corner);
+    const groupHeaders = [
+      { label: 'I',   sub: 'А · Б', span: 1 },
+      { label: 'II',  sub: 'А · Б', span: 1 },
+      { label: 'III', sub: 'А · Б', span: 1 },
+      { label: 'IV',  sub: 'А · Б', span: 1 },
+      { label: 'V',   sub: 'А · Б', span: 1 },
+      { label: 'VI',  sub: 'А · Б', span: 1 },
+      { label: 'VII', sub: 'А · Б', span: 1 },
+      { label: 'VIII', sub: 'А · Б (триады)', span: 3 },
+    ];
+    groupHeaders.forEach(g => {
+      const h = document.createElement('div');
+      h.className = 'group-header';
+      h.style.gridColumn = `span ${g.span}`;
+      h.innerHTML = `${g.label}<span class="sub">${g.sub}</span>`;
+      gridClassic.appendChild(h);
+    });
+
+    // === Body: 11 element rows ===
+    // Row index → period label
+    const rowLabels = ['1', '2', '3', '4', '4', '5', '5', '6', '6', '7', '7'];
+    // 11 rows × (1 label col + 10 element cols) = 121 grid items
+    const layout = Array.from({ length: 11 }, () => Array(10).fill(null));
+    elements.forEach(el => {
+      const p = classicPos(el);
+      if (p && p.row >= 0 && p.col >= 0) layout[p.row][p.col] = el;
+    });
+
+    for (let r = 0; r < 11; r++) {
+      // Left period label
+      const lbl = document.createElement('div');
+      lbl.className = 'period-label';
+      lbl.textContent = rowLabels[r];
+      gridClassic.appendChild(lbl);
+
+      for (let c = 0; c < 10; c++) {
+        const el = layout[r][c];
+        if (!el) {
+          const e = document.createElement('div');
+          e.className = 'empty';
+          gridClassic.appendChild(e);
+        } else {
+          gridClassic.appendChild(makeClassicCell(el));
+        }
+      }
+    }
+
+    // === F-block: lanthanides (58-71) + La marker reminder, actinides (90-103) ===
+    // Each row: label + 15 element cells
+    const lanRow = document.createElement('div');
+    lanRow.className = 'lf-row';
+    const lanLbl = document.createElement('div');
+    lanLbl.className = 'lf-label';
+    lanLbl.textContent = '* Лантаноиды';
+    lanRow.appendChild(lanLbl);
+    for (let i = 57; i <= 71; i++) lanRow.appendChild(makeCell(byNum[i]));
+    fblockClassic.appendChild(lanRow);
+
+    const actRow = document.createElement('div');
+    actRow.className = 'lf-row';
+    const actLbl = document.createElement('div');
+    actLbl.className = 'lf-label';
+    actLbl.textContent = '** Актиноиды';
+    actRow.appendChild(actLbl);
+    for (let i = 89; i <= 103; i++) actRow.appendChild(makeCell(byNum[i]));
+    fblockClassic.appendChild(actRow);
+  }
+
+  function setView(v) {
+    view = v;
+    const isClassic = v === 'classic';
+    grid.style.display = isClassic ? 'none' : '';
+    fblock.style.display = isClassic ? 'none' : '';
+    gridClassic.style.display = isClassic ? '' : 'none';
+    fblockClassic.style.display = isClassic ? '' : 'none';
+    viewModernBtn.classList.toggle('active', !isClassic);
+    viewClassicBtn.classList.toggle('active', isClassic);
+    if (isClassic && gridClassic.children.length === 0) buildClassicLayout();
+    applyFilters();
+  }
+
+  function buildFilters() {
+    const chipDefs = [
+      ['all', 'Все'],
+      ['alkali', 'Щелочные'],
+      ['alkaline', 'Щ.-земельные'],
+      ['transition', 'Переходные'],
+      ['post', 'Постпереходные'],
+      ['metalloid', 'Металлоиды'],
+      ['nonmetal', 'Неметаллы'],
+      ['halogen', 'Галогены'],
+      ['noble', 'Благ. газы'],
+      ['lanthanide', 'Лантаноиды'],
+      ['actinide', 'Актиноиды']
+    ];
+    chipDefs.forEach(([key, label]) => {
+      const chip = document.createElement('button');
+      chip.className = 'chip' + (key === 'all' ? ' active' : '');
+      chip.textContent = label;
+      chip.dataset.cat = key;
+      chip.addEventListener('click', () => {
+        activeFilter = key;
+        document.querySelectorAll('.filter-group .chip').forEach(c => c.classList.toggle('active', c.dataset.cat === key));
+        applyFilters();
+      });
+      filtersEl.appendChild(chip);
+    });
+  }
+
+  function applyFilters() {
+    const term = searchEl.value.trim().toLowerCase();
+    document.querySelectorAll('.cell[data-num]').forEach(cell => {
+      const num = +cell.dataset.num;
+      const el = byNum[num];
+      const catMatch = activeFilter === 'all' || el[4] === activeFilter;
+      const termMatch = !term ||
+        el[1].toLowerCase().includes(term) ||
+        el[2].toLowerCase().includes(term) ||
+        el[3].toLowerCase().includes(term) ||
+        String(el[0]) === term;
+      const dim = !(catMatch && termMatch);
+      cell.classList.toggle('dim', dim);
+      cell.classList.toggle('match', !!term && termMatch && catMatch);
+    });
+  }
+
+  function selectElement(num) {
+    activeNum = num;
+    const el = byNum[num];
+    const cat = getCat(el[4]);
+    const catLabel = cats[el[4]].ru;
+    const displayName = lang === 'ru' ? el[3] : el[2];
+    const altName = lang === 'ru' ? el[2] : el[3];
+
+    detailEl.classList.remove('detail-empty');
+    
+    // Build chemistry block if available
+    const chem = chemistry[el[1]];
+    let chemHtml = '';
+    if (chem) {
+      const natureLabel = { metal: 'Металл', nonmetal: 'Неметалл', metalloid: 'Металлоид' }[chem.nature];
+      const enText = chem.en === '—' ? '—' : chem.en;
+      const oxStates = chem.ox.map(n => {
+        if (n === 0) return '0';
+        return (n > 0 ? '+' : '') + n;
+      }).join(', ');
+      const reactionsHtml = chem.reactions.map(r => `<div class="chem-reaction">${r}</div>`).join('');
+      chemHtml = `
+        <div class="chem-block">
+          <div class="chem-section">
+            <div class="chem-section-title">Тип и свойства</div>
+            <div class="chem-tags">
+              <span class="chem-tag nature-${chem.nature}">${natureLabel}</span>
+              <span class="chem-tag">ЭО: ${enText}</span>
+              <span class="chem-tag">Ст. окисл.: ${oxStates}</span>
+            </div>
+          </div>
+          <div class="chem-section">
+            <div class="chem-section-title">Характерные реакции</div>
+            <div class="chem-reactions">${reactionsHtml}</div>
+          </div>
+          <div class="chem-notes"><strong>Особенности:</strong> ${chem.notes}</div>
+        </div>
+      `;
+    } else {
+      chemHtml = `
+        <div class="chem-block">
+          <div class="chem-empty">Подробных данных о химических свойствах в этой версии нет — обычно для тяжёлых синтетических элементов их нельзя получить экспериментально (период полураспада секунды или меньше).</div>
+        </div>
+      `;
+    }
+    
+    detailEl.innerHTML = `
+      <div class="detail-icon" style="background:${cat.bg};color:${cat.text};">
+        <div class="di-num">${el[0]}</div>
+        <div class="di-sym">${el[1]}</div>
+        <div class="di-mass">${el[5]}</div>
+      </div>
+      <p class="detail-name">${displayName}</p>
+      <p class="detail-cat">${altName} · ${catLabel.toLowerCase()}</p>
+      <div class="detail-stats">
+        <div class="stat-row"><span class="stat-label">Период</span><span class="stat-val">${el[6]}</span></div>
+        <div class="stat-row"><span class="stat-label">Группа</span><span class="stat-val">${el[7]}</span></div>
+        <div class="stat-row"><span class="stat-label">Атомная масса</span><span class="stat-val">${el[5]}</span></div>
+        <div class="stat-row"><span class="stat-label">Состояние при 20°C</span><span class="stat-val">${el[8]}</span></div>
+        <div class="stat-row"><span class="stat-label">Открыт</span><span class="stat-val">${el[9]}</span></div>
+        <div class="stat-row"><span class="stat-label">Конфигурация</span><span class="stat-val mono">${el[10]}</span></div>
+      </div>
+      <div class="detail-fact">
+        <strong>Любопытный факт:</strong> ${el[11]}
+      </div>
+      ${chemHtml}
+    `;
+    document.querySelectorAll('.cell').forEach(c => c.classList.toggle('selected', +c.dataset.num === num));
+  }
+
+  // Toggle compact mode
+  compactBtn.addEventListener('click', () => {
+    document.body.classList.toggle('compact');
+    compactBtn.classList.toggle('active');
+  });
+
+  // Toggle language
+  langBtn.addEventListener('click', () => {
+    lang = lang === 'ru' ? 'en' : 'ru';
+    langBtn.textContent = lang.toUpperCase();
+    langBtn.dataset.lang = lang;
+    buildLayout();
+    buildClassicLayout();
+    applyFilters();
+    if (activeNum) selectElement(activeNum);
+  });
+
+  // Toggle view (modern vs classic Russian short-form)
+  viewModernBtn.addEventListener('click', () => setView('modern'));
+  viewClassicBtn.addEventListener('click', () => setView('classic'));
+
+  // Search
+  searchEl.addEventListener('input', applyFilters);
+
+  // Listen for theme changes (regenerate layout to update dark mode colors)
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      buildLayout();
+      buildClassicLayout();
+      applyFilters();
+      if (activeNum) selectElement(activeNum);
+    });
+  }
+
+  // Init
+  buildLayout();
+  buildClassicLayout();
+  buildFilters();
+  selectElement(6); // Carbon by default — interesting and central
+})();
+</script>
+
+</body>
+</html>

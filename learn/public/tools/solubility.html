@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Интерактивная таблица растворимости · ОГЭ химия</title>
+<style>
+  :root {
+    --bg: #FAFAF7; --surface: #FFFFFF; --surface-2: #F1EFE8;
+    --text: #1A1A1A; --text-secondary: #5F5E5A; --text-tertiary: #888780;
+    --border: rgba(0,0,0,0.12); --border-strong: rgba(0,0,0,0.25);
+    --accent: #534AB7; --accent-bg: #EEEDFE; --accent-text: #3C3489;
+    --info-bg: #E6F1FB; --info-text: #0C447C;
+    --warning-bg: #FAEEDA; --warning-text: #854F0B;
+    --success-bg: #EAF3DE; --success-text: #27500A;
+    --danger-bg: #FCEBEB; --danger-text: #791F1F;
+    --soluble-bg: #EAF3DE; --soluble-text: #27500A;
+    --low-bg: #FAEEDA; --low-text: #854F0B;
+    --insoluble-bg: #FCEBEB; --insoluble-text: #791F1F;
+    --notexist-bg: #F1EFE8; --notexist-text: #888780;
+    --gas-bg: #E6F1FB; --gas-text: #0C447C;
+    --radius-md: 6px; --radius-lg: 10px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", system-ui, sans-serif;
+    --font-mono: "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1A1A1A; --surface: #242422; --surface-2: #2C2C2A;
+      --text: #F1EFE8; --text-secondary: #B4B2A9; --text-tertiary: #888780;
+      --border: rgba(255,255,255,0.12); --border-strong: rgba(255,255,255,0.25);
+      --accent-bg: #26215C; --accent-text: #CECBF6;
+      --info-bg: #042C53; --info-text: #B5D4F4;
+      --warning-bg: #412402; --warning-text: #FAC775;
+      --success-bg: #173404; --success-text: #C0DD97;
+      --danger-bg: #501313; --danger-text: #F7C1C1;
+      --soluble-bg: #173404; --soluble-text: #C0DD97;
+      --low-bg: #412402; --low-text: #FAC775;
+      --insoluble-bg: #501313; --insoluble-text: #F7C1C1;
+      --notexist-bg: #2C2C2A; --notexist-text: #888780;
+      --gas-bg: #042C53; --gas-text: #B5D4F4;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.5; font-size: 15px; -webkit-font-smoothing: antialiased; }
+  .page { max-width: 100%; margin: 0 auto; padding: 18px 18px 32px; }
+  
+  .page-header { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+  .page-header-left { min-width: 0; }
+  .page-header .badge { display: inline-block; background: var(--accent-bg); color: var(--accent-text); font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 999px; letter-spacing: 0.04em; margin-right: 8px; vertical-align: middle; }
+  .page-header h1 { font-size: 17px; font-weight: 500; margin: 0; display: inline-block; vertical-align: middle; }
+  
+  .legend { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; font-size: 12px; color: var(--text-secondary); }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-chip { width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 500; font-size: 12px; }
+  .legend-chip.soluble { background: var(--soluble-bg); color: var(--soluble-text); }
+  .legend-chip.low { background: var(--low-bg); color: var(--low-text); }
+  .legend-chip.insoluble { background: var(--insoluble-bg); color: var(--insoluble-text); }
+  .legend-chip.notexist { background: var(--notexist-bg); color: var(--notexist-text); }
+  .legend-chip.gas { background: var(--gas-bg); color: var(--gas-text); }
+  
+  .controls { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip { font-size: 11px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; color: var(--text-secondary); font-family: inherit; transition: all 0.12s; }
+  .chip:hover { border-color: var(--border-strong); }
+  .chip.active { background: var(--accent-bg); color: var(--accent-text); border-color: var(--accent-bg); }
+  
+  .shell { display: grid; grid-template-columns: 1fr 320px; gap: 14px; align-items: start; }
+  @media (max-width: 1100px) { .shell { grid-template-columns: 1fr; } .detail-panel { position: static !important; max-height: none !important; } }
+  
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 8px; overflow-x: auto; }
+  
+  table.solubility { border-collapse: separate; border-spacing: 2px; font-family: var(--font-mono); width: 100%; min-width: 760px; }
+  table.solubility th, table.solubility td { padding: 0; text-align: center; user-select: none; }
+  
+  /* Угловая ячейка */
+  .corner { width: 60px; height: 36px; background: var(--surface-2); border-radius: 4px; font-size: 9px; color: var(--text-tertiary); padding: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; }
+  .corner-cation { font-family: var(--font); }
+  .corner-anion { font-family: var(--font); }
+  .corner-divider { font-size: 12px; color: var(--text-tertiary); }
+  
+  /* Заголовки катионов (слева) */
+  th.row-h { width: 60px; height: 32px; background: var(--surface-2); border-radius: 4px; font-size: 12px; font-weight: 500; color: var(--text); cursor: pointer; transition: background 0.12s; }
+  th.row-h:hover { background: var(--accent-bg); color: var(--accent-text); }
+  th.row-h.active { background: var(--accent); color: #fff; }
+  
+  /* Заголовки анионов (сверху) */
+  th.col-h { height: 36px; background: var(--surface-2); border-radius: 4px; font-size: 12px; font-weight: 500; color: var(--text); cursor: pointer; transition: background 0.12s; min-width: 38px; }
+  th.col-h:hover { background: var(--accent-bg); color: var(--accent-text); }
+  th.col-h.active { background: var(--accent); color: #fff; }
+  
+  /* Ячейки таблицы */
+  td.cell { height: 32px; min-width: 38px; border-radius: 4px; font-size: 12px; font-weight: 500; cursor: pointer; transition: transform 0.1s, box-shadow 0.15s, opacity 0.2s; }
+  td.cell:hover { transform: scale(1.06); box-shadow: 0 2px 6px rgba(0,0,0,0.12); z-index: 5; position: relative; }
+  td.cell.dim { opacity: 0.25; cursor: default; }
+  td.cell.dim:hover { transform: none; box-shadow: none; }
+  td.cell.selected { box-shadow: 0 0 0 2px var(--accent); z-index: 4; position: relative; }
+  td.cell.qual { box-shadow: 0 0 0 1px var(--warning-text); }
+  td.cell.qual.selected { box-shadow: 0 0 0 2px var(--accent); }
+  
+  td.s { background: var(--soluble-bg); color: var(--soluble-text); }
+  td.l { background: var(--low-bg); color: var(--low-text); }
+  td.i { background: var(--insoluble-bg); color: var(--insoluble-text); }
+  td.x { background: var(--notexist-bg); color: var(--notexist-text); }
+  td.g { background: var(--gas-bg); color: var(--gas-text); }
+  
+  /* Detail panel */
+  .detail-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px; position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; }
+  .detail-empty { color: var(--text-tertiary); font-size: 13px; text-align: center; padding: 30px 14px; line-height: 1.5; }
+  
+  .detail-formula-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .detail-formula-icon { width: 50px; height: 50px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 500; flex-shrink: 0; }
+  .detail-formula-icon.s { background: var(--soluble-bg); color: var(--soluble-text); }
+  .detail-formula-icon.l { background: var(--low-bg); color: var(--low-text); }
+  .detail-formula-icon.i { background: var(--insoluble-bg); color: var(--insoluble-text); }
+  .detail-formula-icon.x { background: var(--notexist-bg); color: var(--notexist-text); }
+  .detail-formula-icon.g { background: var(--gas-bg); color: var(--gas-text); }
+  
+  .detail-formula { font-family: var(--font-mono); font-size: 22px; font-weight: 500; margin: 0 0 2px; color: var(--text); }
+  .detail-name { font-size: 13px; color: var(--text-secondary); margin: 0; line-height: 1.4; }
+  
+  .detail-section { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .detail-section:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+  .detail-section-title { font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 500; margin-bottom: 6px; }
+  .detail-section-body { font-size: 12px; line-height: 1.5; color: var(--text); }
+  .detail-section-body strong { font-weight: 500; }
+  
+  .detail-color-row { display: flex; align-items: center; gap: 8px; }
+  .detail-color-swatch { width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--border); }
+  
+  .reaction-card { background: var(--surface-2); border-radius: var(--radius-md); padding: 8px 10px; font-family: var(--font-mono); font-size: 11px; line-height: 1.4; margin-top: 5px; word-break: break-word; }
+  
+  .qual-badge { display: inline-block; background: var(--warning-bg); color: var(--warning-text); font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 500; letter-spacing: 0.03em; }
+  
+  .footer-note { margin-top: 22px; font-size: 11px; color: var(--text-tertiary); line-height: 1.5; }
+  
+  @media (max-width: 720px) {
+    .legend { font-size: 11px; }
+    .corner, th.row-h { width: 48px; font-size: 11px; }
+    th.col-h { font-size: 11px; min-width: 32px; }
+    td.cell { font-size: 11px; }
+    .page { padding: 12px 10px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <header class="page-header">
+    <div class="page-header-left">
+      <span class="badge">19 катионов · 13 анионов</span>
+      <h1>Интерактивная таблица растворимости</h1>
+    </div>
+  </header>
+
+  <div class="legend">
+    <span class="legend-item"><span class="legend-chip soluble">Р</span>растворимо</span>
+    <span class="legend-item"><span class="legend-chip low">М</span>малорастворимо</span>
+    <span class="legend-item"><span class="legend-chip insoluble">Н</span>нерастворимо</span>
+    <span class="legend-item"><span class="legend-chip gas">Г</span>разлагается / газ</span>
+    <span class="legend-item"><span class="legend-chip notexist">—</span>не существует</span>
+  </div>
+
+  <div class="controls">
+    <span style="font-size: 12px; color: var(--text-secondary); margin-right: 4px;">Подсветить:</span>
+    <button class="chip active" data-filter="all">Всё</button>
+    <button class="chip" data-filter="precipitate">Только осадки</button>
+    <button class="chip" data-filter="qual">Качественные реакции ОГЭ</button>
+  </div>
+
+  <div class="shell">
+    <div class="table-wrap">
+      <table class="solubility" id="table">
+        <thead id="thead"></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <aside class="detail-panel" id="detail">
+      <div class="detail-empty">Кликни на любую ячейку, чтобы увидеть свойства соли — растворимость, цвет, типичную реакцию получения и связь с задачей ОГЭ-23.</div>
+    </aside>
+  </div>
+
+  <p class="footer-note">
+    Таблица составлена по справочнику для ОГЭ-2026. «Качественные реакции» отмечены тонкой рамкой — это пары, которые часто используются на экзамене для доказательства катионов и анионов.
+  </p>
+</div>
+
+<script>
+(function(){
+  // ============ КАТИОНЫ И АНИОНЫ ============
+  const cations = [
+    { k: 'H',   sym: 'H⁺',   name: 'водород' },
+    { k: 'Li',  sym: 'Li⁺',  name: 'литий' },
+    { k: 'Na',  sym: 'Na⁺',  name: 'натрий' },
+    { k: 'K',   sym: 'K⁺',   name: 'калий' },
+    { k: 'NH4', sym: 'NH₄⁺', name: 'аммоний' },
+    { k: 'Mg',  sym: 'Mg²⁺', name: 'магний' },
+    { k: 'Ca',  sym: 'Ca²⁺', name: 'кальций' },
+    { k: 'Sr',  sym: 'Sr²⁺', name: 'стронций' },
+    { k: 'Ba',  sym: 'Ba²⁺', name: 'барий' },
+    { k: 'Mn',  sym: 'Mn²⁺', name: 'марганец(II)' },
+    { k: 'Zn',  sym: 'Zn²⁺', name: 'цинк' },
+    { k: 'Cu',  sym: 'Cu²⁺', name: 'медь(II)' },
+    { k: 'Hg',  sym: 'Hg²⁺', name: 'ртуть(II)' },
+    { k: 'Pb',  sym: 'Pb²⁺', name: 'свинец(II)' },
+    { k: 'Ag',  sym: 'Ag⁺',  name: 'серебро' },
+    { k: 'Al',  sym: 'Al³⁺', name: 'алюминий' },
+    { k: 'Cr',  sym: 'Cr³⁺', name: 'хром(III)' },
+    { k: 'Fe2', sym: 'Fe²⁺', name: 'железо(II)' },
+    { k: 'Fe3', sym: 'Fe³⁺', name: 'железо(III)' }
+  ];
+  const anions = [
+    { k: 'OH',   sym: 'OH⁻',     name: 'гидроксид' },
+    { k: 'F',    sym: 'F⁻',      name: 'фторид' },
+    { k: 'Cl',   sym: 'Cl⁻',     name: 'хлорид' },
+    { k: 'Br',   sym: 'Br⁻',     name: 'бромид' },
+    { k: 'I',    sym: 'I⁻',      name: 'иодид' },
+    { k: 'S',    sym: 'S²⁻',     name: 'сульфид' },
+    { k: 'SO3',  sym: 'SO₃²⁻',   name: 'сульфит' },
+    { k: 'SO4',  sym: 'SO₄²⁻',   name: 'сульфат' },
+    { k: 'NO3',  sym: 'NO₃⁻',    name: 'нитрат' },
+    { k: 'PO4',  sym: 'PO₄³⁻',   name: 'фосфат' },
+    { k: 'CO3',  sym: 'CO₃²⁻',   name: 'карбонат' },
+    { k: 'SiO3', sym: 'SiO₃²⁻',  name: 'силикат' },
+    { k: 'AcO',  sym: 'CH₃COO⁻', name: 'ацетат' }
+  ];
+  const charges = {
+    'H':1,'Li':1,'Na':1,'K':1,'NH4':1,'Ag':1,
+    'Mg':2,'Ca':2,'Sr':2,'Ba':2,'Mn':2,'Zn':2,'Cu':2,'Hg':2,'Pb':2,'Fe2':2,
+    'Al':3,'Cr':3,'Fe3':3,
+    'OH':1,'F':1,'Cl':1,'Br':1,'I':1,'NO3':1,'AcO':1,
+    'S':2,'SO3':2,'SO4':2,'CO3':2,'SiO3':2,
+    'PO4':3
+  };
+  const ionFormula = {
+    'H':'H','Li':'Li','Na':'Na','K':'K','NH4':'NH₄','Ag':'Ag',
+    'Mg':'Mg','Ca':'Ca','Sr':'Sr','Ba':'Ba','Mn':'Mn','Zn':'Zn','Cu':'Cu','Hg':'Hg','Pb':'Pb','Fe2':'Fe','Fe3':'Fe',
+    'Al':'Al','Cr':'Cr',
+    'OH':'OH','F':'F','Cl':'Cl','Br':'Br','I':'I','NO3':'NO₃','AcO':'CH₃COO',
+    'S':'S','SO3':'SO₃','SO4':'SO₄','CO3':'CO₃','SiO3':'SiO₃','PO4':'PO₄'
+  };
+  const polyAnion = { 'OH':true,'NO3':true,'AcO':true,'S':false,'SO3':true,'SO4':true,'CO3':true,'SiO3':true,'PO4':true };
+
+  // ============ ФУНКЦИЯ РАСТВОРИМОСТИ ============
+  // Возвращает один из: 's' (растворимо), 'l' (мало), 'i' (нерастворимо), 'g' (разлагается/газ), 'x' (не существует)
+  function solubility(c, a) {
+    // ===== H + анион = кислоты =====
+    if (c === 'H') {
+      if (a === 'OH') return 'x';  // H + OH = H2O — это вода, не «соединение»
+      if (a === 'CO3') return 'g';  // H₂CO₃ нестабильна → CO₂ + H₂O
+      if (a === 'SO3') return 'g';  // H₂SO₃ нестабильна → SO₂ + H₂O
+      if (a === 'S') return 'g';    // H₂S — газ
+      if (a === 'SiO3') return 'i'; // H₂SiO₃ — студенистый осадок
+      return 's';                    // HCl, HBr, HI, HF, H₂SO₄, HNO₃, H₃PO₄, CH₃COOH — все растворимы
+    }
+    
+    // ===== Щелочные металлы и аммоний — почти всё растворимо =====
+    if (['Li','Na','K','NH4'].includes(c)) {
+      if (c === 'NH4' && a === 'OH') return 'g'; // NH₄OH разлагается на NH₃·H₂O — условно растворимо/газ
+      if (c === 'Li' && a === 'F') return 'i';   // LiF нерастворим
+      if (c === 'Li' && a === 'PO4') return 'i'; // Li₃PO₄ нерастворим
+      if (c === 'Li' && a === 'CO3') return 'l'; // Li₂CO₃ малорастворим
+      if (c === 'NH4' && (a === 'PO4' || a === 'CO3')) return 's'; // (NH₄)₃PO₄, (NH₄)₂CO₃ растворимы (но (NH₄)₂CO₃ разлагается)
+      return 's';
+    }
+    
+    // ===== Гидроксиды =====
+    if (a === 'OH') {
+      if (['Mg','Mn','Zn','Cu','Hg','Pb','Ag','Al','Cr','Fe2','Fe3'].includes(c)) return 'i';
+      if (c === 'Ca') return 'l';
+      if (c === 'Sr') return 's'; // Sr(OH)₂ растворим (хотя реально малорастворим)
+      if (c === 'Ba') return 's';
+    }
+    
+    // ===== Нитраты — все растворимы =====
+    if (a === 'NO3') return 's';
+    
+    // ===== Ацетаты — все растворимы =====
+    if (a === 'AcO') return 's';
+    
+    // ===== Хлориды =====
+    if (a === 'Cl') {
+      if (c === 'Ag') return 'i';
+      if (c === 'Pb') return 'l'; // PbCl₂ малорастворим (растворяется в горячей)
+      if (c === 'Hg') return 'l'; // упрощённо для школы
+      return 's';
+    }
+    
+    // ===== Бромиды =====
+    if (a === 'Br') {
+      if (c === 'Ag') return 'i';
+      if (c === 'Pb') return 'l';
+      if (c === 'Hg') return 'l';
+      return 's';
+    }
+    
+    // ===== Иодиды =====
+    if (a === 'I') {
+      if (c === 'Ag') return 'i';
+      if (c === 'Pb') return 'i'; // PbI₂ — ярко-жёлтый осадок
+      if (c === 'Hg') return 'i';
+      if (c === 'Cu') return 'i'; // CuI₂ нестабилен; Cu²⁺ + I⁻ → Cu₂I₂ (но для ОГЭ — нерастворимо)
+      return 's';
+    }
+    
+    // ===== Фториды =====
+    if (a === 'F') {
+      if (['Mg','Ca','Sr','Ba','Pb'].includes(c)) return 'i';
+      if (c === 'Ag') return 's';
+      return 's';
+    }
+    
+    // ===== Сульфаты =====
+    if (a === 'SO4') {
+      if (c === 'Ba') return 'i';
+      if (c === 'Pb') return 'i';
+      if (c === 'Sr') return 'i';
+      if (c === 'Ca') return 'l';
+      if (c === 'Ag') return 'l';
+      if (c === 'Hg') return 'l';
+      return 's';
+    }
+    
+    // ===== Сульфиды =====
+    if (a === 'S') {
+      // Растворимые сульфиды: только щелочных + (NH₄)₂S — обработаны выше.
+      // Mg, Ca, Sr, Ba — реагируют с водой (упрощим: некорректно сосуществуют как «сульфид» в воде)
+      if (['Mg','Ca','Sr','Ba'].includes(c)) return 'g'; // разлагаются водой
+      if (['Al','Cr','Fe3'].includes(c)) return 'g';     // полностью гидролизуется
+      return 'i';
+    }
+    
+    // ===== Сульфиты =====
+    if (a === 'SO3') {
+      if (['Mg','Ca','Sr','Ba','Mn','Zn','Cu','Hg','Pb','Ag','Al','Cr','Fe2','Fe3'].includes(c)) return 'i';
+      return 's';
+    }
+    
+    // ===== Карбонаты =====
+    if (a === 'CO3') {
+      // (NH₄)₂CO₃ обработан выше
+      if (['Mg','Ca','Sr','Ba','Mn','Zn','Cu','Hg','Pb','Ag','Fe2'].includes(c)) return 'i';
+      // Карбонаты Al³⁺, Cr³⁺, Fe³⁺ полностью гидролизуются — фактически не существуют
+      if (['Al','Cr','Fe3'].includes(c)) return 'g';
+      return 's';
+    }
+    
+    // ===== Силикаты =====
+    if (a === 'SiO3') {
+      if (['Mg','Ca','Sr','Ba','Mn','Zn','Cu','Hg','Pb','Ag','Al','Cr','Fe2','Fe3'].includes(c)) return 'i';
+      return 's';
+    }
+    
+    // ===== Фосфаты =====
+    if (a === 'PO4') {
+      if (['Mg','Ca','Sr','Ba','Mn','Zn','Cu','Hg','Pb','Ag','Al','Cr','Fe2','Fe3'].includes(c)) return 'i';
+      return 's';
+    }
+    
+    return 's';  // fallback
+  }
+
+  // ============ СОЗДАНИЕ ФОРМУЛЫ СОЛИ ============
+  function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+  function lcm(a, b) { return a * b / gcd(a, b); }
+  function sub(n) { return n === 1 ? '' : ['','','₂','₃','₄','₅','₆','₇','₈','₉'][n] || String(n); }
+  
+  function makeFormula(c, a) {
+    const cc = charges[c], ac = charges[a];
+    const L = lcm(cc, ac);
+    const nC = L / cc, nA = L / ac;
+    let cf = ionFormula[c];
+    let af = ionFormula[a];
+    // Скобки для NH4 если больше 1
+    if (c === 'NH4' && nC > 1) cf = `(${cf})`;
+    // Скобки для сложных анионов если больше 1
+    if (polyAnion[a] && nA > 1) af = `(${af})`;
+    return `${cf}${sub(nC)}${af}${sub(nA)}`;
+  }
+  
+  function makeName(c, a) {
+    const cation = cations.find(x => x.k === c);
+    const anion = anions.find(x => x.k === a);
+    if (!cation || !anion) return '';
+    const anionRoot = {
+      'OH': 'гидроксид', 'F': 'фторид', 'Cl': 'хлорид', 'Br': 'бромид', 'I': 'иодид',
+      'S': 'сульфид', 'SO3': 'сульфит', 'SO4': 'сульфат', 'NO3': 'нитрат',
+      'PO4': 'фосфат', 'CO3': 'карбонат', 'SiO3': 'силикат', 'AcO': 'ацетат'
+    }[a];
+    return `${anionRoot} ${cation.name}`;
+  }
+
+  // ============ ЦВЕТА ОСАДКОВ И СОЛЕЙ ============
+  const colors = {
+    'Cu+OH':  { hex: '#3B82CC', name: 'голубой студенистый' },
+    'Cu+CO3': { hex: '#3B9C7A', name: 'зеленовато-голубой' },
+    'Cu+S':   { hex: '#1A1A1A', name: 'чёрный' },
+    'Cu+SO4': { hex: '#9FD4F4', name: 'голубой (раствор)' },
+    'Cu+I':   { hex: '#F4F0E0', name: 'белый' },
+    
+    'Fe2+OH': { hex: '#5A8A4D', name: 'зеленоватый, на воздухе → бурый' },
+    'Fe2+S':  { hex: '#1A1A1A', name: 'чёрный' },
+    'Fe2+SO4':{ hex: '#A8C97D', name: 'светло-зелёный (раствор/кристаллогидрат FeSO₄·7H₂O)' },
+    
+    'Fe3+OH': { hex: '#A0522D', name: 'бурый, ржаво-коричневый' },
+    'Fe3+S':  { hex: '#1A1A1A', name: 'чёрный (Fe₂S₃) — но обычно гидролизуется' },
+    'Fe3+Cl': { hex: '#F0C77A', name: 'жёлтый (раствор)' },
+    'Fe3+PO4':{ hex: '#FBE7B0', name: 'жёлтый' },
+    
+    'Mn+OH':  { hex: '#F0F0F0', name: 'белый, на воздухе буреет до MnO(OH)' },
+    'Mn+S':   { hex: '#FFB6C1', name: 'розовый' },
+    'Mn+CO3': { hex: '#F0F0F0', name: 'белый' },
+    
+    'Cr+OH':  { hex: '#5DCAA5', name: 'серо-зелёный, желатинообразный' },
+    
+    'Ag+Cl':  { hex: '#F0F0F0', name: 'белый творожистый, темнеет на свету' },
+    'Ag+Br':  { hex: '#F4E090', name: 'желтоватый' },
+    'Ag+I':   { hex: '#E8C658', name: 'жёлтый' },
+    'Ag+CO3': { hex: '#FAFAFA', name: 'светло-жёлтый' },
+    'Ag+PO4': { hex: '#E8C658', name: 'жёлтый' },
+    'Ag+S':   { hex: '#1A1A1A', name: 'чёрный' },
+    
+    'Pb+I':   { hex: '#F0C840', name: 'ярко-жёлтый («золотой дождь»)' },
+    'Pb+Cl':  { hex: '#FAFAFA', name: 'белый игольчатый' },
+    'Pb+SO4': { hex: '#FAFAFA', name: 'белый' },
+    'Pb+S':   { hex: '#1A1A1A', name: 'чёрный (галенит)' },
+    'Pb+CO3': { hex: '#FAFAFA', name: 'белый' },
+    
+    'Hg+I':   { hex: '#E24B4A', name: 'красно-оранжевый (HgI₂)' },
+    'Hg+S':   { hex: '#A53F3F', name: 'красный (киноварь HgS)' },
+    
+    'Zn+S':   { hex: '#FAFAFA', name: 'белый' },
+    'Zn+OH':  { hex: '#E8E8E8', name: 'белый студенистый' },
+    'Zn+CO3': { hex: '#FAFAFA', name: 'белый' },
+    
+    'Al+OH':  { hex: '#E0E0E0', name: 'белый студенистый' },
+    'Al+PO4': { hex: '#FAFAFA', name: 'белый' },
+    
+    'Mg+OH':  { hex: '#F5F5F5', name: 'белый' },
+    'Mg+CO3': { hex: '#FAFAFA', name: 'белый' },
+    'Mg+PO4': { hex: '#FAFAFA', name: 'белый' },
+    
+    'Ca+CO3': { hex: '#FAFAFA', name: 'белый (мел, известняк, мрамор)' },
+    'Ca+SO4': { hex: '#FAFAFA', name: 'белый (гипс CaSO₄·2H₂O)' },
+    'Ca+PO4': { hex: '#FAFAFA', name: 'белый (основа костной ткани)' },
+    'Ca+SiO3':{ hex: '#FAFAFA', name: 'белый (силикат кальция, цемент)' },
+    'Ca+OH':  { hex: '#FAFAFA', name: 'белый, малорастворимый («известковая вода»)' },
+    'Ca+F':   { hex: '#FAFAFA', name: 'белый (флюорит — естественный минерал)' },
+    
+    'Ba+SO4': { hex: '#FAFAFA', name: 'белый, нерастворимый даже в кислотах' },
+    'Ba+CO3': { hex: '#FAFAFA', name: 'белый' },
+    'Ba+SO3': { hex: '#FAFAFA', name: 'белый' },
+    'Ba+SiO3':{ hex: '#FAFAFA', name: 'белый' },
+    'Ba+PO4': { hex: '#FAFAFA', name: 'белый' },
+    
+    'H+SiO3': { hex: '#E8E8F0', name: 'белый студенистый' }
+  };
+  function getColor(c, a) {
+    return colors[c + '+' + a] || null;
+  }
+
+  // ============ КАЧЕСТВЕННЫЕ РЕАКЦИИ ОГЭ ============
+  // Это пары, типично используемые на ОГЭ для доказательства катиона/аниона.
+  // Помечаются рамкой и в детальной панели показывается специальная плашка.
+  const qualReactions = {
+    // На катионы
+    'Cu+OH':  { ion: 'Cu²⁺', sign: 'голубой осадок Cu(OH)₂' },
+    'Fe2+OH': { ion: 'Fe²⁺', sign: 'зеленоватый осадок Fe(OH)₂' },
+    'Fe3+OH': { ion: 'Fe³⁺', sign: 'бурый осадок Fe(OH)₃' },
+    'Al+OH':  { ion: 'Al³⁺', sign: 'белый студенистый Al(OH)₃ (растворяется в избытке щёлочи)' },
+    'Zn+OH':  { ion: 'Zn²⁺', sign: 'белый Zn(OH)₂ (растворяется в избытке щёлочи)' },
+    'Mg+OH':  { ion: 'Mg²⁺', sign: 'белый Mg(OH)₂' },
+    'NH4+OH': { ion: 'NH₄⁺', sign: 'запах аммиака NH₃ при нагревании' },
+    'Ba+SO4': { ion: 'Ba²⁺', sign: 'белый осадок BaSO₄, нерастворимый в кислотах' },
+    'Ag+Cl':  { ion: 'Cl⁻ (или Ag⁺)', sign: 'белый творожистый AgCl, темнеет на свету' },
+    'Ag+Br':  { ion: 'Br⁻', sign: 'желтоватый AgBr' },
+    'Ag+I':   { ion: 'I⁻',  sign: 'жёлтый AgI' },
+    'Pb+I':   { ion: 'Pb²⁺ или I⁻', sign: 'ярко-жёлтый PbI₂ («золотой дождь»)' },
+    'Ca+CO3': { ion: 'Ca²⁺', sign: 'белый осадок CaCO₃' },
+    'Ba+CO3': { ion: 'Ba²⁺', sign: 'белый осадок BaCO₃' },
+    'H+CO3':  { ion: 'CO₃²⁻', sign: 'выделение CO₂ без запаха («вскипание»)' },
+    'H+SiO3': { ion: 'SiO₃²⁻', sign: 'студенистый осадок H₂SiO₃' },
+    'H+S':    { ion: 'S²⁻', sign: 'запах тухлых яиц H₂S' }
+  };
+
+  // ============ ТИПИЧНАЯ РЕАКЦИЯ ПОЛУЧЕНИЯ (для осадков) ============
+  // Возвращает строку реакции «как этот осадок получают в лаборатории»
+  function getReactionExample(c, a) {
+    const sol = solubility(c, a);
+    if (sol !== 'i' && sol !== 'l') return null;
+    
+    const formula = makeFormula(c, a);
+    
+    // Гидроксиды — берём щёлочь (NaOH) + соль катиона
+    if (a === 'OH') {
+      // Подбираем растворимую соль катиона: хлорид, нитрат или сульфат
+      const saltAnion = solubility(c, 'Cl') === 's' ? 'Cl' : (solubility(c, 'NO3') === 's' ? 'NO3' : 'SO4');
+      const salt = makeFormula(c, saltAnion);
+      const naSalt = makeFormula('Na', saltAnion);
+      const cc = charges[c];
+      return `${salt} + ${cc}NaOH → ${formula}↓ + ${cc}${makeFormula('Na', saltAnion).replace(/^Na/, 'Na')}`.replace(/(\d)Na/g, (m, n) => parseInt(n) === 1 ? 'Na' : `${n}Na`);
+    }
+    
+    // Сульфаты — H₂SO₄ или Na₂SO₄ + соль (хлорид/нитрат)
+    if (a === 'SO4') {
+      return `${makeFormula(c, 'Cl')} + Na₂SO₄ → ${formula}↓ + ${charges[c]}NaCl`.replace(/^(\d+)/, '');
+    }
+    
+    // Карбонаты — Na₂CO₃ + соль
+    if (a === 'CO3') {
+      return `${makeFormula(c, 'Cl')} + Na₂CO₃ → ${formula}↓ + 2NaCl`;
+    }
+    
+    // Галогениды Ag, Pb — AgNO₃ или Pb(NO₃)₂ + хлорид/бромид/иодид
+    if ((c === 'Ag' || c === 'Pb') && (a === 'Cl' || a === 'Br' || a === 'I')) {
+      const cnitrate = makeFormula(c, 'NO3');
+      const naSalt = `Na${ionFormula[a]}`;
+      const naNitrate = c === 'Ag' ? 'NaNO₃' : '2NaNO₃';
+      return `${cnitrate} + ${charges[c]}${naSalt} → ${charges[c] > 1 ? charges[c] : ''}${formula.replace(/[₂]/g, '')}↓ + ${naNitrate}`.replace(/^1/, '');
+    }
+    
+    // Фосфаты, силикаты — Na₃PO₄ / Na₂SiO₃
+    if (a === 'PO4' || a === 'SiO3') {
+      return `${makeFormula(c, 'Cl')} + Na₃${ionFormula[a]} → ${formula}↓ + ...NaCl`;
+    }
+    
+    // H₂SiO₃ — особый случай
+    if (c === 'H' && a === 'SiO3') {
+      return `Na₂SiO₃ + 2HCl → H₂SiO₃↓ + 2NaCl`;
+    }
+    
+    return null;
+  }
+
+  // ============ РЕНДЕР ТАБЛИЦЫ ============
+  const thead = document.getElementById('thead');
+  const tbody = document.getElementById('tbody');
+  const detailEl = document.getElementById('detail');
+  
+  let activeFilter = 'all';
+  let activeCell = null;  // { c, a }
+  let activeRow = null;
+  let activeCol = null;
+  
+  function renderTable() {
+    // Заголовок
+    thead.innerHTML = '';
+    const trH = document.createElement('tr');
+    const corner = document.createElement('th');
+    corner.className = 'corner';
+    corner.innerHTML = '<span class="corner-cation">катионы</span><span class="corner-divider">↓ \\ →</span><span class="corner-anion">анионы</span>';
+    trH.appendChild(corner);
+    anions.forEach(an => {
+      const th = document.createElement('th');
+      th.className = 'col-h';
+      th.dataset.anion = an.k;
+      th.textContent = an.sym;
+      th.addEventListener('click', () => toggleColHighlight(an.k));
+      trH.appendChild(th);
+    });
+    thead.appendChild(trH);
+    
+    // Строки
+    tbody.innerHTML = '';
+    cations.forEach(cat => {
+      const tr = document.createElement('tr');
+      const th = document.createElement('th');
+      th.className = 'row-h';
+      th.dataset.cation = cat.k;
+      th.textContent = cat.sym;
+      th.addEventListener('click', () => toggleRowHighlight(cat.k));
+      tr.appendChild(th);
+      
+      anions.forEach(an => {
+        const sol = solubility(cat.k, an.k);
+        const td = document.createElement('td');
+        td.className = `cell ${sol}`;
+        td.dataset.cation = cat.k;
+        td.dataset.anion = an.k;
+        td.dataset.sol = sol;
+        td.textContent = sol === 's' ? 'Р' : sol === 'l' ? 'М' : sol === 'i' ? 'Н' : sol === 'g' ? 'Г' : '—';
+        // Качественная реакция?
+        if (qualReactions[cat.k + '+' + an.k]) td.classList.add('qual');
+        td.addEventListener('click', () => selectCell(cat.k, an.k));
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+    
+    applyFilter();
+  }
+
+  function toggleColHighlight(a) {
+    activeCol = activeCol === a ? null : a;
+    activeRow = null;
+    document.querySelectorAll('.col-h').forEach(t => t.classList.toggle('active', t.dataset.anion === activeCol));
+    document.querySelectorAll('.row-h').forEach(t => t.classList.remove('active'));
+    applyFilter();
+  }
+  function toggleRowHighlight(c) {
+    activeRow = activeRow === c ? null : c;
+    activeCol = null;
+    document.querySelectorAll('.row-h').forEach(t => t.classList.toggle('active', t.dataset.cation === activeRow));
+    document.querySelectorAll('.col-h').forEach(t => t.classList.remove('active'));
+    applyFilter();
+  }
+
+  function applyFilter() {
+    document.querySelectorAll('td.cell').forEach(td => {
+      const c = td.dataset.cation, a = td.dataset.anion;
+      let dim = false;
+      if (activeRow && c !== activeRow) dim = true;
+      if (activeCol && a !== activeCol) dim = true;
+      if (activeFilter === 'precipitate' && td.dataset.sol !== 'i' && td.dataset.sol !== 'l') dim = true;
+      if (activeFilter === 'qual' && !qualReactions[c + '+' + a]) dim = true;
+      td.classList.toggle('dim', dim);
+    });
+  }
+
+  // ============ ДЕТАЛЬНАЯ ПАНЕЛЬ ============
+  function selectCell(c, a) {
+    activeCell = { c, a };
+    document.querySelectorAll('td.cell').forEach(td => {
+      td.classList.toggle('selected', td.dataset.cation === c && td.dataset.anion === a);
+    });
+    
+    const sol = solubility(c, a);
+    const formula = makeFormula(c, a);
+    const name = makeName(c, a);
+    const cation = cations.find(x => x.k === c);
+    const anion = anions.find(x => x.k === a);
+    const color = getColor(c, a);
+    const qual = qualReactions[c + '+' + a];
+    const reactionEx = getReactionExample(c, a);
+    
+    let solLabel, solDesc;
+    if (sol === 's') { solLabel = 'Растворимо'; solDesc = 'хорошо растворяется в воде, в растворе диссоциирует на ионы.'; }
+    else if (sol === 'l') { solLabel = 'Малорастворимо'; solDesc = 'плохо растворяется (от 0,01 до 1 г на 100 мл воды). На ОГЭ при качественных реакциях считается осадком.'; }
+    else if (sol === 'i') { solLabel = 'Нерастворимо'; solDesc = 'выпадает в осадок при попытке получить в растворе. < 0,01 г на 100 мл воды.'; }
+    else if (sol === 'g') { solLabel = 'Не существует в растворе'; solDesc = 'разлагается водой или образует газ — соединение нельзя получить в водном растворе.'; }
+    else { solLabel = 'Не существует'; solDesc = 'такое соединение не образуется или сразу разлагается.'; }
+    
+    detailEl.classList.remove('detail-empty');
+    
+    // Реакция получения (только для осадков)
+    let reactionHtml = '';
+    if ((sol === 'i' || sol === 'l') && reactionEx) {
+      reactionHtml = `
+        <div class="detail-section">
+          <div class="detail-section-title">Как получить в лаборатории</div>
+          <div class="detail-section-body">Сольют две растворимые соли — выпадает осадок:</div>
+          <div class="reaction-card">${reactionEx}</div>
+        </div>
+      `;
+    }
+    
+    // Качественная реакция?
+    let qualHtml = '';
+    if (qual) {
+      qualHtml = `
+        <div class="detail-section">
+          <div class="detail-section-title">Качественная реакция ОГЭ <span class="qual-badge">задание 23</span></div>
+          <div class="detail-section-body">
+            Эта реакция используется на экзамене для доказательства иона <strong>${qual.ion}</strong>.<br>
+            <strong>Признак:</strong> ${qual.sign}.
+          </div>
+        </div>
+      `;
+    }
+    
+    // Цвет
+    let colorHtml = '';
+    if (color) {
+      colorHtml = `
+        <div class="detail-section">
+          <div class="detail-section-title">Цвет</div>
+          <div class="detail-section-body detail-color-row">
+            <div class="detail-color-swatch" style="background:${color.hex};"></div>
+            <span>${color.name}</span>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Особые случаи: разлагается / газ
+    let gasHtml = '';
+    if (sol === 'g') {
+      let explain = '';
+      if (a === 'CO3' && c === 'H') explain = 'Угольная кислота H₂CO₃ нестабильна — мгновенно разлагается на CO₂↑ и H₂O. Этим пользуются в реакциях «вскипания» при добавлении кислоты к карбонату.';
+      else if (a === 'SO3' && c === 'H') explain = 'Сернистая кислота H₂SO₃ нестабильна — разлагается на SO₂↑ и H₂O.';
+      else if (a === 'S' && c === 'H') explain = 'H₂S — газ с запахом тухлых яиц. В растворе слабая кислота, но при подкислении сульфидов выделяется как газ.';
+      else if (c === 'NH4' && a === 'OH') explain = 'NH₄OH в чистом виде не существует — в растворе это NH₃·H₂O (аммиачная вода). При нагревании выделяется NH₃↑.';
+      else if (['Al','Cr','Fe3'].includes(c) && a === 'CO3') explain = `Карбонат ${cation.name} полностью гидролизуется в растворе: вместо ${formula} образуется гидроксид + CO₂.`;
+      else if (['Mg','Ca','Sr','Ba'].includes(c) && a === 'S') explain = `Сульфид ${cation.name} разлагается водой с образованием гидроксида и H₂S.`;
+      else if (['Al','Cr','Fe3'].includes(c) && a === 'S') explain = `Сульфид ${cation.name} полностью гидролизуется — нельзя получить в растворе.`;
+      gasHtml = `
+        <div class="detail-section">
+          <div class="detail-section-title">Почему «не существует в растворе»</div>
+          <div class="detail-section-body">${explain || 'Соединение разлагается в воде.'}</div>
+        </div>
+      `;
+    }
+    if (sol === 'x' && c === 'H' && a === 'OH') {
+      gasHtml = `
+        <div class="detail-section">
+          <div class="detail-section-title">Особый случай</div>
+          <div class="detail-section-body">H⁺ + OH⁻ → H₂O — это вода, не «соединение». Но реакция нейтрализации (например, HCl + NaOH → NaCl + H₂O) — одна из основ школьной химии.</div>
+        </div>
+      `;
+    }
+    
+    detailEl.innerHTML = `
+      <div class="detail-formula-row">
+        <div class="detail-formula-icon ${sol}">${sol === 's' ? 'Р' : sol === 'l' ? 'М' : sol === 'i' ? 'Н' : sol === 'g' ? 'Г' : '—'}</div>
+        <div>
+          <p class="detail-formula">${formula}</p>
+          <p class="detail-name">${name}</p>
+        </div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-section-title">Растворимость</div>
+        <div class="detail-section-body"><strong>${solLabel}.</strong> ${solDesc}</div>
+      </div>
+      ${colorHtml}
+      ${qualHtml}
+      ${reactionHtml}
+      ${gasHtml}
+    `;
+  }
+
+  // ============ ОБРАБОТЧИКИ ФИЛЬТРОВ ============
+  document.querySelectorAll('.chip[data-filter]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      activeFilter = chip.dataset.filter;
+      document.querySelectorAll('.chip[data-filter]').forEach(c => c.classList.toggle('active', c === chip));
+      applyFilter();
+    });
+  });
+
+  renderTable();
+})();
+</script>
+
+</body>
+</html>

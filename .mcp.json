@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "graphify-ximi4ka": {
+      "command": "/Users/vasilijaistov/.local/share/uv/tools/graphifyy/bin/python",
+      "args": [
+        "-m",
+        "graphify.serve",
+        "/Users/vasilijaistov/Desktop/continuum/ximi4ka/graphify-out/graph.json"
+      ]
+    }
+  }
+}

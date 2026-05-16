@@ -1,0 +1,30 @@
+- generic [active] [ref=e1]:
+  - main [ref=e74]:
+    - heading "Корзина" [level=1] [ref=e75]
+    - list [ref=e76]:
+      - listitem [ref=e77]:
+        - generic [ref=e78]:
+          - link "Набор Юного Химика" [ref=e79] [cursor=pointer]:
+            - /url: /product/nabor-yunogo-himika
+          - generic [ref=e80]: 2 490 ₽ за шт.
+          - generic [ref=e81]:
+            - button "Уменьшить количество Набор Юного Химика" [ref=e82]: −
+            - generic [ref=e83]: "2"
+            - button "Увеличить количество Набор Юного Химика" [ref=e84]: +
+        - generic [ref=e85]:
+          - generic [ref=e86]: 4 980 ₽
+          - button "Удалить Набор Юного Химика" [ref=e87]: Удалить
+    - generic [ref=e88]:
+      - generic [ref=e89]: Итого
+      - generic [ref=e90]: 4 980 ₽
+    - paragraph [ref=e91]: Расчёт доставки — на следующем шаге
+    - generic [ref=e92]:
+      - link "Оформить заказ" [ref=e93] [cursor=pointer]:
+        - /url: /checkout
+      - button "Очистить корзину" [ref=e94]
+  - button "Открыть корзину" [ref=e37]:
+    - text: Корзина
+    - generic [ref=e49]: "2"
+  - button "Open Next.js Dev Tools" [ref=e44] [cursor=pointer]:
+    - img [ref=e45]
+  - alert [ref=e38]

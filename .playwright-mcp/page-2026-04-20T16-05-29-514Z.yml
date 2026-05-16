@@ -1,0 +1,11 @@
+- generic [ref=e1]:
+  - form "Вход в админку" [ref=e4]:
+    - heading "Вход в админку" [level=1] [ref=e5]
+    - generic [ref=e6]:
+      - generic [ref=e7]: Email
+      - textbox "Email" [active] [ref=e8]
+    - generic [ref=e9]:
+      - generic [ref=e10]: Пароль
+      - textbox "Пароль" [ref=e11]
+    - button "Войти" [ref=e12]
+  - alert [ref=e13]

@@ -1,0 +1,103 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]: Ximi4ka Admin
+      - navigation "Админ навигация" [ref=e5]:
+        - list [ref=e6]:
+          - listitem [ref=e7]:
+            - link "Главная" [ref=e8] [cursor=pointer]:
+              - /url: /admin
+          - listitem [ref=e9]:
+            - link "Товары" [ref=e10] [cursor=pointer]:
+              - /url: /admin/products
+          - listitem [ref=e11]:
+            - link "Категории" [ref=e12] [cursor=pointer]:
+              - /url: /admin/categories
+          - listitem [ref=e13]:
+            - link "Страницы" [ref=e14] [cursor=pointer]:
+              - /url: /admin/pages
+          - listitem [ref=e15]:
+            - link "Заказы" [ref=e16] [cursor=pointer]:
+              - /url: /admin/orders
+          - listitem [ref=e17]:
+            - link "Редиректы" [ref=e18] [cursor=pointer]:
+              - /url: /admin/redirects
+          - listitem [ref=e19]:
+            - link "Медиа" [ref=e20] [cursor=pointer]:
+              - /url: /admin/media
+          - listitem [ref=e21]:
+            - link "Настройки" [ref=e22] [cursor=pointer]:
+              - /url: /admin/settings
+    - generic [ref=e23]:
+      - banner [ref=e24]:
+        - generic [ref=e25]: admin@ximi4ka.localadmin
+        - button "Выйти" [ref=e26]
+      - generic [ref=e28]:
+        - banner [ref=e29]:
+          - heading "Настройки сайта" [level=1] [ref=e30]
+          - paragraph [ref=e31]: Аналитика, SEO, YML-фид и оплата. Изменения вступают в силу после сохранения.
+        - form "Настройки сайта" [ref=e32]:
+          - generic [ref=e33]:
+            - heading "Аналитика" [level=2] [ref=e34]
+            - generic [ref=e35]:
+              - generic [ref=e36]: Яндекс.Метрика (ID счётчика)
+              - textbox "Яндекс.Метрика (ID счётчика)" [ref=e37]:
+                - /placeholder: "12345678"
+                - text: "87654321"
+              - paragraph [ref=e38]: Числовой идентификатор из интерфейса Метрики. Оставьте пустым, чтобы отключить.
+            - generic [ref=e39]:
+              - generic [ref=e40]: Google Analytics 4 (Measurement ID)
+              - textbox "Google Analytics 4 (Measurement ID)" [ref=e41]:
+                - /placeholder: G-XXXXXXXXXX
+          - generic [ref=e42]:
+            - heading "SEO" [level=2] [ref=e43]
+            - generic [ref=e44]:
+              - generic [ref=e45]: robots.txt
+              - textbox "robots.txt" [ref=e46]: "User-agent: * Disallow: /admin Sitemap: /sitemap.xml"
+              - paragraph [ref=e47]:
+                - text: Публикуется по адресу
+                - code [ref=e48]: /robots.txt
+                - text: .
+            - generic [ref=e49]:
+              - generic [ref=e50]: llms.txt
+              - textbox "llms.txt" [ref=e51]: "# Ximi4ka Chemistry kits for kids."
+              - paragraph [ref=e52]:
+                - text: Публикуется по адресу
+                - code [ref=e53]: /llms.txt
+                - text: .
+            - generic [ref=e54]:
+              - generic [ref=e55]: Яндекс.Вебмастер — код подтверждения
+              - textbox "Яндекс.Вебмастер — код подтверждения" [ref=e56]
+            - generic [ref=e57]:
+              - generic [ref=e58]: Google Search Console — код подтверждения
+              - textbox "Google Search Console — код подтверждения" [ref=e59]
+          - generic [ref=e60]:
+            - heading "YML-фид" [level=2] [ref=e61]
+            - generic [ref=e62]:
+              - generic [ref=e63]: Название магазина
+              - textbox "Название магазина" [ref=e64]: Ximi4ka
+            - generic [ref=e65]:
+              - generic [ref=e66]: Юр. лицо
+              - textbox "Юр. лицо" [ref=e67]
+            - generic [ref=e68]:
+              - generic [ref=e69]: URL магазина
+              - textbox "URL магазина" [ref=e70]:
+                - /placeholder: https://ximi4ka.ru
+                - text: https://ximi4ka.ru
+          - generic [ref=e71]:
+            - heading "Яндекс.Pay" [level=2] [ref=e72]
+            - generic [ref=e73]:
+              - checkbox "Включить Яндекс.Pay в оформлении заказа" [checked] [ref=e74]
+              - generic [ref=e75]: Включить Яндекс.Pay в оформлении заказа
+            - generic [ref=e76]:
+              - generic [ref=e77]: Режим
+              - combobox "Режим" [ref=e78]:
+                - option "Sandbox (тестовый)"
+                - option "Production" [selected]
+              - paragraph [ref=e79]: Учётные данные платёжной системы хранятся в переменных окружения, а не в базе.
+          - generic [ref=e80]:
+            - button "Сохранить" [ref=e81]
+            - status [ref=e92]: Сохранено ✓
+  - button "Open Next.js Dev Tools" [ref=e87] [cursor=pointer]:
+    - img [ref=e88]
+  - alert [ref=e91]

@@ -1,0 +1,24 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "XimiLearn" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e6]
+          - generic [ref=e8]: XimiLearn
+        - navigation [ref=e9]:
+          - link "Главная" [ref=e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "ОГЭ" [ref=e11] [cursor=pointer]:
+            - /url: /learn/oge
+          - link "Тулы" [ref=e12] [cursor=pointer]:
+            - /url: /tools
+          - link "Рейтинг" [ref=e13] [cursor=pointer]:
+            - /url: /leaderboard
+        - link "БИ Без имени" [ref=e15] [cursor=pointer]:
+          - /url: /profile
+          - generic [ref=e16]: БИ
+          - generic [ref=e17]: Без имени
+    - main [ref=e18]:
+      - paragraph [ref=e20]: Загрузка...
+  - alert [ref=e21]

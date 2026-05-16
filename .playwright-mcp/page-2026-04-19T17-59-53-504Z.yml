@@ -1,0 +1,68 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - heading "Главная" [level=1] [ref=e4]
+    - generic [ref=e6]:
+      - paragraph [ref=e8]:
+        - text: Добро пожаловать в
+        - strong [ref=e9]: Ximi4ka
+        - text: — магазин наборов для химических и научных экспериментов. У нас вы найдёте всё, чтобы превратить любознательность ребёнка в настоящее открытие.
+      - generic [ref=e10]:
+        - heading "Новогодние наборы уже в продаже" [level=2] [ref=e11]
+        - paragraph [ref=e12]: Соберите удивительный подарок для юного исследователя — скидки до 20% до конца месяца.
+        - link "Смотреть каталог" [ref=e13] [cursor=pointer]:
+          - /url: /categories
+      - generic [ref=e14]:
+        - group [ref=e15]:
+          - generic "Безопасны ли наборы для детей?" [ref=e16] [cursor=pointer]:
+            - generic [ref=e17]: Безопасны ли наборы для детей?
+            - generic [ref=e18]: +
+        - group [ref=e19]:
+          - generic "Как быстро доставите заказ?" [ref=e20] [cursor=pointer]:
+            - generic [ref=e21]: Как быстро доставите заказ?
+            - generic [ref=e22]: +
+        - group [ref=e23]:
+          - generic "Можно ли вернуть набор?" [ref=e24] [cursor=pointer]:
+            - generic [ref=e25]: Можно ли вернуть набор?
+            - generic [ref=e26]: +
+    - generic [ref=e27]:
+      - heading "Каталог" [level=2] [ref=e28]
+      - generic [ref=e29]:
+        - link "Набор Юного Химика В наличии 2 490 ₽ 2 990 ₽" [ref=e30] [cursor=pointer]:
+          - /url: /product/nabor-yunogo-himika
+          - heading "Набор Юного Химика" [level=3] [ref=e32]
+          - paragraph [ref=e33]: В наличии
+          - paragraph [ref=e34]: 2 490 ₽
+          - paragraph [ref=e35]: 2 990 ₽
+        - link "Извергающийся Вулкан В наличии 1 490 ₽" [ref=e36] [cursor=pointer]:
+          - /url: /product/vulkan-lavy
+          - heading "Извергающийся Вулкан" [level=3] [ref=e38]
+          - paragraph [ref=e39]: В наличии
+          - paragraph [ref=e40]: 1 490 ₽
+        - link "Цветные Кристаллы В наличии 990 ₽" [ref=e41] [cursor=pointer]:
+          - /url: /product/kristalli-cvetnye
+          - heading "Цветные Кристаллы" [level=3] [ref=e43]
+          - paragraph [ref=e44]: В наличии
+          - paragraph [ref=e45]: 990 ₽
+        - link "Умные Слизни В наличии 790 ₽" [ref=e46] [cursor=pointer]:
+          - /url: /product/slizni-razum
+          - heading "Умные Слизни" [level=3] [ref=e48]
+          - paragraph [ref=e49]: В наличии
+          - paragraph [ref=e50]: 790 ₽
+        - link "Мыловарение Домашнее Предзаказ 1 290 ₽" [ref=e51] [cursor=pointer]:
+          - /url: /product/milokon
+          - heading "Мыловарение Домашнее" [level=3] [ref=e53]
+          - paragraph [ref=e54]: Предзаказ
+          - paragraph [ref=e55]: 1 290 ₽
+        - link "Электролиз и Металлы Нет в наличии 1 890 ₽" [ref=e56] [cursor=pointer]:
+          - /url: /product/elektroliz-nabor
+          - heading "Электролиз и Металлы" [level=3] [ref=e58]
+          - paragraph [ref=e59]: Нет в наличии
+          - paragraph [ref=e60]: 1 890 ₽
+        - link "Исследуем Почву В наличии 1 690 ₽" [ref=e61] [cursor=pointer]:
+          - /url: /product/nabor-pochvy
+          - heading "Исследуем Почву" [level=3] [ref=e63]
+          - paragraph [ref=e64]: В наличии
+          - paragraph [ref=e65]: 1 690 ₽
+  - button "Open Next.js Dev Tools" [ref=e71] [cursor=pointer]:
+    - img [ref=e72]
+  - alert [ref=e75]

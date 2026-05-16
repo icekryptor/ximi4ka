@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "kits:generate": "tsx --env-file=.env.local scripts/generate-kit-batch.ts"
+    "kits:generate": "tsx --env-file=.env.local scripts/generate-kit-batch.ts",
+    "kits:import-csv": "tsx --env-file=.env.local scripts/import-orders-csv.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -18,11 +19,15 @@
     "@tiptap/extension-image": "^3.22.2",
     "@tiptap/react": "^3.22.2",
     "@tiptap/starter-kit": "^3.22.2",
+    "@types/qrcode": "^1.5.6",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
+    "csv-parse": "^6.2.1",
+    "csv-stringify": "^6.7.0",
     "katex": "^0.16.45",
     "lucide-react": "^1.14.0",
     "next": "14.2.35",
+    "qrcode": "^1.5.4",
     "react": "^18",
     "react-dom": "^18"
   },

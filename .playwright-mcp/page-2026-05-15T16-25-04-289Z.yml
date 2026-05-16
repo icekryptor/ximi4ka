@@ -1,0 +1,49 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "XimiLearn" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e6]
+          - generic [ref=e8]: XimiLearn
+        - navigation [ref=e9]:
+          - link "Главная" [ref=e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "ОГЭ" [ref=e11] [cursor=pointer]:
+            - /url: /learn/oge
+          - link "Тулы" [ref=e12] [cursor=pointer]:
+            - /url: /tools
+          - link "Рейтинг" [ref=e13] [cursor=pointer]:
+            - /url: /leaderboard
+        - link "БИ Без имени" [ref=e15] [cursor=pointer]:
+          - /url: /profile
+          - generic [ref=e16]: БИ
+          - generic [ref=e17]: Без имени
+    - main [ref=e18]:
+      - generic [ref=e19]:
+        - link "← Назад" [ref=e20] [cursor=pointer]:
+          - /url: /dashboard
+        - heading "ОГЭ-модуль 2026" [level=1] [ref=e21]
+        - paragraph [ref=e22]: Полный курс подготовки к ОГЭ по химии 2026
+        - generic [ref=e23]:
+          - heading "Инструменты" [level=2] [ref=e24]
+          - generic [ref=e25]:
+            - link "Тренажёр ОГЭ Лабораторные работы и эксперименты ОГЭ" [ref=e26] [cursor=pointer]:
+              - /url: /tools/lab
+              - generic [ref=e27]:
+                - img [ref=e29]
+                - heading "Тренажёр ОГЭ" [level=3] [ref=e31]
+                - paragraph [ref=e32]: Лабораторные работы и эксперименты ОГЭ
+            - link "Таблица Менделеева Интерактивная периодическая таблица" [ref=e33] [cursor=pointer]:
+              - /url: /tools/periodic
+              - generic [ref=e34]:
+                - img [ref=e36]
+                - heading "Таблица Менделеева" [level=3] [ref=e40]
+                - paragraph [ref=e41]: Интерактивная периодическая таблица
+            - link "Таблица растворимости Растворимость солей в воде" [ref=e42] [cursor=pointer]:
+              - /url: /tools/solubility
+              - generic [ref=e43]:
+                - img [ref=e45]
+                - heading "Таблица растворимости" [level=3] [ref=e47]
+                - paragraph [ref=e48]: Растворимость солей в воде
+  - alert [ref=e49]

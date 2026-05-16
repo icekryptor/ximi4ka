@@ -1,0 +1,12 @@
+- main [ref=e2]:
+  - heading "Категории" [level=1] [ref=e4]
+  - generic [ref=e5]:
+    - link "Химические наборы" [ref=e6] [cursor=pointer]:
+      - /url: /categories/himicheskie-nabory
+      - heading "Химические наборы" [level=3] [ref=e7]
+    - link "Экспериментальные наборы" [ref=e8] [cursor=pointer]:
+      - /url: /categories/eksperimentalnye-nabory
+      - heading "Экспериментальные наборы" [level=3] [ref=e9]
+    - link "Образовательные материалы" [ref=e10] [cursor=pointer]:
+      - /url: /categories/obrazovatelnye-materialy
+      - heading "Образовательные материалы" [level=3] [ref=e11]

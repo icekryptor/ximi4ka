@@ -1,0 +1,48 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - navigation "breadcrumbs" [ref=e3]:
+      - link "Главная" [ref=e4] [cursor=pointer]:
+        - /url: /
+      - text: /
+      - link "Каталог" [ref=e5] [cursor=pointer]:
+        - /url: /categories
+      - text: /Набор Юного Химика
+    - generic [ref=e6]:
+      - generic [ref=e8]: Нет изображения
+      - generic [ref=e9]:
+        - heading "Набор Юного Химика" [level=1] [ref=e10]
+        - paragraph [ref=e11]: В наличии
+        - generic [ref=e12]: 2 490 ₽2 990 ₽
+        - paragraph [ref=e13]: "Классический стартовый набор для будущего химика: безопасные реактивы и пошаговые инструкции к десяти ярким опытам."
+        - generic [ref=e14]:
+          - button "В корзину" [ref=e15]
+          - status [ref=e48]: Добавлено в корзину ✓
+        - generic [ref=e16]:
+          - heading "Описание" [level=2] [ref=e17]
+          - generic [ref=e18]:
+            - paragraph [ref=e20]:
+              - text: В наборе собраны все необходимые
+              - strong [ref=e21]: реактивы и оборудование
+              - text: для знакомства ребёнка с миром химии. Каждый опыт сопровождается иллюстрированной инструкцией и объяснением происходящих реакций.
+            - figure "Все реактивы прошли проверку безопасности" [ref=e22]:
+              - img "Пример реактивов из набора" [ref=e23]
+              - generic [ref=e24]: Все реактивы прошли проверку безопасности
+            - paragraph [ref=e26]:
+              - text: Возрастная маркировка
+              - emphasis [ref=e27]: 8+
+              - text: . Опыты безопасны и проводятся под наблюдением взрослых. В комплект входят защитные очки, перчатки и подробный буклет.
+            - generic [ref=e28]:
+              - group [ref=e29]:
+                - generic "Подходит ли набор для школьных уроков?" [ref=e30] [cursor=pointer]:
+                  - generic [ref=e31]: Подходит ли набор для школьных уроков?
+                  - generic [ref=e32]: +
+              - group [ref=e33]:
+                - generic "Нужны ли дополнительные материалы?" [ref=e34] [cursor=pointer]:
+                  - generic [ref=e35]: Нужны ли дополнительные материалы?
+                  - generic [ref=e36]: +
+  - button "Открыть корзину" [ref=e37]:
+    - text: Корзина
+    - generic [ref=e49]: "1"
+  - button "Open Next.js Dev Tools" [ref=e44] [cursor=pointer]:
+    - img [ref=e45]
+  - alert [ref=e38]

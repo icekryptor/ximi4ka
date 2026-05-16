@@ -1,0 +1,367 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "XimiLearn" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e6]
+          - generic [ref=e8]: XimiLearn
+        - navigation [ref=e9]:
+          - link "Главная" [ref=e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "ОГЭ" [ref=e11] [cursor=pointer]:
+            - /url: /learn/oge
+          - link "Тулы" [ref=e12] [cursor=pointer]:
+            - /url: /tools
+          - link "Рейтинг" [ref=e13] [cursor=pointer]:
+            - /url: /leaderboard
+        - link "БИ Без имени" [ref=e15] [cursor=pointer]:
+          - /url: /profile
+          - generic [ref=e16]: БИ
+          - generic [ref=e17]: Без имени
+    - main [ref=e18]:
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - link "Инструменты" [ref=e21] [cursor=pointer]:
+            - /url: /tools
+          - generic [ref=e22]: /
+          - generic [ref=e23]: Таблица растворимости
+        - heading "Таблица растворимости" [level=1] [ref=e24]
+        - iframe [ref=e25]:
+          - generic [ref=f3e2]:
+            - banner [ref=f3e3]:
+              - generic [ref=f3e4]:
+                - generic [ref=f3e5]: 19 катионов · 13 анионов
+                - heading "Интерактивная таблица растворимости" [level=1] [ref=f3e6]
+            - generic [ref=f3e7]:
+              - generic [ref=f3e8]:
+                - generic [ref=f3e9]: Р
+                - text: растворимо
+              - generic [ref=f3e10]:
+                - generic [ref=f3e11]: М
+                - text: малорастворимо
+              - generic [ref=f3e12]:
+                - generic [ref=f3e13]: Н
+                - text: нерастворимо
+              - generic [ref=f3e14]:
+                - generic [ref=f3e15]: Г
+                - text: разлагается / газ
+              - generic [ref=f3e16]:
+                - generic [ref=f3e17]: —
+                - text: не существует
+            - generic [ref=f3e18]:
+              - generic [ref=f3e19]: "Подсветить:"
+              - button "Всё" [ref=f3e20] [cursor=pointer]
+              - button "Только осадки" [ref=f3e21] [cursor=pointer]
+              - button "Качественные реакции ОГЭ" [ref=f3e22] [cursor=pointer]
+            - generic [ref=f3e23]:
+              - table [ref=f3e25]:
+                - rowgroup [ref=f3e26]:
+                  - row "катионы ↓ \\ → анионы OH⁻ F⁻ Cl⁻ Br⁻ I⁻ S²⁻ SO₃²⁻ SO₄²⁻ NO₃⁻ PO₄³⁻ CO₃²⁻ SiO₃²⁻ CH₃COO⁻" [ref=f3e27]:
+                    - columnheader "катионы ↓ \\ → анионы" [ref=f3e28]:
+                      - generic [ref=f3e29]: катионы
+                      - generic [ref=f3e30]: ↓ \ →
+                      - generic [ref=f3e31]: анионы
+                    - columnheader "OH⁻" [ref=f3e32] [cursor=pointer]
+                    - columnheader "F⁻" [ref=f3e33] [cursor=pointer]
+                    - columnheader "Cl⁻" [ref=f3e34] [cursor=pointer]
+                    - columnheader "Br⁻" [ref=f3e35] [cursor=pointer]
+                    - columnheader "I⁻" [ref=f3e36] [cursor=pointer]
+                    - columnheader "S²⁻" [ref=f3e37] [cursor=pointer]
+                    - columnheader "SO₃²⁻" [ref=f3e38] [cursor=pointer]
+                    - columnheader "SO₄²⁻" [ref=f3e39] [cursor=pointer]
+                    - columnheader "NO₃⁻" [ref=f3e40] [cursor=pointer]
+                    - columnheader "PO₄³⁻" [ref=f3e41] [cursor=pointer]
+                    - columnheader "CO₃²⁻" [ref=f3e42] [cursor=pointer]
+                    - columnheader "SiO₃²⁻" [ref=f3e43] [cursor=pointer]
+                    - columnheader "CH₃COO⁻" [ref=f3e44] [cursor=pointer]
+                - rowgroup [ref=f3e45]:
+                  - row "H⁺ — Р Р Р Р Г Г Р Р Р Г Н Р" [ref=f3e46]:
+                    - rowheader "H⁺" [ref=f3e47] [cursor=pointer]
+                    - cell "—" [ref=f3e48] [cursor=pointer]
+                    - cell "Р" [ref=f3e49] [cursor=pointer]
+                    - cell "Р" [ref=f3e50] [cursor=pointer]
+                    - cell "Р" [ref=f3e51] [cursor=pointer]
+                    - cell "Р" [ref=f3e52] [cursor=pointer]
+                    - cell "Г" [ref=f3e53] [cursor=pointer]
+                    - cell "Г" [ref=f3e54] [cursor=pointer]
+                    - cell "Р" [ref=f3e55] [cursor=pointer]
+                    - cell "Р" [ref=f3e56] [cursor=pointer]
+                    - cell "Р" [ref=f3e57] [cursor=pointer]
+                    - cell "Г" [ref=f3e58] [cursor=pointer]
+                    - cell "Н" [ref=f3e59] [cursor=pointer]
+                    - cell "Р" [ref=f3e60] [cursor=pointer]
+                  - row "Li⁺ Р Н Р Р Р Р Р Р Р Н М Р Р" [ref=f3e61]:
+                    - rowheader "Li⁺" [ref=f3e62] [cursor=pointer]
+                    - cell "Р" [ref=f3e63] [cursor=pointer]
+                    - cell "Н" [ref=f3e64] [cursor=pointer]
+                    - cell "Р" [ref=f3e65] [cursor=pointer]
+                    - cell "Р" [ref=f3e66] [cursor=pointer]
+                    - cell "Р" [ref=f3e67] [cursor=pointer]
+                    - cell "Р" [ref=f3e68] [cursor=pointer]
+                    - cell "Р" [ref=f3e69] [cursor=pointer]
+                    - cell "Р" [ref=f3e70] [cursor=pointer]
+                    - cell "Р" [ref=f3e71] [cursor=pointer]
+                    - cell "Н" [ref=f3e72] [cursor=pointer]
+                    - cell "М" [ref=f3e73] [cursor=pointer]
+                    - cell "Р" [ref=f3e74] [cursor=pointer]
+                    - cell "Р" [ref=f3e75] [cursor=pointer]
+                  - row "Na⁺ Р Р Р Р Р Р Р Р Р Р Р Р Р" [ref=f3e76]:
+                    - rowheader "Na⁺" [ref=f3e77] [cursor=pointer]
+                    - cell "Р" [ref=f3e78] [cursor=pointer]
+                    - cell "Р" [ref=f3e79] [cursor=pointer]
+                    - cell "Р" [ref=f3e80] [cursor=pointer]
+                    - cell "Р" [ref=f3e81] [cursor=pointer]
+                    - cell "Р" [ref=f3e82] [cursor=pointer]
+                    - cell "Р" [ref=f3e83] [cursor=pointer]
+                    - cell "Р" [ref=f3e84] [cursor=pointer]
+                    - cell "Р" [ref=f3e85] [cursor=pointer]
+                    - cell "Р" [ref=f3e86] [cursor=pointer]
+                    - cell "Р" [ref=f3e87] [cursor=pointer]
+                    - cell "Р" [ref=f3e88] [cursor=pointer]
+                    - cell "Р" [ref=f3e89] [cursor=pointer]
+                    - cell "Р" [ref=f3e90] [cursor=pointer]
+                  - row "K⁺ Р Р Р Р Р Р Р Р Р Р Р Р Р" [ref=f3e91]:
+                    - rowheader "K⁺" [ref=f3e92] [cursor=pointer]
+                    - cell "Р" [ref=f3e93] [cursor=pointer]
+                    - cell "Р" [ref=f3e94] [cursor=pointer]
+                    - cell "Р" [ref=f3e95] [cursor=pointer]
+                    - cell "Р" [ref=f3e96] [cursor=pointer]
+                    - cell "Р" [ref=f3e97] [cursor=pointer]
+                    - cell "Р" [ref=f3e98] [cursor=pointer]
+                    - cell "Р" [ref=f3e99] [cursor=pointer]
+                    - cell "Р" [ref=f3e100] [cursor=pointer]
+                    - cell "Р" [ref=f3e101] [cursor=pointer]
+                    - cell "Р" [ref=f3e102] [cursor=pointer]
+                    - cell "Р" [ref=f3e103] [cursor=pointer]
+                    - cell "Р" [ref=f3e104] [cursor=pointer]
+                    - cell "Р" [ref=f3e105] [cursor=pointer]
+                  - row "NH₄⁺ Г Р Р Р Р Р Р Р Р Р Р Р Р" [ref=f3e106]:
+                    - rowheader "NH₄⁺" [ref=f3e107] [cursor=pointer]
+                    - cell "Г" [ref=f3e108] [cursor=pointer]
+                    - cell "Р" [ref=f3e109] [cursor=pointer]
+                    - cell "Р" [ref=f3e110] [cursor=pointer]
+                    - cell "Р" [ref=f3e111] [cursor=pointer]
+                    - cell "Р" [ref=f3e112] [cursor=pointer]
+                    - cell "Р" [ref=f3e113] [cursor=pointer]
+                    - cell "Р" [ref=f3e114] [cursor=pointer]
+                    - cell "Р" [ref=f3e115] [cursor=pointer]
+                    - cell "Р" [ref=f3e116] [cursor=pointer]
+                    - cell "Р" [ref=f3e117] [cursor=pointer]
+                    - cell "Р" [ref=f3e118] [cursor=pointer]
+                    - cell "Р" [ref=f3e119] [cursor=pointer]
+                    - cell "Р" [ref=f3e120] [cursor=pointer]
+                  - row "Mg²⁺ Н Н Р Р Р Г Н Р Р Н Н Н Р" [ref=f3e121]:
+                    - rowheader "Mg²⁺" [ref=f3e122] [cursor=pointer]
+                    - cell "Н" [ref=f3e123] [cursor=pointer]
+                    - cell "Н" [ref=f3e124] [cursor=pointer]
+                    - cell "Р" [ref=f3e125] [cursor=pointer]
+                    - cell "Р" [ref=f3e126] [cursor=pointer]
+                    - cell "Р" [ref=f3e127] [cursor=pointer]
+                    - cell "Г" [ref=f3e128] [cursor=pointer]
+                    - cell "Н" [ref=f3e129] [cursor=pointer]
+                    - cell "Р" [ref=f3e130] [cursor=pointer]
+                    - cell "Р" [ref=f3e131] [cursor=pointer]
+                    - cell "Н" [ref=f3e132] [cursor=pointer]
+                    - cell "Н" [ref=f3e133] [cursor=pointer]
+                    - cell "Н" [ref=f3e134] [cursor=pointer]
+                    - cell "Р" [ref=f3e135] [cursor=pointer]
+                  - row "Ca²⁺ М Н Р Р Р Г Н М Р Н Н Н Р" [ref=f3e136]:
+                    - rowheader "Ca²⁺" [ref=f3e137] [cursor=pointer]
+                    - cell "М" [ref=f3e138] [cursor=pointer]
+                    - cell "Н" [ref=f3e139] [cursor=pointer]
+                    - cell "Р" [ref=f3e140] [cursor=pointer]
+                    - cell "Р" [ref=f3e141] [cursor=pointer]
+                    - cell "Р" [ref=f3e142] [cursor=pointer]
+                    - cell "Г" [ref=f3e143] [cursor=pointer]
+                    - cell "Н" [ref=f3e144] [cursor=pointer]
+                    - cell "М" [ref=f3e145] [cursor=pointer]
+                    - cell "Р" [ref=f3e146] [cursor=pointer]
+                    - cell "Н" [ref=f3e147] [cursor=pointer]
+                    - cell "Н" [ref=f3e148] [cursor=pointer]
+                    - cell "Н" [ref=f3e149] [cursor=pointer]
+                    - cell "Р" [ref=f3e150] [cursor=pointer]
+                  - row "Sr²⁺ Р Н Р Р Р Г Н Н Р Н Н Н Р" [ref=f3e151]:
+                    - rowheader "Sr²⁺" [ref=f3e152] [cursor=pointer]
+                    - cell "Р" [ref=f3e153] [cursor=pointer]
+                    - cell "Н" [ref=f3e154] [cursor=pointer]
+                    - cell "Р" [ref=f3e155] [cursor=pointer]
+                    - cell "Р" [ref=f3e156] [cursor=pointer]
+                    - cell "Р" [ref=f3e157] [cursor=pointer]
+                    - cell "Г" [ref=f3e158] [cursor=pointer]
+                    - cell "Н" [ref=f3e159] [cursor=pointer]
+                    - cell "Н" [ref=f3e160] [cursor=pointer]
+                    - cell "Р" [ref=f3e161] [cursor=pointer]
+                    - cell "Н" [ref=f3e162] [cursor=pointer]
+                    - cell "Н" [ref=f3e163] [cursor=pointer]
+                    - cell "Н" [ref=f3e164] [cursor=pointer]
+                    - cell "Р" [ref=f3e165] [cursor=pointer]
+                  - row "Ba²⁺ Р Н Р Р Р Г Н Н Р Н Н Н Р" [ref=f3e166]:
+                    - rowheader "Ba²⁺" [ref=f3e167] [cursor=pointer]
+                    - cell "Р" [ref=f3e168] [cursor=pointer]
+                    - cell "Н" [ref=f3e169] [cursor=pointer]
+                    - cell "Р" [ref=f3e170] [cursor=pointer]
+                    - cell "Р" [ref=f3e171] [cursor=pointer]
+                    - cell "Р" [ref=f3e172] [cursor=pointer]
+                    - cell "Г" [ref=f3e173] [cursor=pointer]
+                    - cell "Н" [ref=f3e174] [cursor=pointer]
+                    - cell "Н" [ref=f3e175] [cursor=pointer]
+                    - cell "Р" [ref=f3e176] [cursor=pointer]
+                    - cell "Н" [ref=f3e177] [cursor=pointer]
+                    - cell "Н" [ref=f3e178] [cursor=pointer]
+                    - cell "Н" [ref=f3e179] [cursor=pointer]
+                    - cell "Р" [ref=f3e180] [cursor=pointer]
+                  - row "Mn²⁺ Н Р Р Р Р Н Н Р Р Н Н Н Р" [ref=f3e181]:
+                    - rowheader "Mn²⁺" [ref=f3e182] [cursor=pointer]
+                    - cell "Н" [ref=f3e183] [cursor=pointer]
+                    - cell "Р" [ref=f3e184] [cursor=pointer]
+                    - cell "Р" [ref=f3e185] [cursor=pointer]
+                    - cell "Р" [ref=f3e186] [cursor=pointer]
+                    - cell "Р" [ref=f3e187] [cursor=pointer]
+                    - cell "Н" [ref=f3e188] [cursor=pointer]
+                    - cell "Н" [ref=f3e189] [cursor=pointer]
+                    - cell "Р" [ref=f3e190] [cursor=pointer]
+                    - cell "Р" [ref=f3e191] [cursor=pointer]
+                    - cell "Н" [ref=f3e192] [cursor=pointer]
+                    - cell "Н" [ref=f3e193] [cursor=pointer]
+                    - cell "Н" [ref=f3e194] [cursor=pointer]
+                    - cell "Р" [ref=f3e195] [cursor=pointer]
+                  - row "Zn²⁺ Н Р Р Р Р Н Н Р Р Н Н Н Р" [ref=f3e196]:
+                    - rowheader "Zn²⁺" [ref=f3e197] [cursor=pointer]
+                    - cell "Н" [ref=f3e198] [cursor=pointer]
+                    - cell "Р" [ref=f3e199] [cursor=pointer]
+                    - cell "Р" [ref=f3e200] [cursor=pointer]
+                    - cell "Р" [ref=f3e201] [cursor=pointer]
+                    - cell "Р" [ref=f3e202] [cursor=pointer]
+                    - cell "Н" [ref=f3e203] [cursor=pointer]
+                    - cell "Н" [ref=f3e204] [cursor=pointer]
+                    - cell "Р" [ref=f3e205] [cursor=pointer]
+                    - cell "Р" [ref=f3e206] [cursor=pointer]
+                    - cell "Н" [ref=f3e207] [cursor=pointer]
+                    - cell "Н" [ref=f3e208] [cursor=pointer]
+                    - cell "Н" [ref=f3e209] [cursor=pointer]
+                    - cell "Р" [ref=f3e210] [cursor=pointer]
+                  - row "Cu²⁺ Н Р Р Р Н Н Н Р Р Н Н Н Р" [ref=f3e211]:
+                    - rowheader "Cu²⁺" [ref=f3e212] [cursor=pointer]
+                    - cell "Н" [ref=f3e213] [cursor=pointer]
+                    - cell "Р" [ref=f3e214] [cursor=pointer]
+                    - cell "Р" [ref=f3e215] [cursor=pointer]
+                    - cell "Р" [ref=f3e216] [cursor=pointer]
+                    - cell "Н" [ref=f3e217] [cursor=pointer]
+                    - cell "Н" [ref=f3e218] [cursor=pointer]
+                    - cell "Н" [ref=f3e219] [cursor=pointer]
+                    - cell "Р" [ref=f3e220] [cursor=pointer]
+                    - cell "Р" [ref=f3e221] [cursor=pointer]
+                    - cell "Н" [ref=f3e222] [cursor=pointer]
+                    - cell "Н" [ref=f3e223] [cursor=pointer]
+                    - cell "Н" [ref=f3e224] [cursor=pointer]
+                    - cell "Р" [ref=f3e225] [cursor=pointer]
+                  - row "Hg²⁺ Н Р М М Н Н Н М Р Н Н Н Р" [ref=f3e226]:
+                    - rowheader "Hg²⁺" [ref=f3e227] [cursor=pointer]
+                    - cell "Н" [ref=f3e228] [cursor=pointer]
+                    - cell "Р" [ref=f3e229] [cursor=pointer]
+                    - cell "М" [ref=f3e230] [cursor=pointer]
+                    - cell "М" [ref=f3e231] [cursor=pointer]
+                    - cell "Н" [ref=f3e232] [cursor=pointer]
+                    - cell "Н" [ref=f3e233] [cursor=pointer]
+                    - cell "Н" [ref=f3e234] [cursor=pointer]
+                    - cell "М" [ref=f3e235] [cursor=pointer]
+                    - cell "Р" [ref=f3e236] [cursor=pointer]
+                    - cell "Н" [ref=f3e237] [cursor=pointer]
+                    - cell "Н" [ref=f3e238] [cursor=pointer]
+                    - cell "Н" [ref=f3e239] [cursor=pointer]
+                    - cell "Р" [ref=f3e240] [cursor=pointer]
+                  - row "Pb²⁺ Н Н М М Н Н Н Н Р Н Н Н Р" [ref=f3e241]:
+                    - rowheader "Pb²⁺" [ref=f3e242] [cursor=pointer]
+                    - cell "Н" [ref=f3e243] [cursor=pointer]
+                    - cell "Н" [ref=f3e244] [cursor=pointer]
+                    - cell "М" [ref=f3e245] [cursor=pointer]
+                    - cell "М" [ref=f3e246] [cursor=pointer]
+                    - cell "Н" [ref=f3e247] [cursor=pointer]
+                    - cell "Н" [ref=f3e248] [cursor=pointer]
+                    - cell "Н" [ref=f3e249] [cursor=pointer]
+                    - cell "Н" [ref=f3e250] [cursor=pointer]
+                    - cell "Р" [ref=f3e251] [cursor=pointer]
+                    - cell "Н" [ref=f3e252] [cursor=pointer]
+                    - cell "Н" [ref=f3e253] [cursor=pointer]
+                    - cell "Н" [ref=f3e254] [cursor=pointer]
+                    - cell "Р" [ref=f3e255] [cursor=pointer]
+                  - row "Ag⁺ Н Р Н Н Н Н Н М Р Н Н Н Р" [ref=f3e256]:
+                    - rowheader "Ag⁺" [ref=f3e257] [cursor=pointer]
+                    - cell "Н" [ref=f3e258] [cursor=pointer]
+                    - cell "Р" [ref=f3e259] [cursor=pointer]
+                    - cell "Н" [ref=f3e260] [cursor=pointer]
+                    - cell "Н" [ref=f3e261] [cursor=pointer]
+                    - cell "Н" [ref=f3e262] [cursor=pointer]
+                    - cell "Н" [ref=f3e263] [cursor=pointer]
+                    - cell "Н" [ref=f3e264] [cursor=pointer]
+                    - cell "М" [ref=f3e265] [cursor=pointer]
+                    - cell "Р" [ref=f3e266] [cursor=pointer]
+                    - cell "Н" [ref=f3e267] [cursor=pointer]
+                    - cell "Н" [ref=f3e268] [cursor=pointer]
+                    - cell "Н" [ref=f3e269] [cursor=pointer]
+                    - cell "Р" [ref=f3e270] [cursor=pointer]
+                  - row "Al³⁺ Н Р Р Р Р Г Н Р Р Н Г Н Р" [ref=f3e271]:
+                    - rowheader "Al³⁺" [ref=f3e272] [cursor=pointer]
+                    - cell "Н" [ref=f3e273] [cursor=pointer]
+                    - cell "Р" [ref=f3e274] [cursor=pointer]
+                    - cell "Р" [ref=f3e275] [cursor=pointer]
+                    - cell "Р" [ref=f3e276] [cursor=pointer]
+                    - cell "Р" [ref=f3e277] [cursor=pointer]
+                    - cell "Г" [ref=f3e278] [cursor=pointer]
+                    - cell "Н" [ref=f3e279] [cursor=pointer]
+                    - cell "Р" [ref=f3e280] [cursor=pointer]
+                    - cell "Р" [ref=f3e281] [cursor=pointer]
+                    - cell "Н" [ref=f3e282] [cursor=pointer]
+                    - cell "Г" [ref=f3e283] [cursor=pointer]
+                    - cell "Н" [ref=f3e284] [cursor=pointer]
+                    - cell "Р" [ref=f3e285] [cursor=pointer]
+                  - row "Cr³⁺ Н Р Р Р Р Г Н Р Р Н Г Н Р" [ref=f3e286]:
+                    - rowheader "Cr³⁺" [ref=f3e287] [cursor=pointer]
+                    - cell "Н" [ref=f3e288] [cursor=pointer]
+                    - cell "Р" [ref=f3e289] [cursor=pointer]
+                    - cell "Р" [ref=f3e290] [cursor=pointer]
+                    - cell "Р" [ref=f3e291] [cursor=pointer]
+                    - cell "Р" [ref=f3e292] [cursor=pointer]
+                    - cell "Г" [ref=f3e293] [cursor=pointer]
+                    - cell "Н" [ref=f3e294] [cursor=pointer]
+                    - cell "Р" [ref=f3e295] [cursor=pointer]
+                    - cell "Р" [ref=f3e296] [cursor=pointer]
+                    - cell "Н" [ref=f3e297] [cursor=pointer]
+                    - cell "Г" [ref=f3e298] [cursor=pointer]
+                    - cell "Н" [ref=f3e299] [cursor=pointer]
+                    - cell "Р" [ref=f3e300] [cursor=pointer]
+                  - row "Fe²⁺ Н Р Р Р Р Н Н Р Р Н Н Н Р" [ref=f3e301]:
+                    - rowheader "Fe²⁺" [ref=f3e302] [cursor=pointer]
+                    - cell "Н" [ref=f3e303] [cursor=pointer]
+                    - cell "Р" [ref=f3e304] [cursor=pointer]
+                    - cell "Р" [ref=f3e305] [cursor=pointer]
+                    - cell "Р" [ref=f3e306] [cursor=pointer]
+                    - cell "Р" [ref=f3e307] [cursor=pointer]
+                    - cell "Н" [ref=f3e308] [cursor=pointer]
+                    - cell "Н" [ref=f3e309] [cursor=pointer]
+                    - cell "Р" [ref=f3e310] [cursor=pointer]
+                    - cell "Р" [ref=f3e311] [cursor=pointer]
+                    - cell "Н" [ref=f3e312] [cursor=pointer]
+                    - cell "Н" [ref=f3e313] [cursor=pointer]
+                    - cell "Н" [ref=f3e314] [cursor=pointer]
+                    - cell "Р" [ref=f3e315] [cursor=pointer]
+                  - row "Fe³⁺ Н Р Р Р Р Г Н Р Р Н Г Н Р" [ref=f3e316]:
+                    - rowheader "Fe³⁺" [ref=f3e317] [cursor=pointer]
+                    - cell "Н" [ref=f3e318] [cursor=pointer]
+                    - cell "Р" [ref=f3e319] [cursor=pointer]
+                    - cell "Р" [ref=f3e320] [cursor=pointer]
+                    - cell "Р" [ref=f3e321] [cursor=pointer]
+                    - cell "Р" [ref=f3e322] [cursor=pointer]
+                    - cell "Г" [ref=f3e323] [cursor=pointer]
+                    - cell "Н" [ref=f3e324] [cursor=pointer]
+                    - cell "Р" [ref=f3e325] [cursor=pointer]
+                    - cell "Р" [ref=f3e326] [cursor=pointer]
+                    - cell "Н" [ref=f3e327] [cursor=pointer]
+                    - cell "Г" [ref=f3e328] [cursor=pointer]
+                    - cell "Н" [ref=f3e329] [cursor=pointer]
+                    - cell "Р" [ref=f3e330] [cursor=pointer]
+              - complementary [ref=f3e331]:
+                - generic [ref=f3e332]: Кликни на любую ячейку, чтобы увидеть свойства соли — растворимость, цвет, типичную реакцию получения и связь с задачей ОГЭ-23.
+            - paragraph [ref=f3e333]: Таблица составлена по справочнику для ОГЭ-2026. «Качественные реакции» отмечены тонкой рамкой — это пары, которые часто используются на экзамене для доказательства катионов и анионов.
+  - alert [ref=e26]

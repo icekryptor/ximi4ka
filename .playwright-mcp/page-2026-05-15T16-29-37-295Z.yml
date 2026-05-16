@@ -1,0 +1,726 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "XimiLearn" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e6]
+          - generic [ref=e8]: XimiLearn
+        - navigation [ref=e9]:
+          - link "Главная" [ref=e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "ОГЭ" [ref=e11] [cursor=pointer]:
+            - /url: /learn/oge
+          - link "Тулы" [ref=e12] [cursor=pointer]:
+            - /url: /tools
+          - link "Рейтинг" [ref=e13] [cursor=pointer]:
+            - /url: /leaderboard
+        - link "БИ Без имени" [ref=e15] [cursor=pointer]:
+          - /url: /profile
+          - generic [ref=e16]: БИ
+          - generic [ref=e17]: Без имени
+    - main [ref=e18]:
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - link "Инструменты" [ref=e21] [cursor=pointer]:
+            - /url: /tools
+          - generic [ref=e22]: /
+          - generic [ref=e23]: Таблица Менделеева
+        - heading "Таблица Менделеева" [level=1] [ref=e24]
+        - iframe [ref=e25]:
+          - generic [ref=f2e2]:
+            - banner [ref=f2e3]:
+              - generic [ref=f2e4]:
+                - generic [ref=f2e5]: 118 элементов
+                - heading "Интерактивная таблица Менделеева" [level=1] [ref=f2e6]
+            - generic [ref=f2e7]:
+              - 'textbox "Поиск: H, гелий, 26..." [ref=f2e8]'
+              - generic [ref=f2e9]:
+                - button "Все" [ref=f2e10] [cursor=pointer]
+                - button "Щелочные" [ref=f2e11] [cursor=pointer]
+                - button "Щ.-земельные" [ref=f2e12] [cursor=pointer]
+                - button "Переходные" [ref=f2e13] [cursor=pointer]
+                - button "Постпереходные" [ref=f2e14] [cursor=pointer]
+                - button "Металлоиды" [ref=f2e15] [cursor=pointer]
+                - button "Неметаллы" [ref=f2e16] [cursor=pointer]
+                - button "Галогены" [ref=f2e17] [cursor=pointer]
+                - button "Благ. газы" [ref=f2e18] [cursor=pointer]
+                - button "Лантаноиды" [ref=f2e19] [cursor=pointer]
+                - button "Актиноиды" [ref=f2e20] [cursor=pointer]
+              - generic [ref=f2e21]:
+                - button "Современная" [ref=f2e22] [cursor=pointer]
+                - button "Старая (А/Б)" [ref=f2e23] [cursor=pointer]
+                - button "Компактно" [ref=f2e24] [cursor=pointer]
+                - button "RU" [ref=f2e25] [cursor=pointer]
+            - generic [ref=f2e26]:
+              - generic [ref=f2e27]:
+                - generic [ref=f2e28]:
+                  - generic [ref=f2e29]: ↓ Период · Группа →
+                  - generic [ref=f2e30]: "1"
+                  - generic [ref=f2e31]: "2"
+                  - generic [ref=f2e32]: "3"
+                  - generic [ref=f2e33]: "4"
+                  - generic [ref=f2e34]: "5"
+                  - generic [ref=f2e35]: "6"
+                  - generic [ref=f2e36]: "7"
+                  - generic [ref=f2e37]: "8"
+                  - generic [ref=f2e38]: "9"
+                  - generic [ref=f2e39]: "10"
+                  - generic [ref=f2e40]: "11"
+                  - generic [ref=f2e41]: "12"
+                  - generic [ref=f2e42]: "13"
+                  - generic [ref=f2e43]: "14"
+                  - generic [ref=f2e44]: "15"
+                  - generic [ref=f2e45]: "16"
+                  - generic [ref=f2e46]: "17"
+                  - generic [ref=f2e47]: "18"
+                  - generic [ref=f2e48]: "1"
+                  - button "1 H 1.008 Водород" [ref=f2e49] [cursor=pointer]:
+                    - generic [ref=f2e50]: "1"
+                    - generic [ref=f2e51]: H
+                    - generic [ref=f2e52]: "1.008"
+                    - generic: Водород
+                  - button "2 He 4.0026 Гелий" [ref=f2e69] [cursor=pointer]:
+                    - generic [ref=f2e70]: "2"
+                    - generic [ref=f2e71]: He
+                    - generic [ref=f2e72]: "4.0026"
+                    - generic: Гелий
+                  - generic [ref=f2e73]: "2"
+                  - button "3 Li 6.94 Литий" [ref=f2e74] [cursor=pointer]:
+                    - generic [ref=f2e75]: "3"
+                    - generic [ref=f2e76]: Li
+                    - generic [ref=f2e77]: "6.94"
+                    - generic: Литий
+                  - button "4 Be 9.0122 Бериллий" [ref=f2e78] [cursor=pointer]:
+                    - generic [ref=f2e79]: "4"
+                    - generic [ref=f2e80]: Be
+                    - generic [ref=f2e81]: "9.0122"
+                    - generic: Бериллий
+                  - button "5 B 10.81 Бор" [ref=f2e92] [cursor=pointer]:
+                    - generic [ref=f2e93]: "5"
+                    - generic [ref=f2e94]: B
+                    - generic [ref=f2e95]: "10.81"
+                    - generic: Бор
+                  - button "6 C 12.011 Углерод" [ref=f2e96] [cursor=pointer]:
+                    - generic [ref=f2e97]: "6"
+                    - generic [ref=f2e98]: C
+                    - generic [ref=f2e99]: "12.011"
+                    - generic: Углерод
+                  - button "7 N 14.007 Азот" [ref=f2e100] [cursor=pointer]:
+                    - generic [ref=f2e101]: "7"
+                    - generic [ref=f2e102]: "N"
+                    - generic [ref=f2e103]: "14.007"
+                    - generic: Азот
+                  - button "8 O 15.999 Кислород" [ref=f2e104] [cursor=pointer]:
+                    - generic [ref=f2e105]: "8"
+                    - generic [ref=f2e106]: O
+                    - generic [ref=f2e107]: "15.999"
+                    - generic: Кислород
+                  - button "9 F 18.998 Фтор" [ref=f2e108] [cursor=pointer]:
+                    - generic [ref=f2e109]: "9"
+                    - generic [ref=f2e110]: F
+                    - generic [ref=f2e111]: "18.998"
+                    - generic: Фтор
+                  - button "10 Ne 20.18 Неон" [ref=f2e112] [cursor=pointer]:
+                    - generic [ref=f2e113]: "10"
+                    - generic [ref=f2e114]: Ne
+                    - generic [ref=f2e115]: "20.18"
+                    - generic: Неон
+                  - generic [ref=f2e116]: "3"
+                  - button "11 Na 22.99 Натрий" [ref=f2e117] [cursor=pointer]:
+                    - generic [ref=f2e118]: "11"
+                    - generic [ref=f2e119]: Na
+                    - generic [ref=f2e120]: "22.99"
+                    - generic: Натрий
+                  - button "12 Mg 24.305 Магний" [ref=f2e121] [cursor=pointer]:
+                    - generic [ref=f2e122]: "12"
+                    - generic [ref=f2e123]: Mg
+                    - generic [ref=f2e124]: "24.305"
+                    - generic: Магний
+                  - button "13 Al 26.982 Алюминий" [ref=f2e135] [cursor=pointer]:
+                    - generic [ref=f2e136]: "13"
+                    - generic [ref=f2e137]: Al
+                    - generic [ref=f2e138]: "26.982"
+                    - generic: Алюминий
+                  - button "14 Si 28.085 Кремний" [ref=f2e139] [cursor=pointer]:
+                    - generic [ref=f2e140]: "14"
+                    - generic [ref=f2e141]: Si
+                    - generic [ref=f2e142]: "28.085"
+                    - generic: Кремний
+                  - button "15 P 30.974 Фосфор" [ref=f2e143] [cursor=pointer]:
+                    - generic [ref=f2e144]: "15"
+                    - generic [ref=f2e145]: P
+                    - generic [ref=f2e146]: "30.974"
+                    - generic: Фосфор
+                  - button "16 S 32.06 Сера" [ref=f2e147] [cursor=pointer]:
+                    - generic [ref=f2e148]: "16"
+                    - generic [ref=f2e149]: S
+                    - generic [ref=f2e150]: "32.06"
+                    - generic: Сера
+                  - button "17 Cl 35.45 Хлор" [ref=f2e151] [cursor=pointer]:
+                    - generic [ref=f2e152]: "17"
+                    - generic [ref=f2e153]: Cl
+                    - generic [ref=f2e154]: "35.45"
+                    - generic: Хлор
+                  - button "18 Ar 39.948 Аргон" [ref=f2e155] [cursor=pointer]:
+                    - generic [ref=f2e156]: "18"
+                    - generic [ref=f2e157]: Ar
+                    - generic [ref=f2e158]: "39.948"
+                    - generic: Аргон
+                  - generic [ref=f2e159]: "4"
+                  - button "19 K 39.098 Калий" [ref=f2e160] [cursor=pointer]:
+                    - generic [ref=f2e161]: "19"
+                    - generic [ref=f2e162]: K
+                    - generic [ref=f2e163]: "39.098"
+                    - generic: Калий
+                  - button "20 Ca 40.078 Кальций" [ref=f2e164] [cursor=pointer]:
+                    - generic [ref=f2e165]: "20"
+                    - generic [ref=f2e166]: Ca
+                    - generic [ref=f2e167]: "40.078"
+                    - generic: Кальций
+                  - button "21 Sc 44.956 Скандий" [ref=f2e168] [cursor=pointer]:
+                    - generic [ref=f2e169]: "21"
+                    - generic [ref=f2e170]: Sc
+                    - generic [ref=f2e171]: "44.956"
+                    - generic: Скандий
+                  - button "22 Ti 47.867 Титан" [ref=f2e172] [cursor=pointer]:
+                    - generic [ref=f2e173]: "22"
+                    - generic [ref=f2e174]: Ti
+                    - generic [ref=f2e175]: "47.867"
+                    - generic: Титан
+                  - button "23 V 50.942 Ванадий" [ref=f2e176] [cursor=pointer]:
+                    - generic [ref=f2e177]: "23"
+                    - generic [ref=f2e178]: V
+                    - generic [ref=f2e179]: "50.942"
+                    - generic: Ванадий
+                  - button "24 Cr 51.996 Хром" [ref=f2e180] [cursor=pointer]:
+                    - generic [ref=f2e181]: "24"
+                    - generic [ref=f2e182]: Cr
+                    - generic [ref=f2e183]: "51.996"
+                    - generic: Хром
+                  - button "25 Mn 54.938 Марганец" [ref=f2e184] [cursor=pointer]:
+                    - generic [ref=f2e185]: "25"
+                    - generic [ref=f2e186]: Mn
+                    - generic [ref=f2e187]: "54.938"
+                    - generic: Марганец
+                  - button "26 Fe 55.845 Железо" [ref=f2e188] [cursor=pointer]:
+                    - generic [ref=f2e189]: "26"
+                    - generic [ref=f2e190]: Fe
+                    - generic [ref=f2e191]: "55.845"
+                    - generic: Железо
+                  - button "27 Co 58.933 Кобальт" [ref=f2e192] [cursor=pointer]:
+                    - generic [ref=f2e193]: "27"
+                    - generic [ref=f2e194]: Co
+                    - generic [ref=f2e195]: "58.933"
+                    - generic: Кобальт
+                  - button "28 Ni 58.693 Никель" [ref=f2e196] [cursor=pointer]:
+                    - generic [ref=f2e197]: "28"
+                    - generic [ref=f2e198]: Ni
+                    - generic [ref=f2e199]: "58.693"
+                    - generic: Никель
+                  - button "29 Cu 63.546 Медь" [ref=f2e200] [cursor=pointer]:
+                    - generic [ref=f2e201]: "29"
+                    - generic [ref=f2e202]: Cu
+                    - generic [ref=f2e203]: "63.546"
+                    - generic: Медь
+                  - button "30 Zn 65.38 Цинк" [ref=f2e204] [cursor=pointer]:
+                    - generic [ref=f2e205]: "30"
+                    - generic [ref=f2e206]: Zn
+                    - generic [ref=f2e207]: "65.38"
+                    - generic: Цинк
+                  - button "31 Ga 69.723 Галлий" [ref=f2e208] [cursor=pointer]:
+                    - generic [ref=f2e209]: "31"
+                    - generic [ref=f2e210]: Ga
+                    - generic [ref=f2e211]: "69.723"
+                    - generic: Галлий
+                  - button "32 Ge 72.63 Германий" [ref=f2e212] [cursor=pointer]:
+                    - generic [ref=f2e213]: "32"
+                    - generic [ref=f2e214]: Ge
+                    - generic [ref=f2e215]: "72.63"
+                    - generic: Германий
+                  - button "33 As 74.922 Мышьяк" [ref=f2e216] [cursor=pointer]:
+                    - generic [ref=f2e217]: "33"
+                    - generic [ref=f2e218]: As
+                    - generic [ref=f2e219]: "74.922"
+                    - generic: Мышьяк
+                  - button "34 Se 78.971 Селен" [ref=f2e220] [cursor=pointer]:
+                    - generic [ref=f2e221]: "34"
+                    - generic [ref=f2e222]: Se
+                    - generic [ref=f2e223]: "78.971"
+                    - generic: Селен
+                  - button "35 Br 79.904 Бром" [ref=f2e224] [cursor=pointer]:
+                    - generic [ref=f2e225]: "35"
+                    - generic [ref=f2e226]: Br
+                    - generic [ref=f2e227]: "79.904"
+                    - generic: Бром
+                  - button "36 Kr 83.798 Криптон" [ref=f2e228] [cursor=pointer]:
+                    - generic [ref=f2e229]: "36"
+                    - generic [ref=f2e230]: Kr
+                    - generic [ref=f2e231]: "83.798"
+                    - generic: Криптон
+                  - generic [ref=f2e232]: "5"
+                  - button "37 Rb 85.468 Рубидий" [ref=f2e233] [cursor=pointer]:
+                    - generic [ref=f2e234]: "37"
+                    - generic [ref=f2e235]: Rb
+                    - generic [ref=f2e236]: "85.468"
+                    - generic: Рубидий
+                  - button "38 Sr 87.62 Стронций" [ref=f2e237] [cursor=pointer]:
+                    - generic [ref=f2e238]: "38"
+                    - generic [ref=f2e239]: Sr
+                    - generic [ref=f2e240]: "87.62"
+                    - generic: Стронций
+                  - button "39 Y 88.906 Иттрий" [ref=f2e241] [cursor=pointer]:
+                    - generic [ref=f2e242]: "39"
+                    - generic [ref=f2e243]: "Y"
+                    - generic [ref=f2e244]: "88.906"
+                    - generic: Иттрий
+                  - button "40 Zr 91.224 Цирконий" [ref=f2e245] [cursor=pointer]:
+                    - generic [ref=f2e246]: "40"
+                    - generic [ref=f2e247]: Zr
+                    - generic [ref=f2e248]: "91.224"
+                    - generic: Цирконий
+                  - button "41 Nb 92.906 Ниобий" [ref=f2e249] [cursor=pointer]:
+                    - generic [ref=f2e250]: "41"
+                    - generic [ref=f2e251]: Nb
+                    - generic [ref=f2e252]: "92.906"
+                    - generic: Ниобий
+                  - button "42 Mo 95.95 Молибден" [ref=f2e253] [cursor=pointer]:
+                    - generic [ref=f2e254]: "42"
+                    - generic [ref=f2e255]: Mo
+                    - generic [ref=f2e256]: "95.95"
+                    - generic: Молибден
+                  - button "43 Tc 98 Технеций" [ref=f2e257] [cursor=pointer]:
+                    - generic [ref=f2e258]: "43"
+                    - generic [ref=f2e259]: Tc
+                    - generic [ref=f2e260]: "98"
+                    - generic: Технеций
+                  - button "44 Ru 101.07 Рутений" [ref=f2e261] [cursor=pointer]:
+                    - generic [ref=f2e262]: "44"
+                    - generic [ref=f2e263]: Ru
+                    - generic [ref=f2e264]: "101.07"
+                    - generic: Рутений
+                  - button "45 Rh 102.91 Родий" [ref=f2e265] [cursor=pointer]:
+                    - generic [ref=f2e266]: "45"
+                    - generic [ref=f2e267]: Rh
+                    - generic [ref=f2e268]: "102.91"
+                    - generic: Родий
+                  - button "46 Pd 106.42 Палладий" [ref=f2e269] [cursor=pointer]:
+                    - generic [ref=f2e270]: "46"
+                    - generic [ref=f2e271]: Pd
+                    - generic [ref=f2e272]: "106.42"
+                    - generic: Палладий
+                  - button "47 Ag 107.87 Серебро" [ref=f2e273] [cursor=pointer]:
+                    - generic [ref=f2e274]: "47"
+                    - generic [ref=f2e275]: Ag
+                    - generic [ref=f2e276]: "107.87"
+                    - generic: Серебро
+                  - button "48 Cd 112.41 Кадмий" [ref=f2e277] [cursor=pointer]:
+                    - generic [ref=f2e278]: "48"
+                    - generic [ref=f2e279]: Cd
+                    - generic [ref=f2e280]: "112.41"
+                    - generic: Кадмий
+                  - button "49 In 114.82 Индий" [ref=f2e281] [cursor=pointer]:
+                    - generic [ref=f2e282]: "49"
+                    - generic [ref=f2e283]: In
+                    - generic [ref=f2e284]: "114.82"
+                    - generic: Индий
+                  - button "50 Sn 118.71 Олово" [ref=f2e285] [cursor=pointer]:
+                    - generic [ref=f2e286]: "50"
+                    - generic [ref=f2e287]: Sn
+                    - generic [ref=f2e288]: "118.71"
+                    - generic: Олово
+                  - button "51 Sb 121.76 Сурьма" [ref=f2e289] [cursor=pointer]:
+                    - generic [ref=f2e290]: "51"
+                    - generic [ref=f2e291]: Sb
+                    - generic [ref=f2e292]: "121.76"
+                    - generic: Сурьма
+                  - button "52 Te 127.6 Теллур" [ref=f2e293] [cursor=pointer]:
+                    - generic [ref=f2e294]: "52"
+                    - generic [ref=f2e295]: Te
+                    - generic [ref=f2e296]: "127.6"
+                    - generic: Теллур
+                  - button "53 I 126.9 Иод" [ref=f2e297] [cursor=pointer]:
+                    - generic [ref=f2e298]: "53"
+                    - generic [ref=f2e299]: I
+                    - generic [ref=f2e300]: "126.9"
+                    - generic: Иод
+                  - button "54 Xe 131.29 Ксенон" [ref=f2e301] [cursor=pointer]:
+                    - generic [ref=f2e302]: "54"
+                    - generic [ref=f2e303]: Xe
+                    - generic [ref=f2e304]: "131.29"
+                    - generic: Ксенон
+                  - generic [ref=f2e305]: "6"
+                  - button "55 Cs 132.91 Цезий" [ref=f2e306] [cursor=pointer]:
+                    - generic [ref=f2e307]: "55"
+                    - generic [ref=f2e308]: Cs
+                    - generic [ref=f2e309]: "132.91"
+                    - generic: Цезий
+                  - button "56 Ba 137.33 Барий" [ref=f2e310] [cursor=pointer]:
+                    - generic [ref=f2e311]: "56"
+                    - generic [ref=f2e312]: Ba
+                    - generic [ref=f2e313]: "137.33"
+                    - generic: Барий
+                  - generic [ref=f2e314]: 57-71
+                  - button "72 Hf 178.49 Гафний" [ref=f2e315] [cursor=pointer]:
+                    - generic [ref=f2e316]: "72"
+                    - generic [ref=f2e317]: Hf
+                    - generic [ref=f2e318]: "178.49"
+                    - generic: Гафний
+                  - button "73 Ta 180.95 Тантал" [ref=f2e319] [cursor=pointer]:
+                    - generic [ref=f2e320]: "73"
+                    - generic [ref=f2e321]: Ta
+                    - generic [ref=f2e322]: "180.95"
+                    - generic: Тантал
+                  - button "74 W 183.84 Вольфрам" [ref=f2e323] [cursor=pointer]:
+                    - generic [ref=f2e324]: "74"
+                    - generic [ref=f2e325]: W
+                    - generic [ref=f2e326]: "183.84"
+                    - generic: Вольфрам
+                  - button "75 Re 186.21 Рений" [ref=f2e327] [cursor=pointer]:
+                    - generic [ref=f2e328]: "75"
+                    - generic [ref=f2e329]: Re
+                    - generic [ref=f2e330]: "186.21"
+                    - generic: Рений
+                  - button "76 Os 190.23 Осмий" [ref=f2e331] [cursor=pointer]:
+                    - generic [ref=f2e332]: "76"
+                    - generic [ref=f2e333]: Os
+                    - generic [ref=f2e334]: "190.23"
+                    - generic: Осмий
+                  - button "77 Ir 192.22 Иридий" [ref=f2e335] [cursor=pointer]:
+                    - generic [ref=f2e336]: "77"
+                    - generic [ref=f2e337]: Ir
+                    - generic [ref=f2e338]: "192.22"
+                    - generic: Иридий
+                  - button "78 Pt 195.08 Платина" [ref=f2e339] [cursor=pointer]:
+                    - generic [ref=f2e340]: "78"
+                    - generic [ref=f2e341]: Pt
+                    - generic [ref=f2e342]: "195.08"
+                    - generic: Платина
+                  - button "79 Au 196.97 Золото" [ref=f2e343] [cursor=pointer]:
+                    - generic [ref=f2e344]: "79"
+                    - generic [ref=f2e345]: Au
+                    - generic [ref=f2e346]: "196.97"
+                    - generic: Золото
+                  - button "80 Hg 200.59 Ртуть" [ref=f2e347] [cursor=pointer]:
+                    - generic [ref=f2e348]: "80"
+                    - generic [ref=f2e349]: Hg
+                    - generic [ref=f2e350]: "200.59"
+                    - generic: Ртуть
+                  - button "81 Tl 204.38 Таллий" [ref=f2e351] [cursor=pointer]:
+                    - generic [ref=f2e352]: "81"
+                    - generic [ref=f2e353]: Tl
+                    - generic [ref=f2e354]: "204.38"
+                    - generic: Таллий
+                  - button "82 Pb 207.2 Свинец" [ref=f2e355] [cursor=pointer]:
+                    - generic [ref=f2e356]: "82"
+                    - generic [ref=f2e357]: Pb
+                    - generic [ref=f2e358]: "207.2"
+                    - generic: Свинец
+                  - button "83 Bi 208.98 Висмут" [ref=f2e359] [cursor=pointer]:
+                    - generic [ref=f2e360]: "83"
+                    - generic [ref=f2e361]: Bi
+                    - generic [ref=f2e362]: "208.98"
+                    - generic: Висмут
+                  - button "84 Po 209 Полоний" [ref=f2e363] [cursor=pointer]:
+                    - generic [ref=f2e364]: "84"
+                    - generic [ref=f2e365]: Po
+                    - generic [ref=f2e366]: "209"
+                    - generic: Полоний
+                  - button "85 At 210 Астат" [ref=f2e367] [cursor=pointer]:
+                    - generic [ref=f2e368]: "85"
+                    - generic [ref=f2e369]: At
+                    - generic [ref=f2e370]: "210"
+                    - generic: Астат
+                  - button "86 Rn 222 Радон" [ref=f2e371] [cursor=pointer]:
+                    - generic [ref=f2e372]: "86"
+                    - generic [ref=f2e373]: Rn
+                    - generic [ref=f2e374]: "222"
+                    - generic: Радон
+                  - generic [ref=f2e375]: "7"
+                  - button "87 Fr 223 Франций" [ref=f2e376] [cursor=pointer]:
+                    - generic [ref=f2e377]: "87"
+                    - generic [ref=f2e378]: Fr
+                    - generic [ref=f2e379]: "223"
+                    - generic: Франций
+                  - button "88 Ra 226 Радий" [ref=f2e380] [cursor=pointer]:
+                    - generic [ref=f2e381]: "88"
+                    - generic [ref=f2e382]: Ra
+                    - generic [ref=f2e383]: "226"
+                    - generic: Радий
+                  - generic [ref=f2e384]: 89-103
+                  - button "104 Rf 267 Резерфордий" [ref=f2e385] [cursor=pointer]:
+                    - generic [ref=f2e386]: "104"
+                    - generic [ref=f2e387]: Rf
+                    - generic [ref=f2e388]: "267"
+                    - generic: Резерфордий
+                  - button "105 Db 268 Дубний" [ref=f2e389] [cursor=pointer]:
+                    - generic [ref=f2e390]: "105"
+                    - generic [ref=f2e391]: Db
+                    - generic [ref=f2e392]: "268"
+                    - generic: Дубний
+                  - button "106 Sg 269 Сиборгий" [ref=f2e393] [cursor=pointer]:
+                    - generic [ref=f2e394]: "106"
+                    - generic [ref=f2e395]: Sg
+                    - generic [ref=f2e396]: "269"
+                    - generic: Сиборгий
+                  - button "107 Bh 270 Борий" [ref=f2e397] [cursor=pointer]:
+                    - generic [ref=f2e398]: "107"
+                    - generic [ref=f2e399]: Bh
+                    - generic [ref=f2e400]: "270"
+                    - generic: Борий
+                  - button "108 Hs 269 Хассий" [ref=f2e401] [cursor=pointer]:
+                    - generic [ref=f2e402]: "108"
+                    - generic [ref=f2e403]: Hs
+                    - generic [ref=f2e404]: "269"
+                    - generic: Хассий
+                  - button "109 Mt 278 Мейтнерий" [ref=f2e405] [cursor=pointer]:
+                    - generic [ref=f2e406]: "109"
+                    - generic [ref=f2e407]: Mt
+                    - generic [ref=f2e408]: "278"
+                    - generic: Мейтнерий
+                  - button "110 Ds 281 Дармштадтий" [ref=f2e409] [cursor=pointer]:
+                    - generic [ref=f2e410]: "110"
+                    - generic [ref=f2e411]: Ds
+                    - generic [ref=f2e412]: "281"
+                    - generic: Дармштадтий
+                  - button "111 Rg 282 Рентгений" [ref=f2e413] [cursor=pointer]:
+                    - generic [ref=f2e414]: "111"
+                    - generic [ref=f2e415]: Rg
+                    - generic [ref=f2e416]: "282"
+                    - generic: Рентгений
+                  - button "112 Cn 285 Коперниций" [ref=f2e417] [cursor=pointer]:
+                    - generic [ref=f2e418]: "112"
+                    - generic [ref=f2e419]: Cn
+                    - generic [ref=f2e420]: "285"
+                    - generic: Коперниций
+                  - button "113 Nh 286 Нихоний" [ref=f2e421] [cursor=pointer]:
+                    - generic [ref=f2e422]: "113"
+                    - generic [ref=f2e423]: Nh
+                    - generic [ref=f2e424]: "286"
+                    - generic: Нихоний
+                  - button "114 Fl 289 Флеровий" [ref=f2e425] [cursor=pointer]:
+                    - generic [ref=f2e426]: "114"
+                    - generic [ref=f2e427]: Fl
+                    - generic [ref=f2e428]: "289"
+                    - generic: Флеровий
+                  - button "115 Mc 290 Московий" [ref=f2e429] [cursor=pointer]:
+                    - generic [ref=f2e430]: "115"
+                    - generic [ref=f2e431]: Mc
+                    - generic [ref=f2e432]: "290"
+                    - generic: Московий
+                  - button "116 Lv 293 Ливерморий" [ref=f2e433] [cursor=pointer]:
+                    - generic [ref=f2e434]: "116"
+                    - generic [ref=f2e435]: Lv
+                    - generic [ref=f2e436]: "293"
+                    - generic: Ливерморий
+                  - button "117 Ts 294 Теннессин" [ref=f2e437] [cursor=pointer]:
+                    - generic [ref=f2e438]: "117"
+                    - generic [ref=f2e439]: Ts
+                    - generic [ref=f2e440]: "294"
+                    - generic: Теннессин
+                  - button "118 Og 294 Оганесон" [ref=f2e441] [cursor=pointer]:
+                    - generic [ref=f2e442]: "118"
+                    - generic [ref=f2e443]: Og
+                    - generic [ref=f2e444]: "294"
+                    - generic: Оганесон
+                - generic [ref=f2e445]:
+                  - generic [ref=f2e446]: "*"
+                  - button "57 La 138.91 Лантан" [ref=f2e450] [cursor=pointer]:
+                    - generic [ref=f2e451]: "57"
+                    - generic [ref=f2e452]: La
+                    - generic [ref=f2e453]: "138.91"
+                    - generic: Лантан
+                  - button "58 Ce 140.12 Церий" [ref=f2e454] [cursor=pointer]:
+                    - generic [ref=f2e455]: "58"
+                    - generic [ref=f2e456]: Ce
+                    - generic [ref=f2e457]: "140.12"
+                    - generic: Церий
+                  - button "59 Pr 140.91 Празеодим" [ref=f2e458] [cursor=pointer]:
+                    - generic [ref=f2e459]: "59"
+                    - generic [ref=f2e460]: Pr
+                    - generic [ref=f2e461]: "140.91"
+                    - generic: Празеодим
+                  - button "60 Nd 144.24 Неодим" [ref=f2e462] [cursor=pointer]:
+                    - generic [ref=f2e463]: "60"
+                    - generic [ref=f2e464]: Nd
+                    - generic [ref=f2e465]: "144.24"
+                    - generic: Неодим
+                  - button "61 Pm 145 Прометий" [ref=f2e466] [cursor=pointer]:
+                    - generic [ref=f2e467]: "61"
+                    - generic [ref=f2e468]: Pm
+                    - generic [ref=f2e469]: "145"
+                    - generic: Прометий
+                  - button "62 Sm 150.36 Самарий" [ref=f2e470] [cursor=pointer]:
+                    - generic [ref=f2e471]: "62"
+                    - generic [ref=f2e472]: Sm
+                    - generic [ref=f2e473]: "150.36"
+                    - generic: Самарий
+                  - button "63 Eu 151.96 Европий" [ref=f2e474] [cursor=pointer]:
+                    - generic [ref=f2e475]: "63"
+                    - generic [ref=f2e476]: Eu
+                    - generic [ref=f2e477]: "151.96"
+                    - generic: Европий
+                  - button "64 Gd 157.25 Гадолиний" [ref=f2e478] [cursor=pointer]:
+                    - generic [ref=f2e479]: "64"
+                    - generic [ref=f2e480]: Gd
+                    - generic [ref=f2e481]: "157.25"
+                    - generic: Гадолиний
+                  - button "65 Tb 158.93 Тербий" [ref=f2e482] [cursor=pointer]:
+                    - generic [ref=f2e483]: "65"
+                    - generic [ref=f2e484]: Tb
+                    - generic [ref=f2e485]: "158.93"
+                    - generic: Тербий
+                  - button "66 Dy 162.5 Диспрозий" [ref=f2e486] [cursor=pointer]:
+                    - generic [ref=f2e487]: "66"
+                    - generic [ref=f2e488]: Dy
+                    - generic [ref=f2e489]: "162.5"
+                    - generic: Диспрозий
+                  - button "67 Ho 164.93 Гольмий" [ref=f2e490] [cursor=pointer]:
+                    - generic [ref=f2e491]: "67"
+                    - generic [ref=f2e492]: Ho
+                    - generic [ref=f2e493]: "164.93"
+                    - generic: Гольмий
+                  - button "68 Er 167.26 Эрбий" [ref=f2e494] [cursor=pointer]:
+                    - generic [ref=f2e495]: "68"
+                    - generic [ref=f2e496]: Er
+                    - generic [ref=f2e497]: "167.26"
+                    - generic: Эрбий
+                  - button "69 Tm 168.93 Тулий" [ref=f2e498] [cursor=pointer]:
+                    - generic [ref=f2e499]: "69"
+                    - generic [ref=f2e500]: Tm
+                    - generic [ref=f2e501]: "168.93"
+                    - generic: Тулий
+                  - button "70 Yb 173.05 Иттербий" [ref=f2e502] [cursor=pointer]:
+                    - generic [ref=f2e503]: "70"
+                    - generic [ref=f2e504]: Yb
+                    - generic [ref=f2e505]: "173.05"
+                    - generic: Иттербий
+                  - button "71 Lu 174.97 Лютеций" [ref=f2e506] [cursor=pointer]:
+                    - generic [ref=f2e507]: "71"
+                    - generic [ref=f2e508]: Lu
+                    - generic [ref=f2e509]: "174.97"
+                    - generic: Лютеций
+                  - generic [ref=f2e510]: "**"
+                  - button "89 Ac 227 Актиний" [ref=f2e514] [cursor=pointer]:
+                    - generic [ref=f2e515]: "89"
+                    - generic [ref=f2e516]: Ac
+                    - generic [ref=f2e517]: "227"
+                    - generic: Актиний
+                  - button "90 Th 232.04 Торий" [ref=f2e518] [cursor=pointer]:
+                    - generic [ref=f2e519]: "90"
+                    - generic [ref=f2e520]: Th
+                    - generic [ref=f2e521]: "232.04"
+                    - generic: Торий
+                  - button "91 Pa 231.04 Протактиний" [ref=f2e522] [cursor=pointer]:
+                    - generic [ref=f2e523]: "91"
+                    - generic [ref=f2e524]: Pa
+                    - generic [ref=f2e525]: "231.04"
+                    - generic: Протактиний
+                  - button "92 U 238.03 Уран" [ref=f2e526] [cursor=pointer]:
+                    - generic [ref=f2e527]: "92"
+                    - generic [ref=f2e528]: U
+                    - generic [ref=f2e529]: "238.03"
+                    - generic: Уран
+                  - button "93 Np 237 Нептуний" [ref=f2e530] [cursor=pointer]:
+                    - generic [ref=f2e531]: "93"
+                    - generic [ref=f2e532]: Np
+                    - generic [ref=f2e533]: "237"
+                    - generic: Нептуний
+                  - button "94 Pu 244 Плутоний" [ref=f2e534] [cursor=pointer]:
+                    - generic [ref=f2e535]: "94"
+                    - generic [ref=f2e536]: Pu
+                    - generic [ref=f2e537]: "244"
+                    - generic: Плутоний
+                  - button "95 Am 243 Америций" [ref=f2e538] [cursor=pointer]:
+                    - generic [ref=f2e539]: "95"
+                    - generic [ref=f2e540]: Am
+                    - generic [ref=f2e541]: "243"
+                    - generic: Америций
+                  - button "96 Cm 247 Кюрий" [ref=f2e542] [cursor=pointer]:
+                    - generic [ref=f2e543]: "96"
+                    - generic [ref=f2e544]: Cm
+                    - generic [ref=f2e545]: "247"
+                    - generic: Кюрий
+                  - button "97 Bk 247 Берклий" [ref=f2e546] [cursor=pointer]:
+                    - generic [ref=f2e547]: "97"
+                    - generic [ref=f2e548]: Bk
+                    - generic [ref=f2e549]: "247"
+                    - generic: Берклий
+                  - button "98 Cf 251 Калифорний" [ref=f2e550] [cursor=pointer]:
+                    - generic [ref=f2e551]: "98"
+                    - generic [ref=f2e552]: Cf
+                    - generic [ref=f2e553]: "251"
+                    - generic: Калифорний
+                  - button "99 Es 252 Эйнштейний" [ref=f2e554] [cursor=pointer]:
+                    - generic [ref=f2e555]: "99"
+                    - generic [ref=f2e556]: Es
+                    - generic [ref=f2e557]: "252"
+                    - generic: Эйнштейний
+                  - button "100 Fm 257 Фермий" [ref=f2e558] [cursor=pointer]:
+                    - generic [ref=f2e559]: "100"
+                    - generic [ref=f2e560]: Fm
+                    - generic [ref=f2e561]: "257"
+                    - generic: Фермий
+                  - button "101 Md 258 Менделевий" [ref=f2e562] [cursor=pointer]:
+                    - generic [ref=f2e563]: "101"
+                    - generic [ref=f2e564]: Md
+                    - generic [ref=f2e565]: "258"
+                    - generic: Менделевий
+                  - button "102 No 259 Нобелий" [ref=f2e566] [cursor=pointer]:
+                    - generic [ref=f2e567]: "102"
+                    - generic [ref=f2e568]: "No"
+                    - generic [ref=f2e569]: "259"
+                    - generic: Нобелий
+                  - button "103 Lr 266 Лоуренсий" [ref=f2e570] [cursor=pointer]:
+                    - generic [ref=f2e571]: "103"
+                    - generic [ref=f2e572]: Lr
+                    - generic [ref=f2e573]: "266"
+                    - generic: Лоуренсий
+              - complementary [ref=f2e574]:
+                - generic [ref=f2e575]:
+                  - generic [ref=f2e576]: "6"
+                  - generic [ref=f2e577]: C
+                  - generic [ref=f2e578]: "12.011"
+                - paragraph [ref=f2e579]: Углерод
+                - paragraph [ref=f2e580]: Carbon · неметаллы
+                - generic [ref=f2e581]:
+                  - generic [ref=f2e582]:
+                    - generic [ref=f2e583]: Период
+                    - generic [ref=f2e584]: "2"
+                  - generic [ref=f2e585]:
+                    - generic [ref=f2e586]: Группа
+                    - generic [ref=f2e587]: "14"
+                  - generic [ref=f2e588]:
+                    - generic [ref=f2e589]: Атомная масса
+                    - generic [ref=f2e590]: "12.011"
+                  - generic [ref=f2e591]:
+                    - generic [ref=f2e592]: Состояние при 20°C
+                    - generic [ref=f2e593]: Тв
+                  - generic [ref=f2e594]:
+                    - generic [ref=f2e595]: Открыт
+                    - generic [ref=f2e596]: Древность
+                  - generic [ref=f2e597]:
+                    - generic [ref=f2e598]: Конфигурация
+                    - generic [ref=f2e599]: "[He] 2s² 2p²"
+                - generic [ref=f2e600]:
+                  - strong [ref=f2e601]: "Любопытный факт:"
+                  - text: Основа всей органической жизни. Существует в формах графита, алмаза, фуллеренов и графена.
+                - generic [ref=f2e602]:
+                  - generic [ref=f2e603]:
+                    - generic [ref=f2e604]: Тип и свойства
+                    - generic [ref=f2e605]:
+                      - generic [ref=f2e606]: Неметалл
+                      - generic [ref=f2e607]: "ЭО: 2.55"
+                      - generic [ref=f2e608]: "Ст. окисл.: -4, +2, +4"
+                  - generic [ref=f2e609]:
+                    - generic [ref=f2e610]: Характерные реакции
+                    - generic [ref=f2e611]:
+                      - generic [ref=f2e612]: C + O₂ → CO₂ (полное сгорание)
+                      - generic [ref=f2e613]: 2C + O₂ → 2CO (неполное сгорание)
+                      - generic [ref=f2e614]: C + 2H₂SO₄(конц) → CO₂ + 2SO₂ + 2H₂O
+                      - generic [ref=f2e615]: CuO + C → Cu + CO (металлургия)
+                  - generic [ref=f2e616]:
+                    - strong [ref=f2e617]: "Особенности:"
+                    - text: Основа органической химии. Даёт огромное число соединений.
+            - paragraph [ref=f2e618]: Цвет ячейки = категория элемента. Поиск работает по символу (Fe), русскому или английскому названию (железо / iron) и атомному номеру. Кнопка «Компактно» прячет названия — таблица становится плотнее, как в учебнике.
+  - alert [ref=e26]

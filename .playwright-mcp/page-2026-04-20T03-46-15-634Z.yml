@@ -1,0 +1,14 @@
+- generic [active] [ref=e1]:
+  - form "Вход в админку" [ref=e4]:
+    - heading "Вход в админку" [level=1] [ref=e5]
+    - alert [ref=e23]: Invalid email or password
+    - generic [ref=e6]:
+      - generic [ref=e7]: Email
+      - textbox "Email" [ref=e8]: admin@ximi4ka.local
+    - generic [ref=e9]:
+      - generic [ref=e10]: Пароль
+      - textbox "Пароль" [ref=e11]: admin-password-change-me
+    - button "Войти" [ref=e12]
+  - button "Open Next.js Dev Tools" [ref=e19] [cursor=pointer]:
+    - img [ref=e20]
+  - alert [ref=e13]

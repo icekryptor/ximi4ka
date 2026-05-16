@@ -1,0 +1,137 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "Ximi4ka — на главную" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - text: Ximi4ka
+      - navigation "Основная навигация" [ref=e5]:
+        - link "Главная" [ref=e6] [cursor=pointer]:
+          - /url: /
+        - link "Каталог" [ref=e7] [cursor=pointer]:
+          - /url: /categories
+        - link "О нас" [ref=e8] [cursor=pointer]:
+          - /url: /o-nas
+        - link "Доставка" [ref=e9] [cursor=pointer]:
+          - /url: /dostavka
+        - link "Контакты" [ref=e10] [cursor=pointer]:
+          - /url: /kontakty
+      - button "Открыть корзину" [ref=e12]:
+        - generic [ref=e13]: Корзина
+  - main [ref=e14]:
+    - generic [ref=e15]:
+      - heading "Главная" [level=1] [ref=e17]
+      - generic [ref=e19]:
+        - paragraph [ref=e21]:
+          - text: Добро пожаловать в
+          - strong [ref=e22]: Ximi4ka
+          - text: — магазин наборов для химических и научных экспериментов. У нас вы найдёте всё, чтобы превратить любознательность ребёнка в настоящее открытие.
+        - generic [ref=e23]:
+          - heading "Новогодние наборы уже в продаже" [level=2] [ref=e24]
+          - paragraph [ref=e25]: Соберите удивительный подарок для юного исследователя — скидки до 20% до конца месяца.
+          - link "Смотреть каталог" [ref=e26] [cursor=pointer]:
+            - /url: /categories
+        - generic [ref=e27]:
+          - group [ref=e28]:
+            - generic "Безопасны ли наборы для детей?" [ref=e29] [cursor=pointer]:
+              - generic [ref=e30]: Безопасны ли наборы для детей?
+              - generic [ref=e31]: +
+          - group [ref=e32]:
+            - generic "Как быстро доставите заказ?" [ref=e33] [cursor=pointer]:
+              - generic [ref=e34]: Как быстро доставите заказ?
+              - generic [ref=e35]: +
+          - group [ref=e36]:
+            - generic "Можно ли вернуть набор?" [ref=e37] [cursor=pointer]:
+              - generic [ref=e38]: Можно ли вернуть набор?
+              - generic [ref=e39]: +
+      - generic [ref=e40]:
+        - heading "Каталог" [level=2] [ref=e41]
+        - generic [ref=e42]:
+          - link "Набор Юного Химика В наличии 2 490 ₽ 2 990 ₽" [ref=e43] [cursor=pointer]:
+            - /url: /product/nabor-yunogo-himika
+            - heading "Набор Юного Химика" [level=3] [ref=e45]
+            - paragraph [ref=e46]: В наличии
+            - paragraph [ref=e47]: 2 490 ₽
+            - paragraph [ref=e48]: 2 990 ₽
+          - link "Извергающийся Вулкан В наличии 1 490 ₽" [ref=e49] [cursor=pointer]:
+            - /url: /product/vulkan-lavy
+            - heading "Извергающийся Вулкан" [level=3] [ref=e51]
+            - paragraph [ref=e52]: В наличии
+            - paragraph [ref=e53]: 1 490 ₽
+          - link "Цветные Кристаллы В наличии 990 ₽" [ref=e54] [cursor=pointer]:
+            - /url: /product/kristalli-cvetnye
+            - heading "Цветные Кристаллы" [level=3] [ref=e56]
+            - paragraph [ref=e57]: В наличии
+            - paragraph [ref=e58]: 990 ₽
+          - link "Умные Слизни В наличии 790 ₽" [ref=e59] [cursor=pointer]:
+            - /url: /product/slizni-razum
+            - heading "Умные Слизни" [level=3] [ref=e61]
+            - paragraph [ref=e62]: В наличии
+            - paragraph [ref=e63]: 790 ₽
+          - link "Мыловарение Домашнее Предзаказ 1 290 ₽" [ref=e64] [cursor=pointer]:
+            - /url: /product/milokon
+            - heading "Мыловарение Домашнее" [level=3] [ref=e66]
+            - paragraph [ref=e67]: Предзаказ
+            - paragraph [ref=e68]: 1 290 ₽
+          - link "Электролиз и Металлы Нет в наличии 1 890 ₽" [ref=e69] [cursor=pointer]:
+            - /url: /product/elektroliz-nabor
+            - heading "Электролиз и Металлы" [level=3] [ref=e71]
+            - paragraph [ref=e72]: Нет в наличии
+            - paragraph [ref=e73]: 1 890 ₽
+          - link "Исследуем Почву В наличии 1 690 ₽" [ref=e74] [cursor=pointer]:
+            - /url: /product/nabor-pochvy
+            - heading "Исследуем Почву" [level=3] [ref=e76]
+            - paragraph [ref=e77]: В наличии
+            - paragraph [ref=e78]: 1 690 ₽
+  - contentinfo [ref=e79]:
+    - generic [ref=e80]:
+      - generic [ref=e81]:
+        - generic [ref=e82]:
+          - link "Ximi4ka" [ref=e83] [cursor=pointer]:
+            - /url: /
+          - paragraph [ref=e84]: Наборы для химических экспериментов
+          - paragraph [ref=e85]: Москва, Россия
+        - generic [ref=e86]:
+          - generic [ref=e87]:
+            - heading "Магазин" [level=3] [ref=e88]
+            - list [ref=e89]:
+              - listitem [ref=e90]:
+                - link "Каталог" [ref=e91] [cursor=pointer]:
+                  - /url: /categories
+              - listitem [ref=e92]:
+                - link "Все товары" [ref=e93] [cursor=pointer]:
+                  - /url: /
+          - generic [ref=e94]:
+            - heading "Компания" [level=3] [ref=e95]
+            - list [ref=e96]:
+              - listitem [ref=e97]:
+                - link "О нас" [ref=e98] [cursor=pointer]:
+                  - /url: /o-nas
+              - listitem [ref=e99]:
+                - link "Доставка и оплата" [ref=e100] [cursor=pointer]:
+                  - /url: /dostavka
+              - listitem [ref=e101]:
+                - link "Контакты" [ref=e102] [cursor=pointer]:
+                  - /url: /kontakty
+          - generic [ref=e103]:
+            - heading "Правовая" [level=3] [ref=e104]
+            - list [ref=e105]:
+              - listitem [ref=e106]:
+                - link "Политика конфиденциальности" [ref=e107] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e108]:
+                - link "Согласие на обработку данных" [ref=e109] [cursor=pointer]:
+                  - /url: "#"
+      - generic [ref=e110]:
+        - paragraph [ref=e111]: © 2026 Ximi4ka. Все права защищены.
+        - list [ref=e112]:
+          - listitem [ref=e113]:
+            - link "Telegram" [ref=e114] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e115]:
+            - link "ВКонтакте" [ref=e116] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e117]:
+            - link "Instagram" [ref=e118] [cursor=pointer]:
+              - /url: "#"
+  - button "Open Next.js Dev Tools" [ref=e124] [cursor=pointer]:
+    - img [ref=e125]
