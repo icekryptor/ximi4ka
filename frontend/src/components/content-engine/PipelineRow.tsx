@@ -21,10 +21,10 @@ const STAGES: Array<{ key: StageKey; label: string; emoji: string; classes: stri
 export function PipelineRow({ counts, openStage, onStageClick }: Props) {
   return (
     <div>
-      <h2 className="text-xs uppercase tracking-wider text-brand-text-secondary mb-2">
+      <h2 className="text-xs uppercase tracking-wider text-brand-text-secondary mb-1.5">
         Конвейер
       </h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-1.5">
         {STAGES.map((s) => {
           const isOpen = openStage === s.key
           return (
@@ -33,14 +33,16 @@ export function PipelineRow({ counts, openStage, onStageClick }: Props) {
               type="button"
               onClick={() => onStageClick(s.key)}
               className={
-                'text-left p-3 rounded-xl border transition-colors ' +
+                'flex items-center justify-between gap-2 py-2 px-3 rounded-xl border transition-colors ' +
                 s.classes +
                 (isOpen ? ' ring-2 ring-primary-300' : '')
               }
             >
-              <div className="text-lg leading-none">{s.emoji}</div>
-              <div className="text-xs mt-1 font-medium leading-tight">{s.label}</div>
-              <div className="text-2xl font-bold mt-1">{counts[s.key] ?? 0}</div>
+              <span className="flex items-center gap-1.5 min-w-0">
+                <span className="text-sm leading-none">{s.emoji}</span>
+                <span className="text-xs font-medium truncate">{s.label}</span>
+              </span>
+              <span className="text-base font-bold leading-none shrink-0">{counts[s.key] ?? 0}</span>
             </button>
           )
         })}
