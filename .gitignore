@@ -45,3 +45,7 @@ lerna-debug.log*
 Thumbs.db
 .claude/worktrees/
 .vercel
+
+# Sub-repository — separately versioned at github.com/icekryptor/ximi-learn
+/learn/
+

@@ -1,5 +1,25 @@
 # XimOS — CLAUDE.md
 
+## ⚠️ Two-repo structure — read FIRST
+
+This workspace contains **two independent git repos**:
+
+| Path | Remote | What |
+|---|---|---|
+| `/Users/vasilijaistov/Desktop/continuum/ximi4ka/` | `icekryptor/ximi4ka_finance` | Outer: backend, frontend, docs |
+| `/Users/vasilijaistov/Desktop/continuum/ximi4ka/learn/` | `icekryptor/ximi-learn` | Inner: XimiLearn (deploys to Vercel `learn.ximi4ka.ru`) |
+
+The outer `.gitignore` excludes `/learn/` so its files **must never** appear in outer commits.
+
+**Rule for any git operation touching learn-zone files:**
+- ALWAYS use `git -C /Users/vasilijaistov/Desktop/continuum/ximi4ka/learn <command>` with absolute path
+- OR explicitly `cd /Users/vasilijaistov/Desktop/continuum/ximi4ka/learn && git ...` in the same Bash call
+- NEVER rely on cwd persistence between Bash tool calls — it resets
+
+**Rule for npm/build commands in learn:**
+- `npm run build` / `npm run kits:generate` / etc must run inside `learn/` (outer has no package.json)
+- Use `cd /Users/vasilijaistov/Desktop/continuum/ximi4ka/learn && npm run <script>` always
+
 ## Project Overview
 **XimOS** — operational system for business management ("Операционная система управления бизнесом")
 for Ximi4ka (a company manufacturing chemistry experiment kits). Started as financial-management
