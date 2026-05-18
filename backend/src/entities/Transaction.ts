@@ -103,6 +103,9 @@ export class Transaction {
   @Column({ type: 'uuid', nullable: true })
   linked_transfer_id: string | null;
 
+  @Column({ type: 'boolean', default: false })
+  needs_review: boolean;
+
   @CreateDateColumn()
   created_at: Date;
 
