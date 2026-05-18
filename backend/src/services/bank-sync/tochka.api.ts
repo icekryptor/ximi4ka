@@ -1,5 +1,36 @@
-import axios, { AxiosInstance } from 'axios'
+import axios, { AxiosInstance, AxiosError } from 'axios'
 import { NormalizedRow } from '../bank-parsers/types'
+
+/**
+ * Wrap an axios call with verbose logging for the bank-sync flow.
+ * On error: logs request URL, status, and response body (truncated) so we
+ * can diagnose 4xx/5xx from Точка without re-deploying. On success: logs
+ * URL + count of returned items.
+ */
+async function loggedRequest<T>(
+  label: string,
+  url: string,
+  fn: () => Promise<{ data: T }>,
+): Promise<T> {
+  try {
+    const r = await fn()
+    const count = Array.isArray((r.data as unknown as { Data?: { Account?: unknown[]; Transaction?: unknown[] } })?.Data?.Account)
+      ? ((r.data as any).Data.Account as unknown[]).length
+      : Array.isArray((r.data as unknown as { Data?: { Account?: unknown[]; Transaction?: unknown[] } })?.Data?.Transaction)
+      ? ((r.data as any).Data.Transaction as unknown[]).length
+      : 'n/a'
+    console.log(`[tochka-api] ${label} OK url=${url} count=${count}`)
+    return r.data
+  } catch (e: unknown) {
+    const ae = e as AxiosError
+    const status = ae.response?.status ?? 'no-response'
+    const bodyText = ae.response?.data
+      ? JSON.stringify(ae.response.data).slice(0, 500)
+      : ae.message
+    console.error(`[tochka-api] ${label} FAIL url=${url} status=${status} body=${bodyText}`)
+    throw e
+  }
+}
 
 export interface TochkaCredentials {
   token: string
@@ -51,9 +82,13 @@ export class TochkaApiClient {
     const path = this.creds.customer_code
       ? `/accounts/${this.creds.customer_code}`
       : '/accounts'
-    const r = await this.http.get(path)
+    const data = await loggedRequest<any>(
+      'listAccounts',
+      `${BASE_URL}${path}`,
+      () => this.http.get(path),
+    )
     // Tochka responses are envelope-style: {Data: {Account: [...]}}
-    return r.data?.Data?.Account ?? r.data?.accounts ?? []
+    return data?.Data?.Account ?? data?.accounts ?? []
   }
 
   /**
@@ -70,9 +105,13 @@ export class TochkaApiClient {
     const path = customer
       ? `/accounts/${customer}/${accountCode}/statement`
       : `/accounts/${accountCode}/statement`
-    const r = await this.http.get(path, { params: { dateFrom: from, dateTo: to } })
+    const data = await loggedRequest<any>(
+      'fetchStatement',
+      `${BASE_URL}${path}?dateFrom=${from}&dateTo=${to}`,
+      () => this.http.get(path, { params: { dateFrom: from, dateTo: to } }),
+    )
     // Tochka envelope: {Data: {Transaction: [...]}}
-    return r.data?.Data?.Transaction ?? r.data?.transactions ?? []
+    return data?.Data?.Transaction ?? data?.transactions ?? []
   }
 }
 
