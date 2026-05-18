@@ -60,17 +60,12 @@ export const bankSyncService = {
         const creds = decryptJson<TochkaCredentials>(config.credentials_encrypted, masterKey)
         const client = new TochkaApiClient(creds)
 
-        // Step 1: discover customer (Tochka Open Banking requires customer-code
-        // as a path segment). User-supplied customer_code overrides auto-discovery.
-        let customerCode = creds.customer_code
-        if (!customerCode) {
-          const customers = await client.listCustomers()
-          if (customers.length === 0) throw new Error('Точка не вернула ни одного customer')
-          customerCode = customers[0].customerCode
-        }
-
-        // Step 2: list accounts for that customer
-        const accounts = await client.listAccounts(customerCode)
+        // Tochka Open Banking flow (per developers.tochka.com docs):
+        //   1. GET /accounts                                              → list accounts
+        //   2. POST /statements (body: accountId, dates)                  → create statement, get statementId
+        //   3. GET /accounts/{id}/statements/{statementId} (poll)         → wait until Ready, get transactions
+        // All three steps wrapped inside client.fetchStatement(...) below.
+        const accounts = await client.listAccounts()
         if (accounts.length === 0) throw new Error('Точка не вернула ни одного счёта')
         const account = accounts[0]
         // For MVP: take the first account. Multi-account support — future iteration.

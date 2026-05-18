@@ -43,12 +43,6 @@ export interface TochkaCredentials {
   customer_code?: string
 }
 
-interface TochkaCustomer {
-  customerCode: string
-  customerName?: string
-  customerType?: string
-}
-
 interface TochkaAccount {
   accountId: string
   accountNumber: string
@@ -89,26 +83,12 @@ export class TochkaApiClient {
   }
 
   /**
-   * List customers under this token. Per Tochka Open Banking — entry point for
-   * discovering customer_code before fetching accounts.
-   * GET /customers
+   * List accounts for the authorized customer.
+   * GET /accounts
+   * Per Tochka docs slug: get-accounts-list-open-banking-v-1-0-accounts-get
    */
-  async listCustomers(): Promise<TochkaCustomer[]> {
-    const path = '/customers'
-    const data = await loggedRequest<any>(
-      'listCustomers',
-      `${BASE_URL}${path}`,
-      () => this.http.get(path),
-    )
-    return data?.Data?.Customer ?? data?.customers ?? []
-  }
-
-  /**
-   * List accounts for a specific customer.
-   * GET /customers/{customerCode}/accounts
-   */
-  async listAccounts(customerCode: string): Promise<TochkaAccount[]> {
-    const path = `/customers/${customerCode}/accounts`
+  async listAccounts(): Promise<TochkaAccount[]> {
+    const path = '/accounts'
     const data = await loggedRequest<any>(
       'listAccounts',
       `${BASE_URL}${path}`,
@@ -118,21 +98,94 @@ export class TochkaApiClient {
   }
 
   /**
-   * Fetch statement (transactions) for a given account over a date range.
-   * GET /accounts/{accountCode}/statement?dateFrom=&dateTo=
+   * Step 1 of async statement flow: ask Tochka to prepare a statement for
+   * a date range. Returns statementId which we poll until status=Ready.
+   *
+   * POST /statements
+   * Per Tochka docs slug: init-statement-open-banking-v-1-0-statements-post
+   *
+   * Body schema is best-guess (Open Banking style) — likely:
+   *   { Data: { accountId, startDate, endDate } }
+   * If the real schema differs, verbose logging will show 400-response body
+   * and we tune.
+   */
+  async createStatement(
+    accountId: string,
+    from: string,
+    to: string,
+  ): Promise<{ statementId: string; status?: string }> {
+    const path = '/statements'
+    const body = {
+      Data: {
+        accountId,
+        startDate: from,
+        endDate: to,
+      },
+    }
+    const data = await loggedRequest<any>(
+      'createStatement',
+      `${BASE_URL}${path}`,
+      () => this.http.post(path, body),
+    )
+    const payload = data?.Data ?? data
+    return {
+      statementId: payload?.statementId ?? payload?.statement_id ?? payload?.Statement?.statementId,
+      status: payload?.status,
+    }
+  }
+
+  /**
+   * Step 2/3 of async statement flow: poll the statement by id.
+   * Returns status (Created / Processing / Ready / Failed) + transactions if ready.
+   *
+   * GET /accounts/{accountId}/statements/{statementId}
+   * Per Tochka docs slug: get-statement-open-banking-v-1-0-accounts-account-id-statements-statement-id-get
+   */
+  async getStatement(
+    accountId: string,
+    statementId: string,
+  ): Promise<{ status: string; transactions: TochkaTransaction[] }> {
+    const path = `/accounts/${accountId}/statements/${statementId}`
+    const data = await loggedRequest<any>(
+      'getStatement',
+      `${BASE_URL}${path}`,
+      () => this.http.get(path),
+    )
+    const inner = data?.Data ?? data
+    const txs =
+      inner?.Transaction ??
+      inner?.transactions ??
+      inner?.Statement?.Transaction ??
+      []
+    const status = inner?.status ?? inner?.Statement?.status ?? 'Unknown'
+    return { status, transactions: txs }
+  }
+
+  /**
+   * High-level: create statement + poll until Ready (or timeout) + return transactions.
+   * Poll interval 2s, max ~60s. Tochka usually returns Ready within 5-15s.
    */
   async fetchStatement(
-    accountCode: string,
+    accountId: string,
     from: string,
     to: string,
   ): Promise<TochkaTransaction[]> {
-    const path = `/accounts/${accountCode}/statement`
-    const data = await loggedRequest<any>(
-      'fetchStatement',
-      `${BASE_URL}${path}?dateFrom=${from}&dateTo=${to}`,
-      () => this.http.get(path, { params: { dateFrom: from, dateTo: to } }),
-    )
-    return data?.Data?.Transaction ?? data?.transactions ?? []
+    const { statementId } = await this.createStatement(accountId, from, to)
+    if (!statementId) throw new Error('Точка не вернула statementId')
+
+    const POLL_INTERVAL_MS = 2000
+    const MAX_ATTEMPTS = 30 // ~60 seconds total
+
+    for (let i = 0; i < MAX_ATTEMPTS; i++) {
+      await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS))
+      const { status, transactions } = await this.getStatement(accountId, statementId)
+      console.log(`[tochka-api] statement poll attempt=${i + 1} status=${status}`)
+      if (status === 'Ready' || status === 'ready') return transactions
+      if (status === 'Failed' || status === 'failed') {
+        throw new Error(`Точка вернула status=Failed для statement ${statementId}`)
+      }
+    }
+    throw new Error(`Точка не подготовила выписку за ${(MAX_ATTEMPTS * POLL_INTERVAL_MS) / 1000} сек`)
   }
 }
 
