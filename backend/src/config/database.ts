@@ -51,6 +51,8 @@ import { Channel } from '../entities/Channel';
 import { ChannelBudget } from '../entities/ChannelBudget';
 import { ContentAsset } from '../entities/ContentAsset';
 import { ContentMetricSnapshot } from '../entities/ContentMetricSnapshot';
+import { BankSyncConfig } from '../entities/BankSyncConfig';
+import { BankSyncLog } from '../entities/BankSyncLog';
 
 dotenv.config();
 
@@ -60,7 +62,7 @@ const databaseUrl = process.env.DATABASE_URL;
 
 const isDev = process.env.NODE_ENV !== 'production';
 
-const allEntities = [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, UnitEconomicsShare, User, DailySales, Employee, SalesChannel, QcChecklist, Board, Task, TaskComment, TaskTag, ChannelPreset, ContentUnit, ContentRubric, ContentPublication, OAuthToken, Department, DepartmentRole, RecurringTask, RecurringTaskReport, Project, ProjectMember, TaskDependency, TaskChecklistItem, TelegramChat, BankAccount, BankImport, ImportRule, BrandDoc, IcpSegment, StrategicTheme, Channel, ChannelBudget, ContentAsset, ContentMetricSnapshot];
+const allEntities = [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, UnitEconomicsShare, User, DailySales, Employee, SalesChannel, QcChecklist, Board, Task, TaskComment, TaskTag, ChannelPreset, ContentUnit, ContentRubric, ContentPublication, OAuthToken, Department, DepartmentRole, RecurringTask, RecurringTaskReport, Project, ProjectMember, TaskDependency, TaskChecklistItem, TelegramChat, BankAccount, BankImport, ImportRule, BrandDoc, IcpSegment, StrategicTheme, Channel, ChannelBudget, ContentAsset, ContentMetricSnapshot, BankSyncConfig, BankSyncLog];
 
 const dataSourceOptions = databaseUrl
   ? {
