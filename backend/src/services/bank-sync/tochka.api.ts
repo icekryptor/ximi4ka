@@ -115,11 +115,15 @@ export class TochkaApiClient {
     to: string,
   ): Promise<{ statementId: string; status?: string }> {
     const path = '/statements'
+    // Per Точка validation error "Field Statement : Field required" — body must
+    // nest the statement parameters under {Data: {Statement: {...}}}.
     const body = {
       Data: {
-        accountId,
-        startDate: from,
-        endDate: to,
+        Statement: {
+          accountId,
+          startDate: from,
+          endDate: to,
+        },
       },
     }
     const data = await loggedRequest<any>(
@@ -127,9 +131,9 @@ export class TochkaApiClient {
       `${BASE_URL}${path}`,
       () => this.http.post(path, body),
     )
-    const payload = data?.Data ?? data
+    const payload = data?.Data?.Statement ?? data?.Data ?? data
     return {
-      statementId: payload?.statementId ?? payload?.statement_id ?? payload?.Statement?.statementId,
+      statementId: payload?.statementId ?? payload?.statement_id,
       status: payload?.status,
     }
   }
