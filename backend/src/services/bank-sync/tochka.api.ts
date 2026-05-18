@@ -14,12 +14,16 @@ async function loggedRequest<T>(
 ): Promise<T> {
   try {
     const r = await fn()
-    const count = Array.isArray((r.data as unknown as { Data?: { Account?: unknown[]; Transaction?: unknown[] } })?.Data?.Account)
-      ? ((r.data as any).Data.Account as unknown[]).length
-      : Array.isArray((r.data as unknown as { Data?: { Account?: unknown[]; Transaction?: unknown[] } })?.Data?.Transaction)
-      ? ((r.data as any).Data.Transaction as unknown[]).length
-      : 'n/a'
-    console.log(`[tochka-api] ${label} OK url=${url} count=${count}`)
+    // Log a small preview of response keys so we can spot envelope mismatches
+    // without dumping sensitive content. Show top-level keys + Data subkeys.
+    const topKeys = r.data && typeof r.data === 'object' ? Object.keys(r.data) : []
+    const dataKeys =
+      r.data && typeof (r.data as any).Data === 'object'
+        ? Object.keys((r.data as any).Data)
+        : []
+    console.log(
+      `[tochka-api] ${label} OK url=${url} topKeys=[${topKeys.join(',')}] dataKeys=[${dataKeys.join(',')}]`,
+    )
     return r.data
   } catch (e: unknown) {
     const ae = e as AxiosError
@@ -35,7 +39,14 @@ async function loggedRequest<T>(
 export interface TochkaCredentials {
   token: string
   client_id: string
+  /** Optional override. Normally we auto-discover via listCustomers(). */
   customer_code?: string
+}
+
+interface TochkaCustomer {
+  customerCode: string
+  customerName?: string
+  customerType?: string
 }
 
 interface TochkaAccount {
@@ -77,40 +88,50 @@ export class TochkaApiClient {
     })
   }
 
-  /** List accounts for the customer. If customer_code is set, scopes to that customer. */
-  async listAccounts(): Promise<TochkaAccount[]> {
-    const path = this.creds.customer_code
-      ? `/accounts/${this.creds.customer_code}`
-      : '/accounts'
+  /**
+   * List customers under this token. Per Tochka Open Banking — entry point for
+   * discovering customer_code before fetching accounts.
+   * GET /customers
+   */
+  async listCustomers(): Promise<TochkaCustomer[]> {
+    const path = '/customers'
+    const data = await loggedRequest<any>(
+      'listCustomers',
+      `${BASE_URL}${path}`,
+      () => this.http.get(path),
+    )
+    return data?.Data?.Customer ?? data?.customers ?? []
+  }
+
+  /**
+   * List accounts for a specific customer.
+   * GET /customers/{customerCode}/accounts
+   */
+  async listAccounts(customerCode: string): Promise<TochkaAccount[]> {
+    const path = `/customers/${customerCode}/accounts`
     const data = await loggedRequest<any>(
       'listAccounts',
       `${BASE_URL}${path}`,
       () => this.http.get(path),
     )
-    // Tochka responses are envelope-style: {Data: {Account: [...]}}
     return data?.Data?.Account ?? data?.accounts ?? []
   }
 
   /**
    * Fetch statement (transactions) for a given account over a date range.
-   * @param accountCode — accountId returned by listAccounts
-   * @param from / to — YYYY-MM-DD
+   * GET /accounts/{accountCode}/statement?dateFrom=&dateTo=
    */
   async fetchStatement(
     accountCode: string,
     from: string,
     to: string,
   ): Promise<TochkaTransaction[]> {
-    const customer = this.creds.customer_code ?? ''
-    const path = customer
-      ? `/accounts/${customer}/${accountCode}/statement`
-      : `/accounts/${accountCode}/statement`
+    const path = `/accounts/${accountCode}/statement`
     const data = await loggedRequest<any>(
       'fetchStatement',
       `${BASE_URL}${path}?dateFrom=${from}&dateTo=${to}`,
       () => this.http.get(path, { params: { dateFrom: from, dateTo: to } }),
     )
-    // Tochka envelope: {Data: {Transaction: [...]}}
     return data?.Data?.Transaction ?? data?.transactions ?? []
   }
 }

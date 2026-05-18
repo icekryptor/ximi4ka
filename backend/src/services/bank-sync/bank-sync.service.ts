@@ -59,10 +59,21 @@ export const bankSyncService = {
       if (config.provider === 'tochka') {
         const creds = decryptJson<TochkaCredentials>(config.credentials_encrypted, masterKey)
         const client = new TochkaApiClient(creds)
-        const accounts = await client.listAccounts()
-        // For MVP: take the first account. Multi-account support — future iteration.
+
+        // Step 1: discover customer (Tochka Open Banking requires customer-code
+        // as a path segment). User-supplied customer_code overrides auto-discovery.
+        let customerCode = creds.customer_code
+        if (!customerCode) {
+          const customers = await client.listCustomers()
+          if (customers.length === 0) throw new Error('Точка не вернула ни одного customer')
+          customerCode = customers[0].customerCode
+        }
+
+        // Step 2: list accounts for that customer
+        const accounts = await client.listAccounts(customerCode)
         if (accounts.length === 0) throw new Error('Точка не вернула ни одного счёта')
         const account = accounts[0]
+        // For MVP: take the first account. Multi-account support — future iteration.
         const txs = await client.fetchStatement(account.accountId, from, to)
         rowsFetched = txs.length
         const rows = txs.map(tochkaApiToNormalizedRow)
