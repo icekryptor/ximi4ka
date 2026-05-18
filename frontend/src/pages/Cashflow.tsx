@@ -4,6 +4,7 @@ import * as XLSX from 'xlsx'
 import { cashflowApi, CashflowReport, PeriodBucket } from '../api/cashflow'
 import { bankAccountsApi, BankAccount } from '../api/bankAccounts'
 import { apiClient } from '../api/client'
+import { BankSyncSection } from '../components/cashflow/BankSyncSection'
 
 interface DrilldownTarget {
   category_id: string | null
@@ -164,6 +165,9 @@ export default function Cashflow() {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <h1 className="text-xl sm:text-2xl font-bold text-brand-text mb-4">БДДС / Отчёт о движении денежных средств</h1>
+
+      {/* Bank sync sources */}
+      <BankSyncSection bankAccounts={accounts} />
 
       {/* Filters bar */}
       <div className="bg-card border border-brand-border rounded-2xl p-4 mb-4 flex flex-wrap items-center gap-3">
