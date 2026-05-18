@@ -57,6 +57,7 @@ import recipeRoutes from './routes/recipe.routes';
 import contentMetricSnapshotRoutes, { analyticsHandler } from './routes/content-metric-snapshot.routes';
 import { unitEconomicsController } from './controllers/unit-economics.controller';
 import { startPublishWorker } from './services/publish-worker';
+import { startBankSyncScheduler } from './services/bank-sync/scheduler';
 import { recipeEngine } from './services/recipe-engine';
 
 // Middleware
@@ -204,6 +205,8 @@ async function bootstrap() {
       const baseUrl = process.env.BACKEND_URL || `http://localhost:${PORT}`
       setupWebhook(baseUrl)
     }
+
+    startBankSyncScheduler();
   });
 }
 
