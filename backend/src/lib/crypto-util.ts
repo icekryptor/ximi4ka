@@ -8,6 +8,11 @@ const IV_BYTES = 12
  * Output format: base64(iv(12) || authTag(16) || ciphertext)
  *
  * Master key — base64-encoded 32 bytes (256 bits) from env var.
+ *
+ * NOTE: blob has no key-id prefix; rotating BANK_SYNC_SECRET_KEY invalidates
+ * all existing encrypted configs. Acceptable at current scale (single
+ * operator, handful of bank configs) — re-onboarding flow on rotation is a
+ * manual SQL clear + re-enter creds via UI.
  */
 export function encryptJson(value: unknown, masterKeyBase64: string): string {
   const key = Buffer.from(masterKeyBase64, 'base64')
