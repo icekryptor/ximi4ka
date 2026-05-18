@@ -115,14 +115,18 @@ export class TochkaApiClient {
     to: string,
   ): Promise<{ statementId: string; status?: string }> {
     const path = '/statements'
-    // Per Точка validation error "Field Statement : Field required" — body must
-    // nest the statement parameters under {Data: {Statement: {...}}}.
+    // Per Точка validation errors:
+    // - Body nests params under {Data: {Statement: {...}}}
+    // - Field names are startDateTime / endDateTime (camelCase, suffix DateTime)
+    // - Values are full ISO 8601 timestamps with timezone, not just YYYY-MM-DD
+    const startIso = `${from}T00:00:00.000Z`
+    const endIso = `${to}T23:59:59.999Z`
     const body = {
       Data: {
         Statement: {
           accountId,
-          startDate: from,
-          endDate: to,
+          startDateTime: startIso,
+          endDateTime: endIso,
         },
       },
     }
