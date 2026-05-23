@@ -10,6 +10,12 @@
 export type KrStatus = 'on_track' | 'at_risk' | 'off_track' | 'done' | 'unknown'
 
 export interface ParsedKR {
+  /**
+   * Composite path "Q<n>-<year>-O<n>-KR<n>". WARNING: stability is positional
+   * within the markdown KR table — if the operator reorders rows in the OKR
+   * doc, statuses persisted under old positions will reassign to new ones.
+   * Acceptable for MVP single-operator workflow.
+   */
   id: string         // stable: "Q2-2026-O1-KR1" (composite path)
   text: string       // first column of KR table
   metric: string     // second column
