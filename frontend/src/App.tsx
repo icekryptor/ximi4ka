@@ -41,6 +41,7 @@ const ContentBank = lazy(() => import('./pages/ContentBank'))
 const ContentBankTriage = lazy(() => import('./pages/ContentBankTriage'))
 const VoiceoverStudio = lazy(() => import('./pages/VoiceoverStudio'))
 const MarketingStrategy = lazy(() => import('./pages/MarketingStrategy'))
+const OkrPage = lazy(() => import('./pages/OkrPage'))
 const MarketingAnalytics = lazy(() => import('./pages/MarketingAnalytics'))
 const PublishChannels = lazy(() => import('./pages/PublishChannels'))
 const Projects = lazy(() => import('./pages/Projects'))
@@ -137,6 +138,7 @@ function App() {
                                 <Route path="/voiceover/:unitId" element={<VoiceoverStudio />} />
                                 {/* Маркетинг */}
                                 <Route path="/marketing/strategy" element={<MarketingStrategy />} />
+                                <Route path="/marketing/okr" element={<OkrPage />} />
                                 <Route path="/marketing/analytics" element={<MarketingAnalytics />} />
                                 <Route path="/settings/channels" element={<PublishChannels />} />
                                 {/* Маркетплейсы */}

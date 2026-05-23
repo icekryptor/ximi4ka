@@ -337,6 +337,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Маркетинг',
     items: [
       { type: 'link', name: 'Стратегия', href: '/marketing/strategy', icon: IconMarketing },
+      { type: 'link', name: 'OKR', href: '/marketing/okr', icon: IconMarketing },
       { type: 'link', name: 'Контент-банк', href: '/content-bank', icon: IconContent },
       { type: 'link', name: 'Войсовер', href: '/voiceover', icon: IconMic },
       { type: 'link', name: 'Аналитика', href: '/marketing/analytics', icon: IconMarketing },
