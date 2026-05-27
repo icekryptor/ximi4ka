@@ -1,0 +1,216 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "XimiLearn" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e6]
+          - generic [ref=e8]: XimiLearn
+        - navigation [ref=e9]:
+          - link "Главная" [ref=e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "ОГЭ" [ref=e11] [cursor=pointer]:
+            - /url: /learn/oge
+          - link "Тренажёры" [ref=e12] [cursor=pointer]:
+            - /url: /tools
+          - link "Рейтинг" [ref=e13] [cursor=pointer]:
+            - /url: /leaderboard
+        - generic [ref=e15]:
+          - generic "Новичок" [ref=e16]:
+            - img [ref=e17]
+            - generic [ref=e20]: Новичок
+          - link "БИ Без имени" [ref=e21] [cursor=pointer]:
+            - /url: /profile
+            - generic [ref=e22]: БИ
+            - generic [ref=e23]: Без имени
+    - main [ref=e24]:
+      - generic [ref=e25]:
+        - generic [ref=e26]:
+          - link "Инструменты" [ref=e27] [cursor=pointer]:
+            - /url: /tools
+          - generic [ref=e28]: /
+          - generic [ref=e29]: Тренажёр ОГЭ
+          - link "↗ Открыть в новом окне" [ref=e30] [cursor=pointer]:
+            - /url: /tools/oge-lab.html
+        - heading "Тренажёр ОГЭ" [level=1] [ref=e31]
+        - generic [ref=e32]:
+          - paragraph [ref=e35]: Загружаем тренажёр…
+          - iframe [ref=e36]:
+            - generic [ref=f1e2]:
+              - banner [ref=f1e3]:
+                - generic [ref=f1e4]:
+                  - generic [ref=f1e5]: ОГЭ 2026 · задание 23
+                  - heading "Лаборатория качественных реакций" [level=1] [ref=f1e6]
+                - generic [ref=f1e8]:
+                  - button "Песочница" [ref=f1e9] [cursor=pointer]
+                  - button "Задание 23" [ref=f1e10] [cursor=pointer]
+                  - button "Различи 2 склянки" [ref=f1e11] [cursor=pointer]
+              - generic [ref=f1e12]:
+                - group [ref=f1e13]:
+                  - generic "Как пользоваться развернуть" [ref=f1e14] [cursor=pointer]
+                - group [ref=f1e15]:
+                  - generic "Техника безопасности — обязательно прочитать развернуть" [ref=f1e16] [cursor=pointer]
+              - generic [ref=f1e17]:
+                - complementary [ref=f1e18]:
+                  - generic [ref=f1e20]: Полка реактивов · клик выбирает, потом клик по пробирке
+                  - generic [ref=f1e21]:
+                    - generic [ref=f1e22]: Кислоты · 3
+                    - generic [ref=f1e23]:
+                      - button "HCl Соляная к-та" [ref=f1e24] [cursor=pointer]:
+                        - generic [ref=f1e26]: HCl
+                        - generic [ref=f1e27]: Соляная к-та
+                      - button "H₂SO₄ Серная к-та" [ref=f1e28] [cursor=pointer]:
+                        - generic [ref=f1e30]: H₂SO₄
+                        - generic [ref=f1e31]: Серная к-та
+                      - button "HNO₃ Азотная к-та" [ref=f1e32] [cursor=pointer]:
+                        - generic [ref=f1e34]: HNO₃
+                        - generic [ref=f1e35]: Азотная к-та
+                    - generic [ref=f1e36]: Щёлочи и основания · 3
+                    - generic [ref=f1e37]:
+                      - button "NaOH Гидроксид Na" [ref=f1e38] [cursor=pointer]:
+                        - generic [ref=f1e40]: NaOH
+                        - generic [ref=f1e41]: Гидроксид Na
+                      - button "KOH Гидроксид K" [ref=f1e42] [cursor=pointer]:
+                        - generic [ref=f1e44]: KOH
+                        - generic [ref=f1e45]: Гидроксид K
+                      - button "Ca(OH)₂ Известк. вода" [ref=f1e46] [cursor=pointer]:
+                        - generic [ref=f1e48]: Ca(OH)₂
+                        - generic [ref=f1e49]: Известк. вода
+                    - generic [ref=f1e50]: Соли · 24
+                    - generic [ref=f1e51]:
+                      - button "Na₂CO₃ Карбонат Na" [ref=f1e52] [cursor=pointer]:
+                        - generic [ref=f1e54]: Na₂CO₃
+                        - generic [ref=f1e55]: Карбонат Na
+                      - button "K₂CO₃ Карбонат K" [ref=f1e56] [cursor=pointer]:
+                        - generic [ref=f1e58]: K₂CO₃
+                        - generic [ref=f1e59]: Карбонат K
+                      - button "NaCl Хлорид Na" [ref=f1e60] [cursor=pointer]:
+                        - generic [ref=f1e62]: NaCl
+                        - generic [ref=f1e63]: Хлорид Na
+                      - button "Na₂SO₄ Сульфат Na" [ref=f1e64] [cursor=pointer]:
+                        - generic [ref=f1e66]: Na₂SO₄
+                        - generic [ref=f1e67]: Сульфат Na
+                      - button "Na₃PO₄ Фосфат Na" [ref=f1e68] [cursor=pointer]:
+                        - generic [ref=f1e70]: Na₃PO₄
+                        - generic [ref=f1e71]: Фосфат Na
+                      - button "Na₂SiO₃ Силикат Na" [ref=f1e72] [cursor=pointer]:
+                        - generic [ref=f1e74]: Na₂SiO₃
+                        - generic [ref=f1e75]: Силикат Na
+                      - button "KI Иодид K" [ref=f1e76] [cursor=pointer]:
+                        - generic [ref=f1e78]: KI
+                        - generic [ref=f1e79]: Иодид K
+                      - button "KBr Бромид K" [ref=f1e80] [cursor=pointer]:
+                        - generic [ref=f1e82]: KBr
+                        - generic [ref=f1e83]: Бромид K
+                      - button "NH₄Cl Хлорид NH₄" [ref=f1e84] [cursor=pointer]:
+                        - generic [ref=f1e86]: NH₄Cl
+                        - generic [ref=f1e87]: Хлорид NH₄
+                      - button "BaCl₂ Хлорид Ba" [ref=f1e88] [cursor=pointer]:
+                        - generic [ref=f1e90]: BaCl₂
+                        - generic [ref=f1e91]: Хлорид Ba
+                      - button "CaCl₂ Хлорид Ca" [ref=f1e92] [cursor=pointer]:
+                        - generic [ref=f1e94]: CaCl₂
+                        - generic [ref=f1e95]: Хлорид Ca
+                      - button "MgCl₂ Хлорид Mg" [ref=f1e96] [cursor=pointer]:
+                        - generic [ref=f1e98]: MgCl₂
+                        - generic [ref=f1e99]: Хлорид Mg
+                      - button "CuSO₄ Сульфат Cu" [ref=f1e100] [cursor=pointer]:
+                        - generic [ref=f1e102]: CuSO₄
+                        - generic [ref=f1e103]: Сульфат Cu
+                      - button "FeCl₃ Хлорид Fe(III)" [ref=f1e104] [cursor=pointer]:
+                        - generic [ref=f1e106]: FeCl₃
+                        - generic [ref=f1e107]: Хлорид Fe(III)
+                      - button "FeSO₄ Сульфат Fe(II)" [ref=f1e108] [cursor=pointer]:
+                        - generic [ref=f1e110]: FeSO₄
+                        - generic [ref=f1e111]: Сульфат Fe(II)
+                      - button "AlCl₃ Хлорид Al" [ref=f1e112] [cursor=pointer]:
+                        - generic [ref=f1e114]: AlCl₃
+                        - generic [ref=f1e115]: Хлорид Al
+                      - button "ZnCl₂ Хлорид Zn" [ref=f1e116] [cursor=pointer]:
+                        - generic [ref=f1e118]: ZnCl₂
+                        - generic [ref=f1e119]: Хлорид Zn
+                      - button "AgNO₃ Нитрат Ag" [ref=f1e120] [cursor=pointer]:
+                        - generic [ref=f1e122]: AgNO₃
+                        - generic [ref=f1e123]: Нитрат Ag
+                      - button "Pb(NO₃)₂ Нитрат Pb" [ref=f1e124] [cursor=pointer]:
+                        - generic [ref=f1e126]: Pb(NO₃)₂
+                        - generic [ref=f1e127]: Нитрат Pb
+                      - button "ZnSO₄ Сульфат Zn" [ref=f1e128] [cursor=pointer]:
+                        - generic [ref=f1e130]: ZnSO₄
+                        - generic [ref=f1e131]: Сульфат Zn
+                      - button "MgSO₄ Сульфат Mg" [ref=f1e132] [cursor=pointer]:
+                        - generic [ref=f1e134]: MgSO₄
+                        - generic [ref=f1e135]: Сульфат Mg
+                      - button "Ba(NO₃)₂ Нитрат Ba" [ref=f1e136] [cursor=pointer]:
+                        - generic [ref=f1e138]: Ba(NO₃)₂
+                        - generic [ref=f1e139]: Нитрат Ba
+                      - button "Al₂(SO₄)₃ Сульфат Al" [ref=f1e140] [cursor=pointer]:
+                        - generic [ref=f1e142]: Al₂(SO₄)₃
+                        - generic [ref=f1e143]: Сульфат Al
+                      - button "CuCl₂ Хлорид Cu" [ref=f1e144] [cursor=pointer]:
+                        - generic [ref=f1e146]: CuCl₂
+                        - generic [ref=f1e147]: Хлорид Cu
+                    - generic [ref=f1e148]: Металлы · 4
+                    - generic [ref=f1e149]:
+                      - button "Zn Цинк (гран.)" [ref=f1e150] [cursor=pointer]:
+                        - generic [ref=f1e152]: Zn
+                        - generic [ref=f1e153]: Цинк (гран.)
+                      - button "Fe Железо" [ref=f1e154] [cursor=pointer]:
+                        - generic [ref=f1e156]: Fe
+                        - generic [ref=f1e157]: Железо
+                      - button "Mg Магний" [ref=f1e158] [cursor=pointer]:
+                        - generic [ref=f1e160]: Mg
+                        - generic [ref=f1e161]: Магний
+                      - button "Cu Медь" [ref=f1e162] [cursor=pointer]:
+                        - generic [ref=f1e164]: Cu
+                        - generic [ref=f1e165]: Медь
+                    - generic [ref=f1e166]: Индикаторы · 3
+                    - generic [ref=f1e167]:
+                      - button "Лакмус Лакмус" [ref=f1e168] [cursor=pointer]:
+                        - generic [ref=f1e170]: Лакмус
+                        - generic [ref=f1e171]: Лакмус
+                      - button "Фенолфт. Фенолфталеин" [ref=f1e172] [cursor=pointer]:
+                        - generic [ref=f1e174]: Фенолфт.
+                        - generic [ref=f1e175]: Фенолфталеин
+                      - button "Метилор. Метилоранж" [ref=f1e176] [cursor=pointer]:
+                        - generic [ref=f1e178]: Метилор.
+                        - generic [ref=f1e179]: Метилоранж
+                - generic [ref=f1e180]:
+                  - generic [ref=f1e181]:
+                    - generic [ref=f1e182]:
+                      - generic [ref=f1e184] [cursor=pointer]: ○ ○ ○
+                      - generic [ref=f1e185]:
+                        - generic [ref=f1e186]: Пробирка 1
+                        - generic [ref=f1e187]: Пусто
+                    - button "+ Взять ещё пробирку" [ref=f1e188] [cursor=pointer]:
+                      - generic [ref=f1e189]: +
+                      - generic [ref=f1e190]: Взять ещё пробирку
+                  - generic [ref=f1e191]:
+                    - button "Очистить всё" [ref=f1e192] [cursor=pointer]
+                    - generic [ref=f1e193]: Клик по пробирке = долить реактив
+                  - generic [ref=f1e195]: Выбери реактив и кликни пробирку. Если нужно две пробирки (например, для распознавания) — нажми «+ Взять ещё пробирку».
+                  - generic [ref=f1e196]:
+                    - generic [ref=f1e197]:
+                      - paragraph [ref=f1e198]: Таблица наблюдений
+                      - generic [ref=f1e199]: заполняется автоматически — как в бланке
+                    - table [ref=f1e200]:
+                      - rowgroup [ref=f1e201]:
+                        - row "Реагенты Признак реакции Сокращённое ионное" [ref=f1e202]:
+                          - columnheader "Реагенты" [ref=f1e203]
+                          - columnheader "Признак реакции" [ref=f1e204]
+                          - columnheader "Сокращённое ионное" [ref=f1e205]
+                      - rowgroup [ref=f1e206]:
+                        - row "Опытов ещё не было" [ref=f1e207]:
+                          - cell "Опытов ещё не было" [ref=f1e208]
+              - paragraph [ref=f1e209]: "По формату ФИПИ ОГЭ 2026: задание 23 — экспериментальное, до 5 первичных баллов. 32 реактива (соли, кислоты, щёлочи, металлы, индикаторы), движок поддерживает реакции ионного обмена, ОВР и индикаторные реакции."
+    - contentinfo [ref=e37]:
+      - generic [ref=e38]:
+        - paragraph [ref=e39]: © 2026 ИП Аистов В.А. · ИНН 431401950080
+        - navigation [ref=e40]:
+          - link "Политика конфиденциальности" [ref=e41] [cursor=pointer]:
+            - /url: /policy
+          - link "Оферта" [ref=e42] [cursor=pointer]:
+            - /url: /oferta
+          - link "info@ximi4ka.ru" [ref=e43] [cursor=pointer]:
+            - /url: mailto:info@ximi4ka.ru
+  - alert [ref=e44]

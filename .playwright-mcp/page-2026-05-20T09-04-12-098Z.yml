@@ -1,0 +1,111 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "XimiLearn" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - img [ref=e5]
+        - generic [ref=e7]: XimiLearn
+      - navigation [ref=e8]:
+        - link "Главная" [ref=e9] [cursor=pointer]:
+          - /url: https://ximi4ka.ru
+        - link "Наборы" [ref=e10] [cursor=pointer]:
+          - /url: https://ximi4ka.ru/shop
+        - link "О нас" [ref=e11] [cursor=pointer]:
+          - /url: https://ximi4ka.ru/about
+        - link "Контакты" [ref=e12] [cursor=pointer]:
+          - /url: https://ximi4ka.ru/contacts
+      - generic [ref=e13]:
+        - link "Перейти в платформу" [ref=e14] [cursor=pointer]:
+          - /url: /dashboard
+          - text: Перейти в платформу
+          - img [ref=e15]
+        - generic [ref=e17]:
+          - generic "Новичок" [ref=e18]:
+            - img [ref=e19]
+            - generic [ref=e22]: Новичок
+          - link "БИ Без имени" [ref=e23] [cursor=pointer]:
+            - /url: /profile
+            - generic [ref=e24]: БИ
+            - generic [ref=e25]: Без имени
+  - main [ref=e26]:
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - img [ref=e31]
+        - heading "Заказ оплачен!" [level=1] [ref=e34]
+        - paragraph [ref=e35]:
+          - text: Спасибо, Тест. Заказ
+          - generic [ref=e36]: "#b684cf52"
+          - text: принят в работу.
+        - generic [ref=e37]:
+          - generic [ref=e38]:
+            - img [ref=e40]
+            - generic [ref=e43]:
+              - paragraph [ref=e44]: Доступ к платформе
+              - paragraph [ref=e45]: Логин и пароль отправили на test+playwright@ximi4ka.ru. Если письмо не пришло в течение 5 минут — проверь «Спам» или напиши нам в Telegram.
+          - generic [ref=e46]:
+            - img [ref=e48]
+            - generic [ref=e53]:
+              - paragraph [ref=e54]: Отгрузка набора
+              - paragraph [ref=e55]: Соберём заказ и отправим СДЭК в ПВЗ в течение 1–2 рабочих дней. Трек-номер придёт на email.
+          - generic [ref=e56]:
+            - img [ref=e58]
+            - generic [ref=e61]:
+              - paragraph [ref=e62]: Активация в коробке
+              - paragraph [ref=e63]: В наборе будет дублирующий QR-код — на случай, если ребёнок открывает коробку самостоятельно.
+        - generic [ref=e64]:
+          - generic [ref=e65]:
+            - generic [ref=e66]: Товар
+            - generic [ref=e67]: Набор для ОГЭ по химии
+          - generic [ref=e68]:
+            - generic [ref=e69]: Сумма
+            - generic [ref=e70]: 3 490 ₽
+          - generic [ref=e71]:
+            - generic [ref=e72]: Адрес
+            - generic [ref=e73]: г. Москва, ул. Тверская, д. 1, ПВЗ СДЭК
+        - link "Войти в платформу" [ref=e74] [cursor=pointer]:
+          - /url: /dashboard
+          - button "Войти в платформу" [ref=e75]
+      - paragraph [ref=e76]:
+        - text: "По вопросам:"
+        - link "info@ximi4ka.ru" [ref=e77] [cursor=pointer]:
+          - /url: mailto:info@ximi4ka.ru
+        - text: ·
+        - link "@ximi4ka_support" [ref=e78] [cursor=pointer]:
+          - /url: https://t.me/ximi4ka_support
+  - contentinfo [ref=e79]:
+    - generic [ref=e80]:
+      - generic [ref=e81]:
+        - generic [ref=e82]:
+          - paragraph [ref=e83]: Реквизиты
+          - paragraph [ref=e84]: ИП Аистов Василий Андреевич
+          - paragraph [ref=e85]: "ИНН: 431401950080"
+          - paragraph [ref=e86]: "ОГРНИП: 319435000027879"
+          - paragraph [ref=e87]: г. Москва, 3-я Мытищинская ул., д. 16, стр. 21Б
+        - generic [ref=e88]:
+          - paragraph [ref=e89]: Контакты
+          - paragraph [ref=e90]:
+            - link "info@ximi4ka.ru" [ref=e91] [cursor=pointer]:
+              - /url: mailto:info@ximi4ka.ru
+          - paragraph [ref=e92]:
+            - link "+7 985 993-83-11" [ref=e93] [cursor=pointer]:
+              - /url: tel:+79859938311
+          - paragraph [ref=e94]:
+            - link "Telegram-поддержка" [ref=e95] [cursor=pointer]:
+              - /url: https://t.me/ximi4ka_support
+        - generic [ref=e96]:
+          - paragraph [ref=e97]: Документы
+          - paragraph [ref=e98]:
+            - link "Политика конфиденциальности" [ref=e99] [cursor=pointer]:
+              - /url: /policy
+          - paragraph [ref=e100]:
+            - link "Публичная оферта" [ref=e101] [cursor=pointer]:
+              - /url: /oferta
+          - paragraph [ref=e102]:
+            - link "Тарифы и условия" [ref=e103] [cursor=pointer]:
+              - /url: /pricing
+      - generic [ref=e104]:
+        - paragraph [ref=e105]: © 2026 Ximi4ka. Все права защищены.
+        - paragraph [ref=e106]:
+          - link "ximi4ka.ru" [ref=e107] [cursor=pointer]:
+            - /url: https://ximi4ka.ru
+  - alert [ref=e108]

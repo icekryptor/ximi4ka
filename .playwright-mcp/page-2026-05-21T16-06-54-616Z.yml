@@ -1,0 +1,93 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "XimiLearn" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e6]
+          - generic [ref=e8]: XimiLearn
+        - navigation [ref=e9]:
+          - link "Главная" [ref=e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "ОГЭ" [ref=e11] [cursor=pointer]:
+            - /url: /learn/oge
+          - link "Тренажёры" [ref=e12] [cursor=pointer]:
+            - /url: /tools
+          - link "Рейтинг" [ref=e13] [cursor=pointer]:
+            - /url: /leaderboard
+        - generic [ref=e15]:
+          - generic "Новичок" [ref=e16]:
+            - img [ref=e17]
+            - generic [ref=e20]: Новичок
+          - link "БИ Без имени" [ref=e21] [cursor=pointer]:
+            - /url: /profile
+            - generic [ref=e22]: БИ
+            - generic [ref=e23]: Без имени
+    - main [ref=e24]:
+      - generic [ref=e25]:
+        - heading "Мой прогресс" [level=1] [ref=e26]
+        - paragraph [ref=e27]: Продолжай учиться и набирай опыт
+        - generic [ref=e28]:
+          - generic [ref=e29]:
+            - img [ref=e30]
+            - generic [ref=e33]:
+              - heading "Привяжи свою почту" [level=3] [ref=e34]
+              - paragraph [ref=e35]: Это нужно для восстановления пароля. После подтверждения kit-логин больше не работает — вход по email.
+          - generic [ref=e36]:
+            - textbox "user@example.com" [ref=e37]
+            - button "Привязать" [ref=e38] [cursor=pointer]
+        - generic [ref=e39]:
+          - generic [ref=e40]:
+            - img [ref=e42]
+            - paragraph [ref=e44]: "0"
+            - paragraph [ref=e45]: XP
+          - generic [ref=e46]:
+            - img [ref=e48]
+            - paragraph [ref=e50]: "0"
+            - paragraph [ref=e51]: дней подряд
+          - generic [ref=e52]:
+            - img [ref=e54]
+            - paragraph [ref=e57]: "0"
+            - paragraph [ref=e58]: решено задач
+          - generic [ref=e59]:
+            - img [ref=e61]
+            - paragraph [ref=e65]: 0%
+            - paragraph [ref=e66]: точность
+        - generic [ref=e67]:
+          - generic [ref=e68]:
+            - heading "Мои модули" [level=2] [ref=e69]
+            - generic [ref=e70]:
+              - img [ref=e71]
+              - text: Доступ ещё 363 дн.
+          - link "ОГЭ-модуль 2026 Полный курс подготовки к ОГЭ по химии 2026" [ref=e74] [cursor=pointer]:
+            - /url: /learn/oge
+            - generic [ref=e76]:
+              - img [ref=e78]
+              - generic [ref=e80]:
+                - heading "ОГЭ-модуль 2026" [level=3] [ref=e81]
+                - paragraph [ref=e82]: Полный курс подготовки к ОГЭ по химии 2026
+        - generic [ref=e83]:
+          - generic [ref=e84]:
+            - generic [ref=e85]:
+              - img [ref=e86]
+              - heading "Последние достижения" [level=2] [ref=e89]
+            - paragraph [ref=e90]: Пока нет достижений. Решай задачи!
+            - link "Все достижения →" [ref=e91] [cursor=pointer]:
+              - /url: /achievements
+          - generic [ref=e92]:
+            - heading "Продолжить" [level=2] [ref=e93]
+            - paragraph [ref=e94]:
+              - text: Начни с
+              - link "каталога модулей" [ref=e95] [cursor=pointer]:
+                - /url: /modules
+    - contentinfo [ref=e96]:
+      - generic [ref=e97]:
+        - paragraph [ref=e98]: © 2026 ИП Аистов В.А. · ИНН 431401950080
+        - navigation [ref=e99]:
+          - link "Политика конфиденциальности" [ref=e100] [cursor=pointer]:
+            - /url: /policy
+          - link "Оферта" [ref=e101] [cursor=pointer]:
+            - /url: /oferta
+          - link "info@ximi4ka.ru" [ref=e102] [cursor=pointer]:
+            - /url: mailto:info@ximi4ka.ru
+  - alert [ref=e103]

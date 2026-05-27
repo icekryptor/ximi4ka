@@ -1,0 +1,282 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "XimiLearn" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - img [ref=e5]
+        - generic [ref=e7]: XimiLearn
+      - navigation [ref=e8]:
+        - link "Главная" [ref=e9] [cursor=pointer]:
+          - /url: https://ximi4ka.ru
+        - link "Наборы" [ref=e10] [cursor=pointer]:
+          - /url: https://ximi4ka.ru/shop
+        - link "О нас" [ref=e11] [cursor=pointer]:
+          - /url: https://ximi4ka.ru/about
+        - link "Контакты" [ref=e12] [cursor=pointer]:
+          - /url: https://ximi4ka.ru/contacts
+      - link "Перейти в платформу" [ref=e14] [cursor=pointer]:
+        - /url: /dashboard
+        - text: Перейти в платформу
+        - img [ref=e15]
+  - main [ref=e17]:
+    - main [ref=e18]:
+      - generic [ref=e20]:
+        - heading "Химия — это просто" [level=1] [ref=e21]
+        - paragraph [ref=e22]: "Гибридное обучение химии: онлайн-уроки, реальные наборы для опытов и интерактивные тренажёры — всё в одной экосистеме."
+        - link "Перейти в платформу" [ref=e24] [cursor=pointer]:
+          - /url: /dashboard
+          - button "Перейти в платформу" [ref=e25]:
+            - generic [ref=e26]:
+              - text: Перейти в платформу
+              - img [ref=e27]
+      - generic [ref=e30]:
+        - generic [ref=e32]:
+          - generic [ref=e33]: О нас
+          - heading "Химичка — новый способ учить химию" [level=2] [ref=e34]
+        - paragraph [ref=e36]: "Химичка — это образовательный бренд нового поколения, создающий гибридный способ обучения: онлайн-уроки, оффлайн-наборы для реальных опытов и платформа с интерактивными тренажёрами и тестами."
+        - paragraph [ref=e38]: Наша миссия — сделать химию из скучного, сложного, теоретического предмета практической, живой и творческой для максимального количества людей всех возрастов.
+        - generic [ref=e39]:
+          - generic [ref=e40]:
+            - img [ref=e42]
+            - generic [ref=e46]:
+              - paragraph [ref=e47]: Теория
+              - paragraph [ref=e48]: Учебные модули и разборы
+          - generic [ref=e49]:
+            - img [ref=e51]
+            - generic [ref=e53]:
+              - paragraph [ref=e54]: Практика
+              - paragraph [ref=e55]: Реальные наборы для опытов
+          - generic [ref=e56]:
+            - img [ref=e58]
+            - generic [ref=e60]:
+              - paragraph [ref=e61]: Тренажёры
+              - paragraph [ref=e62]: Тренировка и тесты ОГЭ
+      - generic [ref=e64]:
+        - generic [ref=e65]:
+          - generic [ref=e66]: Наборы
+          - heading "Реальная химия в коробке" [level=2] [ref=e67]
+          - paragraph [ref=e68]: Каждый набор — это методичка, реактивы, оборудование и доступ к онлайн-платформе. Ученик ставит опыты руками, теорию повторяет на тренажёрах.
+        - generic [ref=e69]:
+          - generic [ref=e71]:
+            - generic [ref=e73]:
+              - img [ref=e74]
+              - text: Хит для 9-классника
+            - img [ref=e78]
+            - heading "Набор для ОГЭ" [level=3] [ref=e81]
+            - paragraph [ref=e82]: 31 реактив для подготовки к экзамену + год доступа к онлайн-тренажёру ОГЭ в подарок.
+            - generic [ref=e83]:
+              - generic [ref=e84]: 3 490
+              - generic [ref=e85]: ₽
+              - generic [ref=e86]: 6 000 ₽
+            - link "Купить" [ref=e87] [cursor=pointer]:
+              - /url: /kits/oge
+              - button "Купить" [ref=e88]
+          - generic [ref=e90]:
+            - img [ref=e92]
+            - heading "Химичка 3.0" [level=3] [ref=e94]
+            - paragraph [ref=e95]: "Основной набор: 161 опыт, подробная методичка, лабораторное оборудование. Возраст 10–18 лет."
+            - generic [ref=e96]:
+              - generic [ref=e97]: 3 299
+              - generic [ref=e98]: ₽
+              - generic [ref=e99]: 3 500 ₽
+            - link "Купить на ximi4ka.ru" [ref=e100] [cursor=pointer]:
+              - /url: https://ximi4ka.ru/tproduct/279167718312-himichka-30
+              - button "Купить на ximi4ka.ru" [ref=e101]
+          - generic [ref=e103]:
+            - img [ref=e105]
+            - heading "Мини-Химичка" [level=3] [ref=e107]
+            - paragraph [ref=e108]: Стартовый набор с минимальным комплектом посуды и реактивов. Совместим с «Химичкой 3.0».
+            - generic [ref=e109]:
+              - generic [ref=e110]: 1 799
+              - generic [ref=e111]: ₽
+              - generic [ref=e112]: 1 800 ₽
+            - link "Купить на ximi4ka.ru" [ref=e113] [cursor=pointer]:
+              - /url: https://ximi4ka.ru/tproduct/342501029362-mini-himichka
+              - button "Купить на ximi4ka.ru" [ref=e114]
+          - generic [ref=e116]:
+            - img [ref=e118]
+            - heading "Электрохимичка" [level=3] [ref=e120]
+            - paragraph [ref=e121]: Электролиз и окислительно-восстановительные реакции для продвинутых юных химиков.
+            - generic [ref=e122]:
+              - generic [ref=e123]: 3 299
+              - generic [ref=e124]: ₽
+              - generic [ref=e125]: 3 400 ₽
+            - link "Купить на ximi4ka.ru" [ref=e126] [cursor=pointer]:
+              - /url: https://ximi4ka.ru/tproduct/635072078342-elektrohimichka
+              - button "Купить на ximi4ka.ru" [ref=e127]
+          - generic [ref=e129]:
+            - generic [ref=e131]:
+              - img [ref=e132]
+              - text: Самое выгодное
+            - img [ref=e136]
+            - heading "Все три набора" [level=3] [ref=e140]
+            - paragraph [ref=e141]: "Комбо: «Химичка 3.0» + «Мини-Химичка» + «Электрохимичка». Максимальная скидка."
+            - generic [ref=e142]:
+              - generic [ref=e143]: 6 499
+              - generic [ref=e144]: ₽
+              - generic [ref=e145]: 7 000 ₽
+            - link "Купить на ximi4ka.ru" [ref=e146] [cursor=pointer]:
+              - /url: https://ximi4ka.ru/tproduct/984926446832-vse-tri-nabora
+              - button "Купить на ximi4ka.ru" [ref=e147]
+        - link "Все наборы на ximi4ka.ru" [ref=e149] [cursor=pointer]:
+          - /url: https://ximi4ka.ru
+          - text: Все наборы на ximi4ka.ru
+          - img [ref=e150]
+      - generic [ref=e153]:
+        - generic [ref=e154]:
+          - generic [ref=e155]: Модуль ОГЭ
+          - heading "Подготовка к ОГЭ по химии" [level=2] [ref=e156]
+          - paragraph [ref=e157]: "Полная база заданий ФИПИ, контрольные тесты с таймером, разбор каждой реакции. Два способа получить доступ:"
+        - generic [ref=e158]:
+          - generic [ref=e159]:
+            - img [ref=e161]
+            - heading "Доступ к модулю" [level=3] [ref=e164]
+            - generic [ref=e165]:
+              - generic [ref=e166]: "349"
+              - generic [ref=e167]: ₽ / год
+            - list [ref=e168]:
+              - listitem [ref=e169]:
+                - img [ref=e170]
+                - text: Все задания ФИПИ
+              - listitem [ref=e173]:
+                - img [ref=e174]
+                - text: Контрольные тесты с таймером
+              - listitem [ref=e177]:
+                - img [ref=e178]
+                - text: Разбор каждой реакции
+            - link "Купить доступ" [ref=e181] [cursor=pointer]:
+              - /url: /dashboard
+              - button "Купить доступ" [ref=e182]
+          - generic [ref=e183]:
+            - generic [ref=e185]:
+              - img [ref=e186]
+              - text: В комплекте
+            - img [ref=e190]
+            - heading "Бесплатно с набором ОГЭ" [level=3] [ref=e194]
+            - generic [ref=e195]:
+              - generic [ref=e196]: Бесплатно
+              - generic [ref=e197]: на 1 год
+            - list [ref=e198]:
+              - listitem [ref=e199]:
+                - img [ref=e200]
+                - text: 31 реактив для практики
+              - listitem [ref=e203]:
+                - img [ref=e204]
+                - text: Год доступа к модулю в подарок
+              - listitem [ref=e207]:
+                - img [ref=e208]
+                - text: Активация по QR из коробки
+            - link "Купить набор ОГЭ" [ref=e211] [cursor=pointer]:
+              - /url: /kits/oge
+              - button "Купить набор ОГЭ" [ref=e212]
+      - generic [ref=e214]:
+        - generic [ref=e215]:
+          - generic [ref=e216]: Подписка
+          - heading "Доступ ко всем базовым модулям" [level=2] [ref=e217]
+          - paragraph [ref=e218]: Подписка открывает базовые модули. Продвинутые — отдельно.
+        - generic [ref=e219]:
+          - generic [ref=e220]:
+            - heading "Месячная" [level=3] [ref=e221]
+            - generic [ref=e222]:
+              - generic [ref=e223]: "299"
+              - generic [ref=e224]: ₽/мес
+            - list [ref=e225]:
+              - listitem [ref=e226]: ✓ Все базовые модули
+              - listitem [ref=e227]: ✓ Тренажёры и тесты ОГЭ
+              - listitem [ref=e228]: ✓ Прогресс и достижения
+              - listitem [ref=e229]: ✓ Отмена в любой момент
+          - generic [ref=e230]:
+            - generic [ref=e232]:
+              - img [ref=e233]
+              - text: Выгоднее на 28%
+            - heading "Годовая" [level=3] [ref=e236]
+            - generic [ref=e237]:
+              - generic [ref=e238]: 2 590
+              - generic [ref=e239]: ₽/год
+            - paragraph [ref=e240]: ≈ 216 ₽/мес — экономия 998 ₽
+            - list [ref=e241]:
+              - listitem [ref=e242]: ✓ Всё из месячной
+              - listitem [ref=e243]: ✓ Целый учебный год
+              - listitem [ref=e244]: ✓ Один платёж — без перерывов
+        - link "Подробнее о тарифах →" [ref=e246] [cursor=pointer]:
+          - /url: /pricing
+      - generic [ref=e248]:
+        - generic [ref=e249]:
+          - generic [ref=e250]: FAQ
+          - heading "Частые вопросы" [level=2] [ref=e251]
+        - generic [ref=e252]:
+          - group [ref=e253]:
+            - generic "Что входит в подписку? +" [ref=e254] [cursor=pointer]:
+              - generic [ref=e255]: Что входит в подписку?
+              - generic [ref=e256]: +
+          - group [ref=e257]:
+            - generic "Как активировать набор? +" [ref=e258] [cursor=pointer]:
+              - generic [ref=e259]: Как активировать набор?
+              - generic [ref=e260]: +
+          - group [ref=e261]:
+            - generic "Можно ли вернуть деньги? +" [ref=e262] [cursor=pointer]:
+              - generic [ref=e263]: Можно ли вернуть деньги?
+              - generic [ref=e264]: +
+          - group [ref=e265]:
+            - generic "С какого возраста подходит? +" [ref=e266] [cursor=pointer]:
+              - generic [ref=e267]: С какого возраста подходит?
+              - generic [ref=e268]: +
+      - generic [ref=e270]:
+        - generic [ref=e271]:
+          - generic [ref=e272]: Контакты
+          - heading "Свяжись с нами" [level=2] [ref=e273]
+          - paragraph [ref=e274]: Отвечаем по будням в течение нескольких часов
+        - generic [ref=e275]:
+          - link "Почта info@ximi4ka.ru" [ref=e276] [cursor=pointer]:
+            - /url: mailto:info@ximi4ka.ru
+            - img [ref=e278]
+            - paragraph [ref=e281]: Почта
+            - paragraph [ref=e282]: info@ximi4ka.ru
+          - link "Телефон +7 985 993-83-11" [ref=e283] [cursor=pointer]:
+            - /url: tel:+79859938311
+            - img [ref=e285]
+            - paragraph [ref=e287]: Телефон
+            - paragraph [ref=e288]: +7 985 993-83-11
+          - link "Telegram @ximi4ka_support" [ref=e289] [cursor=pointer]:
+            - /url: https://t.me/ximi4ka_support
+            - img [ref=e291]
+            - paragraph [ref=e294]: Telegram
+            - paragraph [ref=e295]: "@ximi4ka_support"
+        - paragraph [ref=e296]: ИП Аистов Василий Андреевич · ИНН 431401950080 · ОГРНИП 319435000027879
+  - contentinfo [ref=e297]:
+    - generic [ref=e298]:
+      - generic [ref=e299]:
+        - generic [ref=e300]:
+          - paragraph [ref=e301]: Реквизиты
+          - paragraph [ref=e302]: ИП Аистов Василий Андреевич
+          - paragraph [ref=e303]: "ИНН: 431401950080"
+          - paragraph [ref=e304]: "ОГРНИП: 319435000027879"
+          - paragraph [ref=e305]: г. Москва, 3-я Мытищинская ул., д. 16, стр. 21Б
+        - generic [ref=e306]:
+          - paragraph [ref=e307]: Контакты
+          - paragraph [ref=e308]:
+            - link "info@ximi4ka.ru" [ref=e309] [cursor=pointer]:
+              - /url: mailto:info@ximi4ka.ru
+          - paragraph [ref=e310]:
+            - link "+7 985 993-83-11" [ref=e311] [cursor=pointer]:
+              - /url: tel:+79859938311
+          - paragraph [ref=e312]:
+            - link "Telegram-поддержка" [ref=e313] [cursor=pointer]:
+              - /url: https://t.me/ximi4ka_support
+        - generic [ref=e314]:
+          - paragraph [ref=e315]: Документы
+          - paragraph [ref=e316]:
+            - link "Политика конфиденциальности" [ref=e317] [cursor=pointer]:
+              - /url: /policy
+          - paragraph [ref=e318]:
+            - link "Публичная оферта" [ref=e319] [cursor=pointer]:
+              - /url: /oferta
+          - paragraph [ref=e320]:
+            - link "Тарифы и условия" [ref=e321] [cursor=pointer]:
+              - /url: /pricing
+      - generic [ref=e322]:
+        - paragraph [ref=e323]: © 2026 Ximi4ka. Все права защищены.
+        - paragraph [ref=e324]:
+          - link "ximi4ka.ru" [ref=e325] [cursor=pointer]:
+            - /url: https://ximi4ka.ru
+  - alert [ref=e326]

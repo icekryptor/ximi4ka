@@ -1,0 +1,49 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "XimiLearn" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e6]
+          - generic [ref=e8]: XimiLearn
+        - navigation [ref=e9]:
+          - link "Главная" [ref=e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "ОГЭ" [ref=e11] [cursor=pointer]:
+            - /url: /learn/oge
+          - link "Тулы" [ref=e12] [cursor=pointer]:
+            - /url: /tools
+          - link "Рейтинг" [ref=e13] [cursor=pointer]:
+            - /url: /leaderboard
+        - generic [ref=e15]:
+          - generic "Новичок" [ref=e16]:
+            - img [ref=e17]
+            - generic [ref=e20]: Новичок
+          - link "БИ Без имени" [ref=e21] [cursor=pointer]:
+            - /url: /profile
+            - generic [ref=e22]: БИ
+            - generic [ref=e23]: Без имени
+    - main [ref=e24]:
+      - generic [ref=e84]:
+        - generic [ref=e87]: Вопрос 1 из 30
+        - generic [ref=e89]:
+          - paragraph [ref=e90]: К раствору AlCl₃ прилили несколько капель раствора NaOH. Что наблюдается?
+          - generic [ref=e91]:
+            - button "1.выпадает белый студенистый осадок" [disabled] [ref=e92]:
+              - generic [ref=e93]: "1."
+              - text: выпадает белый студенистый осадок
+              - img [ref=e101]
+            - button "2.выпадает белый осадок, который сразу растворяется" [disabled] [ref=e94]:
+              - generic [ref=e95]: "2."
+              - text: выпадает белый осадок, который сразу растворяется
+            - button "3.сразу образуется бесцветный раствор алюмината без осадка" [disabled] [ref=e96]:
+              - generic [ref=e97]: "3."
+              - text: сразу образуется бесцветный раствор алюмината без осадка
+            - button "4.выделяется бесцветный газ" [disabled] [ref=e98]:
+              - generic [ref=e99]: "4."
+              - text: выделяется бесцветный газ
+          - generic [ref=e103]:
+            - paragraph [ref=e104]: Верно!
+            - paragraph [ref=e105]: "При небольшом количестве щёлочи образуется только Al(OH)₃ — белый студенистый осадок: AlCl₃ + 3NaOH → Al(OH)₃↓ + 3NaCl. Растворение в алюминат идёт ТОЛЬКО при избытке щёлочи: Al(OH)₃ + NaOH → Na[Al(OH)₄]. Здесь NaOH мало — осадок остаётся."
+          - button "Следующее задание →" [ref=e106] [cursor=pointer]
+  - alert [ref=e82]

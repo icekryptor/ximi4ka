@@ -1,11 +1,11 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCachedUser } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Badge } from "@/components/ui/Badge";
 import { canAccessModule } from "@/lib/services/access";
-import { BookOpen, CheckCircle2, Beaker, Atom, Table } from "lucide-react";
+import { BookOpen, CheckCircle2, Beaker, Atom, Table, BookOpenCheck, ClipboardCheck } from "lucide-react";
 
 const OGE_TOOLS = [
   { slug: "lab", name: "Тренажёр ОГЭ", desc: "Лабораторные работы и эксперименты ОГЭ", Icon: Beaker },
@@ -19,7 +19,7 @@ interface Props {
 
 export default async function LearnModulePage({ params }: Props) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getCachedUser();
   if (!user) redirect("/login");
 
   const { data: module } = await supabase
@@ -94,40 +94,33 @@ export default async function LearnModulePage({ params }: Props) {
               </Link>
             ))}
           </div>
-          {lessons.length > 0 && (
-            <>
-              <h2 className="text-lg font-bold text-dark-text mb-4">Уроки</h2>
-              <div className="space-y-3">
-                {lessons.map((lesson: any, _i: number) => {
-                  const status = progressMap.get(lesson.id) ?? "not_started";
-                  const isDone = status === "done";
-                  const isInProgress = status === "in_progress";
-                  return (
-                    <Link key={lesson.id} href={`/learn/${params.slug}/${lesson.slug}`}>
-                      <Card theme="dark" hover className="flex items-center gap-4 px-5 py-4 cursor-pointer">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                          isDone ? "bg-success-dark/10" : "bg-primary/10"
-                        }`}>
-                          {isDone
-                            ? <CheckCircle2 className="w-5 h-5 text-success-dark" />
-                            : <BookOpen className="w-5 h-5 text-primary" />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-dark-text truncate">{lesson.title}</h3>
-                          {lesson.duration_minutes && (
-                            <p className="text-sm text-dark-text-muted">{lesson.duration_minutes} мин</p>
-                          )}
-                        </div>
-                        <Badge theme="dark" variant={isDone ? "xp" : isInProgress ? "streak" : "default"}>
-                          {isDone ? "Пройден" : isInProgress ? "В процессе" : "Не начат"}
-                        </Badge>
-                      </Card>
-                    </Link>
-                  );
-                })}
-              </div>
-            </>
-          )}
+          {/* Учёба section */}
+          <h2 className="text-lg font-bold text-dark-text mb-4">Учёба</h2>
+          <div className="grid md:grid-cols-2 gap-4 mb-8">
+            <Link href="/learn/oge/bank">
+              <Card theme="dark" hover className="p-5 h-full">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+                  <BookOpenCheck className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-semibold text-dark-text mb-1">Банк заданий</h3>
+                <p className="text-xs text-dark-text-muted">Практика по темам с мгновенной обратной связью</p>
+              </Card>
+            </Link>
+            <Link href="/learn/oge/test">
+              <Card theme="dark" hover className="p-5 h-full">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+                  <ClipboardCheck className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-semibold text-dark-text mb-1">Контрольный тест</h3>
+                <p className="text-xs text-dark-text-muted">30 или 50 заданий — узнай свой уровень</p>
+              </Card>
+            </Link>
+          </div>
+
+          {/* OGE intentionally suppresses the generic lessons list — the three
+              tools + bank + test above are the canonical content. Stray
+              published lessons on the OGE module would otherwise clutter the
+              page and confuse students about where to start. */}
         </div>
       ) : lessons.length > 0 ? (
         <div className="space-y-3">

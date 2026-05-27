@@ -1,0 +1,45 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "XimiLearn" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e6]
+          - generic [ref=e8]: XimiLearn
+        - navigation [ref=e9]:
+          - link "Главная" [ref=e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "ОГЭ" [ref=e11] [cursor=pointer]:
+            - /url: /learn/oge
+          - link "Тулы" [ref=e12] [cursor=pointer]:
+            - /url: /tools
+          - link "Рейтинг" [ref=e13] [cursor=pointer]:
+            - /url: /leaderboard
+        - generic [ref=e15]:
+          - generic "Новичок" [ref=e16]:
+            - img [ref=e17]
+            - generic [ref=e20]: Новичок
+          - link "БИ Без имени" [ref=e21] [cursor=pointer]:
+            - /url: /profile
+            - generic [ref=e22]: БИ
+            - generic [ref=e23]: Без имени
+    - main [ref=e24]:
+      - generic [ref=e50]:
+        - generic [ref=e53]: Вопрос 1 из 30
+        - generic [ref=e55]:
+          - paragraph [ref=e56]: С каким из перечисленных оксидов будет взаимодействовать соляная кислота?
+          - generic [ref=e57]:
+            - button "1.CO2" [ref=e58] [cursor=pointer]:
+              - generic [ref=e59]: "1."
+              - text: CO2
+            - button "2.SO3" [ref=e60] [cursor=pointer]:
+              - generic [ref=e61]: "2."
+              - text: SO3
+            - button "3.CuO" [active] [ref=e62] [cursor=pointer]:
+              - generic [ref=e63]: "3."
+              - text: CuO
+            - button "4.N2O5" [ref=e64] [cursor=pointer]:
+              - generic [ref=e65]: "4."
+              - text: N2O5
+          - button "Проверить" [ref=e66] [cursor=pointer]
+  - alert [ref=e48]

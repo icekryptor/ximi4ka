@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 
+type SuccessKind = "new" | "already_exists";
+
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,7 +17,9 @@ export default function RegisterPage() {
   const [promoCode, setPromoCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState<SuccessKind | null>(null);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetSending, setResetSending] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = useRouter();
 
@@ -25,7 +29,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { display_name: displayName } },
@@ -33,6 +37,26 @@ export default function RegisterPage() {
 
     if (error) {
       setError(error.message);
+      setLoading(false);
+      return;
+    }
+
+    // Anti-enumeration quirk: Supabase returns 200 OK for a signup on an
+    // already-registered email AND does NOT send a confirmation email — but
+    // exposes it client-side via `user.identities = []` (empty array means
+    // "no new identity was created"). Without this check, the user sees
+    // "check your email" and waits forever for a letter that never arrives —
+    // which is exactly the support ticket we keep getting.
+    //
+    // Caveat: only works while "Confirm email" is enabled at the project level
+    // (it is — verified in Supabase Auth settings). If that toggle gets flipped
+    // off, identities will be populated and this branch becomes unreachable;
+    // user sees the same "new" success screen, harmless.
+    const alreadyRegistered =
+      !!data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0;
+
+    if (alreadyRegistered) {
+      setSuccess("already_exists");
       setLoading(false);
       return;
     }
@@ -45,19 +69,82 @@ export default function RegisterPage() {
       });
     }
 
-    setSuccess(true);
+    setSuccess("new");
     setLoading(false);
   }
 
-  if (success) {
+  async function handleSendReset() {
+    setResetSending(true);
+    const supabase = createClient();
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    // Mirror Supabase's anti-enumeration response: always show "sent" even if
+    // the email isn't actually registered. Here we know it IS (we just got
+    // already_exists from signup), so the letter will arrive.
+    setResetSent(true);
+    setResetSending(false);
+  }
+
+  if (success === "already_exists") {
+    return (
+      <Card className="w-full max-w-md p-8 text-center">
+        <h1 className="font-display text-2xl font-bold text-text-primary mb-3">
+          У вас уже есть аккаунт
+        </h1>
+        <p className="text-text-secondary mb-6">
+          Email <strong className="text-text-primary">{email}</strong> уже зарегистрирован.
+          Войдите по своему паролю или восстановите доступ.
+        </p>
+
+        <div className="space-y-3">
+          <Link href={`/login?email=${encodeURIComponent(email)}`} className="block">
+            <Button className="w-full" size="lg">Войти</Button>
+          </Link>
+
+          {resetSent ? (
+            <p className="text-sm text-text-secondary bg-primary/5 border border-primary/20 rounded-xl px-4 py-3">
+              Ссылка для сброса пароля отправлена на <strong>{email}</strong>.
+              Проверьте почту (включая «Спам»).
+            </p>
+          ) : (
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full"
+              onClick={handleSendReset}
+              disabled={resetSending}
+            >
+              {resetSending ? "Отправляем…" : "Забыли пароль?"}
+            </Button>
+          )}
+        </div>
+
+        <p className="mt-6 text-xs text-text-muted">
+          Это не вы создавали аккаунт?{" "}
+          <a href="mailto:info@ximi4ka.ru" className="text-primary hover:underline">
+            Напишите нам
+          </a>
+        </p>
+      </Card>
+    );
+  }
+
+  if (success === "new") {
     return (
       <Card className="w-full max-w-md p-8 text-center">
         <h1 className="font-display text-2xl font-bold text-text-primary mb-4">
           Проверьте почту
         </h1>
-        <p className="text-text-secondary">
+        <p className="text-text-secondary mb-2">
           Мы отправили ссылку для подтверждения на{" "}
           <strong className="text-text-primary">{email}</strong>
+        </p>
+        <p className="text-xs text-text-muted mt-4">
+          Письмо не пришло за пару минут? Загляните в «Спам» или{" "}
+          <a href="mailto:info@ximi4ka.ru" className="text-primary hover:underline">
+            напишите нам
+          </a>.
         </p>
       </Card>
     );

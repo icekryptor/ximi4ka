@@ -1,0 +1,48 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "XimiLearn" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e6]
+          - generic [ref=e8]: XimiLearn
+        - navigation [ref=e9]:
+          - link "Главная" [ref=e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "ОГЭ" [ref=e11] [cursor=pointer]:
+            - /url: /learn/oge
+          - link "Тулы" [ref=e12] [cursor=pointer]:
+            - /url: /tools
+          - link "Рейтинг" [ref=e13] [cursor=pointer]:
+            - /url: /leaderboard
+        - generic [ref=e15]:
+          - generic "Новичок" [ref=e16]:
+            - img [ref=e17]
+            - generic [ref=e20]: Новичок
+          - link "БИ Без имени" [ref=e21] [cursor=pointer]:
+            - /url: /profile
+            - generic [ref=e22]: БИ
+            - generic [ref=e23]: Без имени
+    - main [ref=e24]:
+      - generic [ref=e77]:
+        - generic [ref=e79]:
+          - generic [ref=e80]: Вопрос 1 из 30
+          - generic [ref=e82]: ⏱ 14:33
+        - generic [ref=e84]:
+          - paragraph [ref=e85]:
+            - generic [ref=e86]: В двух пробирках находятся бесцветные растворы NaCl и KOH. Какой из перечисленных реактивов позволит их различить?
+          - generic [ref=e87]:
+            - button "1.KI" [ref=e88] [cursor=pointer]:
+              - generic [ref=e89]: "1."
+              - text: KI
+            - button "2.FeCl₃" [active] [ref=e90] [cursor=pointer]:
+              - generic [ref=e91]: "2."
+              - text: FeCl₃
+            - button "3.NaOH" [ref=e92] [cursor=pointer]:
+              - generic [ref=e93]: "3."
+              - text: NaOH
+            - button "4.Ba(NO₃)₂" [ref=e94] [cursor=pointer]:
+              - generic [ref=e95]: "4."
+              - text: Ba(NO₃)₂
+          - button "Проверить" [ref=e96] [cursor=pointer]
+  - alert [ref=e75]

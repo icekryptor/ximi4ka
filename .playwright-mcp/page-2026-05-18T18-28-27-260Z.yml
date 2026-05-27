@@ -1,0 +1,48 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "XimiLearn" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e6]
+          - generic [ref=e8]: XimiLearn
+        - navigation [ref=e9]:
+          - link "Главная" [ref=e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "ОГЭ" [ref=e11] [cursor=pointer]:
+            - /url: /learn/oge
+          - link "Тулы" [ref=e12] [cursor=pointer]:
+            - /url: /tools
+          - link "Рейтинг" [ref=e13] [cursor=pointer]:
+            - /url: /leaderboard
+        - generic [ref=e15]:
+          - generic "Новичок" [ref=e16]:
+            - img [ref=e17]
+            - generic [ref=e20]: Новичок
+          - link "БИ Без имени" [ref=e21] [cursor=pointer]:
+            - /url: /profile
+            - generic [ref=e22]: БИ
+            - generic [ref=e23]: Без имени
+    - main [ref=e24]:
+      - generic [ref=e25]:
+        - generic [ref=e26]:
+          - link "← Банк заданий" [ref=e27] [cursor=pointer]:
+            - /url: /learn/oge/bank
+          - generic [ref=e28]: "Прогресс: 0/66"
+        - heading "Качественные реакции" [level=1] [ref=e29]
+        - paragraph [ref=e30]: "ОГЭ задания: 16, 17"
+        - generic [ref=e31]:
+          - paragraph [ref=e32]: Из списка выберите ДВА реактива для распознавания раствора сульфата натрия Na2SO4.
+          - generic [ref=e33]:
+            - button "раствор BaCl2" [ref=e34] [cursor=pointer]:
+              - generic [ref=e36]: раствор BaCl2
+            - button "раствор Pb(NO3)2" [ref=e37] [cursor=pointer]:
+              - generic [ref=e39]: раствор Pb(NO3)2
+            - button "раствор NaCl" [ref=e40] [cursor=pointer]:
+              - generic [ref=e42]: раствор NaCl
+            - button "лакмус" [ref=e43] [cursor=pointer]:
+              - generic [ref=e45]: лакмус
+            - button "раствор NH4Cl" [ref=e46] [cursor=pointer]:
+              - generic [ref=e48]: раствор NH4Cl
+          - button "Проверить" [disabled] [ref=e49]
+  - alert [ref=e50]

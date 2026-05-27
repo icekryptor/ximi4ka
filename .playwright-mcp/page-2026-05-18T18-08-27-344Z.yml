@@ -1,0 +1,45 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "XimiLearn" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e6]
+          - generic [ref=e8]: XimiLearn
+        - navigation [ref=e9]:
+          - link "Главная" [ref=e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "ОГЭ" [ref=e11] [cursor=pointer]:
+            - /url: /learn/oge
+          - link "Тулы" [ref=e12] [cursor=pointer]:
+            - /url: /tools
+          - link "Рейтинг" [ref=e13] [cursor=pointer]:
+            - /url: /leaderboard
+        - generic [ref=e15]:
+          - generic "Новичок" [ref=e16]:
+            - img [ref=e17]
+            - generic [ref=e20]: Новичок
+          - link "БИ Без имени" [ref=e21] [cursor=pointer]:
+            - /url: /profile
+            - generic [ref=e22]: БИ
+            - generic [ref=e23]: Без имени
+    - main [ref=e24]:
+      - generic [ref=e50]:
+        - generic [ref=e53]: Вопрос 2 из 30
+        - generic [ref=e68]:
+          - paragraph [ref=e69]: "В пробирке находится прозрачный бесцветный раствор. После добавления нескольких капель лакмуса раствор окрасился в красный цвет. Это может быть раствор:"
+          - generic [ref=e70]:
+            - button "1.NaOH" [ref=e71] [cursor=pointer]:
+              - generic [ref=e72]: "1."
+              - text: NaOH
+            - button "2.NaCl" [ref=e73] [cursor=pointer]:
+              - generic [ref=e74]: "2."
+              - text: NaCl
+            - button "3.HNO3" [ref=e75] [cursor=pointer]:
+              - generic [ref=e76]: "3."
+              - text: HNO3
+            - button "4.Na2CO3" [ref=e77] [cursor=pointer]:
+              - generic [ref=e78]: "4."
+              - text: Na2CO3
+          - button "Проверить" [disabled] [ref=e79]
+  - alert [ref=e48]

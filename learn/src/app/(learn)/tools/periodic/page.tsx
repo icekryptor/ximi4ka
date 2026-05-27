@@ -7,7 +7,7 @@ export default async function PeriodicTablePage() {
   if (!hasAccess) redirect("/tools");
 
   return (
-    <div className="py-4 md:py-6 px-3 md:px-10">
+    <div className="max-w-screen-2xl mx-auto py-4 md:py-6 px-3 md:px-10">
       <div className="flex items-center gap-2 text-sm text-dark-text-secondary mb-4">
         <Link href="/tools" className="hover:text-dark-text transition-colors">
           Инструменты
@@ -24,7 +24,7 @@ export default async function PeriodicTablePage() {
         src="/tools/periodic-table.html"
         title="Периодическая таблица Менделеева"
         className="w-full rounded-2xl border border-white/[0.08] bg-white"
-        style={{ height: "calc(100vh - 200px)" }}
+        style={{ height: "calc(100dvh - 200px)" }}
         allowFullScreen
       />
     </div>

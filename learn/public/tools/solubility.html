@@ -67,26 +67,45 @@
   .shell { display: grid; grid-template-columns: 1fr 320px; gap: 14px; align-items: start; }
   @media (max-width: 1100px) { .shell { grid-template-columns: 1fr; } .detail-panel { position: static !important; max-height: none !important; } }
   
-  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 8px; overflow-x: auto; }
-  
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 8px; overflow: auto; max-height: calc(100vh - 220px); -webkit-overflow-scrolling: touch; }
+
   table.solubility { border-collapse: separate; border-spacing: 2px; font-family: var(--font-mono); width: 100%; min-width: 760px; }
   table.solubility th, table.solubility td { padding: 0; text-align: center; user-select: none; }
-  
-  /* Угловая ячейка */
-  .corner { width: 60px; height: 36px; background: var(--surface-2); border-radius: 4px; font-size: 9px; color: var(--text-tertiary); padding: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; }
+
+  /* Угловая ячейка — pinned top-left */
+  .corner {
+    width: 60px; height: 36px; background: var(--surface-2); border-radius: 4px;
+    font-size: 9px; color: var(--text-tertiary); padding: 4px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1;
+    position: sticky; top: 0; left: 0; z-index: 30;
+  }
   .corner-cation { font-family: var(--font); }
   .corner-anion { font-family: var(--font); }
   .corner-divider { font-size: 12px; color: var(--text-tertiary); }
-  
-  /* Заголовки катионов (слева) */
-  th.row-h { width: 60px; height: 32px; background: var(--surface-2); border-radius: 4px; font-size: 12px; font-weight: 500; color: var(--text); cursor: pointer; transition: background 0.12s; }
+
+  /* Заголовки катионов (слева) — pinned to left edge */
+  th.row-h {
+    width: 60px; height: 32px; background: var(--surface-2); border-radius: 4px;
+    font-size: 12px; font-weight: 500; color: var(--text); cursor: pointer; transition: background 0.12s;
+    position: sticky; left: 0; z-index: 20;
+    box-shadow: 2px 0 4px rgba(0,0,0,0.04);
+  }
   th.row-h:hover { background: var(--accent-bg); color: var(--accent-text); }
   th.row-h.active { background: var(--accent); color: #fff; }
-  
-  /* Заголовки анионов (сверху) */
-  th.col-h { height: 36px; background: var(--surface-2); border-radius: 4px; font-size: 12px; font-weight: 500; color: var(--text); cursor: pointer; transition: background 0.12s; min-width: 38px; }
+
+  /* Заголовки анионов (сверху) — pinned to top edge */
+  th.col-h {
+    height: 36px; background: var(--surface-2); border-radius: 4px;
+    font-size: 12px; font-weight: 500; color: var(--text); cursor: pointer; transition: background 0.12s; min-width: 38px;
+    position: sticky; top: 0; z-index: 20;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+  }
   th.col-h:hover { background: var(--accent-bg); color: var(--accent-text); }
   th.col-h.active { background: var(--accent); color: #fff; }
+  @media (prefers-color-scheme: dark) {
+    th.row-h { box-shadow: 2px 0 4px rgba(0,0,0,0.3); }
+    th.col-h { box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+  }
   
   /* Ячейки таблицы */
   td.cell { height: 32px; min-width: 38px; border-radius: 4px; font-size: 12px; font-weight: 500; cursor: pointer; transition: transform 0.1s, box-shadow 0.15s, opacity 0.2s; }
@@ -135,10 +154,12 @@
   
   @media (max-width: 720px) {
     .legend { font-size: 11px; }
-    .corner, th.row-h { width: 48px; font-size: 11px; }
-    th.col-h { font-size: 11px; min-width: 32px; }
-    td.cell { font-size: 11px; }
-    .page { padding: 12px 10px 24px; }
+    .corner, th.row-h { width: 44px; height: 28px; font-size: 10px; }
+    th.col-h { height: 28px; font-size: 10px; min-width: 28px; }
+    td.cell { height: 28px; min-width: 28px; font-size: 10px; }
+    table.solubility { min-width: 480px; border-spacing: 1px; }
+    .page { padding: 10px 8px 16px; }
+    .table-wrap { padding: 4px; max-height: calc(100vh - 180px); }
   }
 </style>
 </head>

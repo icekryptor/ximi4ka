@@ -1,12 +1,10 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCachedUser } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
 export default async function KitsPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCachedUser();
   if (!user) redirect("/login");
 
   const { data: profile } = await supabase
@@ -40,7 +38,7 @@ export default async function KitsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4 text-text-primary">Партии наборов</h1>
+      <h1 className="text-2xl font-bold mb-6 text-text-primary">Партии наборов</h1>
 
       <div className="bg-bg-secondary border border-border rounded-2xl p-4 mb-6 text-sm text-text-secondary">
         Новые партии создаются через CLI:

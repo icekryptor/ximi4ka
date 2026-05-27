@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCachedUser } from "@/lib/supabase/server";
 import { Send } from "lucide-react";
+import { getRankState } from "@/lib/ranks";
+import { getUserTotalXp } from "@/lib/user-rank";
 
 type Theme = "light" | "dark";
 
@@ -19,9 +21,7 @@ function tgHref(handle: string): string {
 
 export async function ProfilePreview({ theme = "light" }: { theme?: Theme }) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCachedUser();
   if (!user) return null;
 
   const { data: profile } = await supabase
@@ -39,6 +39,10 @@ export async function ProfilePreview({ theme = "light" }: { theme?: Theme }) {
   const tg = profile?.telegram?.trim();
   const avatar = profile?.avatar_url?.trim();
 
+  const totalXp = await getUserTotalXp(supabase, user.id);
+  const { rank } = getRankState(totalXp);
+  const RankIcon = rank.Icon;
+
   const isDark = theme === "dark";
   const wrapCls = isDark
     ? "border-white/10 hover:border-primary/40 bg-white/[0.03] hover:bg-white/[0.06]"
@@ -48,6 +52,14 @@ export async function ProfilePreview({ theme = "light" }: { theme?: Theme }) {
 
   return (
     <div className="flex items-center gap-2">
+      <div
+        className="hidden md:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold"
+        style={{ background: `${rank.hex}1f`, color: rank.hex }}
+        title={`${rank.name}${rank.discountPct ? ` · скидка ${rank.discountPct}%` : ''}`}
+      >
+        <RankIcon className="w-3.5 h-3.5" />
+        <span>{rank.name}</span>
+      </div>
       {tg && (
         <a
           href={tgHref(tg)}

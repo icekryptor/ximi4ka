@@ -1,0 +1,150 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "XimiLearn" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - img [ref=e5]
+        - generic [ref=e7]: XimiLearn
+      - navigation [ref=e8]:
+        - link "Главная" [ref=e9] [cursor=pointer]:
+          - /url: https://ximi4ka.ru
+        - link "Наборы" [ref=e10] [cursor=pointer]:
+          - /url: https://ximi4ka.ru/shop
+        - link "О нас" [ref=e11] [cursor=pointer]:
+          - /url: https://ximi4ka.ru/about
+        - link "Контакты" [ref=e12] [cursor=pointer]:
+          - /url: https://ximi4ka.ru/contacts
+      - generic [ref=e13]:
+        - link "Перейти в платформу" [ref=e14] [cursor=pointer]:
+          - /url: /dashboard
+          - text: Перейти в платформу
+          - img [ref=e15]
+        - generic [ref=e17]:
+          - generic "Новичок" [ref=e18]:
+            - img [ref=e19]
+            - generic [ref=e22]: Новичок
+          - link "БИ Без имени" [ref=e23] [cursor=pointer]:
+            - /url: /profile
+            - generic [ref=e24]: БИ
+            - generic [ref=e25]: Без имени
+  - main [ref=e26]:
+    - generic [ref=e28]:
+      - link "← Назад к товару" [ref=e29] [cursor=pointer]:
+        - /url: /kits/oge
+      - heading "Оформление заказа" [level=1] [ref=e30]
+      - paragraph [ref=e31]: Набор для ОГЭ по химии — 3 490 ₽
+      - generic [ref=e32]:
+        - generic [ref=e33]:
+          - generic [ref=e34]:
+            - heading "Контактные данные" [level=2] [ref=e35]
+            - generic [ref=e36]:
+              - generic [ref=e37]:
+                - generic [ref=e38]: Имя получателя *
+                - textbox "Имя получателя *" [ref=e39]:
+                  - /placeholder: Имя Фамилия
+              - generic [ref=e40]:
+                - generic [ref=e41]:
+                  - generic [ref=e42]:
+                    - text: Email *
+                    - generic [ref=e43]: — на него придут логин и пароль
+                  - textbox "Email *— на него придут логин и пароль" [ref=e44]:
+                    - /placeholder: you@example.com
+                - generic [ref=e45]:
+                  - generic [ref=e46]: Телефон *
+                  - textbox "Телефон *" [ref=e47]:
+                    - /placeholder: +7 999 999-99-99
+          - generic [ref=e48]:
+            - heading "Доставка" [level=2] [ref=e49]
+            - generic [ref=e50]:
+              - button "ПВЗ СДЭК Бесплатно" [ref=e51] [cursor=pointer]:
+                - generic [ref=e53]:
+                  - img [ref=e54]
+                  - text: ПВЗ СДЭК
+                - paragraph [ref=e57]: Бесплатно
+              - button "Курьер СДЭК Бесплатно" [ref=e58] [cursor=pointer]:
+                - generic [ref=e60]:
+                  - img [ref=e61]
+                  - text: Курьер СДЭК
+                - paragraph [ref=e66]: Бесплатно
+            - generic [ref=e67]:
+              - generic [ref=e68]:
+                - generic [ref=e69]:
+                  - generic [ref=e70]:
+                    - text: Адрес доставки *
+                    - generic [ref=e71]: — адрес ПВЗ СДЭК
+                  - textbox "Адрес доставки *— адрес ПВЗ СДЭК" [ref=e72]:
+                    - /placeholder: г. Москва, ул. Тверская, д. 1, кв. 5
+                - generic [ref=e73]:
+                  - generic [ref=e74]: Город
+                  - textbox "Город" [ref=e75]:
+                    - /placeholder: Москва
+              - generic [ref=e76]:
+                - generic [ref=e77]:
+                  - text: Код ПВЗ СДЭК
+                  - generic [ref=e78]: — опционально — найди на cdek.ru
+                - textbox "Код ПВЗ СДЭК — опционально — найди на cdek.ru" [ref=e79]:
+                  - /placeholder: MSK123
+              - generic [ref=e80]:
+                - generic [ref=e81]: Комментарий к заказу
+                - textbox "Комментарий к заказу" [ref=e82]:
+                  - /placeholder: Пожелания, время доставки и т.д.
+        - generic [ref=e84]:
+          - heading "Итого" [level=2] [ref=e85]
+          - generic [ref=e86]:
+            - generic [ref=e87]:
+              - generic [ref=e88]: Набор для ОГЭ по химии
+              - generic [ref=e89]: 3 490 ₽
+            - generic [ref=e90]:
+              - generic [ref=e91]: Доставка (ПВЗ СДЭК)
+              - generic [ref=e92]: Бесплатно
+            - generic [ref=e94]:
+              - generic [ref=e95]: К оплате
+              - generic [ref=e96]: 3 490 ₽
+          - generic [ref=e97] [cursor=pointer]:
+            - checkbox "Соглашаюсь с офертой и политикой" [ref=e98]
+            - generic [ref=e99]:
+              - text: Соглашаюсь с
+              - link "офертой" [ref=e100]:
+                - /url: /oferta
+              - text: и
+              - link "политикой" [ref=e101]:
+                - /url: /policy
+          - button "Оплатить 3 490 ₽" [disabled] [ref=e102]
+          - paragraph [ref=e103]: После оплаты логин и пароль придут на email
+  - contentinfo [ref=e104]:
+    - generic [ref=e105]:
+      - generic [ref=e106]:
+        - generic [ref=e107]:
+          - paragraph [ref=e108]: Реквизиты
+          - paragraph [ref=e109]: ИП Аистов Василий Андреевич
+          - paragraph [ref=e110]: "ИНН: 431401950080"
+          - paragraph [ref=e111]: "ОГРНИП: 319435000027879"
+          - paragraph [ref=e112]: г. Москва, 3-я Мытищинская ул., д. 16, стр. 21Б
+        - generic [ref=e113]:
+          - paragraph [ref=e114]: Контакты
+          - paragraph [ref=e115]:
+            - link "info@ximi4ka.ru" [ref=e116] [cursor=pointer]:
+              - /url: mailto:info@ximi4ka.ru
+          - paragraph [ref=e117]:
+            - link "+7 985 993-83-11" [ref=e118] [cursor=pointer]:
+              - /url: tel:+79859938311
+          - paragraph [ref=e119]:
+            - link "Telegram-поддержка" [ref=e120] [cursor=pointer]:
+              - /url: https://t.me/ximi4ka_support
+        - generic [ref=e121]:
+          - paragraph [ref=e122]: Документы
+          - paragraph [ref=e123]:
+            - link "Политика конфиденциальности" [ref=e124] [cursor=pointer]:
+              - /url: /policy
+          - paragraph [ref=e125]:
+            - link "Публичная оферта" [ref=e126] [cursor=pointer]:
+              - /url: /oferta
+          - paragraph [ref=e127]:
+            - link "Тарифы и условия" [ref=e128] [cursor=pointer]:
+              - /url: /pricing
+      - generic [ref=e129]:
+        - paragraph [ref=e130]: © 2026 Ximi4ka. Все права защищены.
+        - paragraph [ref=e131]:
+          - link "ximi4ka.ru" [ref=e132] [cursor=pointer]:
+            - /url: https://ximi4ka.ru
+  - alert [ref=e133]

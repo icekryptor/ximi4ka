@@ -16,8 +16,11 @@ export async function POST(request: Request) {
 
   if (data.status === "succeeded") {
     if (metadata.type === "subscription") {
+      // Period drives expiry: yearly → +12 mo, monthly → +1 mo.
+      // Falls back to monthly for legacy payloads w/o `period` metadata.
+      const period = metadata.period === "yearly" ? "yearly" : "monthly";
       const expiresAt = new Date();
-      expiresAt.setMonth(expiresAt.getMonth() + 1);
+      expiresAt.setMonth(expiresAt.getMonth() + (period === "yearly" ? 12 : 1));
 
       await supabase.from("subscriptions").insert({
         user_id: metadata.user_id,
@@ -25,6 +28,9 @@ export async function POST(request: Request) {
         status: "active",
         expires_at: expiresAt.toISOString(),
         yandex_pay_id: data.payment_id,
+        base_amount: metadata.base_amount != null ? Number(metadata.base_amount) : null,
+        discount_pct: metadata.discount_pct != null ? Number(metadata.discount_pct) : 0,
+        rank_at_purchase: metadata.rank_at_purchase ?? null,
       });
     } else if (metadata.type === "module_purchase") {
       await supabase.from("module_purchases").insert({

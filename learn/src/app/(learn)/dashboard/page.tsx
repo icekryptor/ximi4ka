@@ -1,14 +1,16 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCachedUser } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { getUserStats } from "@/lib/queries/progress";
 import Link from "next/link";
 import { Star, Flame, CheckCircle2, Target, Award, BookOpen, Calendar } from "lucide-react";
+import { BindEmailBanner } from "@/components/profile/BindEmailBanner";
+import { DashboardTour } from "@/components/onboarding/DashboardTour";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getCachedUser();
   if (!user) redirect("/login");
 
   const stats = await getUserStats(supabase, user.id);
@@ -30,13 +32,33 @@ export default async function DashboardPage() {
     ? Math.ceil((new Date(oldestExpiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
     : null;
 
+  // Kit users have synthetic @kits.ximi4ka.ru emails — they can't recover their
+  // account via "forgot password" until they bind a real email. Show the banner
+  // on the dashboard (their first stop) so they actually see it.
+  const isKitEmail = user.email?.endsWith("@kits.ximi4ka.ru") ?? false;
+
+  // Onboarding tour: shown once per profile. Drive the copy with `source`
+  // so kit-buyers and subscription-buyers see slightly different wording.
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("onboarded_at")
+    .eq("id", user.id)
+    .single();
+  const needsOnboarding = !profile?.onboarded_at;
+  const tourSource: "kit" | "subscription" | "unknown" =
+    isKitEmail ? "kit" : hasAnyAccess ? "subscription" : "unknown";
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
+      <DashboardTour runOnMount={needsOnboarding} source={tourSource} />
+
       <h1 className="text-2xl font-bold mb-2 text-dark-text">Мой прогресс</h1>
-      <p className="text-dark-text-secondary mb-8">Продолжайте учиться и набирайте опыт</p>
+      <p className="text-dark-text-secondary mb-8">Продолжай учиться и набирай опыт</p>
+
+      {isKitEmail && <BindEmailBanner />}
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div data-tour="stats" className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <Card theme="dark" hover className="p-6 text-center">
           <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3">
             <Star className="w-6 h-6 text-primary" />
@@ -80,7 +102,7 @@ export default async function DashboardPage() {
 
       {/* Мои модули — kit-based access (e.g. OGE) */}
       {hasAnyAccess && myUserModules && myUserModules.length > 0 && (
-        <div className="mb-8">
+        <div data-tour="modules" className="mb-8">
           <div className="flex items-baseline justify-between mb-4">
             <h2 className="text-lg font-bold text-dark-text">Мои модули</h2>
             {expiresInDays !== null && (
@@ -116,7 +138,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div data-tour="continue" className="grid md:grid-cols-2 gap-6">
         {/* Recent achievements */}
         <Card theme="dark" glass className="p-6">
           <div className="flex items-center gap-2 mb-4">
@@ -124,7 +146,7 @@ export default async function DashboardPage() {
             <h2 className="text-lg font-bold text-dark-text">Последние достижения</h2>
           </div>
           {stats.recentAchievements.length === 0 ? (
-            <p className="text-dark-text-muted text-sm">Пока нет достижений. Решайте задачи!</p>
+            <p className="text-dark-text-muted text-sm">Пока нет достижений. Решай задачи!</p>
           ) : (
             <div className="space-y-3">
               {stats.recentAchievements.map((ua: any) => (
@@ -148,7 +170,7 @@ export default async function DashboardPage() {
           <h2 className="text-lg font-bold mb-4 text-dark-text">Продолжить</h2>
           {stats.recentProgress.length === 0 ? (
             <p className="text-dark-text-muted text-sm">
-              Начните с{" "}
+              Начни с{" "}
               <Link href="/modules" className="text-primary hover:underline">каталога модулей</Link>
             </p>
           ) : (

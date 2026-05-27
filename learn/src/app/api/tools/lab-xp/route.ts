@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient as createServerClient } from "@/lib/supabase/server";
+import { createClient as createServerClient, getCachedUser } from "@/lib/supabase/server";
 
 const XP_PER_CORRECT = 20;
 
@@ -7,7 +7,7 @@ const XP_PER_CORRECT = 20;
 // Same-origin iframe request — uses session cookies.
 export async function POST(request: NextRequest) {
   const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getCachedUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   let body: { task_target?: string; difficulty?: string };

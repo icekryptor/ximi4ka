@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
+import { isDeviceLimitDisabled, getDeviceLimit } from "@/lib/feature-flags";
 
 const KIT_EMAIL_DOMAIN = "@kits.ximi4ka.ru";
 
@@ -96,7 +97,9 @@ export async function POST(request: NextRequest) {
     .gte("last_active_at", thirtyDaysAgo);
 
   const known = activeDevices?.find((d) => d.device_id === device_id);
-  if (!known && (activeDevices?.length ?? 0) >= 3) {
+  // Limit gated by DEVICE_LIMIT_DISABLED env — set to "1" to lift the cap
+  // (still tracks devices, just doesn't reject new ones).
+  if (!isDeviceLimitDisabled() && !known && (activeDevices?.length ?? 0) >= getDeviceLimit()) {
     // Sign out the just-created session and return device list
     await supabase.auth.signOut();
     return NextResponse.json(
@@ -108,8 +111,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 5) Upsert device
-  await admin.from("user_devices").upsert(
+  // 5) Upsert device — fire-and-forget. Client doesn't need to wait for this
+  //    (the response is already correct without it). Saves ~300-600ms of
+  //    perceived login latency. Middleware does its own per-request upsert
+  //    if this one races, so worst case is a duplicate row insert blocked
+  //    by the UNIQUE(user_id, device_id) constraint — harmless.
+  void admin.from("user_devices").upsert(
     {
       user_id: userId,
       device_id,
@@ -117,7 +124,9 @@ export async function POST(request: NextRequest) {
       last_active_at: new Date().toISOString(),
     },
     { onConflict: "user_id,device_id" }
-  );
+  ).then(({ error }) => {
+    if (error) console.warn("[login] background device upsert failed:", error.message);
+  });
 
   return NextResponse.json({ success: true, redirect: "/dashboard" });
 }

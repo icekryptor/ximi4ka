@@ -1,0 +1,59 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "XimiLearn" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e6]
+          - generic [ref=e8]: XimiLearn
+        - navigation [ref=e9]:
+          - link "Главная" [ref=e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "ОГЭ" [ref=e11] [cursor=pointer]:
+            - /url: /learn/oge
+          - link "Тулы" [ref=e12] [cursor=pointer]:
+            - /url: /tools
+          - link "Рейтинг" [ref=e13] [cursor=pointer]:
+            - /url: /leaderboard
+        - generic [ref=e15]:
+          - generic "Новичок" [ref=e16]:
+            - img [ref=e17]
+            - generic [ref=e20]: Новичок
+          - link "БИ Без имени" [ref=e21] [cursor=pointer]:
+            - /url: /profile
+            - generic [ref=e22]: БИ
+            - generic [ref=e23]: Без имени
+    - main [ref=e24]:
+      - generic [ref=e25]:
+        - link "← Назад к ОГЭ" [ref=e26] [cursor=pointer]:
+          - /url: /learn/oge
+        - generic [ref=e27]:
+          - img [ref=e29]
+          - generic [ref=e33]:
+            - heading "Контрольный тест" [level=1] [ref=e34]
+            - paragraph [ref=e35]: 30 или 50 заданий — узнай свой уровень
+        - generic [ref=e36]:
+          - heading "Новый тест" [level=2] [ref=e37]
+          - generic [ref=e38]:
+            - generic [ref=e39]:
+              - generic [ref=e40]: Тема
+              - combobox [ref=e41]:
+                - option "Все темы" [selected]
+                - option "Атомистика и Периодическая система"
+                - option "Химическая связь"
+                - option "Степени окисления"
+                - option "Строение веществ"
+                - option "Классификация веществ"
+                - option "Электролиты и ионы"
+                - option "Реакции"
+                - option "Кислоты, щёлочи, соли"
+                - option "Качественные реакции"
+                - option "Расчёты"
+                - option "Чистые вещества и смеси"
+            - generic [ref=e42]:
+              - generic [ref=e43]: Количество вопросов
+              - generic [ref=e44]:
+                - button "30 вопросов" [ref=e45] [cursor=pointer]
+                - button "50 вопросов" [ref=e46] [cursor=pointer]
+            - button "Начать тест" [ref=e47] [cursor=pointer]
+  - alert [ref=e48]

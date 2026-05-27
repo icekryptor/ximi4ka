@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCachedUser } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
@@ -11,9 +11,7 @@ export default async function BatchDetailPage({
   const { id } = await params;
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCachedUser();
   if (!user) redirect("/login");
 
   const { data: profile } = await supabase
@@ -92,7 +90,7 @@ export default async function BatchDetailPage({
           target="_blank"
           className="inline-block px-4 py-2 rounded-full bg-bg-secondary text-text-primary border border-border text-sm hover:bg-bg-tertiary transition-colors"
         >
-          🖨️ Печать этикеток 58×40
+          📄 PDF этикеток 58×40
         </Link>
       </div>
 

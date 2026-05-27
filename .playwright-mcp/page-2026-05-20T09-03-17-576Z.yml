@@ -1,0 +1,131 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "XimiLearn" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - img [ref=e5]
+        - generic [ref=e7]: XimiLearn
+      - navigation [ref=e8]:
+        - link "Главная" [ref=e9] [cursor=pointer]:
+          - /url: https://ximi4ka.ru
+        - link "Наборы" [ref=e10] [cursor=pointer]:
+          - /url: https://ximi4ka.ru/shop
+        - link "О нас" [ref=e11] [cursor=pointer]:
+          - /url: https://ximi4ka.ru/about
+        - link "Контакты" [ref=e12] [cursor=pointer]:
+          - /url: https://ximi4ka.ru/contacts
+      - generic [ref=e13]:
+        - link "Перейти в платформу" [ref=e14] [cursor=pointer]:
+          - /url: /dashboard
+          - text: Перейти в платформу
+          - img [ref=e15]
+        - generic [ref=e17]:
+          - generic "Новичок" [ref=e18]:
+            - img [ref=e19]
+            - generic [ref=e22]: Новичок
+          - link "БИ Без имени" [ref=e23] [cursor=pointer]:
+            - /url: /profile
+            - generic [ref=e24]: БИ
+            - generic [ref=e25]: Без имени
+  - main [ref=e26]:
+    - generic [ref=e28]:
+      - link "← На главную" [ref=e29] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e30]:
+        - generic [ref=e31]:
+          - img [ref=e33]
+          - generic [ref=e36]:
+            - generic [ref=e37]: Хит для 9-классника
+            - paragraph [ref=e38]:
+              - text: "Артикул:"
+              - generic [ref=e39]: OGE26
+        - generic [ref=e40]:
+          - heading "Набор для ОГЭ по химии" [level=1] [ref=e41]
+          - paragraph [ref=e42]: 31 реактив + год доступа к онлайн-тренажёру ОГЭ
+          - generic [ref=e43]:
+            - generic [ref=e44]: 3 490 ₽
+            - generic [ref=e45]: 6 000 ₽
+            - generic [ref=e46]: −42%
+          - link "Купить" [ref=e47] [cursor=pointer]:
+            - /url: /checkout/kit/oge
+            - button "Купить" [ref=e48]:
+              - generic [ref=e49]:
+                - text: Купить
+                - img [ref=e50]
+          - generic [ref=e52]:
+            - generic [ref=e53]:
+              - img [ref=e54]
+              - generic [ref=e59]: Бесплатная доставка от 3000 ₽
+            - generic [ref=e60]:
+              - img [ref=e61]
+              - generic [ref=e63]: Возврат 14 дней по закону
+      - generic [ref=e64]:
+        - generic [ref=e65]:
+          - heading "О наборе" [level=2] [ref=e66]
+          - generic [ref=e67]:
+            - paragraph [ref=e68]: Полный набор реактивов и оборудования для подготовки к ОГЭ по химии. Покрывает все качественные реакции, по которым проверяют на экзамене.
+            - paragraph [ref=e69]: "В подарок — год доступа к интерактивному тренажёру ОГЭ на нашей платформе: разбор каждой реакции, контрольные тесты с таймером, статистика прогресса."
+        - generic [ref=e70]:
+          - heading "Что входит" [level=2] [ref=e71]
+          - list [ref=e72]:
+            - listitem [ref=e73]:
+              - img [ref=e74]
+              - generic [ref=e77]: 31 реактив в подписанных пробирках
+            - listitem [ref=e78]:
+              - img [ref=e79]
+              - generic [ref=e82]: Лабораторная посуда и оборудование
+            - listitem [ref=e83]:
+              - img [ref=e84]
+              - generic [ref=e87]: Методичка с пошаговым описанием опытов
+            - listitem [ref=e88]:
+              - img [ref=e89]
+              - generic [ref=e92]: QR-код активации доступа к платформе
+            - listitem [ref=e93]:
+              - img [ref=e94]
+              - generic [ref=e97]: Год доступа к модулю ОГЭ онлайн
+      - generic [ref=e98]:
+        - heading "Готов начать?" [level=3] [ref=e99]
+        - paragraph [ref=e100]: Закажи набор сегодня — получишь логин и пароль от платформы сразу на email, а сам набор отправим СДЭК на следующий рабочий день.
+        - link "Оформить заказ" [ref=e101] [cursor=pointer]:
+          - /url: /checkout/kit/oge
+          - button "Оформить заказ" [ref=e102]:
+            - generic [ref=e103]:
+              - text: Оформить заказ
+              - img [ref=e104]
+  - contentinfo [ref=e106]:
+    - generic [ref=e107]:
+      - generic [ref=e108]:
+        - generic [ref=e109]:
+          - paragraph [ref=e110]: Реквизиты
+          - paragraph [ref=e111]: ИП Аистов Василий Андреевич
+          - paragraph [ref=e112]: "ИНН: 431401950080"
+          - paragraph [ref=e113]: "ОГРНИП: 319435000027879"
+          - paragraph [ref=e114]: г. Москва, 3-я Мытищинская ул., д. 16, стр. 21Б
+        - generic [ref=e115]:
+          - paragraph [ref=e116]: Контакты
+          - paragraph [ref=e117]:
+            - link "info@ximi4ka.ru" [ref=e118] [cursor=pointer]:
+              - /url: mailto:info@ximi4ka.ru
+          - paragraph [ref=e119]:
+            - link "+7 985 993-83-11" [ref=e120] [cursor=pointer]:
+              - /url: tel:+79859938311
+          - paragraph [ref=e121]:
+            - link "Telegram-поддержка" [ref=e122] [cursor=pointer]:
+              - /url: https://t.me/ximi4ka_support
+        - generic [ref=e123]:
+          - paragraph [ref=e124]: Документы
+          - paragraph [ref=e125]:
+            - link "Политика конфиденциальности" [ref=e126] [cursor=pointer]:
+              - /url: /policy
+          - paragraph [ref=e127]:
+            - link "Публичная оферта" [ref=e128] [cursor=pointer]:
+              - /url: /oferta
+          - paragraph [ref=e129]:
+            - link "Тарифы и условия" [ref=e130] [cursor=pointer]:
+              - /url: /pricing
+      - generic [ref=e131]:
+        - paragraph [ref=e132]: © 2026 Ximi4ka. Все права защищены.
+        - paragraph [ref=e133]:
+          - link "ximi4ka.ru" [ref=e134] [cursor=pointer]:
+            - /url: https://ximi4ka.ru
+  - alert [ref=e135]

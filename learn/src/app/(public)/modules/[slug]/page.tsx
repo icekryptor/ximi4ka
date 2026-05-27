@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCachedUser } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { FlaskConical, Lock, ArrowRight, BookOpen } from "lucide-react";
@@ -45,7 +45,7 @@ export default async function ModuleDetailPage({ params }: Props) {
   const isPremium = m.tier === "premium";
 
   // Check if user already has access
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getCachedUser();
   const hasAccess = user ? await canAccessModule(supabase, user.id, m.id, m.tier) : false;
 
   return (

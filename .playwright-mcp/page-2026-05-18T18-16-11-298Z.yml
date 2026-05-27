@@ -1,0 +1,44 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "XimiLearn" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e6]
+          - generic [ref=e8]: XimiLearn
+        - navigation [ref=e9]:
+          - link "Главная" [ref=e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "ОГЭ" [ref=e11] [cursor=pointer]:
+            - /url: /learn/oge
+          - link "Тулы" [ref=e12] [cursor=pointer]:
+            - /url: /tools
+          - link "Рейтинг" [ref=e13] [cursor=pointer]:
+            - /url: /leaderboard
+        - generic [ref=e15]:
+          - generic "Новичок" [ref=e16]:
+            - img [ref=e17]
+            - generic [ref=e20]: Новичок
+          - link "БИ Без имени" [ref=e21] [cursor=pointer]:
+            - /url: /profile
+            - generic [ref=e22]: БИ
+            - generic [ref=e23]: Без имени
+    - main [ref=e24]:
+      - generic [ref=e25]:
+        - link "← К тестам" [ref=e26] [cursor=pointer]:
+          - /url: /learn/oge/test
+        - generic [ref=e27]:
+          - paragraph [ref=e28]: Все темы
+          - generic [ref=e29]: 3%
+          - paragraph [ref=e30]: 1 из 30 правильно
+          - paragraph [ref=e31]: Нужно больше практики — не сдавайся!
+        - link "Запустить ещё раз" [ref=e35] [cursor=pointer]:
+          - /url: /learn/oge/test
+          - button "Запустить ещё раз" [ref=e36]
+        - generic [ref=e37]:
+          - paragraph [ref=e38]: Тест завершён неполностью
+          - paragraph [ref=e39]:
+            - text: Без ответа осталось
+            - strong [ref=e40]: "29"
+            - text: заданий. Незаполненные вопросы засчитаны как неверные. Запусти тест ещё раз, чтобы пройти полностью.
+  - alert [ref=e41]

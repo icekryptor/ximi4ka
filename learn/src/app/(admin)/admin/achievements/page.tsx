@@ -75,7 +75,7 @@ export default function AdminAchievementsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Достижения</h1>
+      <h1 className="text-2xl font-bold mb-6 text-text-primary">Достижения</h1>
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">

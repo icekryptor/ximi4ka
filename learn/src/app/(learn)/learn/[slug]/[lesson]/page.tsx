@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCachedUser } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import { ContentBlockRenderer } from "@/components/content/ContentBlockRenderer";
 import { TaskBlock } from "@/components/content/TaskBlock";
@@ -13,7 +13,7 @@ interface Props {
 
 export default async function LessonPage({ params }: Props) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getCachedUser();
   if (!user) redirect("/login");
 
   const { data: lesson } = await supabase

@@ -55,7 +55,7 @@ export default function NewModulePage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold mb-6">Новый модуль</h1>
+      <h1 className="text-2xl font-bold mb-6 text-text-primary">Новый модуль</h1>
       <Card>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input id="title" label="Название" value={title} onChange={(e) => setTitle(e.target.value)} required />

@@ -1,0 +1,91 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "XimiLearn" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e6]
+          - generic [ref=e8]: XimiLearn
+        - navigation [ref=e9]:
+          - link "Главная" [ref=e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "ОГЭ" [ref=e11] [cursor=pointer]:
+            - /url: /learn/oge
+          - link "Тулы" [ref=e12] [cursor=pointer]:
+            - /url: /tools
+          - link "Рейтинг" [ref=e13] [cursor=pointer]:
+            - /url: /leaderboard
+        - generic [ref=e15]:
+          - generic "Новичок" [ref=e16]:
+            - img [ref=e17]
+            - generic [ref=e20]: Новичок
+          - link "БИ Без имени" [ref=e21] [cursor=pointer]:
+            - /url: /profile
+            - generic [ref=e22]: БИ
+            - generic [ref=e23]: Без имени
+    - main [ref=e24]:
+      - generic [ref=e25]:
+        - link "← Назад к ОГЭ" [ref=e26] [cursor=pointer]:
+          - /url: /learn/oge
+        - generic [ref=e27]:
+          - img [ref=e29]
+          - generic [ref=e33]:
+            - heading "Контрольный тест" [level=1] [ref=e34]
+            - paragraph [ref=e35]: 30 или 50 заданий — узнай свой уровень
+        - generic [ref=e36]:
+          - heading "Новый тест" [level=2] [ref=e37]
+          - generic [ref=e38]:
+            - generic [ref=e39]:
+              - generic [ref=e40]: Тема
+              - combobox [ref=e41]:
+                - option "Все темы" [selected]
+                - option "Атомистика и Периодическая система"
+                - option "Химическая связь"
+                - option "Степени окисления"
+                - option "Строение веществ"
+                - option "Классификация веществ"
+                - option "Электролиты и ионы"
+                - option "Реакции"
+                - option "Кислоты, щёлочи, соли"
+                - option "Качественные реакции"
+                - option "Расчёты"
+                - option "Чистые вещества и смеси"
+            - generic [ref=e42]:
+              - generic [ref=e43]: Количество вопросов
+              - generic [ref=e44]:
+                - button "30 вопросов" [ref=e45] [cursor=pointer]
+                - button "50 вопросов" [ref=e46] [cursor=pointer]
+            - generic [ref=e47]:
+              - generic [ref=e48]: Режим
+              - generic [ref=e49]:
+                - button "Тренировка с объяснениями, без таймера" [ref=e50] [cursor=pointer]:
+                  - generic [ref=e51]: Тренировка
+                  - generic [ref=e52]: с объяснениями, без таймера
+                - button "Контрольная без подсказок · 15 мин" [ref=e53] [cursor=pointer]:
+                  - generic [ref=e54]: Контрольная
+                  - generic [ref=e55]: без подсказок · 15 мин
+            - button "Начать тест" [ref=e56] [cursor=pointer]
+        - generic [ref=e57]:
+          - heading "История тестов" [level=2] [ref=e58]
+          - generic [ref=e59]:
+            - generic [ref=e61]:
+              - generic [ref=e62]:
+                - paragraph [ref=e63]: Все темы — 30 вопросов
+                - paragraph [ref=e64]: 19 мая 2026 г.
+              - link "Продолжить →" [ref=e66] [cursor=pointer]:
+                - /url: /learn/oge/test/0d69fd37-7d0f-4224-8939-959afdedf6a0
+            - generic [ref=e68]:
+              - generic [ref=e69]:
+                - paragraph [ref=e70]: Все темы — 30 вопросов
+                - paragraph [ref=e71]: 18 мая 2026 г.
+              - link "Продолжить →" [ref=e73] [cursor=pointer]:
+                - /url: /learn/oge/test/1d90597f-460e-48ca-9446-99eceddb1fad
+            - generic [ref=e75]:
+              - generic [ref=e76]:
+                - paragraph [ref=e77]: Все темы — 30 вопросов
+                - paragraph [ref=e78]: 18 мая 2026 г.
+              - generic [ref=e79]:
+                - generic [ref=e80]: 3%
+                - link "Результаты →" [ref=e81] [cursor=pointer]:
+                  - /url: /learn/oge/test/73fdc0b3-a508-4c53-9496-ad8b9cae0bfd/result
+  - alert [ref=e82]

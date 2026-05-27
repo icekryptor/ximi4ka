@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCachedUser } from "@/lib/supabase/server";
 
 export type AccessSource = "kit" | "paid" | "admin" | "subscription";
 
@@ -20,9 +20,7 @@ export interface AccessResult {
 export async function hasActiveAccess(): Promise<AccessResult> {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCachedUser();
 
   if (!user) {
     return { authed: false, hasAccess: false };

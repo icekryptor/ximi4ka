@@ -1,0 +1,29 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - link "XimiLearn" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - img [ref=e5]
+        - generic [ref=e7]: XimiLearn
+    - main [ref=e8]:
+      - generic [ref=e9]:
+        - heading "Вход в XimiLearn" [level=1] [ref=e10]
+        - paragraph [ref=e11]: Введи данные своего аккаунта
+        - generic [ref=e12]:
+          - generic [ref=e13]:
+            - generic [ref=e14]: Логин или email
+            - textbox "Логин или email" [ref=e15]:
+              - /placeholder: ximi-XXXXXX или you@example.com
+          - generic [ref=e16]:
+            - generic [ref=e17]: Пароль
+            - textbox "Пароль" [ref=e18]:
+              - /placeholder: Введи пароль
+          - button "Войти" [ref=e19] [cursor=pointer]
+        - generic [ref=e20]:
+          - link "Забыли пароль?" [ref=e22] [cursor=pointer]:
+            - /url: /forgot-password
+          - generic [ref=e23]:
+            - text: Нет аккаунта?
+            - link "Регистрация" [ref=e24] [cursor=pointer]:
+              - /url: /register
+  - alert [ref=e25]

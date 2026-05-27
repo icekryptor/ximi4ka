@@ -56,7 +56,7 @@ export default function NewLessonPage({ params }: Props) {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold mb-6">Новый урок</h1>
+      <h1 className="text-2xl font-bold mb-6 text-text-primary">Новый урок</h1>
       <Card>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input id="title" label="Название" value={title} onChange={(e) => setTitle(e.target.value)} required />

@@ -26,7 +26,7 @@ export default async function AdminModuleDetailPage({ params }: Props) {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">{module.title}</h1>
+        <h1 className="text-2xl font-bold text-text-primary">{module.title}</h1>
         <Badge variant={module.is_published ? "xp" : "streak"}>
           {module.is_published ? "Опубликован" : "Черновик"}
         </Badge>

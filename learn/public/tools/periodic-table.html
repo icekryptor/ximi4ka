@@ -49,15 +49,15 @@
   .pt-shell { display: grid; grid-template-columns: 1fr 320px; gap: 14px; align-items: start; }
   @media (max-width: 980px) { .pt-shell { grid-template-columns: 1fr; } .detail-panel { position: static; } }
   
-  .pt-table { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 10px; }
-  .pt-grid { display: grid; grid-template-columns: 28px repeat(18, 1fr); gap: 3px; }
-  .pt-grid-fblock { display: grid; grid-template-columns: 28px repeat(18, 1fr); gap: 3px; margin-top: 6px; }
+  .pt-table { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .pt-grid { display: grid; grid-template-columns: 28px repeat(18, minmax(40px, 1fr)); gap: 3px; min-width: 760px; }
+  .pt-grid-fblock { display: grid; grid-template-columns: 28px repeat(18, minmax(40px, 1fr)); gap: 3px; margin-top: 6px; min-width: 760px; }
   .pt-grid .group-header, .pt-grid-classic .group-header { font-size: 11px; font-weight: 600; text-align: center; padding: 4px 0; color: var(--text-secondary); border-bottom: 1px solid var(--border); }
   .pt-grid .period-label, .pt-grid-fblock .period-label { font-size: 11px; font-weight: 600; text-align: center; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; }
   .pt-grid .corner, .pt-grid-fblock .corner { background: transparent; }
 
   /* Classic Russian short-form table: 1 period-label col + 7 single groups + 1 wide group VIII (3 sub-cols) = 11 columns */
-  .pt-grid-classic { display: grid; grid-template-columns: 28px repeat(7, 1fr) repeat(3, 1fr); gap: 3px; }
+  .pt-grid-classic { display: grid; grid-template-columns: 28px repeat(7, minmax(50px, 1fr)) repeat(3, minmax(50px, 1fr)); gap: 3px; min-width: 620px; }
   .pt-grid-classic-fblock { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
   .pt-grid-classic .group-header { font-size: 11px; font-weight: 600; text-align: center; padding: 4px 0; color: var(--text-secondary); border-bottom: 1px solid var(--border); }
   .pt-grid-classic .group-header .sub { display: block; font-size: 9px; font-weight: 500; color: var(--text-tertiary); margin-top: 2px; letter-spacing: 0.04em; }
@@ -139,14 +139,16 @@
   @media (max-width: 760px) {
     .cell-name { display: none; }
     .cell-mass { display: none; }
-    .cell-sym { font-size: 11px; }
-    .cell-num { font-size: 8px; }
+    .cell-sym { font-size: 13px; }
+    .cell-num { font-size: 9px; }
     .pt-grid, .pt-grid-fblock { gap: 2px; }
-    .page { padding: 12px 10px; }
+    .pt-table { padding: 8px; }
+    .page { padding: 10px 8px 16px; }
+    .pt-grid .group-header, .pt-grid-classic .group-header { font-size: 10px; padding: 3px 0; }
   }
   @media (max-width: 480px) {
-    .cell-sym { font-size: 9px; }
-    .cell { padding: 1px; min-height: 28px; }
+    .cell-sym { font-size: 12px; }
+    .cell { min-height: 40px; }
   }
 </style>
 </head>

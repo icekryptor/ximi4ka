@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { BindEmailBanner } from "@/components/profile/BindEmailBanner";
+import { getRankState } from "@/lib/ranks";
+import { RankCard } from "@/components/profile/RankCard";
+import { AchievementsCard } from "@/components/profile/AchievementsCard";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<any>(null);
@@ -23,6 +26,9 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isKitEmail, setIsKitEmail] = useState(false);
+  const [totalXp, setTotalXp] = useState(0);
+  const [userAchievements, setUserAchievements] = useState<any[]>([]);
+  const [totalAchCount, setTotalAchCount] = useState(0);
   const router = useRouter();
   const supabase = createClient();
 
@@ -53,6 +59,21 @@ export default function ProfilePage() {
       setDisplayName(p?.display_name || "");
       setTelegram(p?.telegram || "");
       setAvatarUrl(p?.avatar_url || "");
+
+      const [{ data: attempts }, { data: ua }, { count: totalAch }] = await Promise.all([
+        supabase.from("task_attempts").select("points_earned").eq("user_id", user.id),
+        supabase
+          .from("user_achievements")
+          .select("id, earned_at, achievements(title, description, icon_url)")
+          .eq("user_id", user.id)
+          .order("earned_at", { ascending: false }),
+        supabase.from("achievements").select("*", { count: "exact", head: true }),
+      ]);
+      const xp = (attempts ?? []).reduce((s: number, a: any) => s + (a.points_earned ?? 0), 0);
+      setTotalXp(xp);
+      setUserAchievements(ua ?? []);
+      setTotalAchCount(totalAch ?? 0);
+
       setLoading(false);
     }
     load();
@@ -138,13 +159,26 @@ export default function ProfilePage() {
 
   if (loading) return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      <p className="text-dark-text-muted">Загрузка...</p>
+      {/* Skeleton mirrors the real layout so the page doesn't jump on load */}
+      <div className="h-8 w-32 rounded-lg bg-white/[0.06] animate-pulse mb-6" />
+      <div className="grid md:grid-cols-2 gap-4 mb-6">
+        <div className="h-32 rounded-2xl bg-white/[0.04] animate-pulse" />
+        <div className="h-32 rounded-2xl bg-white/[0.04] animate-pulse" />
+      </div>
+      <div className="h-64 rounded-2xl bg-white/[0.04] animate-pulse mb-6" />
+      <div className="h-40 rounded-2xl bg-white/[0.04] animate-pulse mb-6" />
+      <div className="h-32 rounded-2xl bg-white/[0.04] animate-pulse" />
     </div>
   );
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6 text-dark-text">Профиль</h1>
+
+      <div className="grid md:grid-cols-2 gap-4 mb-6">
+        <RankCard totalXp={totalXp} state={getRankState(totalXp)} />
+        <AchievementsCard earned={userAchievements} totalAvailable={totalAchCount} />
+      </div>
 
       {isKitEmail && <BindEmailBanner />}
 
@@ -229,7 +263,14 @@ export default function ProfilePage() {
             <div className="flex items-center gap-3 mb-2">
               <Badge theme="dark" variant="xp">Подписка активна</Badge>
               <span className="text-sm text-dark-text-secondary">
-                План: {subscription.plan === "base_promo" ? "499 ₽/мес (промо)" : "999 ₽/мес"}
+                План: {(() => {
+                  switch (subscription.plan) {
+                    case "base_promo": return "499 ₽/мес (промо, legacy)";
+                    case "base_yearly": return "2 590 ₽/год";
+                    case "base":
+                    default: return "299 ₽/мес";
+                  }
+                })()}
               </span>
             </div>
             <p className="text-sm text-dark-text-muted">
@@ -250,7 +291,7 @@ export default function ProfilePage() {
           </div>
         ) : (
           <div>
-            <p className="text-dark-text-muted text-sm mb-4">У вас нет активной подписки</p>
+            <p className="text-dark-text-muted text-sm mb-4">У тебя нет активной подписки</p>
             <div className="flex items-end gap-3">
               <Input
                 theme="dark"
@@ -274,6 +315,21 @@ export default function ProfilePage() {
             </Button>
           </div>
         )}
+      </Card>
+
+      <Card theme="dark" className="p-6 mb-6">
+        <h2 className="text-lg font-bold mb-4 text-dark-text">Устройства</h2>
+        <p className="text-sm text-dark-text-muted mb-4">
+          Аккаунт можно использовать одновременно на 3 устройствах. Если хочешь добавить новое, удали одно из старых.
+        </p>
+        <Button
+          theme="dark"
+          variant="secondary"
+          size="sm"
+          onClick={() => router.push("/profile/devices")}
+        >
+          Управление устройствами
+        </Button>
       </Card>
 
       <Button theme="dark" variant="ghost" onClick={handleLogout} className="text-error-dark hover:text-error">

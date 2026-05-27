@@ -1,0 +1,45 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "XimiLearn" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e6]
+          - generic [ref=e8]: XimiLearn
+        - navigation [ref=e9]:
+          - link "Главная" [ref=e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "ОГЭ" [ref=e11] [cursor=pointer]:
+            - /url: /learn/oge
+          - link "Тулы" [ref=e12] [cursor=pointer]:
+            - /url: /tools
+          - link "Рейтинг" [ref=e13] [cursor=pointer]:
+            - /url: /leaderboard
+        - generic [ref=e15]:
+          - generic "Новичок" [ref=e16]:
+            - img [ref=e17]
+            - generic [ref=e20]: Новичок
+          - link "БИ Без имени" [ref=e21] [cursor=pointer]:
+            - /url: /profile
+            - generic [ref=e22]: БИ
+            - generic [ref=e23]: Без имени
+    - main [ref=e24]:
+      - generic [ref=e61]:
+        - generic [ref=e64]: Вопрос 1 из 30
+        - generic [ref=e66]:
+          - paragraph [ref=e67]: С какой из перечисленных солей будет реагировать раствор серной кислоты H2SO4?
+          - generic [ref=e68]:
+            - button "1.NaCl" [ref=e69] [cursor=pointer]:
+              - generic [ref=e70]: "1."
+              - text: NaCl
+            - button "2.KNO3" [ref=e71] [cursor=pointer]:
+              - generic [ref=e72]: "2."
+              - text: KNO3
+            - button "3.BaCl2" [active] [ref=e73] [cursor=pointer]:
+              - generic [ref=e74]: "3."
+              - text: BaCl2
+            - button "4.CuSO4" [ref=e75] [cursor=pointer]:
+              - generic [ref=e76]: "4."
+              - text: CuSO4
+          - button "Проверить" [ref=e77] [cursor=pointer]
+  - alert [ref=e59]

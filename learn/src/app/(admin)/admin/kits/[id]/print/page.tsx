@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getCachedUser } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import { PrintLabelsClient } from "@/components/admin/PrintLabelsClient";
 
@@ -12,7 +12,7 @@ export default async function PrintLabelsPage({
   searchParams: Promise<{ filter?: string }>;
 }) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getCachedUser();
   if (!user) redirect("/login");
   const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   if (prof?.role !== "admin") redirect("/dashboard");

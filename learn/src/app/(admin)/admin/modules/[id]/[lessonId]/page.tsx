@@ -49,7 +49,7 @@ export default function AdminLessonEditorPage({ params }: Props) {
           <button onClick={() => router.push(`/admin/modules/${params.id}`)} className="text-sm text-text-secondary hover:text-primary mb-1 block">
             ← Назад к модулю
           </button>
-          <h1 className="text-2xl font-bold">{lesson.title}</h1>
+          <h1 className="text-2xl font-bold mb-6 text-text-primary">{lesson.title}</h1>
         </div>
         <div className="flex gap-2">
           <Button variant="secondary" size="sm" onClick={togglePublish}>

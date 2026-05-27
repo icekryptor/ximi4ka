@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Badge } from "@/components/ui/Badge";
+import { StatusPill } from "@/components/admin/AdminRow";
 
 function generateCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -66,10 +65,10 @@ export default function AdminPromoPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Промокоды</h1>
+      <h1 className="text-2xl font-bold mb-6 text-text-primary">Промокоды</h1>
 
-      <Card className="mb-6">
-        <div className="flex items-end gap-4">
+      <div className="rounded-2xl bg-white border border-border p-5 mb-6">
+        <div className="flex items-end gap-3 flex-wrap">
           <Input
             id="count"
             label="Количество"
@@ -78,51 +77,62 @@ export default function AdminPromoPage() {
             onChange={(e) => setCount(e.target.value)}
             className="w-32"
           />
-          <Button onClick={handleGenerate} disabled={generating}>
+          <Button onClick={handleGenerate} disabled={generating} size="sm">
             {generating ? "Генерация..." : "Сгенерировать"}
           </Button>
-          <Button variant="secondary" onClick={exportCSV}>
+          <Button variant="secondary" onClick={exportCSV} size="sm">
             Экспорт CSV
           </Button>
         </div>
         <p className="text-sm text-text-secondary mt-3">
-          Всего: {codes.length} | Использовано: {usedCount} | Доступно: {codes.length - usedCount}
+          Всего: <strong className="text-text-primary">{codes.length}</strong> ·
+          Использовано: <strong className="text-text-primary">{usedCount}</strong> ·
+          Доступно: <strong className="text-text-primary">{codes.length - usedCount}</strong>
         </p>
-      </Card>
+      </div>
 
-      <Card>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-text-secondary border-b border-border">
-                <th className="pb-3 pr-4">Код</th>
-                <th className="pb-3 pr-4">Статус</th>
-                <th className="pb-3 pr-4">Использован</th>
-                <th className="pb-3">Дата создания</th>
+      <div className="rounded-2xl bg-white border border-border overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-bg-secondary">
+            <tr className="text-left text-xs uppercase tracking-wide text-text-muted">
+              <th className="px-4 py-3 font-semibold">Код</th>
+              <th className="px-4 py-3 font-semibold">Статус</th>
+              <th className="px-4 py-3 font-semibold">Использован</th>
+              <th className="px-4 py-3 font-semibold">Создан</th>
+            </tr>
+          </thead>
+          <tbody>
+            {codes.map((c) => (
+              <tr key={c.id} className="border-t border-border/60 hover:bg-bg-tertiary transition-colors">
+                <td className="px-4 py-3 font-mono font-medium text-text-primary">{c.code}</td>
+                <td className="px-4 py-3">
+                  <StatusPill tone={c.is_used ? "neutral" : "success"}>
+                    {c.is_used ? "Использован" : "Доступен"}
+                  </StatusPill>
+                </td>
+                <td className="px-4 py-3 text-text-secondary">{c.profiles?.display_name ?? "—"}</td>
+                <td className="px-4 py-3 text-text-secondary">
+                  {new Date(c.created_at).toLocaleDateString("ru-RU")}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {codes.map((c) => (
-                <tr key={c.id} className="border-b border-border/50">
-                  <td className="py-3 pr-4 font-mono font-medium">{c.code}</td>
-                  <td className="py-3 pr-4">
-                    <Badge variant={c.is_used ? "streak" : "xp"}>
-                      {c.is_used ? "Использован" : "Доступен"}
-                    </Badge>
-                  </td>
-                  <td className="py-3 pr-4 text-text-secondary">
-                    {c.profiles?.display_name ?? "—"}
-                  </td>
-                  <td className="py-3 text-text-secondary">
-                    {new Date(c.created_at).toLocaleDateString("ru-RU")}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {loading && <p className="text-text-secondary text-center py-4">Загрузка...</p>}
-      </Card>
+            ))}
+            {codes.length === 0 && !loading && (
+              <tr>
+                <td colSpan={4} className="px-4 py-8 text-center text-text-muted">
+                  Промокодов нет. Сгенерируй пачку выше.
+                </td>
+              </tr>
+            )}
+            {loading && (
+              <tr>
+                <td colSpan={4} className="px-4 py-8 text-center text-text-muted">
+                  Загрузка...
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

@@ -4,16 +4,21 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/inline-chem-predictions.mjs",
     "build": "next build",
+    "predev": "node scripts/inline-chem-predictions.mjs",
     "start": "next start",
     "lint": "next lint",
     "kits:generate": "tsx --env-file=.env.local scripts/generate-kit-batch.ts",
-    "kits:import-csv": "tsx --env-file=.env.local scripts/import-orders-csv.ts"
+    "kits:import-csv": "tsx --env-file=.env.local scripts/import-orders-csv.ts",
+    "oge:import": "tsx --env-file=.env.local scripts/import-oge-bank.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.96.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
+    "@sentry/nextjs": "^10.53.1",
     "@supabase/ssr": "^0.10.0",
     "@supabase/supabase-js": "^2.101.1",
     "@tiptap/extension-image": "^3.22.2",
@@ -24,6 +29,10 @@
     "clsx": "^2.1.1",
     "csv-parse": "^6.2.1",
     "csv-stringify": "^6.7.0",
+    "driver.js": "^1.4.0",
+    "html2canvas": "^1.4.1",
+    "jose": "^6.2.3",
+    "jspdf": "^4.2.1",
     "katex": "^0.16.45",
     "lucide-react": "^1.14.0",
     "next": "14.2.35",

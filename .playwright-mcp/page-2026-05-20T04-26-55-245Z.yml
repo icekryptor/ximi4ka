@@ -1,0 +1,127 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "XimiLearn" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - img [ref=e5]
+        - generic [ref=e7]: XimiLearn
+      - navigation [ref=e8]:
+        - link "Главная" [ref=e9] [cursor=pointer]:
+          - /url: https://ximi4ka.ru
+        - link "Наборы" [ref=e10] [cursor=pointer]:
+          - /url: https://ximi4ka.ru/shop
+        - link "О нас" [ref=e11] [cursor=pointer]:
+          - /url: https://ximi4ka.ru/about
+        - link "Контакты" [ref=e12] [cursor=pointer]:
+          - /url: https://ximi4ka.ru/contacts
+      - generic [ref=e13]:
+        - link "Перейти в платформу" [ref=e14] [cursor=pointer]:
+          - /url: /dashboard
+          - text: Перейти в платформу
+          - img [ref=e15]
+        - generic [ref=e17]:
+          - generic "Новичок" [ref=e18]:
+            - img [ref=e19]
+            - generic [ref=e22]: Новичок
+          - link "БИ Без имени" [ref=e23] [cursor=pointer]:
+            - /url: /profile
+            - generic [ref=e24]: БИ
+            - generic [ref=e25]: Без имени
+  - main [ref=e26]:
+    - generic [ref=e27]:
+      - generic [ref=e28]:
+        - heading "Тарифы" [level=1] [ref=e29]
+        - paragraph [ref=e30]: Подписка — все базовые модули. Продвинутые — отдельно.
+      - generic [ref=e31]:
+        - generic [ref=e32]:
+          - heading "Месячная" [level=3] [ref=e33]
+          - generic [ref=e34]:
+            - generic [ref=e35]: "299"
+            - generic [ref=e36]: ₽/мес
+          - paragraph [ref=e37]: Гибкая оплата помесячно
+          - list [ref=e38]:
+            - listitem [ref=e39]:
+              - generic [ref=e40]: ✓
+              - text: Все базовые модули
+            - listitem [ref=e41]:
+              - generic [ref=e42]: ✓
+              - text: Тренажёры и тесты ОГЭ
+            - listitem [ref=e43]:
+              - generic [ref=e44]: ✓
+              - text: Прогресс и достижения
+            - listitem [ref=e45]:
+              - generic [ref=e46]: ✓
+              - text: Отмена в любой момент
+          - link "Оформить месячную" [ref=e47] [cursor=pointer]:
+            - /url: /checkout/subscription?period=monthly
+            - button "Оформить месячную" [ref=e48]
+        - generic [ref=e49]:
+          - generic [ref=e51]:
+            - img [ref=e52]
+            - text: Выгоднее на 28%
+          - heading "Годовая" [level=3] [ref=e55]
+          - generic [ref=e56]:
+            - generic [ref=e57]: 2 590
+            - generic [ref=e58]: ₽/год
+          - paragraph [ref=e59]: ≈ 216 ₽/мес · экономия 998 ₽
+          - list [ref=e60]:
+            - listitem [ref=e61]:
+              - generic [ref=e62]: ✓
+              - text: Всё из месячной
+            - listitem [ref=e63]:
+              - generic [ref=e64]: ✓
+              - text: Целый учебный год доступа
+            - listitem [ref=e65]:
+              - generic [ref=e66]: ✓
+              - text: Один платёж — без перерывов
+          - link "Оформить годовую" [ref=e67] [cursor=pointer]:
+            - /url: /checkout/subscription?period=yearly
+            - button "Оформить годовую" [ref=e68]
+      - generic [ref=e69]:
+        - heading "Продвинутые модули" [level=2] [ref=e70]
+        - paragraph [ref=e71]: Покупаются отдельно — не входят в базовую подписку
+      - generic [ref=e73]:
+        - heading "Решение задач по химии" [level=3] [ref=e74]
+        - paragraph [ref=e75]: Молярная масса, концентрация, выход продукта. Все типы задач из ЕГЭ/ОГЭ.
+        - generic [ref=e76]:
+          - paragraph [ref=e77]: 299 ₽
+          - link "Купить" [ref=e78] [cursor=pointer]:
+            - /url: /checkout/module/33333333-3333-3333-3333-333333333333
+            - button "Купить" [ref=e79]
+  - contentinfo [ref=e80]:
+    - generic [ref=e81]:
+      - generic [ref=e82]:
+        - generic [ref=e83]:
+          - paragraph [ref=e84]: Реквизиты
+          - paragraph [ref=e85]: ИП Аистов Василий Андреевич
+          - paragraph [ref=e86]: "ИНН: 431401950080"
+          - paragraph [ref=e87]: "ОГРНИП: 319435000027879"
+          - paragraph [ref=e88]: г. Москва, 3-я Мытищинская ул., д. 16, стр. 21Б
+        - generic [ref=e89]:
+          - paragraph [ref=e90]: Контакты
+          - paragraph [ref=e91]:
+            - link "info@ximi4ka.ru" [ref=e92] [cursor=pointer]:
+              - /url: mailto:info@ximi4ka.ru
+          - paragraph [ref=e93]:
+            - link "+7 985 993-83-11" [ref=e94] [cursor=pointer]:
+              - /url: tel:+79859938311
+          - paragraph [ref=e95]:
+            - link "Telegram-поддержка" [ref=e96] [cursor=pointer]:
+              - /url: https://t.me/ximi4ka_support
+        - generic [ref=e97]:
+          - paragraph [ref=e98]: Документы
+          - paragraph [ref=e99]:
+            - link "Политика конфиденциальности" [ref=e100] [cursor=pointer]:
+              - /url: /policy
+          - paragraph [ref=e101]:
+            - link "Публичная оферта" [ref=e102] [cursor=pointer]:
+              - /url: /oferta
+          - paragraph [ref=e103]:
+            - link "Тарифы и условия" [ref=e104] [cursor=pointer]:
+              - /url: /pricing
+      - generic [ref=e105]:
+        - paragraph [ref=e106]: © 2026 Ximi4ka. Все права защищены.
+        - paragraph [ref=e107]:
+          - link "ximi4ka.ru" [ref=e108] [cursor=pointer]:
+            - /url: https://ximi4ka.ru
+  - alert [ref=e109]
