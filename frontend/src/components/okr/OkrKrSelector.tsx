@@ -46,9 +46,9 @@ export function OkrKrSelector({ value, onChange, label = 'Привязка к OK
   }, [])
 
   const hasOkr = okr && okr.quarters.length > 0
-  const valueInOkr = !value || (okr?.quarters.some((q) =>
+  const valueInOkr = !value || okr === null || okr.quarters.some((q) =>
     q.objectives.some((o) => o.krs.some((kr) => kr.id === value))
-  ) ?? false)
+  )
 
   return (
     <div>
