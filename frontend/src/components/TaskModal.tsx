@@ -312,6 +312,7 @@ export default function TaskModal({
             <OkrKrSelector
               value={okrKrId || null}
               onChange={(v) => canEdit && setOkrKrId(v || '')}
+              disabled={!canEdit}
             />
           </div>
 

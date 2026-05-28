@@ -22,6 +22,7 @@ interface Props {
   value: string | null
   onChange: (krId: string | null) => void
   label?: string
+  disabled?: boolean
 }
 
 /**
@@ -30,7 +31,7 @@ interface Props {
  * quarter. If OKR doc is missing/empty — selector is disabled but doesn't
  * block form submission.
  */
-export function OkrKrSelector({ value, onChange, label = 'Привязка к OKR' }: Props) {
+export function OkrKrSelector({ value, onChange, label = 'Привязка к OKR', disabled }: Props) {
   const [okr, setOkr] = useState<ParsedOkr | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -57,7 +58,7 @@ export function OkrKrSelector({ value, onChange, label = 'Привязка к OK
         className="input"
         value={value ?? ''}
         onChange={(e) => onChange(e.target.value || null)}
-        disabled={loading || !hasOkr}
+        disabled={disabled || loading || !hasOkr}
       >
         <option value="">— Не привязан —</option>
         {!loading && !hasOkr && (
