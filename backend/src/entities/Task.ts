@@ -112,6 +112,9 @@ export class Task {
   @Column({ type: 'uuid', comment: 'Кто создал' })
   created_by: string;
 
+  @Column({ type: 'varchar', length: 64, nullable: true, comment: 'Привязка к OKR KR (composite id из парсера)' })
+  okr_kr_id: string | null;
+
   @ManyToMany(() => TaskTag)
   @JoinTable({
     name: 'task_tag_assignments',

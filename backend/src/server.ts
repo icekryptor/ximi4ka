@@ -56,6 +56,7 @@ import contentEngineRoutes from './routes/content-engine.routes';
 import claudeRoutes from './routes/claude.routes';
 import recipeRoutes from './routes/recipe.routes';
 import contentMetricSnapshotRoutes, { analyticsHandler } from './routes/content-metric-snapshot.routes';
+import okrLinksRoutes from './routes/okr-links.routes';
 import { unitEconomicsController } from './controllers/unit-economics.controller';
 import { startPublishWorker } from './services/publish-worker';
 import { startBankSyncScheduler } from './services/bank-sync/scheduler';
@@ -153,6 +154,7 @@ app.use('/api/channel-budgets', authMiddleware, channelBudgetRoutes);
 app.use('/api/channels', authMiddleware, channelRoutes);
 app.use('/api/recipes', authMiddleware, recipeRoutes);
 app.use('/api/content-metric-snapshots', authMiddleware, contentMetricSnapshotRoutes);
+app.use('/api/okr-links', authMiddleware, okrLinksRoutes);
 app.get('/api/marketing/analytics', authMiddleware, analyticsHandler);
 
 // Health check

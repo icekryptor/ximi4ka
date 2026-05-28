@@ -53,6 +53,9 @@ export class Project {
   @Column({ type: 'varchar', length: 20, nullable: true, comment: 'Цветовой тег проекта (hex)' })
   color: string;
 
+  @Column({ type: 'varchar', length: 64, nullable: true, comment: 'Привязка к OKR KR (composite id из парсера)' })
+  okr_kr_id: string | null;
+
   @Column({ type: 'uuid', comment: 'Кто создал' })
   created_by: string;
 
