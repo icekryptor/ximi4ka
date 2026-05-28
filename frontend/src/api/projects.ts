@@ -11,6 +11,7 @@ export interface Project {
   deliverables: string | null
   status: string
   color: string | null
+  okr_kr_id: string | null
   responsible_id: string | null
   responsible: { id: string; name: string } | null
   created_by: string
@@ -104,6 +105,7 @@ export interface ProjectCreate {
   status?: string
   responsible_id?: string
   color?: string | null
+  okr_kr_id?: string | null
 }
 
 export const projectsApi = {

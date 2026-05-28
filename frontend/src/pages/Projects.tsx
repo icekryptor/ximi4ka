@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { projectsApi, Project } from '../api/projects'
 import { departmentsApi, Department } from '../api/departments'
 import { employeesApi, Employee } from '../api/employees'
+import { OkrKrSelector } from '../components/okr/OkrKrSelector'
 
 const statusLabels: Record<string, { label: string; className: string }> = {
   draft: { label: 'Черновик', className: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
@@ -19,11 +20,13 @@ export default function Projects() {
   const [selectedDept, setSelectedDept] = useState('')
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
-  const [form, setForm] = useState({ name: '', department_id: '', description: '', budget: '', start_date: '', end_date: '', deliverables: '', responsible_id: '' })
+  const [form, setForm] = useState({ name: '', department_id: '', description: '', budget: '', start_date: '', end_date: '', deliverables: '', responsible_id: '', okr_kr_id: '' })
   const [showImport, setShowImport] = useState(false)
   const [importFile, setImportFile] = useState<any>(null)
   const [importDept, setImportDept] = useState('')
   const [importFileName, setImportFileName] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const okrKrFilter = searchParams.get('okr_kr')
   const navigate = useNavigate()
 
   const load = () => {
@@ -52,9 +55,10 @@ export default function Projects() {
         end_date: form.end_date || undefined,
         deliverables: form.deliverables || undefined,
         responsible_id: form.responsible_id || undefined,
+        okr_kr_id: form.okr_kr_id || null,
       })
       setShowCreate(false)
-      setForm({ name: '', department_id: '', description: '', budget: '', start_date: '', end_date: '', deliverables: '', responsible_id: '' })
+      setForm({ name: '', department_id: '', description: '', budget: '', start_date: '', end_date: '', deliverables: '', responsible_id: '', okr_kr_id: '' })
       load()
     } catch (err) { console.error(err) }
   }
@@ -96,6 +100,10 @@ export default function Projects() {
       </div>
     )
   }
+
+  const visibleProjects = okrKrFilter
+    ? projects.filter((p) => p.okr_kr_id === okrKrFilter)
+    : projects
 
   return (
     <div className="space-y-6">
@@ -158,6 +166,7 @@ export default function Projects() {
           </div>
           <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Описание" rows={2} className="w-full px-4 py-2 rounded-xl border border-brand-border bg-card text-brand-text" />
           <textarea value={form.deliverables} onChange={e => setForm({ ...form, deliverables: e.target.value })} placeholder="Результаты / deliverables" rows={2} className="w-full px-4 py-2 rounded-xl border border-brand-border bg-card text-brand-text" />
+          <OkrKrSelector value={form.okr_kr_id || null} onChange={(v) => setForm({ ...form, okr_kr_id: v || '' })} />
           <div className="flex gap-3 justify-end">
             <button onClick={() => setShowCreate(false)} className="px-4 py-2 text-brand-text-secondary hover:text-brand-text transition-colors">Отмена</button>
             <button onClick={handleCreate} className="px-4 py-2 bg-primary-500 text-white rounded-xl text-sm font-medium hover:bg-primary-600 transition-colors">Создать</button>
@@ -195,11 +204,30 @@ export default function Projects() {
         </div>
       )}
 
+      {okrKrFilter && (
+        <div className="rounded-2xl border border-primary-300 bg-primary-50 dark:bg-primary-900/30 dark:border-primary-700 px-4 py-2 mb-3 flex items-center justify-between">
+          <span className="text-sm text-primary-700 dark:text-primary-300">
+            🎯 Фильтр: KR <code className="font-mono">{okrKrFilter}</code> · показано {visibleProjects.length} из {projects.length}
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              const sp = new URLSearchParams(searchParams)
+              sp.delete('okr_kr')
+              setSearchParams(sp)
+            }}
+            className="text-xs px-2 py-1 rounded-lg hover:bg-primary-100"
+          >
+            ✕ Сбросить
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {projects.length === 0 ? (
+        {visibleProjects.length === 0 ? (
           <p className="text-brand-text-secondary italic col-span-2">Нет проектов</p>
         ) : (
-          projects.map(p => {
+          visibleProjects.map(p => {
             const st = statusLabels[p.status] || statusLabels.draft
             return (
               <div
