@@ -118,7 +118,7 @@ export const projectController = {
 
   async create(req: Request, res: Response) {
     try {
-      const { department_id, name, description, budget, start_date, end_date, deliverables, status, responsible_id } = req.body;
+      const { department_id, name, description, budget, start_date, end_date, deliverables, status, responsible_id, okr_kr_id } = req.body;
       if (!department_id || !name) return res.status(400).json({ error: 'department_id и name обязательны' });
 
       const project = projectRepo().create({
@@ -131,6 +131,7 @@ export const projectController = {
         deliverables: deliverables || null,
         status: status || 'draft',
         responsible_id: responsible_id || null,
+        okr_kr_id: okr_kr_id || null,
         created_by: req.user!.userId,
       });
       const saved = await projectRepo().save(project);
@@ -147,7 +148,7 @@ export const projectController = {
       const project = await projectRepo().findOne({ where: { id } });
       if (!project) return res.status(404).json({ error: 'Проект не найден' });
 
-      const { name, description, budget, start_date, end_date, deliverables, status, responsible_id } = req.body;
+      const { name, description, budget, start_date, end_date, deliverables, status, responsible_id, okr_kr_id } = req.body;
       if (name !== undefined) project.name = name;
       if (description !== undefined) project.description = description;
       if (budget !== undefined) project.budget = budget;
@@ -156,6 +157,7 @@ export const projectController = {
       if (deliverables !== undefined) project.deliverables = deliverables;
       if (status !== undefined) project.status = status;
       if (responsible_id !== undefined) project.responsible_id = responsible_id;
+      if (okr_kr_id !== undefined) project.okr_kr_id = okr_kr_id;
 
       const saved = await projectRepo().save(project);
       res.json(saved);

@@ -43,7 +43,7 @@ export const taskController = {
   async create(req: Request, res: Response) {
     try {
       const { boardId } = req.params;
-      const { title, description, column, priority, assignee_id, supervisor_id, due_date, tag_ids } = req.body;
+      const { title, description, column, priority, assignee_id, supervisor_id, due_date, tag_ids, okr_kr_id } = req.body;
       if (!title) return res.status(400).json({ error: 'Заголовок обязателен' });
 
       const maxSort = await repo()
@@ -61,6 +61,7 @@ export const taskController = {
         assignee_id: assignee_id || null,
         supervisor_id: supervisor_id || null,
         due_date: due_date || null,
+        okr_kr_id: okr_kr_id || null,
         sort_order: (maxSort?.max || 0) + 1000,
         created_by: req.user!.userId,
       });
@@ -87,7 +88,7 @@ export const taskController = {
       const task = await repo().findOne({ where: { id }, relations: ['tags'] });
       if (!task) return res.status(404).json({ error: 'Задача не найдена' });
 
-      const { title, description, column, priority, assignee_id, supervisor_id, due_date, tag_ids } = req.body;
+      const { title, description, column, priority, assignee_id, supervisor_id, due_date, tag_ids, okr_kr_id } = req.body;
       if (title !== undefined) task.title = title;
       if (description !== undefined) task.description = description;
       if (column !== undefined) task.column = column;
@@ -95,6 +96,7 @@ export const taskController = {
       if (assignee_id !== undefined) task.assignee_id = assignee_id;
       if (supervisor_id !== undefined) task.supervisor_id = supervisor_id;
       if (due_date !== undefined) task.due_date = due_date;
+      if (okr_kr_id !== undefined) task.okr_kr_id = okr_kr_id;
       if (tag_ids !== undefined) {
         task.tags = tag_ids.length > 0 ? await tagRepo().find({ where: { id: In(tag_ids) } }) : [];
       }
