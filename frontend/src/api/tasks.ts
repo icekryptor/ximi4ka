@@ -27,6 +27,7 @@ export interface TaskItem {
   sort_order: number;
   created_by: string;
   tags: TaskTag[];
+  okr_kr_id: string | null;
   comment_count: number;
   created_at: string;
   updated_at: string;
@@ -81,6 +82,7 @@ export const tasksApi = {
     supervisor_id?: string;
     due_date?: string;
     tag_ids?: string[];
+    okr_kr_id?: string | null;
   }) => {
     const response = await apiClient.post<TaskItem>(`/boards/${boardId}/tasks`, data);
     return response.data;
@@ -94,6 +96,7 @@ export const tasksApi = {
     supervisor_id: string | null;
     due_date: string | null;
     tag_ids: string[];
+    okr_kr_id: string | null;
   }>) => {
     const response = await apiClient.put<TaskItem>(`/boards/${boardId}/tasks/${id}`, data);
     return response.data;

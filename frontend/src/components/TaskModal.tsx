@@ -17,6 +17,7 @@ import { tagsApi } from '../api/tasks'
 import { Employee } from '../api/employees'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
+import { OkrKrSelector } from './okr/OkrKrSelector'
 
 interface Props {
   task: TaskItem
@@ -51,6 +52,7 @@ export default function TaskModal({
   const [assigneeId, setAssigneeId] = useState(task.assignee_id || '')
   const [supervisorId, setSupervisorId] = useState(task.supervisor_id || '')
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>(task.tags.map(t => t.id))
+  const [okrKrId, setOkrKrId] = useState(task.okr_kr_id || '')
 
   // Comments
   const [comments, setComments] = useState<TaskComment[]>([])
@@ -111,6 +113,7 @@ export default function TaskModal({
         assignee_id: assigneeId || null,
         supervisor_id: supervisorId || null,
         tag_ids: selectedTagIds,
+        okr_kr_id: okrKrId || null,
       })
       onSaved(updated)
       toast.success('Задача сохранена')
@@ -118,7 +121,7 @@ export default function TaskModal({
       toast.error('Ошибка сохранения')
     }
     setSaving(false)
-  }, [boardId, task, title, description, column, priority, dueDate, assigneeId, supervisorId, selectedTagIds, canEdit, onSaved, toast])
+  }, [boardId, task, title, description, column, priority, dueDate, assigneeId, supervisorId, selectedTagIds, okrKrId, canEdit, onSaved, toast])
 
   // ─── Delete handler ──────────────────────────────────────
 
@@ -303,6 +306,13 @@ export default function TaskModal({
                 ))}
               </select>
             </div>
+          </div>
+
+          <div>
+            <OkrKrSelector
+              value={okrKrId || null}
+              onChange={(v) => canEdit && setOkrKrId(v || '')}
+            />
           </div>
 
           {/* Tags */}
