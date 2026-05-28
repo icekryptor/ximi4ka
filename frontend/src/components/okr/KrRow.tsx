@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Check, X } from 'lucide-react'
 import type { ParsedKR, KrStatus } from '../../lib/okr-parser'
 
@@ -8,6 +9,7 @@ interface Props {
   comment?: string
   onChange: (krId: string, status: KrStatus, comment?: string) => void | Promise<void>
   busy?: boolean
+  linkCounts?: { projects: number; tasks: number }
 }
 
 const STATUS_OPTIONS: Array<{ value: KrStatus; label: string; emoji: string; color: string }> = [
@@ -22,7 +24,7 @@ function statusColor(status: KrStatus): string {
   return STATUS_OPTIONS.find((o) => o.value === status)?.color ?? 'bg-gray-300'
 }
 
-export function KrRow({ kr, status, comment, onChange, busy = false }: Props) {
+export function KrRow({ kr, status, comment, onChange, busy = false, linkCounts }: Props) {
   const [popoverOpen, setPopoverOpen] = useState(false)
   const [commentDraft, setCommentDraft] = useState(comment ?? '')
   const containerRef = useRef<HTMLDivElement>(null)
@@ -76,6 +78,17 @@ export function KrRow({ kr, status, comment, onChange, busy = false }: Props) {
           {comment && <span className="ml-2 italic">«{comment}»</span>}
         </div>
       </div>
+
+      {linkCounts && (linkCounts.projects > 0 || linkCounts.tasks > 0) && (
+        <Link
+          to={`/planning/projects?okr_kr=${kr.id}`}
+          onClick={(e) => e.stopPropagation()}
+          className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-300"
+          title="Открыть проекты этого KR"
+        >
+          📁 {linkCounts.projects} · ✓ {linkCounts.tasks}
+        </Link>
+      )}
 
       {popoverOpen && (
         <div className="absolute left-0 top-7 w-72 bg-card border border-brand-border rounded-xl shadow-lg z-20 p-2">

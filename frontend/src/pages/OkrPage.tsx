@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Target, RefreshCw, FileText } from 'lucide-react'
 import { brandDocsApi } from '../api/brandDocs'
 import { okrStatusApi, OkrStatusDoc } from '../api/okrStatus'
+import { okrLinksApi, OkrLinkCounts } from '../api/okrLinks'
 import { parseOkr, ParsedOkr, KrStatus } from '../lib/okr-parser'
 import { useToast } from '../contexts/ToastContext'
 import { AntiGoalsBar } from '../components/okr/AntiGoalsBar'
@@ -30,14 +31,16 @@ export default function OkrPage() {
   const [loading, setLoading] = useState(true)
   const [busyKrId, setBusyKrId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [linkCounts, setLinkCounts] = useState<OkrLinkCounts>({})
 
   const load = async () => {
     setLoading(true)
     setError(null)
     try {
-      const [doc, statusD] = await Promise.all([
+      const [doc, statusD, counts] = await Promise.all([
         brandDocsApi.get(OKR_SLUG),
         okrStatusApi.load(),
+        okrLinksApi.counts().catch(() => ({} as OkrLinkCounts)),
       ])
       if (!doc || !doc.content) {
         setError(`Документ ${OKR_SLUG} не найден в brand_docs.`)
@@ -51,6 +54,7 @@ export default function OkrPage() {
       setOkr(parsed)
       setStatusDoc(statusD)
       setSelectedQid(parsed.currentQuarterId ?? parsed.quarters[0].id)
+      setLinkCounts(counts)
     } catch (e: any) {
       setError(e?.message ?? 'Ошибка загрузки')
     } finally {
@@ -181,6 +185,7 @@ export default function OkrPage() {
                   kr={kr}
                   status={statusDoc?.statuses[kr.id]?.status ?? 'unknown'}
                   comment={statusDoc?.statuses[kr.id]?.comment}
+                  linkCounts={linkCounts[kr.id]}
                   onChange={handleKrChange}
                   busy={busyKrId === kr.id}
                 />
