@@ -161,12 +161,20 @@ export class TochkaApiClient {
       () => this.http.get(path),
     )
     const inner = data?.Data ?? data
+    // На GET Точка возвращает Data.Statement как МАССИВ (Open Banking style),
+    // на POST create — как объект. Обрабатываем обе формы.
+    const stmt = Array.isArray(inner?.Statement) ? inner.Statement[0] : inner?.Statement
     const txs =
+      stmt?.Transaction ??
       inner?.Transaction ??
       inner?.transactions ??
-      inner?.Statement?.Transaction ??
       []
-    const status = inner?.status ?? inner?.Statement?.status ?? 'Unknown'
+    const status = stmt?.status ?? inner?.status ?? 'Unknown'
+    if (status === 'Unknown') {
+      console.warn(
+        `[tochka-api] getStatement: не нашли status в ответе, statement keys=${JSON.stringify(stmt ? Object.keys(stmt) : inner ? Object.keys(inner) : []).slice(0, 300)}`,
+      )
+    }
     return { status, transactions: txs }
   }
 
@@ -190,8 +198,8 @@ export class TochkaApiClient {
       const { status, transactions } = await this.getStatement(accountId, statementId)
       console.log(`[tochka-api] statement poll attempt=${i + 1} status=${status}`)
       if (status === 'Ready' || status === 'ready') return transactions
-      if (status === 'Failed' || status === 'failed') {
-        throw new Error(`Точка вернула status=Failed для statement ${statementId}`)
+      if (['Failed', 'failed', 'Error', 'error'].includes(status)) {
+        throw new Error(`Точка вернула status=${status} для statement ${statementId}`)
       }
     }
     throw new Error(`Точка не подготовила выписку за ${(MAX_ATTEMPTS * POLL_INTERVAL_MS) / 1000} сек`)
