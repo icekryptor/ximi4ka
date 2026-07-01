@@ -4,6 +4,7 @@ import { projectsApi, ProjectDetail as ProjDetail, ProjectTask, ChecklistItem, T
 import { employeesApi, Employee } from '../api/employees'
 import GanttChart from '../components/GanttChart'
 import Portal from '../components/Portal'
+import { OkrKrSelector } from '../components/okr/OkrKrSelector'
 
 const statusLabels: Record<string, { label: string; className: string }> = {
   draft: { label: 'Черновик', className: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
@@ -20,10 +21,10 @@ export default function ProjectDetail() {
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('week')
   const [showAddTask, setShowAddTask] = useState(false)
-  const [taskForm, setTaskForm] = useState({ title: '', start_date: '', due_date: '', assignee_id: '', parent_id: '' })
+  const [taskForm, setTaskForm] = useState({ title: '', start_date: '', due_date: '', assignee_id: '', parent_id: '', okr_kr_id: '' })
   const [employees, setEmployees] = useState<Employee[]>([])
   const [editingTask, setEditingTask] = useState<ProjectTask | null>(null)
-  const [editForm, setEditForm] = useState({ title: '', start_date: '', due_date: '', assignee_id: '', progress: 0, priority: 'medium', description: '' })
+  const [editForm, setEditForm] = useState({ title: '', start_date: '', due_date: '', assignee_id: '', progress: 0, priority: 'medium', description: '', okr_kr_id: '' })
   const [checklist, setChecklist] = useState<ChecklistItem[]>([])
   const [newChecklistTitle, setNewChecklistTitle] = useState('')
   const [comments, setComments] = useState<TaskCommentItem[]>([])
@@ -32,7 +33,7 @@ export default function ProjectDetail() {
   const [showLinkInput, setShowLinkInput] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [settingsForm, setSettingsForm] = useState({
-    name: '', description: '', budget: 0, start_date: '', end_date: '', status: '', responsible_id: '', deliverables: '', color: ''
+    name: '', description: '', budget: 0, start_date: '', end_date: '', status: '', responsible_id: '', deliverables: '', color: '', okr_kr_id: ''
   })
   const [members, setMembers] = useState<ProjectMember[]>([])
   const [newMemberId, setNewMemberId] = useState('')
@@ -59,9 +60,10 @@ export default function ProjectDetail() {
         due_date: taskForm.due_date || undefined,
         assignee_id: taskForm.assignee_id || undefined,
         parent_id: taskForm.parent_id || undefined,
+        okr_kr_id: taskForm.okr_kr_id || null,
       })
       setShowAddTask(false)
-      setTaskForm({ title: '', start_date: '', due_date: '', assignee_id: '', parent_id: '' })
+      setTaskForm({ title: '', start_date: '', due_date: '', assignee_id: '', parent_id: '', okr_kr_id: '' })
       load()
     } catch (err) { console.error(err) }
   }
@@ -95,6 +97,7 @@ export default function ProjectDetail() {
       progress: task.progress || 0,
       priority: task.priority || 'medium',
       description: task.description || '',
+      okr_kr_id: task.okr_kr_id || '',
     })
     setChecklist(task.checklist || [])
     setNewChecklistTitle('')
@@ -209,6 +212,7 @@ export default function ProjectDetail() {
         progress: editForm.progress,
         priority: editForm.priority,
         description: editForm.description || undefined,
+        okr_kr_id: editForm.okr_kr_id || null,
       })
       setEditingTask(null)
       load()
@@ -228,6 +232,7 @@ export default function ProjectDetail() {
         responsible_id: settingsForm.responsible_id || undefined,
         deliverables: settingsForm.deliverables || undefined,
         color: settingsForm.color || null,
+        okr_kr_id: settingsForm.okr_kr_id || null,
       })
       setShowSettings(false)
       load()
@@ -458,6 +463,7 @@ export default function ProjectDetail() {
                 responsible_id: project.responsible_id || '',
                 deliverables: project.deliverables || '',
                 color: project.color || '',
+                okr_kr_id: project.okr_kr_id || '',
               })
               setMembers(project.members || [])
               setTelegramLoading(true)
@@ -559,6 +565,10 @@ export default function ProjectDetail() {
               ))}
             </select>
           )}
+          <OkrKrSelector
+            value={taskForm.okr_kr_id || null}
+            onChange={(v) => setTaskForm({ ...taskForm, okr_kr_id: v || '' })}
+          />
           <div className="flex gap-3 justify-end">
             <button onClick={() => setShowAddTask(false)} className="px-4 py-2 text-brand-text-secondary hover:text-brand-text transition-colors">Отмена</button>
             <button onClick={handleAddTask} className="px-4 py-2 bg-primary-500 text-white rounded-xl text-sm font-medium hover:bg-primary-600 transition-colors">Создать</button>
@@ -732,6 +742,12 @@ export default function ProjectDetail() {
                     className="w-full px-3 py-2 rounded-xl border border-brand-border bg-card text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400 resize-none"
                   />
                 </div>
+
+                {/* OKR link */}
+                <OkrKrSelector
+                  value={settingsForm.okr_kr_id || null}
+                  onChange={(v) => setSettingsForm({ ...settingsForm, okr_kr_id: v || '' })}
+                />
 
                 {/* Team section */}
                 <div className="border-t border-brand-border pt-4 mt-2">
@@ -1002,6 +1018,12 @@ export default function ProjectDetail() {
                   </select>
                 </div>
               </div>
+
+              {/* OKR link */}
+              <OkrKrSelector
+                value={editForm.okr_kr_id || null}
+                onChange={(v) => setEditForm({ ...editForm, okr_kr_id: v || '' })}
+              />
 
               {/* Progress: slider if no checklist, auto-calculated if checklist exists */}
               {checklist.length === 0 ? (

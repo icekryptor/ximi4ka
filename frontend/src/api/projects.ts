@@ -50,6 +50,7 @@ export interface ProjectTask {
   description: string | null
   column: string
   priority: string
+  okr_kr_id: string | null
   assignee_id: string | null
   assignee: { id: string; name: string } | null
   start_date: string | null
@@ -145,6 +146,7 @@ export const projectsApi = {
     parent_id?: string
     priority?: string
     board_id?: string
+    okr_kr_id?: string | null
   }): Promise<ProjectTask> => {
     const { data } = await api.post(`/projects/${projectId}/tasks`, payload)
     return data
@@ -160,6 +162,7 @@ export const projectsApi = {
     parent_id: string
     column: string
     priority: string
+    okr_kr_id: string | null
   }>): Promise<ProjectTask> => {
     const { data } = await api.put(`/projects/${projectId}/tasks/${taskId}`, payload)
     return data
