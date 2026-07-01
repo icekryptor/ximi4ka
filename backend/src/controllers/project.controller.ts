@@ -182,7 +182,7 @@ export const projectController = {
   async addTask(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { title, description, assignee_id, start_date, due_date, parent_id, priority } = req.body;
+      const { title, description, assignee_id, start_date, due_date, parent_id, priority, okr_kr_id } = req.body;
       if (!title) return res.status(400).json({ error: 'title обязателен' });
 
       const project = await projectRepo().findOne({ where: { id } });
@@ -198,6 +198,7 @@ export const projectController = {
         due_date: due_date || null,
         parent_id: parent_id || null,
         priority: priority || 'medium',
+        okr_kr_id: okr_kr_id || null,
         progress: 0,
         created_by: req.user!.userId,
       });
@@ -220,7 +221,7 @@ export const projectController = {
       const oldProgress = task.progress || 0
       const oldColumn = task.column
 
-      const { title, description, assignee_id, start_date, due_date, progress, parent_id, column, priority } = req.body;
+      const { title, description, assignee_id, start_date, due_date, progress, parent_id, column, priority, okr_kr_id } = req.body;
       if (title !== undefined) task.title = title;
       if (description !== undefined) task.description = description;
       if (assignee_id !== undefined) task.assignee_id = assignee_id;
@@ -230,6 +231,7 @@ export const projectController = {
       if (parent_id !== undefined) task.parent_id = parent_id;
       if (column !== undefined) task.column = column;
       if (priority !== undefined) task.priority = priority;
+      if (okr_kr_id !== undefined) task.okr_kr_id = okr_kr_id;
 
       const saved = await taskRepo().save(task);
 
