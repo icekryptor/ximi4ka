@@ -51,19 +51,32 @@ interface TochkaAccount {
   currency: string
 }
 
+/**
+ * Реальная схема транзакции Точки (Open Banking v1.0, зафиксирована из
+ * прод-ответа 2026-07-02):
+ *   creditDebitIndicator: Credit=приход / Debit=расход
+ *   documentProcessDate: "YYYY-MM-DD"
+ *   Amount: { amount, amountNat, currency }
+ *   DebtorParty / CreditorParty: { inn, name, kpp } — плательщик / получатель
+ */
+interface TochkaParty {
+  name?: string
+  inn?: string
+  kpp?: string
+}
+
 interface TochkaTransaction {
-  transactionId: string
-  operationDate: string         // YYYY-MM-DD
-  direction: 'Credit' | 'Debit'
-  amount: number
-  counterparty?: {
-    name?: string
-    inn?: string
-    bik?: string
-    account?: string
-  }
-  paymentPurpose?: string
+  transactionId?: string
+  paymentId?: string
+  creditDebitIndicator: 'Credit' | 'Debit'
+  status?: string               // Booked / Pending
   documentNumber?: string
+  transactionTypeCode?: string
+  documentProcessDate: string   // YYYY-MM-DD
+  description?: string
+  Amount?: { amount: number; amountNat?: number; currency?: string }
+  DebtorParty?: TochkaParty
+  CreditorParty?: TochkaParty
 }
 
 const BASE_URL = 'https://enter.tochka.com/uapi/open-banking/v1.0'
@@ -219,16 +232,18 @@ export class TochkaApiClient {
  * import pipeline downstream works without changes.
  */
 export function tochkaApiToNormalizedRow(tx: TochkaTransaction): NormalizedRow {
-  const type: 'income' | 'expense' = tx.direction === 'Credit' ? 'income' : 'expense'
-  const innRaw = tx.counterparty?.inn || ''
+  const type: 'income' | 'expense' = tx.creditDebitIndicator === 'Credit' ? 'income' : 'expense'
+  // Для прихода контрагент — плательщик (DebtorParty), для расхода — получатель (CreditorParty)
+  const party = type === 'income' ? tx.DebtorParty : tx.CreditorParty
+  const innRaw = party?.inn || ''
   return {
-    external_id: tx.transactionId || tx.documentNumber || null,
-    date: tx.operationDate,
+    external_id: tx.transactionId || tx.paymentId || tx.documentNumber || null,
+    date: tx.documentProcessDate,
     type,
-    amount: Math.abs(tx.amount),
-    counterparty_name: (tx.counterparty?.name || '').trim(),
+    amount: Math.abs(Number(tx.Amount?.amount ?? 0)),
+    counterparty_name: (party?.name || '').trim(),
     counterparty_inn: /^\d{10,12}$/.test(innRaw) ? innRaw : null,
-    description: (tx.paymentPurpose || '').trim(),
-    raw: tx,
+    description: (tx.description || '').trim(),
+    raw: tx as unknown as Record<string, any>,
   }
 }
