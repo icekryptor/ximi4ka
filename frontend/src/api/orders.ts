@@ -64,37 +64,37 @@ export interface OrderStats {
 
 export const ordersApi = {
   getAll: async (params?: { status?: OrderStatus; kit_id?: string; channel_id?: string }) => {
-    const response = await apiClient.get<ProductionOrder[]>('/orders', { params });
+    const response = await apiClient.get<ProductionOrder[]>('/production-orders', { params });
     return response.data;
   },
 
   getById: async (id: string) => {
-    const response = await apiClient.get<ProductionOrder>(`/orders/${id}`);
+    const response = await apiClient.get<ProductionOrder>(`/production-orders/${id}`);
     return response.data;
   },
 
   create: async (data: Partial<ProductionOrder>) => {
-    const response = await apiClient.post<ProductionOrder>('/orders', data);
+    const response = await apiClient.post<ProductionOrder>('/production-orders', data);
     return response.data;
   },
 
   update: async (id: string, data: Partial<ProductionOrder>) => {
-    const response = await apiClient.put<ProductionOrder>(`/orders/${id}`, data);
+    const response = await apiClient.put<ProductionOrder>(`/production-orders/${id}`, data);
     return response.data;
   },
 
   updateStatus: async (id: string, status: OrderStatus) => {
-    const response = await apiClient.patch<ProductionOrder>(`/orders/${id}/status`, { status });
+    const response = await apiClient.patch<ProductionOrder>(`/production-orders/${id}/status`, { status });
     return response.data;
   },
 
   delete: async (id: string) => {
-    const response = await apiClient.delete(`/orders/${id}`);
+    const response = await apiClient.delete(`/production-orders/${id}`);
     return response.data;
   },
 
   stats: async () => {
-    const response = await apiClient.get<OrderStats[]>('/orders/stats');
+    const response = await apiClient.get<OrderStats[]>('/production-orders/stats');
     return response.data;
   },
 };

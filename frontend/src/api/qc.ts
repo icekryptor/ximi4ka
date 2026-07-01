@@ -1,6 +1,7 @@
 import { apiClient } from './client';
 import { Kit } from './kits';
 import { Employee } from './employees';
+import { ProductionOrder } from './orders';
 
 export interface ChecklistItem {
   id: string;
@@ -47,15 +48,20 @@ export interface ItemResult {
 export interface QcInspection {
   id: string;
   order_id: string;
-  checklist_id: string;
+  order?: ProductionOrder;
+  checklist_id?: string;
   checklist?: QcChecklist;
-  inspector_id: string;
+  inspector_id?: string;
   inspector?: Employee;
+  inspected_qty: number;
+  passed_qty: number;
+  failed_qty: number;
   result: InspectionResult;
   item_results: ItemResult[];
+  defect_description?: string;
   defect_photos?: string[];
+  batch_number?: string;
   notes?: string;
-  inspected_at: string;
   created_at: string;
 }
 
@@ -111,8 +117,29 @@ export const qcApi = {
   },
 
   // Stats
-  stats: async () => {
-    const response = await apiClient.get<QcStats>('/qc/stats');
-    return response.data;
+  // Бэкенд возвращает сырые строки groupBy по result — приводим к QcStats
+  stats: async (): Promise<QcStats> => {
+    const response = await apiClient.get<Array<{
+      result: InspectionResult;
+      count: string;
+      total_inspected: string | null;
+      total_passed: string | null;
+      total_failed: string | null;
+    }>>('/qc/stats');
+    const rows = response.data;
+    const countByResult = (r: InspectionResult) =>
+      Number(rows.find(row => row.result === r)?.count || 0);
+    const pass_count = countByResult(InspectionResult.PASS);
+    const fail_count = countByResult(InspectionResult.FAIL);
+    const conditional_count = countByResult(InspectionResult.CONDITIONAL);
+    const total_inspected = rows.reduce((sum, row) => sum + Number(row.total_inspected || 0), 0);
+    const total_passed = rows.reduce((sum, row) => sum + Number(row.total_passed || 0), 0);
+    return {
+      total_inspections: pass_count + fail_count + conditional_count,
+      pass_count,
+      fail_count,
+      conditional_count,
+      pass_rate: total_inspected > 0 ? (total_passed / total_inspected) * 100 : 0,
+    };
   },
 };

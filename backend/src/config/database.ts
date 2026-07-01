@@ -23,6 +23,8 @@ import { DailySales } from '../entities/DailySales';
 import { Employee } from '../entities/Employee';
 import { SalesChannel } from '../entities/SalesChannel';
 import { QcChecklist } from '../entities/QcChecklist';
+import { QcInspection } from '../entities/QcInspection';
+import { ProductionOrder } from '../entities/ProductionOrder';
 import { Board } from '../entities/Board';
 import { Task } from '../entities/Task';
 import { TaskComment } from '../entities/TaskComment';
@@ -62,7 +64,7 @@ const databaseUrl = process.env.DATABASE_URL;
 
 const isDev = process.env.NODE_ENV !== 'production';
 
-const allEntities = [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, UnitEconomicsShare, User, DailySales, Employee, SalesChannel, QcChecklist, Board, Task, TaskComment, TaskTag, ChannelPreset, ContentUnit, ContentRubric, ContentPublication, OAuthToken, Department, DepartmentRole, RecurringTask, RecurringTaskReport, Project, ProjectMember, TaskDependency, TaskChecklistItem, TelegramChat, BankAccount, BankImport, ImportRule, BrandDoc, IcpSegment, StrategicTheme, Channel, ChannelBudget, ContentAsset, ContentMetricSnapshot, BankSyncConfig, BankSyncLog];
+const allEntities = [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, UnitEconomicsShare, User, DailySales, Employee, SalesChannel, QcChecklist, QcInspection, ProductionOrder, Board, Task, TaskComment, TaskTag, ChannelPreset, ContentUnit, ContentRubric, ContentPublication, OAuthToken, Department, DepartmentRole, RecurringTask, RecurringTaskReport, Project, ProjectMember, TaskDependency, TaskChecklistItem, TelegramChat, BankAccount, BankImport, ImportRule, BrandDoc, IcpSegment, StrategicTheme, Channel, ChannelBudget, ContentAsset, ContentMetricSnapshot, BankSyncConfig, BankSyncLog];
 
 const dataSourceOptions = databaseUrl
   ? {
