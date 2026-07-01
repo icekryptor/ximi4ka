@@ -118,9 +118,10 @@ export class TochkaApiClient {
     // Per Точка validation errors:
     // - Body nests params under {Data: {Statement: {...}}}
     // - Field names are startDateTime / endDateTime (camelCase, suffix DateTime)
-    // - Values are full ISO 8601 timestamps with timezone, not just YYYY-MM-DD
+    // - Values must be dates with ZERO time («Datetimes provided to dates
+    //   should have zero time — e.g. be exact dates»). Both bounds inclusive.
     const startIso = `${from}T00:00:00.000Z`
-    const endIso = `${to}T23:59:59.999Z`
+    const endIso = `${to}T00:00:00.000Z`
     const body = {
       Data: {
         Statement: {
