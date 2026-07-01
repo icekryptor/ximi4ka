@@ -197,7 +197,14 @@ export class TochkaApiClient {
       await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS))
       const { status, transactions } = await this.getStatement(accountId, statementId)
       console.log(`[tochka-api] statement poll attempt=${i + 1} status=${status}`)
-      if (status === 'Ready' || status === 'ready') return transactions
+      if (status === 'Ready' || status === 'ready') {
+        if (transactions.length > 0) {
+          console.log(
+            `[tochka-api] first raw transaction sample: ${JSON.stringify(transactions[0]).slice(0, 800)}`,
+          )
+        }
+        return transactions
+      }
       if (['Failed', 'failed', 'Error', 'error'].includes(status)) {
         throw new Error(`Точка вернула status=${status} для statement ${statementId}`)
       }
