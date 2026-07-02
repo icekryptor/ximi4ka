@@ -28,6 +28,8 @@ const RegisterPage = lazy(() => import('./pages/RegisterPage'))
 const MarginMatrix = lazy(() => import('./pages/MarginMatrix'))
 const ProductionOrders = lazy(() => import('./pages/ProductionOrders'))
 const QualityControl = lazy(() => import('./pages/QualityControl'))
+const AssemblyScheme = lazy(() => import('./pages/AssemblyScheme'))
+const KnowledgeBase = lazy(() => import('./pages/KnowledgeBase'))
 const Employees = lazy(() => import('./pages/Employees'))
 const SalesChannels = lazy(() => import('./pages/SalesChannels'))
 const SalesReport = lazy(() => import('./pages/SalesReport'))
@@ -124,6 +126,8 @@ function App() {
                                 {/* Производство */}
                                 <Route path="/production-orders" element={<ProductionOrders />} />
                                 <Route path="/quality-control" element={<QualityControl />} />
+                                <Route path="/production/assembly" element={<AssemblyScheme />} />
+                                <Route path="/production/knowledge-base" element={<KnowledgeBase />} />
                                 <Route path="/planning" element={<Planning />} />
                                 <Route path="/planning/departments" element={<Departments />} />
                                 <Route path="/planning/departments/:id" element={<DepartmentDetail />} />
