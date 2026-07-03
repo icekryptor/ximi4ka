@@ -19,6 +19,16 @@
 Применить через Supabase MCP (`apply_migration`, project `jubkezbvccwvujregkfq`, name `2026_07_02_discount_tracker`). Verify: обе таблицы + обе вьюхи существуют.
 Commit: `feat(discount-tracker): migration — price_snapshots, alert_state, views`
 
+> **СТАТУС 2026-07-03: файл создан и закоммичен (9e84ee5), но миграция НЕ применена — ВНЕШНИЙ БЛОКЕР.**
+> Проект `jubkezbvccwvujregkfq` в статусе INACTIVE; `restore_project` детерминированно возвращает
+> `PaymentRequiredException` (неоплаченные счета организации `qmnwyrpfothyjtfhsvyt`, «icekryptor's Org», план free);
+> прямое подключение к пулеру падает: `FATAL: (ENOTFOUND) tenant/user postgres.jubkezbvccwvujregkfq not found`.
+> **Разблокировка (действия пользователя):** оплатить счета в Supabase Dashboard → Billing → Invoices,
+> затем restore проекта. **После restore выполнить:** `apply_migration` (project `jubkezbvccwvujregkfq`,
+> name `2026_07_02_discount_tracker`, SQL из `backend/src/migrations/2026-07-02-discount-tracker.sql`),
+> затем DB-verify: `SELECT ... LIMIT 1` из `price_snapshots`, `alert_state`, `v_price_latest`, `v_spp_delta`
+> + наличие индекса `idx_snap_sku_time` в `pg_indexes`.
+
 ## Task 2: Backend
 
 **Create:**
@@ -58,6 +68,9 @@ App.tsx: `<Route path="/marketplace/discount-tracker" element={<DiscountTracker 
 Commit: `feat(discount-tracker): route + sidebar`
 
 ## Task 5: E2E + деплой (главная сессия)
+
+> **СТАТУС 2026-07-03: заблокирован тем же внешним блокером, что и Task 1** (Supabase-проект INACTIVE
+> до оплаты счетов и restore). Прод-прогон возможен только после restore + apply_migration.
 
 1. Локально: build backend, `POST /run` без Ozon-ключей → WB-снапшоты пишутся (живой публичный API), проверка строк в price_snapshots
 2. Playwright: страница рендерит таблицу, фильтр, спарклайн, кнопка run
