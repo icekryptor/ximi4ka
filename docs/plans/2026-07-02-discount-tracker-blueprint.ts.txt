@@ -1,0 +1,189 @@
+/**
+ * СПП / Соинвест tracker
+ * Раз в час: снимает витринную цену и цену продавца по каждому SKU,
+ * считает долю площадки (СПП на WB / соинвест на Ozon), пишет снапшот,
+ * алертит в Telegram при просадке субсидии.
+ *
+ * WB:   СПП = 1 - total/product из публичного card.wb.ru (одна цена = один запрос, без авторизации).
+ * Ozon: соинвест = marketing_seller_price - marketing_price из /product/info/prices (нужен ключ продавца).
+ *
+ * ВНИМАНИЕ по версиям API: у Ozon endpoint цен эволюционирует (v4/v5).
+ * Свери OZON_PRICES_URL и имена полей со своей рабочей интеграцией — там уже валидные креды и версия.
+ */
+
+import { createClient } from "@supabase/supabase-js";
+
+// ---------- env ----------
+const {
+  SUPABASE_URL,
+  SUPABASE_SERVICE_KEY,
+  OZON_CLIENT_ID,
+  OZON_API_KEY,
+  TELEGRAM_BOT_TOKEN,
+  TELEGRAM_CHAT_ID,
+  // порог алерта: на сколько должна упасть доля площадки (в п.п.), чтобы пикнуть
+  ALERT_DROP_PP = "5",
+} = process.env as Record<string, string>;
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+  auth: { persistSession: false },
+});
+
+const OZON_PRICES_URL = "https://api-seller.ozon.ru/v5/product/info/prices";
+const WB_CARD_URL = "https://card.wb.ru/cards/v2/detail";
+const DROP = Number(ALERT_DROP_PP) / 100;
+
+type Snapshot = {
+  platform: "wb" | "ozon";
+  sku: string;
+  seller_price: number;
+  shelf_price: number;
+  own_discount: number | null;
+  platform_disc: number;
+  discount_pct: number;
+  platform_pct: number;
+  raw: unknown;
+};
+
+// ---------- WB ----------
+// nmIds приходят из таблицы товаров; батчим по 100 в один запрос (nm=1;2;3).
+async function fetchWb(nmIds: number[]): Promise<Snapshot[]> {
+  const out: Snapshot[] = [];
+  for (let i = 0; i < nmIds.length; i += 100) {
+    const batch = nmIds.slice(i, i + 100);
+    const url =
+      `${WB_CARD_URL}?appType=1&curr=rub&dest=-1257786&spp=30&nm=` +
+      batch.join(";");
+    const r = await fetch(url);
+    if (!r.ok) {
+      console.error("WB card API", r.status);
+      continue;
+    }
+    const j: any = await r.json();
+    for (const p of j?.data?.products ?? []) {
+      const price = p?.sizes?.[0]?.price;
+      if (!price?.product || !price?.total) continue;
+      const seller = price.product / 100; // цена продавца (после своей скидки, до СПП)
+      const shelf = price.total / 100; // витрина (с СПП)
+      const platformDisc = Math.max(seller - shelf, 0); // рубли СПП
+      out.push({
+        platform: "wb",
+        sku: String(p.id),
+        seller_price: seller,
+        shelf_price: shelf,
+        own_discount: null, // WB не разводит своё/чужое в публичном API
+        platform_disc: platformDisc,
+        discount_pct: 1 - shelf / seller,
+        platform_pct: seller ? platformDisc / seller : 0,
+        raw: price,
+      });
+    }
+  }
+  return out;
+}
+
+// ---------- Ozon ----------
+async function fetchOzon(): Promise<Snapshot[]> {
+  if (!OZON_CLIENT_ID || !OZON_API_KEY) return [];
+  const out: Snapshot[] = [];
+  let cursor = "";
+  do {
+    const r = await fetch(OZON_PRICES_URL, {
+      method: "POST",
+      headers: {
+        "Client-Id": OZON_CLIENT_ID,
+        "Api-Key": OZON_API_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ cursor, limit: 1000, filter: { visibility: "ALL" } }),
+    });
+    if (!r.ok) {
+      console.error("Ozon prices API", r.status, await r.text());
+      break;
+    }
+    const j: any = await r.json();
+    for (const it of j?.items ?? []) {
+      const pr = it?.price ?? {};
+      const seller = Number(pr.price); // ваша цена = база комиссии
+      const afterOwn = Number(pr.marketing_seller_price || pr.price); // после ваших акций
+      const shelf = Number(pr.marketing_price || afterOwn); // витрина, вкл. соинвест площадки
+      if (!seller) continue;
+      const ownDisc = Math.max(seller - afterOwn, 0); // ваша скидка
+      const platformDisc = Math.max(afterOwn - shelf, 0); // доля площадки на витрине (соинвест)
+      out.push({
+        platform: "ozon",
+        sku: String(it.offer_id ?? it.product_id),
+        seller_price: seller,
+        shelf_price: shelf,
+        own_discount: ownDisc,
+        platform_disc: platformDisc,
+        discount_pct: 1 - shelf / seller,
+        platform_pct: seller ? platformDisc / seller : 0,
+        raw: pr,
+      });
+    }
+    cursor = j?.cursor ?? "";
+  } while (cursor);
+  return out;
+}
+
+// ---------- alert ----------
+async function maybeAlert(snap: Snapshot) {
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
+  const { data: prev } = await supabase
+    .from("alert_state")
+    .select("last_pct")
+    .eq("platform", snap.platform)
+    .eq("sku", snap.sku)
+    .maybeSingle();
+
+  const last = prev?.last_pct;
+  const dropped = last != null && last - snap.platform_pct >= DROP;
+
+  if (dropped) {
+    const msg =
+      `⚠️ ${snap.platform.toUpperCase()} ${snap.sku}\n` +
+      `Субсидия площадки: ${(last * 100).toFixed(1)}% → ${(snap.platform_pct * 100).toFixed(1)}%\n` +
+      `Витрина: ${snap.shelf_price}₽ (цена продавца ${snap.seller_price}₽)`;
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: msg }),
+    });
+  }
+  await supabase.from("alert_state").upsert({
+    platform: snap.platform,
+    sku: snap.sku,
+    last_pct: snap.platform_pct,
+    last_alerted: dropped ? new Date().toISOString() : prev ? undefined : new Date().toISOString(),
+  });
+}
+
+// ---------- main ----------
+async function main() {
+  // источник nmId для WB — своя таблица товаров; поправь под свою схему
+  const { data: goods } = await supabase
+    .from("products")
+    .select("wb_nm_id")
+    .not("wb_nm_id", "is", null);
+  const nmIds = (goods ?? []).map((g: any) => Number(g.wb_nm_id)).filter(Boolean);
+
+  const snaps = [...(await fetchWb(nmIds)), ...(await fetchOzon())];
+  if (!snaps.length) {
+    console.log("no snapshots");
+    return;
+  }
+
+  const { error } = await supabase.from("price_snapshots").insert(
+    snaps.map(({ raw, ...s }) => ({ ...s, raw })),
+  );
+  if (error) throw error;
+
+  for (const s of snaps) await maybeAlert(s);
+  console.log(`saved ${snaps.length} snapshots @ ${new Date().toISOString()}`);
+}
+
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
