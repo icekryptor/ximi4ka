@@ -22,16 +22,15 @@ export type Snapshot = {
   raw: unknown;
 };
 
-import { ProxyAgent } from 'undici';
-
 const WB_CARD_URL = 'https://card.wb.ru/cards/v4/detail';
 const WB_PRICES_URL = 'https://discounts-prices-api.wildberries.ru/api/v2/list/goods/filter';
 
-// WAF WB банит датацентровые IP (Railway) на card.wb.ru — витрину ходим через
-// РФ-прокси, если задан. Формат: http://user:pass@host:port. Seller-API не банится.
-const cardProxy = process.env.WB_CARD_PROXY_URL
-  ? new ProxyAgent(process.env.WB_CARD_PROXY_URL)
-  : undefined;
+// WAF WB банит витрину card.wb.ru по TLS-фингерпринту Node/undici + датацентровому IP.
+// CONNECT-прокси не помогает (TLS терминируется на клиенте). Решение — HTTP-релей
+// на РФ-VPS: он сам curl'ит WB (проходит WAF) и отдаёт JSON. Railway ходит к релею.
+// WB_CARD_RELAY_URL=http://host:port (эндпоинт /cards?nm=), WB_RELAY_TOKEN — авторизация.
+const RELAY_URL = process.env.WB_CARD_RELAY_URL;
+const RELAY_TOKEN = process.env.WB_RELAY_TOKEN || '';
 const BROWSER_HEADERS = {
   'User-Agent':
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36',
@@ -87,16 +86,20 @@ export async function fetchWb(nmIds: number[]): Promise<Snapshot[]> {
 
   for (let i = 0; i < nmIds.length; i += 100) {
     const batch = nmIds.slice(i, i + 100);
-    const url = `${WB_CARD_URL}?appType=1&curr=rub&dest=-1257786&spp=30&nm=` + batch.join(';');
-    const r = await fetch(url, {
-      headers: BROWSER_HEADERS,
-      ...(cardProxy ? ({ dispatcher: cardProxy } as any) : {}),
-    });
+    const nm = batch.join(';');
+    // Через релей (обход WAF) либо напрямую (локальная разработка с РФ IP)
+    const url = RELAY_URL
+      ? `${RELAY_URL.replace(/\/$/, '')}/cards?nm=${encodeURIComponent(nm)}`
+      : `${WB_CARD_URL}?appType=1&curr=rub&dest=-1257786&spp=30&nm=${nm}`;
+    const headers: Record<string, string> = RELAY_URL
+      ? { 'X-Relay-Token': RELAY_TOKEN }
+      : BROWSER_HEADERS;
+    const r = await fetch(url, { headers });
     if (!r.ok) {
       const body = (await r.text().catch(() => '')).slice(0, 200);
       console.error(
-        `[discount-tracker] WB card API ${r.status}` +
-          (cardProxy ? ' (через прокси)' : ' (без прокси — задай WB_CARD_PROXY_URL)') +
+        `[discount-tracker] WB card ${r.status}` +
+          (RELAY_URL ? ' (через релей)' : ' (напрямую — WAF банит датацентры, задай WB_CARD_RELAY_URL)') +
           ` body=${body}`,
       );
       continue;
