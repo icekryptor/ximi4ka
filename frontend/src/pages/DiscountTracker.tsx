@@ -68,116 +68,101 @@ const PlatformBadge = ({ platform }: { platform: DiscountPlatform }) => (
   </span>
 )
 
-/** SVG-спарклайн доли площадки (platform_pct) за период истории */
-const Sparkline = ({ history }: { history: PriceHistoryRow[] }) => {
-  const points = history.filter(h => h.platform_pct != null)
-  if (points.length === 0) {
-    return (
-      <div className="text-sm text-brand-text-secondary py-4">
-        Нет данных за последние 48 часов
-      </div>
-    )
-  }
-
-  const w = 640
-  const h = 96
-  const pad = 10
-  const pcts = points.map(p => (p.platform_pct as number) * 100)
-  const min = Math.min(...pcts)
-  const max = Math.max(...pcts)
-  const span = max - min || 1
-  const stepX = points.length > 1 ? (w - pad * 2) / (points.length - 1) : 0
-  const coords = pcts.map((v, i) => {
-    const x = points.length > 1 ? pad + i * stepX : w / 2
-    const y = h - pad - ((v - min) / span) * (h - pad * 2)
-    return { x, y }
-  })
-  const polyline = coords.map(c => `${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(' ')
-  const last = coords[coords.length - 1]
-
-  return (
-    <div className="flex items-center gap-3">
-      <div className="flex flex-col justify-between text-xs text-brand-text-secondary tabular-nums h-24 py-1">
-        <span>{max.toFixed(1)}%</span>
-        <span>{min.toFixed(1)}%</span>
-      </div>
-      <svg
-        viewBox={`0 0 ${w} ${h}`}
-        className="w-full max-w-2xl h-24"
-        preserveAspectRatio="none"
-        role="img"
-        aria-label="Динамика доли площадки за 48 часов"
-      >
-        <polyline
-          points={polyline}
-          fill="none"
-          stroke="#836efe"
-          strokeWidth={2}
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
-        <circle cx={last.x} cy={last.y} r={3.5} fill="#836efe" />
-      </svg>
-    </div>
-  )
+/**
+ * Цвет ячейки heatmap по величине доли площадки (СПП/соинвест, %).
+ * 0% → красный (низкая субсидия), ~20% → жёлтый, ≥40% → зелёный (высокая).
+ */
+const heatColor = (pct: number): string => {
+  const hue = Math.max(0, Math.min(120, (pct / 40) * 120))
+  return `hsl(${hue}, 68%, 55%)`
 }
 
-/** Мини-таблица последних дельт по истории (свежие сверху) */
-const DeltaTable = ({ history }: { history: PriceHistoryRow[] }) => {
-  const rows = useMemo(() => {
-    const recent: Array<PriceHistoryRow & { delta: number | null }> = []
-    for (let i = history.length - 1; i >= 0 && recent.length < 8; i--) {
-      const cur = history[i]
-      const prev = i > 0 ? history[i - 1] : null
-      const delta =
-        cur.platform_pct != null && prev?.platform_pct != null
-          ? cur.platform_pct - prev.platform_pct
-          : null
-      recent.push({ ...cur, delta })
+const HOUR_LABELS = Array.from({ length: 24 }, (_, h) => h)
+
+const dayKeyOf = (d: Date): string =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
+const dayHeader = (key: string): string => {
+  const [, m, d] = key.split('-')
+  return `${d}.${m}`
+}
+
+/**
+ * Heatmap доли площадки: столбцы — дни, строки — часы (00:00…23:00).
+ * Ячейка = последний снапшот platform_pct за этот час, подсвечена цветом.
+ */
+const SppHeatmap = ({ history }: { history: PriceHistoryRow[] }) => {
+  const { days, grid } = useMemo(() => {
+    const points = history.filter(h => h.platform_pct != null)
+    const byDay = new Map<string, Map<number, number>>()
+    const daySet = new Set<string>()
+    for (const p of points) {
+      const dt = new Date(p.captured_at)
+      const dk = dayKeyOf(dt)
+      daySet.add(dk)
+      if (!byDay.has(dk)) byDay.set(dk, new Map())
+      // несколько снапшотов в час → берём последний (history отсортирован ASC)
+      byDay.get(dk)!.set(dt.getHours(), (p.platform_pct as number) * 100)
     }
-    return recent
+    return { days: [...daySet].sort(), grid: byDay }
   }, [history])
 
-  if (rows.length === 0) return null
+  if (days.length === 0) {
+    return <div className="text-sm text-brand-text-secondary py-4">Нет данных за период</div>
+  }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="text-xs border-collapse">
-        <thead>
-          <tr className="text-brand-text-secondary">
-            <th className="text-left py-1 pr-4 font-medium">Время</th>
-            <th className="text-right py-1 pr-4 font-medium">Продавец</th>
-            <th className="text-right py-1 pr-4 font-medium">Витрина</th>
-            <th className="text-right py-1 pr-4 font-medium">Доля площадки</th>
-            <th className="text-right py-1 font-medium">Δ</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map(r => (
-            <tr key={r.captured_at} className="border-t border-brand-border/60">
-              <td className="py-1 pr-4 text-brand-text-secondary whitespace-nowrap">
-                {formatDateTime(r.captured_at)}
-              </td>
-              <td className="py-1 pr-4 text-right tabular-nums">{formatPrice(r.seller_price)}</td>
-              <td className="py-1 pr-4 text-right tabular-nums">{formatPrice(r.shelf_price)}</td>
-              <td className={`py-1 pr-4 text-right tabular-nums font-semibold ${pctColor(r.platform_pct)}`}>
-                {formatPct(r.platform_pct)}
-              </td>
-              <td
-                className={`py-1 text-right tabular-nums ${
-                  r.delta == null
-                    ? 'text-brand-text-secondary'
-                    : r.delta < 0
-                      ? 'text-red-600'
-                      : 'text-green-600'
-                }`}
-              >
-                {r.delta == null ? '—' : formatDeltaPp(r.delta)}
-              </td>
+    <div className="space-y-3">
+      <div className="overflow-x-auto">
+        <table className="border-collapse text-xs tabular-nums">
+          <thead>
+            <tr>
+              <th className="sticky left-0 bg-subtle/50 px-2 py-1 text-brand-text-secondary font-medium text-right">
+                Час
+              </th>
+              {days.map(d => (
+                <th key={d} className="px-2 py-1 text-brand-text-secondary font-medium whitespace-nowrap">
+                  {dayHeader(d)}
+                </th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {HOUR_LABELS.map(h => (
+              <tr key={h}>
+                <td className="sticky left-0 bg-subtle/50 px-2 py-0.5 text-right text-brand-text-secondary whitespace-nowrap">
+                  {String(h).padStart(2, '0')}:00
+                </td>
+                {days.map(d => {
+                  const v = grid.get(d)?.get(h)
+                  return (
+                    <td
+                      key={d}
+                      className="px-2 py-0.5 text-center font-semibold"
+                      style={
+                        v == null
+                          ? undefined
+                          : { backgroundColor: heatColor(v), color: '#1c1528' }
+                      }
+                      title={v == null ? 'нет снапшота' : `${dayHeader(d)} ${String(h).padStart(2, '0')}:00 — ${v.toFixed(1)}%`}
+                    >
+                      {v == null ? '·' : v.toFixed(0)}
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {/* Легенда */}
+      <div className="flex items-center gap-2 text-xs text-brand-text-secondary">
+        <span>Ниже</span>
+        <span className="inline-block w-4 h-3 rounded-sm" style={{ backgroundColor: heatColor(0) }} />
+        <span className="inline-block w-4 h-3 rounded-sm" style={{ backgroundColor: heatColor(20) }} />
+        <span className="inline-block w-4 h-3 rounded-sm" style={{ backgroundColor: heatColor(40) }} />
+        <span>Выше — доля площадки (%)</span>
+      </div>
     </div>
   )
 }
@@ -240,7 +225,7 @@ const DiscountTracker = () => {
     if (!historyMap[key]) {
       setHistoryLoadingKey(key)
       try {
-        const history = await discountTrackerApi.history(row.platform, row.sku, 48)
+        const history = await discountTrackerApi.history(row.platform, row.sku, 24 * 30)
         setHistoryMap(prev => ({ ...prev, [key]: history }))
       } catch (err) {
         console.error('Failed to load history:', err)
@@ -396,10 +381,9 @@ const DiscountTracker = () => {
                               ) : history ? (
                                 <div className="space-y-4">
                                   <div className="text-xs font-medium text-brand-text-secondary uppercase tracking-wide">
-                                    Доля площадки за 48 часов
+                                    Доля площадки по часам (день × час)
                                   </div>
-                                  <Sparkline history={history} />
-                                  <DeltaTable history={history} />
+                                  <SppHeatmap history={history} />
                                 </div>
                               ) : (
                                 <div className="text-sm text-brand-text-secondary py-2">
