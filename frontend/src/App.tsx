@@ -22,6 +22,7 @@ const Cashflow = lazy(() => import('./pages/Cashflow'))
 const Marketplace = lazy(() => import('./pages/Marketplace'))
 const WbAdsAnalytics = lazy(() => import('./pages/WbAdsAnalytics'))
 const WbFinanceReports = lazy(() => import('./pages/WbFinanceReports'))
+const DiscountTracker = lazy(() => import('./pages/DiscountTracker'))
 const UnitEconomics = lazy(() => import('./pages/UnitEconomics'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const RegisterPage = lazy(() => import('./pages/RegisterPage'))
@@ -149,6 +150,7 @@ function App() {
                                 <Route path="/marketplace" element={<Marketplace />} />
                                 <Route path="/wb-ads" element={<WbAdsAnalytics />} />
                                 <Route path="/wb-finance" element={<WbFinanceReports />} />
+                                <Route path="/marketplace/discount-tracker" element={<DiscountTracker />} />
                                 {/* Продажи */}
                                 <Route path="/sales-report" element={<SalesReport />} />
                                 {/* Настройки */}
