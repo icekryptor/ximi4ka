@@ -78,9 +78,47 @@ export interface DashboardData {
   rubrics: DashboardRubric[]
 }
 
+// ─── Blueprint (схема движка) ────────────────────────────────────────────────
+
+export type StepExecutor = 'ai_agent' | 'self'
+
+export interface BlueprintStep {
+  id: string
+  displayName: string
+  description: string
+  artifactKind: string
+  executor: StepExecutor
+  aiAssistKey: string | null
+  reads: string[] // слаги brand_docs; title резолвится из BlueprintData.docs
+  promptPreview: string | null
+  hasBuilder: boolean // false → у AI-шага есть ai_assist_key, но билдер не реализован
+}
+
+export interface BlueprintContentType {
+  type: string
+  displayName: string
+  description: string
+  steps: BlueprintStep[]
+}
+
+export interface BlueprintDoc {
+  title: string
+  content: string
+}
+
+export interface BlueprintData {
+  contentTypes: BlueprintContentType[]
+  docs: Record<string, BlueprintDoc>
+}
+
 export const contentEngineApi = {
   stats: async (): Promise<DashboardData> => {
     const r = await apiClient.get<DashboardData>('/content-engine/stats')
+    return r.data
+  },
+
+  blueprint: async (): Promise<BlueprintData> => {
+    const r = await apiClient.get<BlueprintData>('/content-engine/blueprint')
     return r.data
   },
 }
