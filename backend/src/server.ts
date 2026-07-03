@@ -50,6 +50,7 @@ import publicProjectRoutes from './routes/publicProject.routes';
 import bankAccountRoutes from './routes/bankAccount.routes';
 import bankImportRoutes from './routes/bankImport.routes';
 import bankSyncRoutes from './routes/bank-sync.routes';
+import discountTrackerRoutes from './routes/discount-tracker.routes';
 import importRuleRoutes from './routes/importRule.routes';
 import cashflowRoutes from './routes/cashflow.routes';
 import voiceoverRoutes from './routes/voiceover.routes';
@@ -61,6 +62,7 @@ import okrLinksRoutes from './routes/okr-links.routes';
 import { unitEconomicsController } from './controllers/unit-economics.controller';
 import { startPublishWorker } from './services/publish-worker';
 import { startBankSyncScheduler } from './services/bank-sync/scheduler';
+import { startDiscountTrackerScheduler } from './services/discount-tracker/scheduler';
 import { recipeEngine } from './services/recipe-engine';
 
 // Middleware
@@ -144,6 +146,7 @@ app.use('/api/channel-presets', authMiddleware, channelPresetRoutes);
 app.use('/api/bank-accounts', authMiddleware, bankAccountRoutes);
 app.use('/api/bank-imports', authMiddleware, bankImportRoutes);
 app.use('/api/bank-sync', authMiddleware, bankSyncRoutes);
+app.use('/api/discount-tracker', authMiddleware, discountTrackerRoutes);
 app.use('/api/import-rules', authMiddleware, importRuleRoutes);
 app.use('/api/cashflow', authMiddleware, cashflowRoutes);
 app.use('/api/voiceover', authMiddleware, voiceoverRoutes);
@@ -213,6 +216,7 @@ async function bootstrap() {
     }
 
     startBankSyncScheduler();
+    startDiscountTrackerScheduler();
   });
 }
 
