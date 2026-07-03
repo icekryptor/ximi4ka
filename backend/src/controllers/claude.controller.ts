@@ -66,7 +66,7 @@ interface RecipeStepContext {
   custom_prompt?: string
 }
 
-type PromptSpec = { system: string; user: string; maxTokens: number }
+type PromptSpec = { system: string; user: string; maxTokens: number; reads: string[] }
 type PromptBuilder = (ctx: RecipeStepContext) => Promise<PromptSpec>
 
 async function buildShortPostDraft(ctx: RecipeStepContext): Promise<PromptSpec> {
@@ -90,7 +90,7 @@ ${rubrics}
   const user = `Идея: ${ctx.unit.title}
 Рубрика: ${ctx.rubric?.title ?? 'не выбрана'}
 Заметки: ${ctx.unit.notes ?? ''}${customBlock}`
-  return { system, user, maxTokens: 2048 }
+  return { system, user, maxTokens: 2048, reads: ['style_guide_text', 'rubrics_matrix'] }
 }
 
 // Registry: keys are `${content_type}.${step_id}`.
@@ -108,6 +108,34 @@ async function buildRecipeStepPrompt(
   const builder = PROMPT_BUILDERS[`${contentType}.${stepId}`]
   if (!builder) return null
   return builder(ctx)
+}
+
+export interface BlueprintStepPrompt {
+  reads: string[]
+  promptPreview: string
+}
+
+/** Для харнесс-схемы: dry-run билдера с плейсхолдер-ctx → reads + system-превью.
+ *  Возвращает null если билдера для (contentType, stepId) нет. */
+export async function previewRecipeStepPrompt(
+  contentType: string,
+  stepId: string,
+): Promise<BlueprintStepPrompt | null> {
+  const builder = PROMPT_BUILDERS[`${contentType}.${stepId}`]
+  if (!builder) return null
+  const cache = await getPromptCache()
+  const placeholderUnit = {
+    title: '‹идея контент-юнита›',
+    notes: '',
+  } as unknown as ContentUnit
+  const placeholderRubric = { title: '‹рубрика›' } as unknown as ContentRubric
+  const spec = await builder({
+    unit: placeholderUnit,
+    rubric: placeholderRubric,
+    cache,
+    custom_prompt: undefined,
+  })
+  return { reads: spec.reads, promptPreview: spec.system }
 }
 
 export const claudeController = {
