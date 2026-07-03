@@ -148,6 +148,15 @@ const IconContent = () => (
   </svg>
 )
 
+const IconContentEngine = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="9" width="6" height="6" rx="1" />
+    <rect x="16" y="4" width="6" height="6" rx="1" />
+    <rect x="16" y="14" width="6" height="6" rx="1" />
+    <path d="M8 12h4M12 7v10M12 7h4M12 17h4" />
+  </svg>
+)
+
 const IconMic = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
@@ -366,6 +375,7 @@ const NAV_GROUPS: NavGroup[] = [
       { type: 'link', name: 'Стратегия', href: '/marketing/strategy', icon: IconMarketing },
       { type: 'link', name: 'OKR', href: '/marketing/okr', icon: IconMarketing },
       { type: 'link', name: 'Контент-банк', href: '/content-bank', icon: IconContent },
+      { type: 'link', name: 'Контент-движок', href: '/marketing/content-engine', icon: IconContentEngine },
       { type: 'link', name: 'Войсовер', href: '/voiceover', icon: IconMic },
       { type: 'link', name: 'Аналитика', href: '/marketing/analytics', icon: IconMarketing },
     ],
