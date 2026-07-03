@@ -79,9 +79,14 @@ async function maybeAlert(snap: Snapshot): Promise<boolean> {
 }
 
 export async function runOnce(): Promise<{ snapshots: number; alerts: number }> {
-  const rows: Array<{ nm_id: string }> = await AppDataSource.query(
+  let rows: Array<{ nm_id: string }> = await AppDataSource.query(
     `SELECT DISTINCT nm_id FROM wb_financial_stats WHERE date > now() - interval '90 days'`,
   );
+  if (!rows.length) {
+    // Финстат мог давно не синкаться — лучше отслеживать все известные артикулы, чем ни одного
+    rows = await AppDataSource.query(`SELECT DISTINCT nm_id FROM wb_financial_stats`);
+    if (rows.length) console.log(`[discount-tracker] 90-day window empty, fallback to all-time nmIds (${rows.length})`);
+  }
   const nmIds = rows.map(r => Number(r.nm_id)).filter(Boolean);
 
   const snaps = [...(await fetchWb(nmIds)), ...(await fetchOzon())];
