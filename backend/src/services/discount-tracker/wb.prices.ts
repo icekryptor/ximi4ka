@@ -22,8 +22,16 @@ export type Snapshot = {
   raw: unknown;
 };
 
+import { ProxyAgent } from 'undici';
+
 const WB_CARD_URL = 'https://card.wb.ru/cards/v4/detail';
 const WB_PRICES_URL = 'https://discounts-prices-api.wildberries.ru/api/v2/list/goods/filter';
+
+// WAF WB банит датацентровые IP (Railway) на card.wb.ru — витрину ходим через
+// РФ-прокси, если задан. Формат: http://user:pass@host:port. Seller-API не банится.
+const cardProxy = process.env.WB_CARD_PROXY_URL
+  ? new ProxyAgent(process.env.WB_CARD_PROXY_URL)
+  : undefined;
 const BROWSER_HEADERS = {
   'User-Agent':
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36',
@@ -80,10 +88,17 @@ export async function fetchWb(nmIds: number[]): Promise<Snapshot[]> {
   for (let i = 0; i < nmIds.length; i += 100) {
     const batch = nmIds.slice(i, i + 100);
     const url = `${WB_CARD_URL}?appType=1&curr=rub&dest=-1257786&spp=30&nm=` + batch.join(';');
-    const r = await fetch(url, { headers: BROWSER_HEADERS });
+    const r = await fetch(url, {
+      headers: BROWSER_HEADERS,
+      ...(cardProxy ? ({ dispatcher: cardProxy } as any) : {}),
+    });
     if (!r.ok) {
       const body = (await r.text().catch(() => '')).slice(0, 200);
-      console.error(`[discount-tracker] WB card API ${r.status} body=${body}`);
+      console.error(
+        `[discount-tracker] WB card API ${r.status}` +
+          (cardProxy ? ' (через прокси)' : ' (без прокси — задай WB_CARD_PROXY_URL)') +
+          ` body=${body}`,
+      );
       continue;
     }
     const j: any = await r.json();
