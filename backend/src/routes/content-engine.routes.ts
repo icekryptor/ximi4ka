@@ -3,4 +3,5 @@ import { contentEngineController } from '../controllers/content-engine.controlle
 
 const router = Router()
 router.get('/stats', contentEngineController.stats)
+router.get('/blueprint', contentEngineController.blueprint)
 export default router
