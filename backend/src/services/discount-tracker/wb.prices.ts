@@ -28,6 +28,9 @@ const BROWSER_HEADERS = {
   'User-Agent':
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36',
   Accept: 'application/json',
+  'Accept-Language': 'ru-RU,ru;q=0.9',
+  Origin: 'https://www.wildberries.ru',
+  Referer: 'https://www.wildberries.ru/',
 };
 
 /** Цены продавца из seller API: nmID → { seller (после скидки), base (до скидки) } */
@@ -79,7 +82,8 @@ export async function fetchWb(nmIds: number[]): Promise<Snapshot[]> {
     const url = `${WB_CARD_URL}?appType=1&curr=rub&dest=-1257786&spp=30&nm=` + batch.join(';');
     const r = await fetch(url, { headers: BROWSER_HEADERS });
     if (!r.ok) {
-      console.error('[discount-tracker] WB card API', r.status);
+      const body = (await r.text().catch(() => '')).slice(0, 200);
+      console.error(`[discount-tracker] WB card API ${r.status} body=${body}`);
       continue;
     }
     const j: any = await r.json();
