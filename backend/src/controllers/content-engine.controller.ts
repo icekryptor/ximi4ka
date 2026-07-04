@@ -82,11 +82,21 @@ export const contentEngineController = {
         })
       }
 
-      // brand_docs для панели
+      // виртуальный маркер — динамический источник, не brand_doc
+      const VIRTUAL_MARKER = 'unit.target_segment'
       const docs: Record<string, { title: string; content: string }> = {}
-      if (neededSlugs.size > 0) {
+      if (neededSlugs.has(VIRTUAL_MARKER)) {
+        docs[VIRTUAL_MARKER] = {
+          title: 'ICP-сегмент юнита (динамически)',
+          content:
+            'Подставляется из target_segment контент-юнита на прогоне: имя сегмента, роль, возраст, описание/боли. У каждого юнита свой сегмент — задаётся в контент-банке.',
+        }
+      }
+      // brand_docs для панели (маркер не ищем в БД)
+      const dbSlugs = [...neededSlugs].filter((sl) => sl !== VIRTUAL_MARKER)
+      if (dbSlugs.length > 0) {
         const rows = await AppDataSource.getRepository(BrandDoc).find({
-          where: { slug: In([...neededSlugs]) },
+          where: { slug: In(dbSlugs) },
         })
         for (const d of rows) docs[d.slug] = { title: d.title ?? d.slug, content: d.content ?? '' }
       }

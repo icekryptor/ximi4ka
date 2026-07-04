@@ -72,11 +72,23 @@ type PromptBuilder = (ctx: RecipeStepContext) => Promise<PromptSpec>
 async function buildShortPostDraft(ctx: RecipeStepContext): Promise<PromptSpec> {
   const guide = ctx.cache.brandDocs.style_guide_text ?? ''
   const rubrics = ctx.cache.brandDocs.rubrics_matrix ?? ''
+  const strategy = ctx.cache.brandDocs.strategy_summary ?? ''
+  const seg = ctx.unit.target_segment
+  const segmentBlock = seg
+    ? `${seg.name} (${seg.role ?? ''}, ${seg.age_range ?? ''})
+${seg.description ?? ''}`
+    : 'Сегмент не задан — пиши универсально, но с уклоном в познавательность.'
   const customBlock = ctx.custom_prompt ? `\nДополнительные инструкции: ${ctx.custom_prompt}` : ''
   const system = `Ты — копирайтер бренда Химичка (наборы для химических опытов, ximi4ka.ru, продажи на WB и Ozon).
 
 ## Стилевой гайд (обязательно к исполнению)
 ${guide || '(не задан — используй нейтральный познавательный тон)'}
+
+## Стратегический контекст (North Star)
+${strategy || '(выжимка стратегии не задана — держи фокус на познавательности и доверии к бренду)'}
+
+## Целевой сегмент (пиши адресно под него)
+${segmentBlock}
 
 ## Матрица рубрик
 ${rubrics}
@@ -90,7 +102,12 @@ ${rubrics}
   const user = `Идея: ${ctx.unit.title}
 Рубрика: ${ctx.rubric?.title ?? 'не выбрана'}
 Заметки: ${ctx.unit.notes ?? ''}${customBlock}`
-  return { system, user, maxTokens: 2048, reads: ['style_guide_text', 'rubrics_matrix'] }
+  return {
+    system,
+    user,
+    maxTokens: 2048,
+    reads: ['style_guide_text', 'rubrics_matrix', 'strategy_current', 'unit.target_segment'],
+  }
 }
 
 // Registry: keys are `${content_type}.${step_id}`.
@@ -127,6 +144,12 @@ export async function previewRecipeStepPrompt(
   const placeholderUnit = {
     title: '‹идея контент-юнита›',
     notes: '',
+    target_segment: {
+      name: '‹сегмент юнита›',
+      role: '',
+      age_range: '',
+      description: 'подставляется из target_segment контент-юнита на прогоне',
+    },
   } as unknown as ContentUnit
   const placeholderRubric = { title: '‹рубрика›' } as unknown as ContentRubric
   const spec = await builder({
@@ -414,7 +437,7 @@ ${cache.brandDocs.style_guide_video}
       const unitRepo = AppDataSource.getRepository(ContentUnit)
       const unit = await unitRepo.findOne({
         where: { id: unit_id },
-        relations: ['rubric'],
+        relations: ['rubric', 'target_segment'],
       })
       if (!unit) return res.status(404).json({ error: 'Контент-юнит не найден' })
 
