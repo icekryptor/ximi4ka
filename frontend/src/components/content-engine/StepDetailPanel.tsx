@@ -1,7 +1,42 @@
-import { Fragment, ReactNode } from 'react'
-import { Bot, FileText, User } from 'lucide-react'
+import { Fragment, ReactNode, useState } from 'react'
+import { Bot, Check, Copy, FileText, User } from 'lucide-react'
 import { BlueprintDoc, BlueprintStep } from '../../api/contentEngine'
 import { EngineSelection } from './EngineTree'
+
+// Кнопка «Копировать» с fallback на execCommand и состоянием «Скопировано».
+const CopyButton = ({ text }: { text: string }) => {
+  const [copied, setCopied] = useState(false)
+  const handleCopy = async () => {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text)
+      } else {
+        const ta = document.createElement('textarea')
+        ta.value = text
+        ta.style.position = 'fixed'
+        ta.style.opacity = '0'
+        document.body.appendChild(ta)
+        ta.select()
+        document.execCommand('copy')
+        document.body.removeChild(ta)
+      }
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch {
+      /* буфер недоступен — тихо игнорируем */
+    }
+  }
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      className="flex shrink-0 items-center gap-1 rounded-lg border border-brand-border bg-card px-2 py-1 text-xs text-brand-text-secondary transition-colors hover:border-primary-300 hover:text-primary-700"
+    >
+      {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
+      {copied ? 'Скопировано' : 'Копировать'}
+    </button>
+  )
+}
 
 /**
  * Правая панель деталей:
@@ -48,10 +83,11 @@ export const StepDetailPanel = ({ selection, docs, onSelect }: StepDetailPanelPr
       <div className="card">
         <div className="mb-3 flex items-start gap-2">
           <FileText className="mt-0.5 h-5 w-5 shrink-0 text-primary-600" />
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h2 className="text-lg font-semibold text-brand-text">{doc?.title ?? selection.slug}</h2>
             <p className="font-mono text-xs text-brand-text-secondary/70">{selection.slug}</p>
           </div>
+          {doc?.content && <CopyButton text={doc.content} />}
         </div>
         {doc?.content ? (
           <pre className="max-h-[70vh] overflow-auto whitespace-pre-wrap rounded-2xl border border-brand-border bg-muted/40 p-4 font-mono text-sm text-brand-text">
@@ -111,7 +147,10 @@ export const StepDetailPanel = ({ selection, docs, onSelect }: StepDetailPanelPr
 
       {step.promptPreview && (
         <div className="mb-4">
-          <h3 className="mb-2 text-sm font-semibold text-brand-text">System-промпт агента</h3>
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold text-brand-text">System-промпт агента</h3>
+            <CopyButton text={step.promptPreview} />
+          </div>
           <pre className="max-h-[50vh] overflow-auto whitespace-pre-wrap rounded-2xl border border-brand-border bg-muted/40 p-4 font-mono text-sm text-brand-text">
             {highlightPlaceholders(step.promptPreview)}
           </pre>
