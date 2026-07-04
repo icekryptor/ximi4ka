@@ -59,6 +59,7 @@ import { AssemblyOperation } from '../entities/AssemblyOperation';
 import { AppSetting } from '../entities/AppSetting';
 import { PriceSnapshot } from '../entities/PriceSnapshot';
 import { AlertState } from '../entities/AlertState';
+import { ContentPlanItem } from '../entities/ContentPlanItem';
 
 dotenv.config();
 
@@ -68,7 +69,7 @@ const databaseUrl = process.env.DATABASE_URL;
 
 const isDev = process.env.NODE_ENV !== 'production';
 
-const allEntities = [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, UnitEconomicsShare, User, DailySales, Employee, SalesChannel, QcChecklist, QcInspection, ProductionOrder, Board, Task, TaskComment, TaskTag, ChannelPreset, ContentUnit, ContentRubric, ContentPublication, OAuthToken, Department, DepartmentRole, RecurringTask, RecurringTaskReport, Project, ProjectMember, TaskDependency, TaskChecklistItem, TelegramChat, BankAccount, BankImport, ImportRule, BrandDoc, IcpSegment, StrategicTheme, Channel, ChannelBudget, ContentAsset, ContentMetricSnapshot, BankSyncConfig, BankSyncLog, AssemblyOperation, AppSetting, PriceSnapshot, AlertState];
+const allEntities = [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, UnitEconomicsShare, User, DailySales, Employee, SalesChannel, QcChecklist, QcInspection, ProductionOrder, Board, Task, TaskComment, TaskTag, ChannelPreset, ContentUnit, ContentRubric, ContentPublication, OAuthToken, Department, DepartmentRole, RecurringTask, RecurringTaskReport, Project, ProjectMember, TaskDependency, TaskChecklistItem, TelegramChat, BankAccount, BankImport, ImportRule, BrandDoc, IcpSegment, StrategicTheme, Channel, ChannelBudget, ContentAsset, ContentMetricSnapshot, BankSyncConfig, BankSyncLog, AssemblyOperation, AppSetting, PriceSnapshot, AlertState, ContentPlanItem];
 
 const dataSourceOptions = databaseUrl
   ? {
