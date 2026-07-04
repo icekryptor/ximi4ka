@@ -12,6 +12,8 @@ interface PromptCache {
     style_guide_text: string
     rubrics_matrix: string
     strategy_summary: string
+    content_plan_current: string
+    funnel_levels: string
   }
   etalonScript: string | null
   fetchedAt: number
@@ -50,7 +52,14 @@ async function loadFromDB(): Promise<PromptCache> {
 
   const docs = await docRepo.find({
     where: {
-      slug: In(['style_guide_video', 'style_guide_text', 'rubrics_matrix', 'strategy_current']),
+      slug: In([
+        'style_guide_video',
+        'style_guide_text',
+        'rubrics_matrix',
+        'strategy_current',
+        'content_plan_current',
+        'funnel_levels',
+      ]),
     },
   })
   const docMap: Record<string, string> = {}
@@ -67,6 +76,8 @@ async function loadFromDB(): Promise<PromptCache> {
       style_guide_text: docMap.style_guide_text ?? '',
       rubrics_matrix: docMap.rubrics_matrix ?? '',
       strategy_summary: extractStrategySummary(docMap.strategy_current ?? ''),
+      content_plan_current: docMap.content_plan_current ?? '',
+      funnel_levels: docMap.funnel_levels ?? '',
     },
     etalonScript: etalon?.script_text || null,
     fetchedAt: Date.now(),

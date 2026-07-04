@@ -4,6 +4,8 @@ import { recipeEngine } from '../services/recipe-engine'
 import { previewRecipeStepPrompt } from './claude.controller'
 import { AppDataSource } from '../config/database'
 import { BrandDoc } from '../entities/BrandDoc'
+import { IcpSegment } from '../entities/IcpSegment'
+import { getPromptCache } from '../services/prompt-cache'
 
 const EDGE_URL = 'https://jubkezbvccwvujregkfq.supabase.co/functions/v1/content-engine-stats'
 
@@ -82,6 +84,52 @@ export const contentEngineController = {
         })
       }
 
+      // Planner — top-level upstream-агент: статический промпт из воронки +
+      // активных ICP-сегментов + выжимки стратегии. Ноль вызовов Claude.
+      const cache = await getPromptCache()
+      const funnel = cache.brandDocs.funnel_levels ?? ''
+      const strategy = cache.brandDocs.strategy_summary ?? ''
+      const segments = await AppDataSource.getRepository(IcpSegment).find({
+        where: { active: true },
+        order: { sort_order: 'ASC' },
+      })
+      const segLines = segments.length
+        ? segments
+            .map(
+              (s) =>
+                `- ${s.name}${s.role ? ' (' + s.role + ')' : ''}${s.age_range ? ', ' + s.age_range : ''}`,
+            )
+            .join('\n')
+        : '(сегменты не заданы)'
+      const plannerPrompt = `Ты — контент-стратег (Planner) бренда Химичка (наборы для химических опытов, ximi4ka.ru, продажи на WB и Ozon).
+
+## Воронка
+${funnel || '(воронка не задана — используй дефолт: TOFU — охват/узнаваемость, MOFU — вовлечение/доверие, BOFU — конверсия)'}
+
+## Целевые сегменты
+${segLines}
+
+## Цели (из стратегии)
+${strategy || '(выжимка стратегии не задана — держи фокус на познавательности и доверии к бренду)'}
+
+## Задача
+Составь контент-план на период: по каждому пункту укажи дату, уровень воронки (TOFU/MOFU/BOFU), сегмент, тему, формат и цель. Балансируй воронку. Верни markdown-таблицей.`
+
+      // Доки Planner-узла нужны в панели фронта → добавим их слаги в загрузку docs.
+      neededSlugs.add('funnel_levels')
+      neededSlugs.add('content_plan_current')
+      neededSlugs.add('strategy_current')
+
+      const planner = {
+        reads: [
+          { slug: 'funnel_levels', title: 'Воронка контента (TOFU/MOFU/BOFU)' },
+          { slug: 'strategy_current', title: 'Стратегия (цели)' },
+          { slug: 'icp_segments', title: 'ICP-сегменты (динамически)' },
+        ],
+        produces: { slug: 'content_plan_current', title: 'Контент-план' },
+        promptPreview: plannerPrompt,
+      }
+
       // виртуальный маркер — динамический источник, не brand_doc
       const VIRTUAL_MARKER = 'unit.target_segment'
       const docs: Record<string, { title: string; content: string }> = {}
@@ -103,7 +151,7 @@ export const contentEngineController = {
       // слаги без записи в БД — пустышка, чтобы фронт показал «документ пуст»
       for (const sl of neededSlugs) if (!docs[sl]) docs[sl] = { title: sl, content: '' }
 
-      res.json({ contentTypes, docs })
+      res.json({ planner, contentTypes, docs })
     } catch (e: any) {
       console.error('[content-engine.blueprint]', e?.message || e)
       res.status(500).json({ error: 'Ошибка построения схемы движка' })

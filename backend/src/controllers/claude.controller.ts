@@ -73,6 +73,7 @@ async function buildShortPostDraft(ctx: RecipeStepContext): Promise<PromptSpec> 
   const guide = ctx.cache.brandDocs.style_guide_text ?? ''
   const rubrics = ctx.cache.brandDocs.rubrics_matrix ?? ''
   const strategy = ctx.cache.brandDocs.strategy_summary ?? ''
+  const contentPlan = ctx.cache.brandDocs.content_plan_current ?? ''
   const seg = ctx.unit.target_segment
   const segmentBlock = seg
     ? `${seg.name} (${seg.role ?? ''}, ${seg.age_range ?? ''})
@@ -90,6 +91,9 @@ ${strategy || '(выжимка стратегии не задана — держ
 ## Целевой сегмент (пиши адресно под него)
 ${segmentBlock}
 
+## Контент-план (пиши в рамках повестки)
+${contentPlan || '(план не задан — пиши по рубрике и идее ниже, держи фокус на повестке бренда)'}
+
 ## Матрица рубрик
 ${rubrics}
 
@@ -106,7 +110,13 @@ ${rubrics}
     system,
     user,
     maxTokens: 2048,
-    reads: ['style_guide_text', 'rubrics_matrix', 'strategy_current', 'unit.target_segment'],
+    reads: [
+      'style_guide_text',
+      'rubrics_matrix',
+      'strategy_current',
+      'content_plan_current',
+      'unit.target_segment',
+    ],
   }
 }
 
