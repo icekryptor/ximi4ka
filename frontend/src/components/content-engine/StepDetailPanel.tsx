@@ -1,5 +1,5 @@
 import { Fragment, ReactNode, useState } from 'react'
-import { Bot, Check, Copy, FileText, User } from 'lucide-react'
+import { Bot, Check, Compass, Copy, FileText, User } from 'lucide-react'
 import { BlueprintDoc, BlueprintStep } from '../../api/contentEngine'
 import { EngineSelection } from './EngineTree'
 
@@ -96,6 +96,84 @@ export const StepDetailPanel = ({ selection, docs, onSelect }: StepDetailPanelPr
         ) : (
           <p className="py-8 text-center text-sm text-brand-text-secondary">Документ пуст.</p>
         )}
+      </div>
+    )
+  }
+
+  if (selection.kind === 'planner') {
+    const planner = selection.planner
+    return (
+      <div className="card">
+        <div className="mb-3 flex items-start gap-2">
+          <Compass className="mt-0.5 h-5 w-5 shrink-0 text-primary-600" />
+          <div className="min-w-0 flex-1">
+            <h2 className="text-lg font-semibold text-brand-text">🧭 Planner — контент-стратег</h2>
+            <p className="mt-0.5 text-sm text-brand-text-secondary">
+              Скопируй промпт и вставь в Claude Desktop Cowork (проект Химички). Получишь контент-план — сохрани его в{' '}
+              <span className="font-mono">{planner.produces.slug}</span>.
+            </p>
+          </div>
+        </div>
+
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="rounded-full bg-primary-100 px-2 py-0.5 text-xs font-medium text-primary-700">
+            upstream-агент
+          </span>
+          <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-brand-text-secondary">
+            создаёт: {planner.produces.title}
+          </span>
+        </div>
+
+        <div className="mb-4">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold text-brand-text">Промпт для Cowork</h3>
+            <CopyButton text={planner.promptPreview} />
+          </div>
+          <pre className="max-h-[50vh] overflow-auto whitespace-pre-wrap rounded-2xl border border-brand-border bg-muted/40 p-4 font-mono text-sm text-brand-text">
+            {planner.promptPreview}
+          </pre>
+        </div>
+
+        <div>
+          <h3 className="mb-2 text-sm font-semibold text-brand-text">Читаемые источники</h3>
+          <div className="flex flex-col gap-2">
+            {planner.reads.map((r) => {
+              const doc = docs[r.slug]
+              const openable = !!doc
+              const inner = (
+                <>
+                  <FileText className="h-3.5 w-3.5 shrink-0 text-primary-600" />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-xs font-medium text-brand-text">{r.title}</div>
+                    <div className="truncate font-mono text-[10px] text-brand-text-secondary/70">{r.slug}</div>
+                  </div>
+                  {(!doc || !doc.content) && (
+                    <span className="shrink-0 text-[10px] text-brand-text-secondary/70">
+                      {openable ? '(пусто)' : '(динамически)'}
+                    </span>
+                  )}
+                </>
+              )
+              return openable ? (
+                <button
+                  key={r.slug}
+                  type="button"
+                  onClick={() => onSelect({ kind: 'doc', slug: r.slug })}
+                  className="flex items-center gap-2 rounded-lg border border-brand-border bg-card px-2.5 py-1.5 text-left transition-all hover:border-primary-300 hover:shadow-sm"
+                >
+                  {inner}
+                </button>
+              ) : (
+                <div
+                  key={r.slug}
+                  className="flex items-center gap-2 rounded-lg border border-dashed border-brand-border bg-card px-2.5 py-1.5"
+                >
+                  {inner}
+                </div>
+              )
+            })}
+          </div>
+        </div>
       </div>
     )
   }

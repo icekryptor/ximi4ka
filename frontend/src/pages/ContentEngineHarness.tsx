@@ -4,6 +4,8 @@ import { BlueprintData, contentEngineApi } from '../api/contentEngine'
 import { errorMessage } from '../components/marketing/utils'
 import { EngineSelection, EngineTree } from '../components/content-engine/EngineTree'
 import { StepDetailPanel } from '../components/content-engine/StepDetailPanel'
+import { ContentPlanSection } from '../components/content-engine/ContentPlanSection'
+import { CoworkGuide } from '../components/content-engine/CoworkGuide'
 
 const ContentEngineHarness = () => {
   const [data, setData] = useState<BlueprintData | null>(null)
@@ -66,13 +68,16 @@ const ContentEngineHarness = () => {
         </section>
       ) : data ? (
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-          <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 flex-1 flex-col gap-6">
+            <CoworkGuide />
             <EngineTree
+              planner={data.planner}
               contentTypes={data.contentTypes}
               docs={data.docs}
               selected={selection}
               onSelect={setSelection}
             />
+            <ContentPlanSection onOpenDoc={(slug) => setSelection({ kind: 'doc', slug })} />
           </div>
           <aside className="w-full shrink-0 lg:sticky lg:top-6 lg:w-[28rem]">
             <StepDetailPanel selection={selection} docs={data.docs} onSelect={setSelection} />

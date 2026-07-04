@@ -106,7 +106,19 @@ export interface BlueprintDoc {
   content: string
 }
 
+export interface BlueprintRef {
+  slug: string
+  title: string
+}
+
+export interface BlueprintPlanner {
+  reads: BlueprintRef[]
+  produces: BlueprintRef
+  promptPreview: string
+}
+
 export interface BlueprintData {
+  planner: BlueprintPlanner | null
   contentTypes: BlueprintContentType[]
   docs: Record<string, BlueprintDoc>
 }
