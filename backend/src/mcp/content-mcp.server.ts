@@ -40,16 +40,21 @@ export function buildContentMcpServer(): McpServer {
     'writer_context',
     {
       description:
-        'Контекст для копирайтера: стиль-гайды, матрица рубрик, фаза стратегии, контент-план, деталь сегмента. Передай segment_slug и rubric_slug для адресности.',
+        'Контекст для копирайтера: стиль-гайды, накопленные правила стиля, матрица рубрик, фаза стратегии, контент-план, деталь сегмента. Передай segment_slug и rubric_slug для адресности, format — чтобы подтянуть накопленные правила (дефолт short_post).',
       inputSchema: {
         segment_slug: z.string().optional().describe('slug ICP-сегмента (см. list_segments)'),
         rubric_slug: z.string().optional().describe('slug рубрики (см. list_rubrics)'),
+        format: z
+          .string()
+          .optional()
+          .describe('content_type для накопленных правил стиля (дефолт short_post)'),
       },
     },
-    async ({ segment_slug, rubric_slug }) => {
+    async ({ segment_slug, rubric_slug, format }) => {
       const c = await ctx.getWriterContext({
         segmentSlug: segment_slug,
         rubricSlug: rubric_slug,
+        format,
       });
       return { content: [{ type: 'text', text: c.brief }] };
     },
@@ -156,6 +161,81 @@ export function buildContentMcpServer(): McpServer {
         return {
           content: [{ type: 'text', text: ok ? 'Удалено' : 'Строка не найдена' }],
           isError: !ok,
+        };
+      }),
+  );
+
+  // ─── Самообучение Writer'а: правила стиля ─────────────────────────────────
+
+  server.registerTool(
+    'list_style_patterns',
+    {
+      description:
+        'Накопленные правила стиля формата (code, title, before→after, rationale). Используй для дедупа перед save_style_patterns и для харнесса.',
+      inputSchema: {
+        format: z.string().describe('content_type формата (напр. short_post)'),
+      },
+    },
+    async ({ format }) => {
+      const patterns = await ctx.listStylePatterns(format);
+      return { content: [{ type: 'text', text: JSON.stringify(patterns, null, 2) }] };
+    },
+  );
+
+  server.registerTool(
+    'learn_from_edit',
+    {
+      description:
+        'Возвращает промпт для анализа правки копирайтера (текущие правила формата + оригинал/правка). Выполни анализ, затем вызови save_style_patterns с извлечёнными паттернами.',
+      inputSchema: {
+        format: z.string().describe('content_type формата (напр. short_post)'),
+        original: z.string().describe('исходный текст (до правки)'),
+        edited: z.string().optional().describe('отредактированная версия (если есть)'),
+        notes: z.string().optional().describe('свободные заметки-правки (если есть)'),
+      },
+    },
+    async ({ format, original, edited, notes }) =>
+      safeTool(async () => {
+        const prompt = await ctx.buildLearningPrompt({ format, original, edited, notes });
+        return { content: [{ type: 'text', text: prompt }] };
+      }),
+  );
+
+  server.registerTool(
+    'save_style_patterns',
+    {
+      description:
+        'Сохранить извлечённые правила стиля. Дедуп по (format, code): существующие коды пропускаются. Ответ: добавлено N, пропущено M. N=0 → стиль стабилизировался.',
+      inputSchema: {
+        format: z.string().describe('content_type формата (напр. short_post)'),
+        patterns: z
+          .array(
+            z.object({
+              code: z.string().describe('код правила (А11+ | С10+ | Э8+)'),
+              title: z.string().describe('короткое название правила'),
+              before: z.string().optional().describe('пример «как НЕ надо»'),
+              after: z.string().optional().describe('пример «как надо»'),
+              rationale: z.string().describe('почему это правило'),
+            }),
+          )
+          .describe('извлечённые паттерны-правила'),
+        source_note: z.string().optional().describe('контекст правки (откуда правила)'),
+      },
+    },
+    async ({ format, patterns, source_note }) =>
+      safeTool(async () => {
+        const { added, skipped } = await ctx.saveStylePatterns(format, patterns, source_note);
+        const signal =
+          added === 0
+            ? ' N=0 новых → стиль стабилизировался (сигнал сходимости).'
+            : '';
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Добавлено ${added}, пропущено ${skipped} (дубли по code).${signal}`,
+            },
+          ],
         };
       }),
   );

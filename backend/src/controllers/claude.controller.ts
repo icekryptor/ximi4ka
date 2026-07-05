@@ -112,6 +112,7 @@ ${rubrics}
     maxTokens: 2048,
     reads: [
       'style_guide_text',
+      'style_learned',
       'rubrics_matrix',
       'strategy_current',
       'content_plan_current',

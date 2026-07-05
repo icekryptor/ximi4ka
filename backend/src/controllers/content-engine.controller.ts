@@ -104,18 +104,25 @@ export const contentEngineController = {
         promptPreview: plannerPrompt,
       }
 
-      // виртуальный маркер — динамический источник, не brand_doc
-      const VIRTUAL_MARKER = 'unit.target_segment'
-      const docs: Record<string, { title: string; content: string }> = {}
-      if (neededSlugs.has(VIRTUAL_MARKER)) {
-        docs[VIRTUAL_MARKER] = {
+      // виртуальные маркеры — динамические источники, не brand_doc
+      const VIRTUAL_MARKERS: Record<string, { title: string; content: string }> = {
+        'unit.target_segment': {
           title: 'ICP-сегмент юнита (динамически)',
           content:
             'Подставляется из target_segment контент-юнита на прогоне: имя сегмента, роль, возраст, описание/боли. У каждого юнита свой сегмент — задаётся в контент-банке.',
-        }
+        },
+        style_learned: {
+          title: 'Накопленные правила стиля (динамически)',
+          content:
+            'Правила стиля, накопленные из правок копирайтера через MCP (learn_from_edit → save_style_patterns). Подтягиваются в бриф Writer на прогоне по формату. Свод и сигнал сходимости — в секции «Обучение стиля».',
+        },
       }
-      // brand_docs для панели (маркер не ищем в БД)
-      const dbSlugs = [...neededSlugs].filter((sl) => sl !== VIRTUAL_MARKER)
+      const docs: Record<string, { title: string; content: string }> = {}
+      for (const [marker, doc] of Object.entries(VIRTUAL_MARKERS)) {
+        if (neededSlugs.has(marker)) docs[marker] = doc
+      }
+      // brand_docs для панели (маркеры не ищем в БД)
+      const dbSlugs = [...neededSlugs].filter((sl) => !(sl in VIRTUAL_MARKERS))
       if (dbSlugs.length > 0) {
         const rows = await AppDataSource.getRepository(BrandDoc).find({
           where: { slug: In(dbSlugs) },
