@@ -5,6 +5,7 @@ import { errorMessage } from '../components/marketing/utils'
 import { EngineSelection, EngineTree } from '../components/content-engine/EngineTree'
 import { StepDetailPanel } from '../components/content-engine/StepDetailPanel'
 import { ContentPlanSection } from '../components/content-engine/ContentPlanSection'
+import { StyleLearningSection } from '../components/content-engine/StyleLearningSection'
 import { CoworkGuide } from '../components/content-engine/CoworkGuide'
 
 const ContentEngineHarness = () => {
@@ -78,6 +79,7 @@ const ContentEngineHarness = () => {
               onSelect={setSelection}
             />
             <ContentPlanSection onOpenDoc={(slug) => setSelection({ kind: 'doc', slug })} />
+            <StyleLearningSection contentTypes={data.contentTypes} />
           </div>
           <aside className="w-full shrink-0 lg:sticky lg:top-6 lg:w-[28rem]">
             <StepDetailPanel selection={selection} docs={data.docs} onSelect={setSelection} />

@@ -245,20 +245,31 @@ export const StepDetailPanel = ({ selection, docs, onSelect }: StepDetailPanelPr
           <div className="flex flex-col gap-2">
             {step.reads.map((slug) => {
               const doc = docs[slug]
+              // style_learned — динамический свод правил стиля, не статичный
+              // brand_doc: помечаем «динамически, см. Обучение стиля».
+              const dynamic = slug === 'style_learned'
               return (
                 <button
                   key={slug}
                   type="button"
                   onClick={() => onSelect({ kind: 'doc', slug })}
-                  className="flex items-center gap-2 rounded-lg border border-brand-border bg-card px-2.5 py-1.5 text-left transition-all hover:border-primary-300 hover:shadow-sm"
+                  className={`flex items-center gap-2 rounded-lg border bg-card px-2.5 py-1.5 text-left transition-all hover:border-primary-300 hover:shadow-sm ${
+                    dynamic ? 'border-dashed border-primary-300' : 'border-brand-border'
+                  }`}
                 >
                   <FileText className="h-3.5 w-3.5 shrink-0 text-primary-600" />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-xs font-medium text-brand-text">{doc?.title ?? slug}</div>
                     <div className="truncate font-mono text-[10px] text-brand-text-secondary/70">{slug}</div>
                   </div>
-                  {(!doc || !doc.content) && (
-                    <span className="shrink-0 text-[10px] text-brand-text-secondary/70">(пусто)</span>
+                  {dynamic ? (
+                    <span className="shrink-0 text-[10px] text-primary-700">
+                      динамически, см. Обучение стиля
+                    </span>
+                  ) : (
+                    (!doc || !doc.content) && (
+                      <span className="shrink-0 text-[10px] text-brand-text-secondary/70">(пусто)</span>
+                    )
                   )}
                 </button>
               )

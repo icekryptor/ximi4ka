@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown, ChevronRight, Compass, HelpCircle, PenLine, Plug, Sparkles } from 'lucide-react'
+import { ChevronDown, ChevronRight, Compass, GraduationCap, HelpCircle, PenLine, Plug } from 'lucide-react'
 
 const MCP_URL = 'https://ximi4kafinance-production.up.railway.app/mcp'
 
@@ -97,9 +97,38 @@ export const CoworkGuide = () => {
             </ol>
           </div>
 
+          {/* Обучение Writer'а */}
+          <div className="rounded-2xl border border-primary-300 bg-primary-50/40 p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <GraduationCap className="h-4 w-4 shrink-0 text-primary-600" />
+              <h3 className="text-sm font-semibold text-brand-text">🔄 Обучение Writer'а — учится на правках</h3>
+            </div>
+            <ol className="ml-1 flex flex-col gap-1.5 text-sm text-brand-text-secondary">
+              <li>
+                1. Дай агенту оригинал + правку копирайтера (или заметки) → он вызывает{' '}
+                <span className="font-mono">learn_from_edit(format, original, edited)</span> и получает промпт для
+                анализа.
+              </li>
+              <li>
+                2. Анализирует разницу, извлекает правила (не опечатки, не разовое — общий паттерн). Категории:{' '}
+                <span className="font-mono">А</span> — ритм/звучание, <span className="font-mono">С</span> —
+                структура/лексика, <span className="font-mono">Э</span> — узкие уточнения.
+              </li>
+              <li>
+                3. Сохраняет: <span className="font-mono">save_style_patterns</span> — правила уходят в свод формата
+                (дубли по коду отсекаются) и применяются впредь.
+              </li>
+              <li>4. Переписывает текст по обновлённому своду.</li>
+            </ol>
+            <p className="mt-2 text-xs text-brand-text-secondary/80">
+              Стиль приближается к авторскому за ~10-15 итераций на формат. Сигнал «обучен»: 2-3 итерации подряд дают
+              0 новых правил (см. секцию «Обучение стиля»).
+            </p>
+          </div>
+
           {/* Список инструментов */}
           <div className="rounded-2xl border border-brand-border bg-card p-4">
-            <h3 className="mb-2 text-sm font-semibold text-brand-text">Инструменты MCP (9)</h3>
+            <h3 className="mb-2 text-sm font-semibold text-brand-text">Инструменты MCP (12)</h3>
             <div className="grid grid-cols-1 gap-1 text-xs text-brand-text-secondary sm:grid-cols-2">
               <span>
                 <span className="font-mono text-brand-text">planner_context</span> — контекст планировщика
@@ -128,17 +157,16 @@ export const CoworkGuide = () => {
               <span>
                 <span className="font-mono text-brand-text">delete_plan_item</span> — удалить строку
               </span>
+              <span>
+                <span className="font-mono text-brand-text">learn_from_edit</span> — промпт анализа правки
+              </span>
+              <span>
+                <span className="font-mono text-brand-text">save_style_patterns</span> — сохранить правила стиля
+              </span>
+              <span>
+                <span className="font-mono text-brand-text">list_style_patterns</span> — свод правил стиля
+              </span>
             </div>
-          </div>
-
-          {/* волна 2 */}
-          <div className="flex items-start gap-2 rounded-2xl border border-dashed border-primary-300 bg-primary-50/40 p-3 text-sm text-brand-text-secondary">
-            <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary-600" />
-            <p>
-              <span className="font-semibold text-brand-text">Волна 2 (скоро):</span> цикл самообучения Writer'а —
-              обратная связь → анализ → learned-документ (тоже через MCP-инструменты), чтобы посты становились
-              лучше со временем.
-            </p>
           </div>
         </div>
       )}
