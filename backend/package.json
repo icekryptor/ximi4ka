@@ -27,6 +27,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.1",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@supabase/supabase-js": "^2.99.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/multer": "^2.0.0",
@@ -48,7 +49,8 @@
     "pg": "^8.11.3",
     "reflect-metadata": "^0.1.13",
     "typeorm": "^0.3.17",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",

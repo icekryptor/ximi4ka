@@ -115,6 +115,18 @@ app.use('/api/n8n', apiKeyAuth, n8nRoutes);
 // Telegram webhook (public — verified by secret in URL)
 app.use('/api/webhooks/telegram', telegramRoutes);
 
+// MCP-сервер контент-движка (StreamableHTTP, токен-гейт MCP_ACCESS_TOKEN).
+// Обёрнут в try/catch, чтобы падение MCP не роняло бэкенд.
+try {
+  const { handleMcpRequest } = require('./mcp/content-mcp.server') as typeof import('./mcp/content-mcp.server');
+  app.post('/mcp', express.json({ limit: '4mb' }), handleMcpRequest);
+  app.get('/mcp', handleMcpRequest);
+  app.delete('/mcp', handleMcpRequest);
+  console.log('🔌 MCP-сервер контент-движка смонтирован на /mcp');
+} catch (err) {
+  console.error('⚠️  Не удалось смонтировать MCP-сервер:', err instanceof Error ? err.message : err);
+}
+
 // Protected routes (auth required)
 app.use('/api/transactions', authMiddleware, transactionRoutes);
 app.use('/api/counterparties', authMiddleware, counterpartyRoutes);
