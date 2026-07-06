@@ -40,18 +40,48 @@ const BROWSER_HEADERS = {
   Referer: 'https://www.wildberries.ru/',
 };
 
-/** Цены продавца из seller API: nmID → { seller (после скидки), base (до скидки) } */
-async function fetchSellerPrices(): Promise<Map<number, { seller: number; base: number }>> {
+// Транзиентные статусы seller-API (рейт-лимит / сбой шлюза) — их ретраим.
+// 401/403/404 не ретраим: это конфиг (скоуп токена), повтор не поможет.
+const RETRYABLE = new Set([408, 425, 429, 500, 502, 503, 504]);
+
+/** fetch с ретраем на транзиентных ошибках; уважает Retry-After, экспоненциальный бэкофф. */
+async function fetchRetry(url: string, init: RequestInit, tries = 3): Promise<Response> {
+  let last: Response | null = null;
+  for (let attempt = 1; attempt <= tries; attempt++) {
+    try {
+      const r = await fetch(url, init);
+      if (r.ok || !RETRYABLE.has(r.status)) return r; // успех или нератраибл (401/403/404)
+      last = r;
+    } catch (e) {
+      if (attempt === tries) throw e; // сетевой сбой — исчерпали попытки
+    }
+    if (attempt === tries) break;
+    const ra = Number(last?.headers.get('retry-after'));
+    const waitMs = ra > 0 ? Math.min(ra * 1000, 10_000) : 1_500 * attempt;
+    await new Promise(res => setTimeout(res, waitMs));
+  }
+  return last as Response;
+}
+
+/**
+ * Цены продавца из seller API: nmID → { seller (после скидки), base (до скидки) }.
+ * ok=false, если свод не удалось получить (пустой токен / не-OK ответ) — тогда caller
+ * пропускает SKU без цены продавца, а НЕ пишет ложный 0% СПП (seller=витрина).
+ */
+async function fetchSellerPrices(): Promise<{
+  prices: Map<number, { seller: number; base: number }>;
+  ok: boolean;
+}> {
   const map = new Map<number, { seller: number; base: number }>();
   const token = process.env.WB_API_TOKEN;
   if (!token) {
     console.warn('[discount-tracker] WB_API_TOKEN не задан — цены продавца недоступны');
-    return map;
+    return { prices: map, ok: false };
   }
   let offset = 0;
   const limit = 1000;
   for (;;) {
-    const r = await fetch(`${WB_PRICES_URL}?limit=${limit}&offset=${offset}`, {
+    const r = await fetchRetry(`${WB_PRICES_URL}?limit=${limit}&offset=${offset}`, {
       headers: { Authorization: token },
     });
     if (!r.ok) {
@@ -59,9 +89,9 @@ async function fetchSellerPrices(): Promise<Map<number, { seller: number; base: 
         `[discount-tracker] WB discounts-prices API ${r.status}` +
           (r.status === 401 || r.status === 403
             ? ' — проверь скоуп «Цены и скидки» у WB_API_TOKEN'
-            : ''),
+            : ' — вероятно рейт-лимит; SKU без цены продавца будут пропущены'),
       );
-      break;
+      return { prices: map, ok: false };
     }
     const j: any = await r.json();
     const goods: any[] = j?.data?.listGoods ?? [];
@@ -75,14 +105,15 @@ async function fetchSellerPrices(): Promise<Map<number, { seller: number; base: 
     if (goods.length < limit) break;
     offset += limit;
   }
-  return map;
+  return { prices: map, ok: true };
 }
 
 export async function fetchWb(nmIds: number[]): Promise<Snapshot[]> {
   const out: Snapshot[] = [];
   if (!nmIds.length) return out;
 
-  const sellerPrices = await fetchSellerPrices();
+  const { prices: sellerPrices, ok: sellerOk } = await fetchSellerPrices();
+  let skipped = 0;
 
   for (let i = 0; i < nmIds.length; i += 100) {
     const batch = nmIds.slice(i, i + 100);
@@ -94,7 +125,7 @@ export async function fetchWb(nmIds: number[]): Promise<Snapshot[]> {
     const headers: Record<string, string> = RELAY_URL
       ? { 'X-Relay-Token': RELAY_TOKEN }
       : BROWSER_HEADERS;
-    const r = await fetch(url, { headers });
+    const r = await fetchRetry(url, { headers });
     if (!r.ok) {
       const body = (await r.text().catch(() => '')).slice(0, 200);
       console.error(
@@ -111,21 +142,34 @@ export async function fetchWb(nmIds: number[]): Promise<Snapshot[]> {
       if (!price?.product) continue;
       const shelf = price.product / 100;
       const sp = sellerPrices.get(Number(p.id));
-      // Без seller API берём витрину и как цену продавца (СПП = 0) — снапшот всё равно ценен
-      const seller = sp?.seller ?? shelf;
+      // Нет цены продавца → СПП посчитать нельзя. Раньше фолбэчили seller=витрина и
+      // писали ложный 0% (портит хитмап + может дёрнуть ложный алерт «СПП обвалилась»).
+      // Теперь пропускаем SKU — лучше пропуск, чем неверные данные.
+      if (!sp?.seller) {
+        skipped++;
+        continue;
+      }
+      const seller = sp.seller;
       const platformDisc = Math.max(seller - shelf, 0);
       out.push({
         platform: 'wb',
         sku: String(p.id),
         seller_price: seller,
         shelf_price: shelf,
-        own_discount: sp ? Math.max(sp.base - sp.seller, 0) : null,
+        own_discount: Math.max(sp.base - sp.seller, 0),
         platform_disc: platformDisc,
-        discount_pct: seller ? 1 - shelf / seller : 0,
-        platform_pct: seller ? platformDisc / seller : 0,
-        raw: { card: price, sellerApi: sp ?? null },
+        discount_pct: 1 - shelf / seller,
+        platform_pct: platformDisc / seller,
+        raw: { card: price, sellerApi: sp },
       });
     }
+  }
+  if (skipped) {
+    console.warn(
+      `[discount-tracker] WB: ${skipped} SKU без цены продавца` +
+        (sellerOk ? '' : ' (seller API недоступен — рейт-лимит?)') +
+        ' — пропущены, чтобы не писать ложный 0% СПП',
+    );
   }
   return out;
 }
