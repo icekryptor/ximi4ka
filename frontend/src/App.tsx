@@ -38,6 +38,7 @@ const Planning = lazy(() => import('./pages/Planning'))
 const Departments = lazy(() => import('./pages/Departments'))
 const DepartmentDetail = lazy(() => import('./pages/DepartmentDetail'))
 const PublicUnitEconomics = lazy(() => import('./pages/PublicUnitEconomics'))
+const PublicSpp = lazy(() => import('./pages/PublicSpp'))
 const RecurringTasks = lazy(() => import('./pages/RecurringTasks'))
 const RecurringTaskDetail = lazy(() => import('./pages/RecurringTaskDetail'))
 const ContentBank = lazy(() => import('./pages/ContentBank'))
@@ -97,6 +98,7 @@ function App() {
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/public/unit-economics/:token" element={<PublicUnitEconomics />} />
+                  <Route path="/p/spp/:token" element={<PublicSpp />} />
                   <Route path="/project/:id" element={<PublicProject />} />
 
                   {/* Protected routes — wrapped in Layout */}

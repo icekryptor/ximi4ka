@@ -108,11 +108,47 @@ async function fetchSellerPrices(): Promise<{
   return { prices: map, ok: true };
 }
 
+// Кеш цен продавца: seller-API рейт-лимитится, а цена продавца меняется редко.
+// При опросе витрины каждые 5 мин обновляем цену продавца лишь раз в TTL (30 мин),
+// между обновлениями переиспользуем кеш. При сбое refresh держим прошлый кеш.
+const SELLER_TTL_MS =
+  (process.env.WB_SELLER_TTL_MIN != null && process.env.WB_SELLER_TTL_MIN !== ''
+    ? Number(process.env.WB_SELLER_TTL_MIN)
+    : 30) * 60_000;
+let sellerCache: { prices: Map<number, { seller: number; base: number }>; ts: number } | null = null;
+
+/** Сброс кеша (для тестов). */
+export function __resetSellerCache(): void {
+  sellerCache = null;
+}
+
+/** Цены продавца с TTL-кешем: refresh раз в SELLER_TTL_MS, иначе из кеша. */
+async function getSellerPrices(): Promise<{
+  prices: Map<number, { seller: number; base: number }>;
+  ok: boolean;
+}> {
+  const now = Date.now();
+  if (sellerCache && now - sellerCache.ts < SELLER_TTL_MS) {
+    return { prices: sellerCache.prices, ok: true };
+  }
+  const { prices, ok } = await fetchSellerPrices();
+  if (ok && prices.size) {
+    sellerCache = { prices, ts: now };
+    return { prices, ok: true };
+  }
+  // refresh не удался — переиспользуем прошлый кеш, если он есть
+  if (sellerCache) {
+    console.warn('[discount-tracker] seller-API refresh не удался — беру цены продавца из кеша');
+    return { prices: sellerCache.prices, ok: true };
+  }
+  return { prices, ok };
+}
+
 export async function fetchWb(nmIds: number[]): Promise<Snapshot[]> {
   const out: Snapshot[] = [];
   if (!nmIds.length) return out;
 
-  const { prices: sellerPrices, ok: sellerOk } = await fetchSellerPrices();
+  const { prices: sellerPrices, ok: sellerOk } = await getSellerPrices();
   let skipped = 0;
 
   for (let i = 0; i < nmIds.length; i += 100) {

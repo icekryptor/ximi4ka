@@ -1,12 +1,14 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
-import { Bell, ChevronDown, ChevronUp, Percent, RefreshCw } from 'lucide-react'
+import { Bell, ChevronDown, ChevronUp, Clock, Percent, RefreshCw } from 'lucide-react'
 import {
   discountTrackerApi,
   DiscountAlertRow,
   DiscountPlatform,
   PriceHistoryRow,
+  PriceHourlyRow,
   PriceLatestRow,
 } from '../api/discountTracker'
+import { HourlyAvgTable } from '../components/discount/HourlyAvgTable'
 import { useToast } from '../contexts/ToastContext'
 
 type PlatformFilter = 'all' | DiscountPlatform
@@ -177,13 +179,15 @@ const DiscountTracker = () => {
   const [expandedKey, setExpandedKey] = useState<string | null>(null)
   const [historyMap, setHistoryMap] = useState<Record<string, PriceHistoryRow[]>>({})
   const [historyLoadingKey, setHistoryLoadingKey] = useState<string | null>(null)
+  const [hourly, setHourly] = useState<PriceHourlyRow[]>([])
 
   const loadData = useCallback(async () => {
     setLoading(true)
     try {
-      const [latestResult, alertsResult] = await Promise.allSettled([
+      const [latestResult, alertsResult, hourlyResult] = await Promise.allSettled([
         discountTrackerApi.latest(),
         discountTrackerApi.alerts(),
+        discountTrackerApi.hourly(24),
       ])
       if (latestResult.status === 'fulfilled') setRows(latestResult.value)
       else {
@@ -192,6 +196,8 @@ const DiscountTracker = () => {
       }
       if (alertsResult.status === 'fulfilled') setAlerts(alertsResult.value)
       else console.error('Failed to load alerts:', alertsResult.reason)
+      if (hourlyResult.status === 'fulfilled') setHourly(hourlyResult.value)
+      else console.error('Failed to load hourly averages:', hourlyResult.reason)
     } finally {
       setLoading(false)
     }
@@ -260,7 +266,8 @@ const DiscountTracker = () => {
       </div>
 
       <div className="text-sm text-brand-text-secondary">
-        СПП на WB и соинвест на Ozon: доля площадки в витринной цене. Снапшоты собираются каждый час.
+        СПП на WB и соинвест на Ozon: доля площадки в витринной цене. Витрина снимается каждые 5 минут,
+        цена продавца обновляется реже (кеш ~30 мин).
       </div>
 
       {/* Platform filter */}
@@ -400,6 +407,17 @@ const DiscountTracker = () => {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* Почасовое среднее */}
+      {!loading && (
+        <div className="card space-y-3">
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-primary-500" />
+            <h2 className="text-sm font-semibold text-brand-text">Почасовое среднее СПП (24 ч)</h2>
+          </div>
+          <HourlyAvgTable rows={hourly} platform={filter} />
         </div>
       )}
 

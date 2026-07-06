@@ -1,7 +1,7 @@
 import cron from 'node-cron';
 import { runOnce } from './discount-tracker.service';
 
-const CRON_SCHEDULE = '0 * * * *'; // каждый час, в :00
+const CRON_SCHEDULE = '*/5 * * * *'; // каждые 5 мин (витрина); цена продавца кешируется на TTL
 
 let started = false;
 

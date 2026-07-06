@@ -51,6 +51,7 @@ import bankAccountRoutes from './routes/bankAccount.routes';
 import bankImportRoutes from './routes/bankImport.routes';
 import bankSyncRoutes from './routes/bank-sync.routes';
 import discountTrackerRoutes from './routes/discount-tracker.routes';
+import { discountTrackerController } from './controllers/discount-tracker.controller';
 import importRuleRoutes from './routes/importRule.routes';
 import cashflowRoutes from './routes/cashflow.routes';
 import voiceoverRoutes from './routes/voiceover.routes';
@@ -109,6 +110,7 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 app.use('/api/auth', authRoutes);
 app.get('/api/public/unit-economics/:token', unitEconomicsController.getPublicShare);
 app.use('/api/public/projects', publicProjectRoutes);
+app.get('/api/public/spp/:token', discountTrackerController.publicShare);
 
 // n8n API — API key auth (no JWT)
 app.use('/api/n8n', apiKeyAuth, n8nRoutes);

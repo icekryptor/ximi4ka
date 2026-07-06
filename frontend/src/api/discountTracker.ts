@@ -36,6 +36,26 @@ export interface DiscountAlertRow {
   last_alerted: string
 }
 
+/** Строка GET /discount-tracker/hourly — почасовое среднее по (platform, sku, час) */
+export interface PriceHourlyRow {
+  platform: DiscountPlatform
+  sku: string
+  hour: string
+  avg_platform_pct: number | null
+  avg_discount_pct: number | null
+  avg_shelf_price: number | null
+  avg_seller_price: number | null
+  samples: number
+  product_name: string
+}
+
+/** Ответ GET /public/spp/:token */
+export interface PublicSppData {
+  latest: PriceLatestRow[]
+  hourly: PriceHourlyRow[]
+  generated_at: string
+}
+
 /** Ответ POST /discount-tracker/run */
 export interface DiscountRunResult {
   ok: true
@@ -46,6 +66,12 @@ export interface DiscountRunResult {
 export const discountTrackerApi = {
   latest: async (): Promise<PriceLatestRow[]> => {
     const r = await apiClient.get<PriceLatestRow[]>('/discount-tracker/latest')
+    return r.data
+  },
+  hourly: async (hours = 24): Promise<PriceHourlyRow[]> => {
+    const r = await apiClient.get<PriceHourlyRow[]>('/discount-tracker/hourly', {
+      params: { hours },
+    })
     return r.data
   },
   history: async (
@@ -66,4 +92,21 @@ export const discountTrackerApi = {
     const r = await apiClient.post<DiscountRunResult>('/discount-tracker/run')
     return r.data
   },
+}
+
+/**
+ * Публичный снимок для менеджера ВБ — bare fetch в обход axios-интерсептора
+ * (иначе 401/403 дёрнул бы auto-logout и редирект на /login).
+ * Бэкенд отдаёт 403 (не 401) на неверный токен, но подстрахуемся всё равно.
+ */
+export async function fetchPublicSpp(token: string): Promise<PublicSppData> {
+  const base = import.meta.env.VITE_API_URL || '/api'
+  const r = await fetch(`${base}/public/spp/${encodeURIComponent(token)}`, {
+    headers: { Accept: 'application/json' },
+  })
+  if (!r.ok) {
+    const msg = r.status === 403 ? 'Ссылка недействительна' : `Ошибка загрузки (${r.status})`
+    throw new Error(msg)
+  }
+  return r.json()
 }
