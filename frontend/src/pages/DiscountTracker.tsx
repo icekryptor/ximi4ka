@@ -9,6 +9,7 @@ import {
   PriceLatestRow,
 } from '../api/discountTracker'
 import { HourlyAvgTable } from '../components/discount/HourlyAvgTable'
+import { NeatHeatGrid, HeatPoint, dayKeyOf } from '../components/discount/NeatHeatGrid'
 import { useToast } from '../contexts/ToastContext'
 
 type PlatformFilter = 'all' | DiscountPlatform
@@ -71,102 +72,23 @@ const PlatformBadge = ({ platform }: { platform: DiscountPlatform }) => (
 )
 
 /**
- * Цвет ячейки heatmap по величине доли площадки (СПП/соинвест, %).
- * 0% → красный (низкая субсидия), ~20% → жёлтый, ≥40% → зелёный (высокая).
- */
-const heatColor = (pct: number): string => {
-  const hue = Math.max(0, Math.min(120, (pct / 40) * 120))
-  return `hsl(${hue}, 68%, 55%)`
-}
-
-const HOUR_LABELS = Array.from({ length: 24 }, (_, h) => h)
-
-const dayKeyOf = (d: Date): string =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-
-const dayHeader = (key: string): string => {
-  const [, m, d] = key.split('-')
-  return `${d}.${m}`
-}
-
-/**
- * Heatmap доли площадки: столбцы — дни, строки — часы (00:00…23:00).
- * Ячейка = последний снапшот platform_pct за этот час, подсвечена цветом.
+ * Heatmap доли площадки: столбцы — дни, строки — часы. Аккуратные плитки
+ * (общий NeatHeatGrid). Ячейка = последний снапшот platform_pct за час.
  */
 const SppHeatmap = ({ history }: { history: PriceHistoryRow[] }) => {
-  const { days, grid } = useMemo(() => {
-    const points = history.filter(h => h.platform_pct != null)
-    const byDay = new Map<string, Map<number, number>>()
-    const daySet = new Set<string>()
-    for (const p of points) {
+  const points = useMemo<HeatPoint[]>(() => {
+    const g = new Map<string, HeatPoint>()
+    for (const p of history) {
+      if (p.platform_pct == null) continue
       const dt = new Date(p.captured_at)
-      const dk = dayKeyOf(dt)
-      daySet.add(dk)
-      if (!byDay.has(dk)) byDay.set(dk, new Map())
+      const day = dayKeyOf(dt)
       // несколько снапшотов в час → берём последний (history отсортирован ASC)
-      byDay.get(dk)!.set(dt.getHours(), (p.platform_pct as number) * 100)
+      g.set(`${day}|${dt.getHours()}`, { day, hour: dt.getHours(), pct: (p.platform_pct as number) * 100 })
     }
-    return { days: [...daySet].sort(), grid: byDay }
+    return [...g.values()]
   }, [history])
 
-  if (days.length === 0) {
-    return <div className="text-sm text-brand-text-secondary py-4">Нет данных за период</div>
-  }
-
-  return (
-    <div className="space-y-3">
-      <div className="overflow-x-auto">
-        <table className="border-collapse text-xs tabular-nums">
-          <thead>
-            <tr>
-              <th className="sticky left-0 bg-subtle/50 px-2 py-1 text-brand-text-secondary font-medium text-right">
-                Час
-              </th>
-              {days.map(d => (
-                <th key={d} className="px-2 py-1 text-brand-text-secondary font-medium whitespace-nowrap">
-                  {dayHeader(d)}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {HOUR_LABELS.map(h => (
-              <tr key={h}>
-                <td className="sticky left-0 bg-subtle/50 px-2 py-0.5 text-right text-brand-text-secondary whitespace-nowrap">
-                  {String(h).padStart(2, '0')}:00
-                </td>
-                {days.map(d => {
-                  const v = grid.get(d)?.get(h)
-                  return (
-                    <td
-                      key={d}
-                      className="px-2 py-0.5 text-center font-semibold"
-                      style={
-                        v == null
-                          ? undefined
-                          : { backgroundColor: heatColor(v), color: '#1c1528' }
-                      }
-                      title={v == null ? 'нет снапшота' : `${dayHeader(d)} ${String(h).padStart(2, '0')}:00 — ${v.toFixed(1)}%`}
-                    >
-                      {v == null ? '·' : v.toFixed(0)}
-                    </td>
-                  )
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {/* Легенда */}
-      <div className="flex items-center gap-2 text-xs text-brand-text-secondary">
-        <span>Ниже</span>
-        <span className="inline-block w-4 h-3 rounded-sm" style={{ backgroundColor: heatColor(0) }} />
-        <span className="inline-block w-4 h-3 rounded-sm" style={{ backgroundColor: heatColor(20) }} />
-        <span className="inline-block w-4 h-3 rounded-sm" style={{ backgroundColor: heatColor(40) }} />
-        <span>Выше — доля площадки (%)</span>
-      </div>
-    </div>
-  )
+  return <NeatHeatGrid points={points} emptyHint="Нет данных за период" />
 }
 
 const DiscountTracker = () => {

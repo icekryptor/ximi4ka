@@ -1,25 +1,13 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import type { PriceHourlyRow, DiscountPlatform } from '../../api/discountTracker'
+import { NeatHeatGrid, HeatPoint, dayKeyOf } from './NeatHeatGrid'
 
 /**
- * Тепловая карта почасового среднего СПП: строки — артикулы, столбцы — часы.
- * Аккуратные скруглённые плитки с зазором (не сплошная квадратная заливка),
- * значение внутри, цвет — от красного (низкая субсидия) к зелёному (высокая).
+ * Тепловая карта СПП для публичной страницы: артикулы — вкладками, для активного
+ * артикула сетка день×час (аккуратные плитки NeatHeatGrid).
  */
 
-// 0% → красный, ~20% → жёлтый, ≥40% → зелёный. Мягкая насыщенность для читабельности.
-const heatColor = (pct: number): string => {
-  const hue = Math.max(0, Math.min(120, (pct / 40) * 120))
-  return `hsl(${hue}, 62%, 58%)`
-}
-
 const colKey = (p: DiscountPlatform, sku: string) => `${p}:${sku}`
-
-const hourLabel = (iso: string): string => String(new Date(iso).getHours()).padStart(2, '0')
-const dayLabel = (iso: string): string => {
-  const d = new Date(iso)
-  return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`
-}
 
 interface Props {
   rows: PriceHourlyRow[]
@@ -32,105 +20,63 @@ export const HourlyHeatmap = ({ rows, platform = 'all' }: Props) => {
     [rows, platform],
   )
 
-  const { skus, hours, pivot } = useMemo(() => {
-    const skuMap = new Map<string, { platform: DiscountPlatform; sku: string; name: string }>()
-    const hoursSet = new Set<string>()
-    const pv = new Map<string, PriceHourlyRow>()
+  const skus = useMemo(() => {
+    const m = new Map<string, { ck: string; platform: DiscountPlatform; sku: string; name: string }>()
     for (const r of data) {
       const ck = colKey(r.platform, r.sku)
-      if (!skuMap.has(ck)) skuMap.set(ck, { platform: r.platform, sku: r.sku, name: r.product_name })
-      hoursSet.add(r.hour)
-      pv.set(`${r.hour}|${ck}`, r)
+      if (!m.has(ck)) m.set(ck, { ck, platform: r.platform, sku: r.sku, name: r.product_name })
     }
-    const skusArr = [...skuMap.entries()]
-      .map(([ck, v]) => ({ ck, ...v }))
-      .sort((a, b) => (a.platform === b.platform ? a.sku.localeCompare(b.sku) : a.platform.localeCompare(b.platform)))
-    const hoursArr = [...hoursSet].sort((a, b) => a.localeCompare(b)) // старые слева → свежие справа
-    return { skus: skusArr, hours: hoursArr, pivot: pv }
+    return [...m.values()].sort((a, b) => a.sku.localeCompare(b.sku))
   }, [data])
 
-  if (!skus.length || !hours.length) {
+  const [active, setActive] = useState<string | null>(null)
+  const activeCk = active && skus.some((s) => s.ck === active) ? active : skus[0]?.ck ?? null
+
+  const points: HeatPoint[] = useMemo(() => {
+    if (!activeCk) return []
+    return data
+      .filter((r) => colKey(r.platform, r.sku) === activeCk && r.avg_platform_pct != null)
+      .map((r) => {
+        const dt = new Date(r.hour)
+        return {
+          day: dayKeyOf(dt),
+          hour: dt.getHours(),
+          pct: (r.avg_platform_pct as number) * 100,
+          samples: r.samples,
+        }
+      })
+  }, [data, activeCk])
+
+  if (!skus.length) {
     return (
-      <p className="py-6 text-center text-sm text-[#524667]">
+      <p className="py-6 text-center text-sm text-brand-text-secondary">
         Почасовых данных пока нет — появятся после нескольких 5-минутных замеров.
       </p>
     )
   }
 
   return (
-    <div className="space-y-3">
-      <div className="overflow-x-auto pb-1">
-        <div className="inline-block min-w-full">
-          {/* Шапка: даты + часы */}
-          <div className="flex">
-            <div className="w-40 shrink-0" />
-            <div className="flex gap-1">
-              {hours.map((h, i) => {
-                const showDay = i === 0 || dayLabel(h) !== dayLabel(hours[i - 1])
-                return (
-                  <div key={h} className="w-9 shrink-0 text-center">
-                    <div className="h-3 text-[9px] font-medium text-[#524667]/70">
-                      {showDay ? dayLabel(h) : ''}
-                    </div>
-                    <div className="text-[10px] tabular-nums text-[#524667]">{hourLabel(h)}</div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Строки по артикулам */}
-          <div className="mt-1 space-y-1">
-            {skus.map((s) => (
-              <div key={s.ck} className="flex items-center">
-                <div className="w-40 shrink-0 pr-2">
-                  <div className="truncate text-xs font-medium text-[#1c1528]" title={s.name}>
-                    {s.name}
-                  </div>
-                  <div className="truncate font-mono text-[10px] text-[#524667]/70">{s.sku}</div>
-                </div>
-                <div className="flex gap-1">
-                  {hours.map((h) => {
-                    const cell = pivot.get(`${h}|${s.ck}`)
-                    const pct = cell?.avg_platform_pct != null ? cell.avg_platform_pct * 100 : null
-                    return (
-                      <div
-                        key={h}
-                        className="flex h-8 w-9 shrink-0 items-center justify-center rounded-md text-[11px] font-semibold tabular-nums ring-1 ring-inset ring-black/5"
-                        style={
-                          pct == null
-                            ? { backgroundColor: '#f1eef6', color: '#a9a2b8' }
-                            : { backgroundColor: heatColor(pct), color: '#1c1528' }
-                        }
-                        title={
-                          cell
-                            ? `${dayLabel(h)} ${hourLabel(h)}:00 — ${pct!.toFixed(1)}% · ${cell.samples} замеров`
-                            : 'нет данных'
-                        }
-                      >
-                        {pct == null ? '·' : pct.toFixed(1)}
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Легенда */}
-      <div className="flex items-center gap-2 text-xs text-[#524667]">
-        <span>Ниже</span>
-        {[0, 20, 40].map((p) => (
-          <span
-            key={p}
-            className="inline-block h-4 w-6 rounded-md ring-1 ring-inset ring-black/5"
-            style={{ backgroundColor: heatColor(p) }}
-          />
+    <div className="space-y-4">
+      {/* Вкладки-артикулы */}
+      <div className="flex flex-wrap gap-1.5">
+        {skus.map((s) => (
+          <button
+            key={s.ck}
+            type="button"
+            onClick={() => setActive(s.ck)}
+            title={`${s.name} (${s.sku})`}
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+              activeCk === s.ck
+                ? 'bg-primary-500 text-white'
+                : 'bg-[#eeebf3] text-[#524667] hover:bg-[#e3def0]'
+            }`}
+          >
+            <span className="block max-w-[180px] truncate">{s.name}</span>
+          </button>
         ))}
-        <span>Выше — доля площадки (СПП, %)</span>
       </div>
+
+      <NeatHeatGrid points={points} emptyHint="Нет данных по артикулу за период" />
     </div>
   )
 }

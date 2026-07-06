@@ -99,9 +99,9 @@ export const discountTrackerApi = {
  * (иначе 401/403 дёрнул бы auto-logout и редирект на /login).
  * Бэкенд отдаёт 403 (не 401) на неверный токен, но подстрахуемся всё равно.
  */
-export async function fetchPublicSpp(token: string): Promise<PublicSppData> {
+export async function fetchPublicSpp(token: string, hours = 24 * 14): Promise<PublicSppData> {
   const base = import.meta.env.VITE_API_URL || '/api'
-  const r = await fetch(`${base}/public/spp/${encodeURIComponent(token)}`, {
+  const r = await fetch(`${base}/public/spp/${encodeURIComponent(token)}?hours=${hours}`, {
     headers: { Accept: 'application/json' },
   })
   if (!r.ok) {
