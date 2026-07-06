@@ -65,13 +65,20 @@ export const HourlyHeatmap = ({ rows, platform = 'all' }: Props) => {
             type="button"
             onClick={() => setActive(s.ck)}
             title={`${s.name} (${s.sku})`}
-            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+            className={`rounded-lg px-3 py-1.5 text-left text-xs transition-colors ${
               activeCk === s.ck
                 ? 'bg-primary-500 text-white'
                 : 'bg-[#eeebf3] text-[#524667] hover:bg-[#e3def0]'
             }`}
           >
-            <span className="block max-w-[180px] truncate">{s.name}</span>
+            <span className="block font-mono font-semibold tabular-nums">{s.sku}</span>
+            <span
+              className={`block max-w-[160px] truncate text-[10px] font-normal ${
+                activeCk === s.ck ? 'text-white/80' : 'text-[#524667]/70'
+              }`}
+            >
+              {s.name}
+            </span>
           </button>
         ))}
       </div>
