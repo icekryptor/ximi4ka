@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Percent } from 'lucide-react'
 import { fetchPublicSpp, PublicSppData, PriceLatestRow } from '../api/discountTracker'
-import { HourlyAvgTable } from '../components/discount/HourlyAvgTable'
+import { HourlyHeatmap } from '../components/discount/HourlyHeatmap'
 
 const REFRESH_MS = 5 * 60_000
 
@@ -139,7 +139,7 @@ const PublicSpp = () => {
 
         <div className="bg-white rounded-3xl shadow-sm border border-[#e8e5ef] p-6 space-y-3">
           <h2 className="text-sm font-semibold text-[#1c1528]">Почасовое среднее СПП (24 ч)</h2>
-          <HourlyAvgTable rows={data.hourly} />
+          <HourlyHeatmap rows={data.hourly} />
         </div>
 
         <p className="text-center text-xs text-[#524667]/70">
