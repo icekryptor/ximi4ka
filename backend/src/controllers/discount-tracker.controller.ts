@@ -102,7 +102,10 @@ export const discountTrackerController = {
     if (!got || got !== expected) return res.status(403).json({ error: 'Доступ запрещён' });
     try {
       const hours = Number((req.query.hours as string) || '24');
-      const [latest, hourly] = await Promise.all([fetchLatestRows(), fetchHourlyRows(hours)]);
+      const [latestAll, hourlyAll] = await Promise.all([fetchLatestRows(), fetchHourlyRows(hours)]);
+      // Публичная страница для менеджера ВБ — только WB, без Ozon.
+      const latest = latestAll.filter((r) => r.platform === 'wb');
+      const hourly = hourlyAll.filter((r) => r.platform === 'wb');
       res.json({ latest, hourly, generated_at: new Date().toISOString() });
     } catch (e: any) {
       console.error('[discount-tracker.publicShare]', e?.message || e);
