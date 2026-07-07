@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BarChart3, RefreshCw } from 'lucide-react'
-import { mpAnalyticsApi, MpPlatform, MpSummaryRow, MpDailyRow } from '../api/mpAnalytics'
+import { mpAnalyticsApi, MpPlatform, MpSummaryRow, MpDailyRow, MpRange } from '../api/mpAnalytics'
 import { useToast } from '../contexts/ToastContext'
 
 const money = (v: number | null): string =>
@@ -16,23 +16,57 @@ const PERIODS = [
   { days: 7, label: '7 дней' },
   { days: 30, label: '30 дней' },
   { days: 90, label: '90 дней' },
+  { days: 400, label: 'Весь период' },
 ]
+
+const monthRange = (ym: string): { from: string; to: string } => {
+  const [y, m] = ym.split('-').map(Number)
+  const from = `${ym}-01`
+  const last = new Date(Date.UTC(y, m, 0)).getUTCDate()
+  return { from, to: `${ym}-${String(last).padStart(2, '0')}` }
+}
 
 const MpAnalytics = () => {
   const toast = useToast()
   const [platform, setPlatform] = useState<MpPlatform>('wb')
+  // период: пресет по дням ИЛИ явный from/to (месяц/произвольный)
   const [days, setDays] = useState(30)
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
+  const [month, setMonth] = useState('')
+  const useRange = !!(from && to)
+  const periodLabel = useRange ? `${from} — ${to}` : `${days} дней`
+
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
   const [summary, setSummary] = useState<MpSummaryRow[]>([])
   const [daily, setDaily] = useState<MpDailyRow[]>([])
 
+  const setPreset = (d: number) => {
+    setDays(d)
+    setFrom('')
+    setTo('')
+    setMonth('')
+  }
+  const setMonthPeriod = (ym: string) => {
+    setMonth(ym)
+    if (ym) {
+      const r = monthRange(ym)
+      setFrom(r.from)
+      setTo(r.to)
+    } else {
+      setFrom('')
+      setTo('')
+    }
+  }
+
   const load = useCallback(async () => {
     setLoading(true)
     try {
+      const req: MpRange = from && to ? { from, to } : { days }
       const [s, d] = await Promise.all([
-        mpAnalyticsApi.summary(platform, days),
-        mpAnalyticsApi.daily(platform, days),
+        mpAnalyticsApi.summary(platform, req),
+        mpAnalyticsApi.daily(platform, req),
       ])
       setSummary(s)
       setDaily(d)
@@ -42,7 +76,7 @@ const MpAnalytics = () => {
     } finally {
       setLoading(false)
     }
-  }, [platform, days, toast])
+  }, [platform, days, from, to, toast])
 
   useEffect(() => {
     load()
@@ -135,12 +169,42 @@ const MpAnalytics = () => {
         {PERIODS.map((p) => (
           <button
             key={p.days}
-            onClick={() => setDays(p.days)}
-            className={`px-3 py-2 rounded-xl text-sm font-medium ${days === p.days ? 'bg-primary-500 text-white' : 'bg-card border border-brand-border text-brand-text-secondary'}`}
+            onClick={() => setPreset(p.days)}
+            className={`px-3 py-2 rounded-xl text-sm font-medium ${!useRange && days === p.days ? 'bg-primary-500 text-white' : 'bg-card border border-brand-border text-brand-text-secondary'}`}
           >
             {p.label}
           </button>
         ))}
+        {/* Месяц */}
+        <input
+          type="month"
+          value={month}
+          onChange={(e) => setMonthPeriod(e.target.value)}
+          title="Выбрать месяц"
+          className="px-3 py-2 rounded-xl text-sm border border-brand-border bg-card text-brand-text-secondary"
+        />
+        {/* Произвольный период */}
+        <div className="flex items-center gap-1">
+          <input
+            type="date"
+            value={from}
+            onChange={(e) => {
+              setFrom(e.target.value)
+              setMonth('')
+            }}
+            className="px-2 py-2 rounded-xl text-sm border border-brand-border bg-card text-brand-text-secondary"
+          />
+          <span className="text-brand-text-secondary/60">—</span>
+          <input
+            type="date"
+            value={to}
+            onChange={(e) => {
+              setTo(e.target.value)
+              setMonth('')
+            }}
+            className="px-2 py-2 rounded-xl text-sm border border-brand-border bg-card text-brand-text-secondary"
+          />
+        </div>
       </div>
 
       {loading ? (
@@ -155,7 +219,7 @@ const MpAnalytics = () => {
         <>
           {/* Итоги по продуктам */}
           <div className="card space-y-3">
-            <h2 className="text-sm font-semibold text-brand-text">Итоги по продуктам ({days} дней)</h2>
+            <h2 className="text-sm font-semibold text-brand-text">Итоги по продуктам ({periodLabel})</h2>
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
                 <thead>
@@ -199,7 +263,7 @@ const MpAnalytics = () => {
 
           {/* Воронка по продуктам */}
           <div className="card space-y-3">
-            <h2 className="text-sm font-semibold text-brand-text">Воронка ({days} дней)</h2>
+            <h2 className="text-sm font-semibold text-brand-text">Воронка ({periodLabel})</h2>
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
                 <thead>

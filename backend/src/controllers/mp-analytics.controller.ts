@@ -13,13 +13,20 @@ const mapNums = (r: any) => {
   return out;
 };
 
+const isDate = (s: unknown): s is string => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+const rangeFromQuery = (req: Request) => {
+  const from = req.query.from;
+  const to = req.query.to;
+  if (isDate(from) && isDate(to)) return { from, to };
+  return { days: Number((req.query.days as string) || '30') };
+};
+
 export const mpAnalyticsController = {
-  /** Дневная таймсерия воронки/продаж. */
+  /** Дневная таймсерия воронки/продаж. Период: days ИЛИ from&to (YYYY-MM-DD). */
   async daily(req: Request, res: Response) {
     try {
       const platform = (req.query.platform as string) || 'wb';
-      const days = Number((req.query.days as string) || '30');
-      res.json((await dailyRows(platform, days)).map(mapNums));
+      res.json((await dailyRows(platform, rangeFromQuery(req))).map(mapNums));
     } catch (e: any) {
       console.error('[mp-analytics.daily]', e?.message || e);
       res.status(500).json({ error: 'Ошибка загрузки дневной аналитики' });
@@ -30,8 +37,7 @@ export const mpAnalyticsController = {
   async summary(req: Request, res: Response) {
     try {
       const platform = (req.query.platform as string) || 'wb';
-      const days = Number((req.query.days as string) || '30');
-      res.json((await summaryByProduct(platform, days)).map(mapNums));
+      res.json((await summaryByProduct(platform, rangeFromQuery(req))).map(mapNums));
     } catch (e: any) {
       console.error('[mp-analytics.summary]', e?.message || e);
       res.status(500).json({ error: 'Ошибка загрузки сводки' });

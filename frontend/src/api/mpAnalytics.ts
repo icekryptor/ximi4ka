@@ -33,13 +33,19 @@ export interface MpDailyRow {
   avg_price: number | null
 }
 
+export interface MpRange {
+  days?: number
+  from?: string
+  to?: string
+}
+
 export const mpAnalyticsApi = {
-  summary: async (platform: MpPlatform = 'wb', days = 30): Promise<MpSummaryRow[]> => {
-    const r = await apiClient.get<MpSummaryRow[]>('/mp-analytics/summary', { params: { platform, days } })
+  summary: async (platform: MpPlatform = 'wb', range: MpRange = { days: 30 }): Promise<MpSummaryRow[]> => {
+    const r = await apiClient.get<MpSummaryRow[]>('/mp-analytics/summary', { params: { platform, ...range } })
     return r.data
   },
-  daily: async (platform: MpPlatform = 'wb', days = 30): Promise<MpDailyRow[]> => {
-    const r = await apiClient.get<MpDailyRow[]>('/mp-analytics/daily', { params: { platform, days } })
+  daily: async (platform: MpPlatform = 'wb', range: MpRange = { days: 30 }): Promise<MpDailyRow[]> => {
+    const r = await apiClient.get<MpDailyRow[]>('/mp-analytics/daily', { params: { platform, ...range } })
     return r.data
   },
   sync: async (days = 30): Promise<{ ok: boolean; started: boolean }> => {

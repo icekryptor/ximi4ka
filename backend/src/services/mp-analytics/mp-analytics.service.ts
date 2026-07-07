@@ -150,9 +150,32 @@ export async function syncWbFunnel(days = 30): Promise<{ items: number; upserted
   return { items: items.length, upserted };
 }
 
-/** Дневная таймсерия (platform, window) + название товара. */
-export async function dailyRows(platform: string, days = 30): Promise<any[]> {
-  const d = Math.max(1, Math.min(days, 400));
+export interface RangeOpts {
+  days?: number;
+  from?: string; // YYYY-MM-DD
+  to?: string;
+}
+
+const isDate = (s?: string): s is string => !!s && /^\d{4}-\d{2}-\d{2}$/.test(s);
+const shift = (iso: string, deltaDays: number): string => {
+  const d = new Date(iso + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + deltaDays);
+  return d.toISOString().slice(0, 10);
+};
+
+/** Явный период [from,to] либо окно последних `days` дней. */
+function resolveRange(opts: RangeOpts): { from: string; to: string } {
+  if (isDate(opts.from) && isDate(opts.to)) {
+    return opts.from <= opts.to ? { from: opts.from, to: opts.to } : { from: opts.to, to: opts.from };
+  }
+  const d = Math.max(1, Math.min(opts.days ?? 30, 400));
+  const to = new Date().toISOString().slice(0, 10);
+  return { from: shift(to, -d), to };
+}
+
+/** Дневная таймсерия (platform, период) + название товара. */
+export async function dailyRows(platform: string, opts: RangeOpts = {}): Promise<any[]> {
+  const { from, to } = resolveRange(opts);
   return AppDataSource.query(
     `SELECT f.*, COALESCE(f.product_name, w.product_name, f.sku) AS product_name
      FROM mp_funnel_daily f
@@ -162,15 +185,18 @@ export async function dailyRows(platform: string, days = 30): Promise<any[]> {
          AND s.product_name IS NOT NULL AND s.product_name <> ''
        ORDER BY s.date DESC LIMIT 1
      ) w ON true
-     WHERE f.platform=$1 AND f.date > (now() - make_interval(days => $2::int))::date
+     WHERE f.platform=$1 AND f.date BETWEEN $2::date AND $3::date
      ORDER BY f.date DESC, f.sku`,
-    [platform, d],
+    [platform, from, to],
   );
 }
 
-/** Итоги по продуктам за период + доля + сравнение с предыдущим окном. */
-export async function summaryByProduct(platform: string, days = 30): Promise<any[]> {
-  const d = Math.max(1, Math.min(days, 400));
+/** Итоги по продуктам за период + доля + сравнение с предыдущим окном той же длины. */
+export async function summaryByProduct(platform: string, opts: RangeOpts = {}): Promise<any[]> {
+  const { from, to } = resolveRange(opts);
+  const len = Math.round((Date.parse(to) - Date.parse(from)) / 86400000) + 1;
+  const prevTo = shift(from, -1);
+  const prevFrom = shift(from, -len);
   return AppDataSource.query(
     `WITH cur AS (
        SELECT sku,
@@ -180,15 +206,13 @@ export async function summaryByProduct(platform: string, days = 30): Promise<any
               sum(buyouts_count) AS buyouts_count,
               sum(views)         AS views
        FROM mp_funnel_daily
-       WHERE platform=$1 AND date > (now() - make_interval(days => $2::int))::date
+       WHERE platform=$1 AND date BETWEEN $2::date AND $3::date
        GROUP BY sku
      ),
      prev AS (
        SELECT sku, sum(orders_sum) AS orders_sum_prev
        FROM mp_funnel_daily
-       WHERE platform=$1
-         AND date > (now() - make_interval(days => ($2*2)::int))::date
-         AND date <= (now() - make_interval(days => $2::int))::date
+       WHERE platform=$1 AND date BETWEEN $4::date AND $5::date
        GROUP BY sku
      ),
      tot AS (SELECT NULLIF(sum(orders_sum),0) AS total FROM cur),
@@ -212,6 +236,6 @@ export async function summaryByProduct(platform: string, days = 30): Promise<any
        ORDER BY s.date DESC LIMIT 1
      ) w ON true
      ORDER BY c.orders_sum DESC NULLS LAST`,
-    [platform, d],
+    [platform, from, to, prevFrom, prevTo],
   );
 }
