@@ -123,6 +123,23 @@ export interface WbReportDetailRow {
   report_type: number;
 }
 
+/** Строка /api/v1/supplier/orders — заказ покупателя (для фактической СПП). */
+export interface WbOrderRow {
+  date: string;
+  lastChangeDate: string;
+  nmId: number;
+  srid: string;
+  gNumber: string;
+  totalPrice: number;       // цена до скидок
+  discountPercent: number;  // скидка продавца, %
+  spp: number;              // СПП, % (скидка постоянного покупателя)
+  finishedPrice: number;    // фактическая цена покупателя (с СПП)
+  priceWithDisc: number;    // цена продавца (после его скидки)
+  isCancel: boolean;
+  regionName?: string;
+  oblastOkrugName?: string;
+}
+
 interface WbFullStatsItem {
   advertId: number;
   views: number;
@@ -317,6 +334,40 @@ export class WbApiService {
     }
 
     return allRows;
+  }
+
+  /**
+   * GET /api/v1/supplier/orders — заказы покупателей (Statistics API).
+   * flag=0 → отдаёт заказы с lastChangeDate >= dateFrom, до 80k строк за ответ;
+   * пагинация курсором по max(lastChangeDate). Дедуп по srid.
+   */
+  async getOrders(dateFrom: string): Promise<WbOrderRow[]> {
+    const all: WbOrderRow[] = [];
+    const seen = new Set<string>();
+    let cursor = dateFrom;
+
+    for (let guard = 0; guard < 50; guard++) {
+      const url = `${WB_STATS_BASE_URL}/api/v1/supplier/orders?dateFrom=${encodeURIComponent(cursor)}&flag=0`;
+      const data = await this.request<WbOrderRow[]>(url, {}, 3);
+      if (!Array.isArray(data) || data.length === 0) break;
+
+      let added = 0;
+      let maxChange = cursor;
+      for (const row of data) {
+        const key = row.srid || `${row.gNumber}-${row.nmId}-${row.date}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          all.push(row);
+          added++;
+        }
+        if (row.lastChangeDate > maxChange) maxChange = row.lastChangeDate;
+      }
+      // конец: страница неполная, курсор не двинулся или ничего нового
+      if (data.length < 80000 || maxChange === cursor || added === 0) break;
+      cursor = maxChange;
+    }
+
+    return all;
   }
 
   /**

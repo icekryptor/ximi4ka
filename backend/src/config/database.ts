@@ -61,6 +61,7 @@ import { PriceSnapshot } from '../entities/PriceSnapshot';
 import { AlertState } from '../entities/AlertState';
 import { ContentPlanItem } from '../entities/ContentPlanItem';
 import { StylePattern } from '../entities/StylePattern';
+import { SppOrder } from '../entities/SppOrder';
 
 dotenv.config();
 
@@ -70,7 +71,7 @@ const databaseUrl = process.env.DATABASE_URL;
 
 const isDev = process.env.NODE_ENV !== 'production';
 
-const allEntities = [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, UnitEconomicsShare, User, DailySales, Employee, SalesChannel, QcChecklist, QcInspection, ProductionOrder, Board, Task, TaskComment, TaskTag, ChannelPreset, ContentUnit, ContentRubric, ContentPublication, OAuthToken, Department, DepartmentRole, RecurringTask, RecurringTaskReport, Project, ProjectMember, TaskDependency, TaskChecklistItem, TelegramChat, BankAccount, BankImport, ImportRule, BrandDoc, IcpSegment, StrategicTheme, Channel, ChannelBudget, ContentAsset, ContentMetricSnapshot, BankSyncConfig, BankSyncLog, AssemblyOperation, AppSetting, PriceSnapshot, AlertState, ContentPlanItem, StylePattern];
+const allEntities = [Transaction, Counterparty, Category, Component, ComponentPart, Kit, KitComponent, Supply, SupplyItem, MarketplaceSale, SkuMapping, WbAdStat, WbAdNote, WbFinancialStat, UnitEconomicsCalculation, UnitEconomicsShare, User, DailySales, Employee, SalesChannel, QcChecklist, QcInspection, ProductionOrder, Board, Task, TaskComment, TaskTag, ChannelPreset, ContentUnit, ContentRubric, ContentPublication, OAuthToken, Department, DepartmentRole, RecurringTask, RecurringTaskReport, Project, ProjectMember, TaskDependency, TaskChecklistItem, TelegramChat, BankAccount, BankImport, ImportRule, BrandDoc, IcpSegment, StrategicTheme, Channel, ChannelBudget, ContentAsset, ContentMetricSnapshot, BankSyncConfig, BankSyncLog, AssemblyOperation, AppSetting, PriceSnapshot, AlertState, ContentPlanItem, StylePattern, SppOrder];
 
 const dataSourceOptions = databaseUrl
   ? {

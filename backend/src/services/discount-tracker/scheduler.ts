@@ -1,25 +1,25 @@
 import cron from 'node-cron';
-import { runOnce } from './discount-tracker.service';
+import { syncWbOrders } from '../spp-orders/spp-orders.service';
 
-const CRON_SCHEDULE = '*/5 * * * *'; // каждые 5 мин (витрина); цена продавца кешируется на TTL
+// Фактическая СПП по заказам (WB) — 4×/день. Скрейп витрины отключён.
+const CRON_SCHEDULE = '0 */6 * * *';
 
 let started = false;
 
 export function startDiscountTrackerScheduler(): void {
   if (started) return;
   if (process.env.DISCOUNT_TRACKER_ENABLED === 'false') {
-    console.log('[discount-tracker] scheduler disabled via DISCOUNT_TRACKER_ENABLED=false');
+    console.log('[spp-orders] scheduler disabled via DISCOUNT_TRACKER_ENABLED=false');
     return;
   }
   cron.schedule(CRON_SCHEDULE, async () => {
-    console.log('[discount-tracker] cron tick starting');
     try {
-      const { snapshots, alerts } = await runOnce();
-      console.log(`[discount-tracker] cron tick complete: ${snapshots} snapshots, ${alerts} alerts`);
+      const { fetched, upserted } = await syncWbOrders(14);
+      console.log(`[spp-orders] cron tick complete: fetched ${fetched}, upserted ${upserted}`);
     } catch (e: any) {
-      console.error('[discount-tracker] cron tick failed:', e?.message || e);
+      console.error('[spp-orders] cron tick failed:', e?.message || e);
     }
   });
   started = true;
-  console.log(`[discount-tracker] scheduler started (cron: ${CRON_SCHEDULE})`);
+  console.log(`[spp-orders] scheduler started (cron: ${CRON_SCHEDULE})`);
 }

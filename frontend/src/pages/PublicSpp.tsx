@@ -1,66 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Percent } from 'lucide-react'
-import { fetchPublicSpp, PublicSppData, PriceLatestRow } from '../api/discountTracker'
-import { HourlyHeatmap } from '../components/discount/HourlyHeatmap'
+import { fetchPublicSpp, PublicSppData } from '../api/discountTracker'
+import { SppDailyView } from '../components/discount/SppDailyView'
 
-const REFRESH_MS = 5 * 60_000
-
-const fmtMoney = (v: number | null): string =>
-  v == null ? '—' : `${v.toLocaleString('ru-RU', { maximumFractionDigits: 0 })} ₽`
-
-const fmtPct = (v: number | null): string => (v == null ? '—' : `${(v * 100).toFixed(1)}%`)
-
-const pctColor = (v: number | null): string => {
-  if (v == null) return 'text-[#524667]'
-  const p = v * 100
-  if (p >= 10) return 'text-green-600'
-  if (p >= 5) return 'text-amber-500'
-  return 'text-red-600'
-}
+const REFRESH_MS = 30 * 60_000 // дневные данные — обновлять раз в 30 мин достаточно
 
 const fmtTime = (iso: string): string =>
   new Date(iso).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
-
-const LatestTable = ({ rows }: { rows: PriceLatestRow[] }) => (
-  <div className="overflow-x-auto">
-    <table className="min-w-full text-sm">
-      <thead>
-        <tr className="border-b border-[#e8e5ef] text-left text-[#524667]">
-          <th className="py-2 pr-4 font-semibold whitespace-nowrap">Платформа</th>
-          <th className="py-2 pr-4 font-semibold">Товар</th>
-          <th className="py-2 pr-4 font-semibold text-right whitespace-nowrap">Цена продавца</th>
-          <th className="py-2 pr-4 font-semibold text-right whitespace-nowrap">Витрина</th>
-          <th className="py-2 pr-4 font-semibold text-right whitespace-nowrap">Субсидия площадки</th>
-          <th className="py-2 font-semibold text-right whitespace-nowrap">СПП / соинвест</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map(r => (
-          <tr key={`${r.platform}:${r.sku}`} className="border-b border-[#e8e5ef]/60 last:border-0">
-            <td className="py-2 pr-4">
-              <span className="inline-block rounded-md bg-[#eeebf3] px-2 py-0.5 text-xs font-semibold text-[#6703ff]">
-                {r.platform.toUpperCase()}
-              </span>
-            </td>
-            <td className="py-2 pr-4">
-              <span className="block max-w-[280px] truncate text-[#1c1528]" title={r.product_name}>
-                {r.product_name}
-              </span>
-              <span className="block font-mono text-[10px] text-[#524667]/70">{r.sku}</span>
-            </td>
-            <td className="py-2 pr-4 text-right tabular-nums text-[#1c1528]">{fmtMoney(r.seller_price)}</td>
-            <td className="py-2 pr-4 text-right tabular-nums text-[#1c1528]">{fmtMoney(r.shelf_price)}</td>
-            <td className="py-2 pr-4 text-right tabular-nums text-[#1c1528]">{fmtMoney(r.platform_disc)}</td>
-            <td className={`py-2 text-right tabular-nums font-bold ${pctColor(r.platform_pct)}`}>
-              {fmtPct(r.platform_pct)}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-)
 
 const PublicSpp = () => {
   const { token } = useParams<{ token: string }>()
@@ -77,7 +24,7 @@ const PublicSpp = () => {
     let alive = true
     const load = async () => {
       try {
-        const result = await fetchPublicSpp(token)
+        const result = await fetchPublicSpp(token, 30)
         if (alive) {
           setData(result)
           setError(null)
@@ -121,30 +68,25 @@ const PublicSpp = () => {
 
   return (
     <div className="min-h-screen bg-[#eeebf3] py-8 px-4">
-      <div className="max-w-5xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3">
             <Percent className="h-7 w-7 text-[#836efe]" />
-            <h1 className="text-2xl font-bold text-[#1c1528]">СПП / соинвест — Ximi4ka</h1>
+            <h1 className="text-2xl font-bold text-[#1c1528]">Фактическая СПП — Ximi4ka</h1>
           </div>
-          <div className="text-sm text-[#524667]">
-            Обновлено {fmtTime(data.generated_at)} · автообновление каждые 5 мин
-          </div>
+          <div className="text-sm text-[#524667]">Обновлено {fmtTime(data.generated_at)}</div>
         </div>
 
         <div className="bg-white rounded-3xl shadow-sm border border-[#e8e5ef] p-6 space-y-3">
-          <h2 className="text-sm font-semibold text-[#1c1528]">Текущие значения</h2>
-          <LatestTable rows={data.latest} />
+          <div>
+            <h2 className="text-sm font-semibold text-[#1c1528]">СПП по фактическим заказам (30 дней)</h2>
+            <p className="mt-1 text-xs text-[#524667]">
+              Расчёт по реальным выкупам: разница между ценой продавца и ценой, которую заплатил покупатель. Средняя,
+              медиана и разброс (min–max) — что реально видят покупатели.
+            </p>
+          </div>
+          <SppDailyView rows={data.daily} platform="wb" />
         </div>
-
-        <div className="bg-white rounded-3xl shadow-sm border border-[#e8e5ef] p-6 space-y-3">
-          <h2 className="text-sm font-semibold text-[#1c1528]">Почасовое среднее СПП (24 ч)</h2>
-          <HourlyHeatmap rows={data.hourly} />
-        </div>
-
-        <p className="text-center text-xs text-[#524667]/70">
-          Витрина снимается каждые 5 минут. СПП = 1 − витрина / цена продавца.
-        </p>
       </div>
     </div>
   )

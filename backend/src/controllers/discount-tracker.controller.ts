@@ -1,6 +1,18 @@
 import { Request, Response } from 'express';
 import { AppDataSource } from '../config/database';
-import { runOnce } from '../services/discount-tracker/discount-tracker.service';
+import { syncWbOrders, dailyRows, orderRows } from '../services/spp-orders/spp-orders.service';
+
+/** Приводим numeric-поля дневного агрегата к числам. */
+const mapDaily = (r: any) => ({
+  ...r,
+  orders_count: Number(r.orders_count),
+  avg_spp_pct: num(r.avg_spp_pct),
+  median_spp_pct: num(r.median_spp_pct),
+  min_spp_pct: num(r.min_spp_pct),
+  max_spp_pct: num(r.max_spp_pct),
+  avg_buyer_price: num(r.avg_buyer_price),
+  avg_seller_price: num(r.avg_seller_price),
+});
 
 const num = (v: unknown): number | null => (v == null ? null : Number(v));
 
@@ -101,15 +113,58 @@ export const discountTrackerController = {
     if (!expected) return res.status(503).json({ error: 'Публичный доступ не настроен' });
     if (!got || got !== expected) return res.status(403).json({ error: 'Доступ запрещён' });
     try {
-      const hours = Number((req.query.hours as string) || '24');
-      const [latestAll, hourlyAll] = await Promise.all([fetchLatestRows(), fetchHourlyRows(hours)]);
-      // Публичная страница для менеджера ВБ — только WB, без Ozon.
-      const latest = latestAll.filter((r) => r.platform === 'wb');
-      const hourly = hourlyAll.filter((r) => r.platform === 'wb');
-      res.json({ latest, hourly, generated_at: new Date().toISOString() });
+      // Фактическая СПП по заказам, дневные агрегаты, только WB.
+      const days = Number((req.query.days as string) || '30');
+      const daily = (await dailyRows('wb', days)).map(mapDaily);
+      res.json({ daily, generated_at: new Date().toISOString() });
     } catch (e: any) {
       console.error('[discount-tracker.publicShare]', e?.message || e);
       res.status(500).json({ error: 'Ошибка загрузки данных' });
+    }
+  },
+
+  /** Дневные агрегаты фактической СПП по заказам (v_spp_daily). */
+  async sppDaily(req: Request, res: Response) {
+    try {
+      const platform = (req.query.platform as string) || null;
+      const days = Number((req.query.days as string) || '30');
+      const rows = (await dailyRows(platform, days)).map(mapDaily);
+      res.json(rows);
+    } catch (e: any) {
+      console.error('[discount-tracker.sppDaily]', e?.message || e);
+      res.status(500).json({ error: 'Ошибка загрузки дневной СПП' });
+    }
+  },
+
+  /** Сырьё по заказам за день (распределение СПП). */
+  async sppOrders(req: Request, res: Response) {
+    try {
+      const { platform, sku, date } = req.query as { platform?: string; sku?: string; date?: string };
+      if (!platform || !sku || !date) {
+        return res.status(400).json({ error: 'platform, sku и date обязательны' });
+      }
+      const rows = (await orderRows(platform, sku, date)).map((r: any) => ({
+        ...r,
+        seller_price: num(r.seller_price),
+        buyer_price: num(r.buyer_price),
+        spp_pct: num(r.spp_pct),
+      }));
+      res.json(rows);
+    } catch (e: any) {
+      console.error('[discount-tracker.sppOrders]', e?.message || e);
+      res.status(500).json({ error: 'Ошибка загрузки заказов' });
+    }
+  },
+
+  /** Ручной синк фактической СПП по заказам (WB). */
+  async sppSync(req: Request, res: Response) {
+    try {
+      const days = Number((req.body?.days as number) || 14);
+      const result = await syncWbOrders(days);
+      res.json({ ok: true, ...result });
+    } catch (e: any) {
+      console.error('[discount-tracker.sppSync]', e?.message || e);
+      res.status(500).json({ error: String(e?.message || 'Ошибка синка заказов') });
     }
   },
 
@@ -168,14 +223,4 @@ export const discountTrackerController = {
     }
   },
 
-  /** Ручной запуск прохода трекера */
-  async run(_req: Request, res: Response) {
-    try {
-      const result = await runOnce();
-      res.json({ ok: true, ...result });
-    } catch (e: any) {
-      console.error('[discount-tracker.run]', e?.message || e);
-      res.status(500).json({ error: String(e?.message || 'Ошибка запуска трекера скидок') });
-    }
-  },
 };

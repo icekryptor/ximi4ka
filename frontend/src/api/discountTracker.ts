@@ -49,10 +49,35 @@ export interface PriceHourlyRow {
   product_name: string
 }
 
-/** Ответ GET /public/spp/:token */
+/** Строка GET /discount-tracker/spp/daily — дневной агрегат фактической СПП по заказам */
+export interface SppDailyRow {
+  platform: DiscountPlatform
+  nm_id: string
+  order_date: string
+  orders_count: number
+  avg_spp_pct: number | null
+  median_spp_pct: number | null
+  min_spp_pct: number | null
+  max_spp_pct: number | null
+  avg_buyer_price: number | null
+  avg_seller_price: number | null
+  product_name: string
+}
+
+/** Строка GET /discount-tracker/spp/orders — заказ (распределение) */
+export interface SppOrderRow {
+  order_id: string
+  order_date: string
+  seller_price: number | null
+  buyer_price: number | null
+  spp_pct: number | null
+  region: string | null
+  is_cancel: boolean
+}
+
+/** Ответ GET /public/spp/:token — дневная фактическая СПП, только WB */
 export interface PublicSppData {
-  latest: PriceLatestRow[]
-  hourly: PriceHourlyRow[]
+  daily: SppDailyRow[]
   generated_at: string
 }
 
@@ -88,8 +113,21 @@ export const discountTrackerApi = {
     const r = await apiClient.get<DiscountAlertRow[]>('/discount-tracker/alerts')
     return r.data
   },
-  run: async (): Promise<DiscountRunResult> => {
-    const r = await apiClient.post<DiscountRunResult>('/discount-tracker/run')
+  // Фактическая СПП по заказам (основной источник)
+  sppDaily: async (platform?: DiscountPlatform, days = 30): Promise<SppDailyRow[]> => {
+    const r = await apiClient.get<SppDailyRow[]>('/discount-tracker/spp/daily', {
+      params: { ...(platform ? { platform } : {}), days },
+    })
+    return r.data
+  },
+  sppOrders: async (platform: DiscountPlatform, sku: string, date: string): Promise<SppOrderRow[]> => {
+    const r = await apiClient.get<SppOrderRow[]>('/discount-tracker/spp/orders', {
+      params: { platform, sku, date },
+    })
+    return r.data
+  },
+  sppSync: async (days = 14): Promise<{ ok: boolean; fetched: number; upserted: number }> => {
+    const r = await apiClient.post('/discount-tracker/spp/sync', { days })
     return r.data
   },
 }
@@ -99,9 +137,9 @@ export const discountTrackerApi = {
  * (иначе 401/403 дёрнул бы auto-logout и редирект на /login).
  * Бэкенд отдаёт 403 (не 401) на неверный токен, но подстрахуемся всё равно.
  */
-export async function fetchPublicSpp(token: string, hours = 24 * 14): Promise<PublicSppData> {
+export async function fetchPublicSpp(token: string, days = 30): Promise<PublicSppData> {
   const base = import.meta.env.VITE_API_URL || '/api'
-  const r = await fetch(`${base}/public/spp/${encodeURIComponent(token)}?hours=${hours}`, {
+  const r = await fetch(`${base}/public/spp/${encodeURIComponent(token)}?days=${days}`, {
     headers: { Accept: 'application/json' },
   })
   if (!r.ok) {
