@@ -192,7 +192,12 @@ export class WbApiService {
     this.lastRequestTime = Date.now();
   }
 
-  private async request<T>(url: string, options: RequestInit = {}, retries = 3): Promise<T> {
+  private async request<T>(
+    url: string,
+    options: RequestInit = {},
+    retries = 3,
+    rate429Ms?: number,
+  ): Promise<T> {
     await this.throttle();
 
     if (!this.token) {
@@ -210,8 +215,9 @@ export class WbApiService {
         const response = await fetch(url, { ...options, headers });
 
         if (response.status === 429) {
-          // Rate limited — wait and retry
-          const waitMs = Math.min(1000 * Math.pow(2, attempt), 10000);
+          // Rate limited — wait and retry. Некоторые эндпоинты (Statistics /orders)
+          // лимитированы 1 req/min → передаём rate429Ms=60000.
+          const waitMs = rate429Ms ?? Math.min(1000 * Math.pow(2, attempt), 10000);
           console.warn(`WB API rate limited (429), waiting ${waitMs}ms (attempt ${attempt}/${retries})`);
           await new Promise(resolve => setTimeout(resolve, waitMs));
           continue;
@@ -348,7 +354,8 @@ export class WbApiService {
 
     for (let guard = 0; guard < 50; guard++) {
       const url = `${WB_STATS_BASE_URL}/api/v1/supplier/orders?dateFrom=${encodeURIComponent(cursor)}&flag=0`;
-      const data = await this.request<WbOrderRow[]>(url, {}, 3);
+      // Statistics /orders лимит 1 req/min → длинный бэкофф на 429
+      const data = await this.request<WbOrderRow[]>(url, {}, 4, 65_000);
       if (!Array.isArray(data) || data.length === 0) break;
 
       let added = 0;

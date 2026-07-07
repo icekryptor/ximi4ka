@@ -126,7 +126,7 @@ export const discountTrackerApi = {
     })
     return r.data
   },
-  sppSync: async (days = 14): Promise<{ ok: boolean; fetched: number; upserted: number }> => {
+  sppSync: async (days = 14): Promise<{ ok: boolean; started: boolean }> => {
     const r = await apiClient.post('/discount-tracker/spp/sync', { days })
     return r.data
   },

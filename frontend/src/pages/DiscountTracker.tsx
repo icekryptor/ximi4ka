@@ -38,12 +38,15 @@ const DiscountTracker = () => {
   const handleSync = async () => {
     setSyncing(true)
     try {
-      const r = await discountTrackerApi.sppSync(14)
-      toast.success(`Синхронизировано: заказов ${r.fetched}, записей ${r.upserted}`)
-      await loadData()
+      await discountTrackerApi.sppSync(14)
+      toast.success('Синхронизация запущена — данные обновятся через ~минуту')
+      // WB /orders лимит 1 req/min — подтянем результат позже
+      setTimeout(() => {
+        loadData()
+        setSyncing(false)
+      }, 75_000)
     } catch (err: any) {
       toast.error('Ошибка синка: ' + (err.response?.data?.error || err.message))
-    } finally {
       setSyncing(false)
     }
   }

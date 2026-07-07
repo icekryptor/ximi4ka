@@ -156,16 +156,17 @@ export const discountTrackerController = {
     }
   },
 
-  /** Ручной синк фактической СПП по заказам (WB). */
+  /**
+   * Ручной синк фактической СПП по заказам (WB). WB Statistics /orders
+   * лимитирован 1 req/min → синк может занять больше 30с (таймаут axios).
+   * Поэтому запускаем в фоне и сразу отвечаем; данные подтянутся через ~минуту.
+   */
   async sppSync(req: Request, res: Response) {
-    try {
-      const days = Number((req.body?.days as number) || 14);
-      const result = await syncWbOrders(days);
-      res.json({ ok: true, ...result });
-    } catch (e: any) {
-      console.error('[discount-tracker.sppSync]', e?.message || e);
-      res.status(500).json({ error: String(e?.message || 'Ошибка синка заказов') });
-    }
+    const days = Number((req.body?.days as number) || 14);
+    syncWbOrders(days)
+      .then((r) => console.log('[spp-orders] manual sync done:', r))
+      .catch((e) => console.error('[spp-orders] manual sync failed:', e?.message || e));
+    res.json({ ok: true, started: true });
   },
 
   /** История снапшотов по SKU за N часов (по умолчанию 48), по возрастанию времени */
