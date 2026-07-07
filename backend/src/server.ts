@@ -66,6 +66,8 @@ import { unitEconomicsController } from './controllers/unit-economics.controller
 import { startPublishWorker } from './services/publish-worker';
 import { startBankSyncScheduler } from './services/bank-sync/scheduler';
 import { startDiscountTrackerScheduler } from './services/discount-tracker/scheduler';
+import settingsRoutes from './routes/settings.routes';
+import { loadWbApiTokenFromDb } from './services/settings.service';
 import { recipeEngine } from './services/recipe-engine';
 
 // Middleware
@@ -163,6 +165,7 @@ app.use('/api/bank-accounts', authMiddleware, bankAccountRoutes);
 app.use('/api/bank-imports', authMiddleware, bankImportRoutes);
 app.use('/api/bank-sync', authMiddleware, bankSyncRoutes);
 app.use('/api/discount-tracker', authMiddleware, discountTrackerRoutes);
+app.use('/api/settings', authMiddleware, settingsRoutes);
 app.use('/api/import-rules', authMiddleware, importRuleRoutes);
 app.use('/api/cashflow', authMiddleware, cashflowRoutes);
 app.use('/api/voiceover', authMiddleware, voiceoverRoutes);
@@ -213,6 +216,9 @@ async function bootstrap() {
   // Eager-load recipes so YAML parse errors surface at boot (not on first API call)
   // and operators can verify deploy via "[recipe-engine] loaded …" lines in logs.
   recipeEngine.list();
+
+  // WB-токен из БД → работающий сервис (один токен на все WB-фичи, переживает редеплой)
+  await loadWbApiTokenFromDb();
 
   startPublishWorker();
 

@@ -39,6 +39,7 @@ const Departments = lazy(() => import('./pages/Departments'))
 const DepartmentDetail = lazy(() => import('./pages/DepartmentDetail'))
 const PublicUnitEconomics = lazy(() => import('./pages/PublicUnitEconomics'))
 const PublicSpp = lazy(() => import('./pages/PublicSpp'))
+const Settings = lazy(() => import('./pages/Settings'))
 const RecurringTasks = lazy(() => import('./pages/RecurringTasks'))
 const RecurringTaskDetail = lazy(() => import('./pages/RecurringTaskDetail'))
 const ContentBank = lazy(() => import('./pages/ContentBank'))
@@ -150,6 +151,7 @@ function App() {
                                 <Route path="/marketing/content-engine" element={<ContentEngineHarness />} />
                                 <Route path="/marketing/analytics" element={<MarketingAnalytics />} />
                                 <Route path="/settings/channels" element={<PublishChannels />} />
+                                <Route path="/settings/integrations" element={<Settings />} />
                                 {/* Маркетплейсы */}
                                 <Route path="/marketplace" element={<Marketplace />} />
                                 <Route path="/wb-ads" element={<WbAdsAnalytics />} />

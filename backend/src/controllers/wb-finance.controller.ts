@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { AppDataSource } from '../config/database';
 import { WbFinancialStat } from '../entities/WbFinancialStat';
 import { wbApiService } from '../services/wb-api.service';
+import { saveWbApiToken } from '../services/settings.service';
 import { round } from '../utils/math';
 
 const repo = () => AppDataSource.getRepository(WbFinancialStat);
@@ -363,7 +364,7 @@ export const saveToken = async (req: Request, res: Response) => {
     if (!token || typeof token !== 'string' || token.trim().length === 0) {
       return res.status(400).json({ error: 'Токен не может быть пустым' });
     }
-    wbApiService.setToken(token.trim());
+    await saveWbApiToken(token.trim()); // персист в БД + применить (один токен на все WB-фичи)
     res.json({
       success: true,
       hasToken: true,

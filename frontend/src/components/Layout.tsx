@@ -210,6 +210,14 @@ const IconEmployees = () => (
   </svg>
 )
 
+const IconIntegrations = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4" />
+    <path d="m21 2-9.6 9.6" />
+    <circle cx="7.5" cy="15.5" r="5.5" />
+  </svg>
+)
+
 const IconSalesChannels = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="18" cy="5" r="3" />
@@ -394,6 +402,7 @@ const NAV_GROUPS: NavGroup[] = [
     id: 'settings',
     label: 'Настройки',
     items: [
+      { type: 'link', name: 'Интеграции (API)', href: '/settings/integrations', icon: IconIntegrations },
       { type: 'link', name: 'Сотрудники', href: '/employees', icon: IconEmployees },
       { type: 'link', name: 'Каналы продаж', href: '/sales-channels', icon: IconSalesChannels },
       { type: 'link', name: 'Каналы публикации', href: '/settings/channels', icon: IconMarketing },

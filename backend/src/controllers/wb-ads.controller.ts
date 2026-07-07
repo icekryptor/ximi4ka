@@ -3,6 +3,7 @@ import { AppDataSource } from '../config/database';
 import { WbAdStat } from '../entities/WbAdStat';
 import { WbAdNote } from '../entities/WbAdNote';
 import { wbApiService } from '../services/wb-api.service';
+import { saveWbApiToken } from '../services/settings.service';
 import { round } from '../utils/math';
 
 const statsRepo = () => AppDataSource.getRepository(WbAdStat);
@@ -392,7 +393,7 @@ export const saveToken = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Токен не может быть пустым' });
     }
 
-    wbApiService.setToken(token.trim());
+    await saveWbApiToken(token.trim()); // персист в БД + применить (один токен на все WB-фичи)
 
     res.json({
       success: true,
