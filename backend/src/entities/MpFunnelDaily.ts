@@ -59,6 +59,9 @@ export class MpFunnelDaily {
   @Column({ type: 'numeric', nullable: true })
   stock_end: string | null;
 
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  product_name: string | null;
+
   @Column({ type: 'jsonb', nullable: true })
   raw: unknown;
 

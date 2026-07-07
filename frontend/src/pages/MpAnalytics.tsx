@@ -126,11 +126,10 @@ const MpAnalytics = () => {
           WB
         </button>
         <button
-          disabled
-          title="Скоро"
-          className="px-4 py-2 rounded-xl text-sm font-medium bg-card border border-dashed border-brand-border text-brand-text-secondary/50 cursor-not-allowed"
+          onClick={() => setPlatform('ozon')}
+          className={`px-4 py-2 rounded-xl text-sm font-medium ${platform === 'ozon' ? 'bg-primary-500 text-white' : 'bg-card border border-brand-border text-brand-text-secondary'}`}
         >
-          Ozon (скоро)
+          Ozon
         </button>
         <span className="mx-2 h-5 w-px bg-brand-border" />
         {PERIODS.map((p) => (

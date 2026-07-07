@@ -25,6 +25,7 @@ type FunnelRow = {
   buyout_percent: number | null;
   avg_price: number | null;
   stock_end: number | null;
+  product_name: string | null;
   raw: unknown;
 };
 
@@ -48,6 +49,7 @@ function mapWbPoint(sku: string, p: WbNmHistoryPoint): FunnelRow {
     buyout_percent: n(p.buyoutPercent),
     avg_price: n(p.avgPriceRub),
     stock_end: null,
+    product_name: null,
     raw: p,
   };
 }
@@ -56,12 +58,12 @@ async function upsert(rows: FunnelRow[]): Promise<number> {
   const clean = rows.filter((r) => r.date && r.sku);
   for (let i = 0; i < clean.length; i += INSERT_CHUNK) {
     const chunk = clean.slice(i, i + INSERT_CHUNK);
-    const cols = 17;
+    const cols = 18;
     const values: string[] = [];
     const params: unknown[] = [];
     chunk.forEach((r, idx) => {
       const b = idx * cols;
-      // 16 обычных плейсхолдеров + 17-й (raw) с ::jsonb
+      // 17 обычных плейсхолдеров + 18-й (raw) с ::jsonb
       const ph = Array.from({ length: cols - 1 }, (_, k) => `$${b + k + 1}`);
       ph.push(`$${b + cols}::jsonb`);
       values.push('(' + ph.join(',') + ')');
@@ -69,6 +71,7 @@ async function upsert(rows: FunnelRow[]): Promise<number> {
         r.platform, r.date, r.sku, r.views, r.cart, r.orders_count, r.orders_sum,
         r.buyouts_count, r.buyouts_sum, r.cancels_count, r.returns_count,
         r.cart_conv, r.order_conv, r.buyout_percent, r.avg_price, r.stock_end,
+        r.product_name,
         JSON.stringify(r.raw ?? null),
       );
     });
@@ -76,7 +79,7 @@ async function upsert(rows: FunnelRow[]): Promise<number> {
       `INSERT INTO mp_funnel_daily
          (platform, date, sku, views, cart, orders_count, orders_sum,
           buyouts_count, buyouts_sum, cancels_count, returns_count,
-          cart_conv, order_conv, buyout_percent, avg_price, stock_end, raw)
+          cart_conv, order_conv, buyout_percent, avg_price, stock_end, product_name, raw)
        VALUES ${values.join(',')}
        ON CONFLICT (platform, sku, date) DO UPDATE SET
          views=EXCLUDED.views, cart=EXCLUDED.cart,
@@ -85,7 +88,9 @@ async function upsert(rows: FunnelRow[]): Promise<number> {
          cancels_count=EXCLUDED.cancels_count, returns_count=EXCLUDED.returns_count,
          cart_conv=EXCLUDED.cart_conv, order_conv=EXCLUDED.order_conv,
          buyout_percent=EXCLUDED.buyout_percent, avg_price=EXCLUDED.avg_price,
-         stock_end=EXCLUDED.stock_end, raw=EXCLUDED.raw, synced_at=now()`,
+         stock_end=EXCLUDED.stock_end,
+         product_name=COALESCE(EXCLUDED.product_name, mp_funnel_daily.product_name),
+         raw=EXCLUDED.raw, synced_at=now()`,
       params,
     );
   }
@@ -114,6 +119,7 @@ export async function importFunnelRows(
     buyout_percent: r.buyout_percent ?? null,
     avg_price: r.avg_price ?? null,
     stock_end: r.stock_end ?? null,
+    product_name: (r as any).product_name ?? null,
     raw: r.raw ?? null,
   }));
   return upsert(rows);
@@ -148,7 +154,7 @@ export async function syncWbFunnel(days = 30): Promise<{ items: number; upserted
 export async function dailyRows(platform: string, days = 30): Promise<any[]> {
   const d = Math.max(1, Math.min(days, 400));
   return AppDataSource.query(
-    `SELECT f.*, COALESCE(w.product_name, f.sku) AS product_name
+    `SELECT f.*, COALESCE(f.product_name, w.product_name, f.sku) AS product_name
      FROM mp_funnel_daily f
      LEFT JOIN LATERAL (
        SELECT s.product_name FROM wb_financial_stats s
@@ -185,15 +191,20 @@ export async function summaryByProduct(platform: string, days = 30): Promise<any
          AND date <= (now() - make_interval(days => $2::int))::date
        GROUP BY sku
      ),
-     tot AS (SELECT NULLIF(sum(orders_sum),0) AS total FROM cur)
+     tot AS (SELECT NULLIF(sum(orders_sum),0) AS total FROM cur),
+     nm AS (
+       SELECT sku, max(product_name) AS product_name FROM mp_funnel_daily
+       WHERE platform=$1 AND product_name IS NOT NULL GROUP BY sku
+     )
      SELECT c.sku,
-            COALESCE(w.product_name, c.sku) AS product_name,
+            COALESCE(nm.product_name, w.product_name, c.sku) AS product_name,
             c.orders_sum, c.orders_count, c.buyouts_sum, c.buyouts_count, c.views,
             round((c.orders_sum / (SELECT total FROM tot) * 100)::numeric, 1) AS share_pct,
             p.orders_sum_prev,
             round(((c.orders_sum - COALESCE(p.orders_sum_prev,0)))::numeric, 0) AS orders_sum_delta
      FROM cur c
      LEFT JOIN prev p ON p.sku = c.sku
+     LEFT JOIN nm ON nm.sku = c.sku
      LEFT JOIN LATERAL (
        SELECT s.product_name FROM wb_financial_stats s
        WHERE $1='wb' AND s.nm_id::text = c.sku
