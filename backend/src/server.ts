@@ -68,6 +68,8 @@ import { startBankSyncScheduler } from './services/bank-sync/scheduler';
 import { startDiscountTrackerScheduler } from './services/discount-tracker/scheduler';
 import settingsRoutes from './routes/settings.routes';
 import { loadWbApiTokenFromDb } from './services/settings.service';
+import mpAnalyticsRoutes from './routes/mp-analytics.routes';
+import { startMpAnalyticsScheduler } from './services/mp-analytics/scheduler';
 import { recipeEngine } from './services/recipe-engine';
 
 // Middleware
@@ -166,6 +168,7 @@ app.use('/api/bank-imports', authMiddleware, bankImportRoutes);
 app.use('/api/bank-sync', authMiddleware, bankSyncRoutes);
 app.use('/api/discount-tracker', authMiddleware, discountTrackerRoutes);
 app.use('/api/settings', authMiddleware, settingsRoutes);
+app.use('/api/mp-analytics', authMiddleware, mpAnalyticsRoutes);
 app.use('/api/import-rules', authMiddleware, importRuleRoutes);
 app.use('/api/cashflow', authMiddleware, cashflowRoutes);
 app.use('/api/voiceover', authMiddleware, voiceoverRoutes);
@@ -241,6 +244,7 @@ async function bootstrap() {
 
     startBankSyncScheduler();
     startDiscountTrackerScheduler();
+    startMpAnalyticsScheduler();
   });
 }
 

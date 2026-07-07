@@ -7,6 +7,7 @@
 
 const WB_ADV_BASE_URL = 'https://advert-api.wildberries.ru';
 const WB_STATS_BASE_URL = 'https://statistics-api.wildberries.ru';
+const WB_ANALYTICS_BASE_URL = 'https://seller-analytics-api.wildberries.ru';
 
 interface WbCampaign {
   advertId: number;
@@ -138,6 +139,29 @@ export interface WbOrderRow {
   isCancel: boolean;
   regionName?: string;
   oblastOkrugName?: string;
+}
+
+/** Точка истории nm-report/detail/history — день × артикул (воронка + продажи). */
+export interface WbNmHistoryPoint {
+  dt: string;
+  openCardCount?: number;      // показы/переходы в карточку
+  addToCartCount?: number;     // положили в корзину
+  ordersCount?: number;
+  ordersSumRub?: number;
+  buyoutsCount?: number;
+  buyoutsSumRub?: number;
+  cancelCount?: number;
+  cancelSumRub?: number;
+  addToCartConversion?: number;
+  cartToOrderConversion?: number;
+  buyoutPercent?: number;
+  avgPriceRub?: number;
+}
+export interface WbNmHistoryItem {
+  nmID: number;
+  vendorCode?: string;
+  imtName?: string;
+  history: WbNmHistoryPoint[];
 }
 
 interface WbFullStatsItem {
@@ -375,6 +399,32 @@ export class WbApiService {
     }
 
     return all;
+  }
+
+  /**
+   * POST /api/v2/nm-report/detail/history — дневная воронка+продажи по артикулам
+   * (seller-analytics-api, лимит ~3 req/min). Макс 20 nmID на запрос → чанкуем.
+   */
+  async getNmReportHistory(nmIds: number[], begin: string, end: string): Promise<WbNmHistoryItem[]> {
+    const out: WbNmHistoryItem[] = [];
+    for (let i = 0; i < nmIds.length; i += 20) {
+      const chunk = nmIds.slice(i, i + 20);
+      const body = JSON.stringify({
+        nmIDs: chunk,
+        period: { begin, end },
+        timezone: 'Europe/Moscow',
+        aggregationLevel: 'day',
+      });
+      const url = `${WB_ANALYTICS_BASE_URL}/api/v2/nm-report/detail/history`;
+      const resp = await this.request<{ data?: WbNmHistoryItem[] }>(
+        url,
+        { method: 'POST', body },
+        4,
+        25_000,
+      );
+      if (resp?.data?.length) out.push(...resp.data);
+    }
+    return out;
   }
 
   /**
