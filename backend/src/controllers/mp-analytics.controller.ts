@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { syncWbFunnel, dailyRows, summaryByProduct } from '../services/mp-analytics/mp-analytics.service';
+import { syncWbFunnel, dailyRows, summaryByProduct, importFunnelRows } from '../services/mp-analytics/mp-analytics.service';
 
 const num = (v: unknown): number | null => (v == null ? null : Number(v));
 const NUM_FIELDS = [
@@ -35,6 +35,24 @@ export const mpAnalyticsController = {
     } catch (e: any) {
       console.error('[mp-analytics.summary]', e?.message || e);
       res.status(500).json({ error: 'Ошибка загрузки сводки' });
+    }
+  },
+
+  /** Импорт готовых строк из отчёта (бэкофилл из xlsx). */
+  async import(req: Request, res: Response) {
+    try {
+      const { platform, rows } = req.body as {
+        platform?: 'wb' | 'ozon';
+        rows?: Array<{ date: string; sku: string } & Record<string, number | null>>;
+      };
+      if ((platform !== 'wb' && platform !== 'ozon') || !Array.isArray(rows) || !rows.length) {
+        return res.status(400).json({ error: 'Нужны platform (wb|ozon) и непустой rows[]' });
+      }
+      const upserted = await importFunnelRows(platform, rows);
+      res.json({ ok: true, upserted });
+    } catch (e: any) {
+      console.error('[mp-analytics.import]', e?.message || e);
+      res.status(500).json({ error: String(e?.message || 'Ошибка импорта') });
     }
   },
 

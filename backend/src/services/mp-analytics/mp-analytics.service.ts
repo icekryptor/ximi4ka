@@ -92,6 +92,33 @@ async function upsert(rows: FunnelRow[]): Promise<number> {
   return clean.length;
 }
 
+/** Импорт готовых строк (бэкофилл из xlsx-отчёта, минуя API). */
+export async function importFunnelRows(
+  platform: 'wb' | 'ozon',
+  input: Array<Partial<FunnelRow> & { date: string; sku: string }>,
+): Promise<number> {
+  const rows: FunnelRow[] = input.map((r) => ({
+    platform,
+    date: String(r.date).slice(0, 10),
+    sku: String(r.sku),
+    views: r.views ?? null,
+    cart: r.cart ?? null,
+    orders_count: r.orders_count ?? null,
+    orders_sum: r.orders_sum ?? null,
+    buyouts_count: r.buyouts_count ?? null,
+    buyouts_sum: r.buyouts_sum ?? null,
+    cancels_count: r.cancels_count ?? null,
+    returns_count: r.returns_count ?? null,
+    cart_conv: r.cart_conv ?? null,
+    order_conv: r.order_conv ?? null,
+    buyout_percent: r.buyout_percent ?? null,
+    avg_price: r.avg_price ?? null,
+    stock_end: r.stock_end ?? null,
+    raw: r.raw ?? null,
+  }));
+  return upsert(rows);
+}
+
 /** nmId'ы, по которым тянем аналитику (все известные из финстата). */
 async function wbNmIds(): Promise<number[]> {
   const rows = await AppDataSource.query(`SELECT DISTINCT nm_id FROM wb_financial_stats`);
