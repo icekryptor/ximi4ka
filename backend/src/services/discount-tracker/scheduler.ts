@@ -1,8 +1,10 @@
 import cron from 'node-cron';
 import { syncWbOrders } from '../spp-orders/spp-orders.service';
 
-// Фактическая СПП по заказам (WB) — 4×/день. Скрейп витрины отключён.
-const CRON_SCHEDULE = '0 */6 * * *';
+// Фактическая СПП по заказам (WB) — раз в день (05:00 UTC ≈ 08:00 МСК).
+// Один запрос /orders за прогон отдаёт все заказы за окно → раскладываем по дням.
+// Лимит WB 1 req/min при суточном сборе неактуален.
+const CRON_SCHEDULE = '0 5 * * *';
 
 let started = false;
 
