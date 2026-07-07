@@ -31,7 +31,7 @@ type FunnelRow = {
 
 const n = (v: unknown): number | null => (v == null || v === '' ? null : Number(v));
 
-function mapWbPoint(sku: string, p: WbNmHistoryPoint): FunnelRow {
+function mapWbPoint(sku: string, name: string | null, p: WbNmHistoryPoint): FunnelRow {
   return {
     platform: 'wb',
     date: (p.dt || '').slice(0, 10),
@@ -49,7 +49,7 @@ function mapWbPoint(sku: string, p: WbNmHistoryPoint): FunnelRow {
     buyout_percent: n(p.buyoutPercent),
     avg_price: n(p.avgPriceRub),
     stock_end: null,
-    product_name: null,
+    product_name: name,
     raw: p,
   };
 }
@@ -143,7 +143,8 @@ export async function syncWbFunnel(days = 30): Promise<{ items: number; upserted
   const items = await wbApiService.getNmReportHistory(nmIds, fmt(begin), fmt(end));
   const rows: FunnelRow[] = [];
   for (const it of items) {
-    for (const p of it.history || []) rows.push(mapWbPoint(String(it.nmID), p));
+    const name = it.imtName || it.vendorCode || null;
+    for (const p of it.history || []) rows.push(mapWbPoint(String(it.nmID), name, p));
   }
   const upserted = rows.length ? await upsert(rows) : 0;
   console.log(`[mp-analytics] WB funnel: items ${items.length}, upserted ${upserted}`);
@@ -176,17 +177,15 @@ function resolveRange(opts: RangeOpts): { from: string; to: string } {
 /** Дневная таймсерия (platform, период) + название товара. */
 export async function dailyRows(platform: string, opts: RangeOpts = {}): Promise<any[]> {
   const { from, to } = resolveRange(opts);
+  // Только нужные колонки (без raw/id/synced_at) — компактный payload.
   return AppDataSource.query(
-    `SELECT f.*, COALESCE(f.product_name, w.product_name, f.sku) AS product_name
-     FROM mp_funnel_daily f
-     LEFT JOIN LATERAL (
-       SELECT s.product_name FROM wb_financial_stats s
-       WHERE f.platform='wb' AND s.nm_id::text = f.sku
-         AND s.product_name IS NOT NULL AND s.product_name <> ''
-       ORDER BY s.date DESC LIMIT 1
-     ) w ON true
-     WHERE f.platform=$1 AND f.date BETWEEN $2::date AND $3::date
-     ORDER BY f.date DESC, f.sku`,
+    `SELECT platform, date, sku, views, cart, orders_count, orders_sum,
+            buyouts_count, buyouts_sum, cancels_count, cart_conv, order_conv,
+            buyout_percent, avg_price, stock_end,
+            COALESCE(product_name, sku) AS product_name
+     FROM mp_funnel_daily
+     WHERE platform=$1 AND date BETWEEN $2::date AND $3::date
+     ORDER BY date DESC, sku`,
     [platform, from, to],
   );
 }

@@ -6,6 +6,7 @@ import path from 'path';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import compression from 'compression';
 import morgan from 'morgan';
 import { AppDataSource } from './config/database';
 
@@ -80,6 +81,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
+app.use(compression()); // gzip ответов — заметно ускоряет крупные JSON (аналитика и т.п.)
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 // CORS: allow Vercel frontend, localhost dev, and any extra origins from env
 const allowedOrigins = [
