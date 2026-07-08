@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { syncWbFunnel, dailyRows, summaryByProduct, importFunnelRows, adReport, importAdRows, adsDetail, getPromoPlan, upsertPromoPlan } from '../services/mp-analytics/mp-analytics.service';
+import { autoSyncWbAds, syncAdsFromWbStats } from '../services/mp-analytics/wb-ad-sync.service';
 
 const num = (v: unknown): number | null => (v == null ? null : Number(v));
 const NUM_FIELDS = [
@@ -144,5 +145,27 @@ export const mpAnalyticsController = {
       .then((r) => console.log('[mp-analytics] manual sync done:', r))
       .catch((e) => console.error('[mp-analytics] manual sync failed:', e?.message || e));
     res.json({ ok: true, started: true });
+  },
+
+  /**
+   * Автосинк рекламы: fetch advert-api /fullstats → wb_ad_stats (при лимите WB — пропуск),
+   * затем маппер wb_ad_stats → mp_ad_daily. `?mapOnly=1` — только маппер (без обращения к WB).
+   */
+  async adSync(req: Request, res: Response) {
+    const days = Number((req.body?.days as number) || 30);
+    const mapOnly = req.body?.mapOnly === true || req.query?.mapOnly === '1';
+    try {
+      if (mapOnly) {
+        const r = await syncAdsFromWbStats(days + 15);
+        return res.json({ ok: true, mapOnly: true, ...r });
+      }
+      autoSyncWbAds(days)
+        .then((r) => console.log('[mp-analytics] manual ad-sync done:', r))
+        .catch((e) => console.error('[mp-analytics] manual ad-sync failed:', e?.message || e));
+      res.json({ ok: true, started: true });
+    } catch (e: any) {
+      console.error('[mp-analytics.adSync]', e?.message || e);
+      res.status(500).json({ error: String(e?.message || 'Ошибка автосинка рекламы') });
+    }
   },
 };
