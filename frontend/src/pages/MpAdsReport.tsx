@@ -226,7 +226,7 @@ const MpAdsReport = () => {
                       {isOpen && [...arts.entries()].sort((x, y) => x[0].localeCompare(y[0])).map(([sku, sa]) => (
                         <tr key={d + sku} className="border-b border-brand-border/30 bg-muted/20 text-brand-text-secondary">
                           <td className="py-1 pr-3 pl-7 whitespace-nowrap sticky left-0 bg-muted/20 text-xs">
-                            <span className="max-w-[160px] truncate inline-block align-middle" title={skus.find(s => s.sku === sku)?.name}>{skus.find(s => s.sku === sku)?.name ?? sku}</span>
+                            <span className="font-mono align-middle" title={skus.find(s => s.sku === sku)?.name}>{sku}</span>
                           </td>
                           {METRICS.map((m) => (
                             <td key={m.key} className="py-1 px-2 text-right tabular-nums text-xs">
@@ -261,7 +261,7 @@ const MpAdsReport = () => {
               <div className="mt-1 space-y-1">
                 {skus.map((s) => (
                   <div key={s.sku} className="flex items-center">
-                    <div className="w-44 shrink-0 pr-2 truncate text-xs text-brand-text" title={s.name}>{s.name}</div>
+                    <div className="w-44 shrink-0 pr-2 truncate font-mono text-xs text-brand-text" title={s.name}>{s.sku}</div>
                     <div className="flex gap-1">
                       {[...dates].reverse().map((d) => {
                         const sa = byDaySku.get(d)?.get(s.sku)
