@@ -238,3 +238,47 @@ export async function summaryByProduct(platform: string, opts: RangeOpts = {}): 
     [platform, from, to, prevFrom, prevTo],
   );
 }
+
+/**
+ * Отчёт по рекламе по дням: расход/клики/показы из wb_ad_stats (WB ads API) +
+ * знаменатели из аналитики продаж (mp_funnel_daily). ДРР, CPC, стоимость корзины/заказа.
+ * Ozon-рекламы пока нет → только WB.
+ */
+export async function adReport(platform: string, opts: RangeOpts = {}): Promise<any[]> {
+  if (platform !== 'wb') return [];
+  const { from, to } = resolveRange(opts);
+  return AppDataSource.query(
+    `WITH ad AS (
+       SELECT date,
+              sum(ad_spend) AS spend,
+              sum(clicks)   AS clicks,
+              sum(views)    AS impressions,
+              sum(atbs)     AS carts_ad
+       FROM wb_ad_stats
+       WHERE date BETWEEN $1::date AND $2::date
+       GROUP BY date
+     ),
+     sales AS (
+       SELECT date,
+              sum(orders_sum)   AS orders_sum,
+              sum(buyouts_sum)  AS buyouts_sum,
+              sum(cart)         AS cart,
+              sum(orders_count) AS orders_count
+       FROM mp_funnel_daily
+       WHERE platform='wb' AND date BETWEEN $1::date AND $2::date
+       GROUP BY date
+     )
+     SELECT a.date,
+            a.spend, a.clicks, a.impressions, a.carts_ad,
+            s.orders_sum, s.buyouts_sum, s.cart, s.orders_count,
+            round((a.spend / NULLIF(s.orders_sum,0)  * 100)::numeric, 1) AS drr_orders,
+            round((a.spend / NULLIF(s.buyouts_sum,0) * 100)::numeric, 1) AS drr_buyouts,
+            round((a.spend / NULLIF(a.clicks,0))::numeric, 2)            AS cpc,
+            round((a.spend / NULLIF(s.cart,0))::numeric, 2)              AS cost_cart,
+            round((a.spend / NULLIF(s.orders_count,0))::numeric, 2)      AS cost_order
+     FROM ad a
+     LEFT JOIN sales s ON s.date = a.date
+     ORDER BY a.date DESC`,
+    [from, to],
+  );
+}

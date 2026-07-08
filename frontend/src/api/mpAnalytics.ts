@@ -39,6 +39,24 @@ export interface MpRange {
   to?: string
 }
 
+/** Строка отчёта по рекламе за день */
+export interface MpAdRow {
+  date: string
+  spend: number | null
+  clicks: number | null
+  impressions: number | null
+  carts_ad: number | null
+  orders_sum: number | null
+  buyouts_sum: number | null
+  cart: number | null
+  orders_count: number | null
+  drr_orders: number | null
+  drr_buyouts: number | null
+  cpc: number | null
+  cost_cart: number | null
+  cost_order: number | null
+}
+
 export const mpAnalyticsApi = {
   summary: async (platform: MpPlatform = 'wb', range: MpRange = { days: 30 }): Promise<MpSummaryRow[]> => {
     const r = await apiClient.get<MpSummaryRow[]>('/mp-analytics/summary', { params: { platform, ...range } })
@@ -46,6 +64,10 @@ export const mpAnalyticsApi = {
   },
   daily: async (platform: MpPlatform = 'wb', range: MpRange = { days: 30 }): Promise<MpDailyRow[]> => {
     const r = await apiClient.get<MpDailyRow[]>('/mp-analytics/daily', { params: { platform, ...range } })
+    return r.data
+  },
+  ads: async (platform: MpPlatform = 'wb', range: MpRange = { days: 30 }): Promise<MpAdRow[]> => {
+    const r = await apiClient.get<MpAdRow[]>('/mp-analytics/ads', { params: { platform, ...range } })
     return r.data
   },
   sync: async (days = 30): Promise<{ ok: boolean; started: boolean }> => {

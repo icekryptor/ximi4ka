@@ -1,11 +1,13 @@
 import { Request, Response } from 'express';
-import { syncWbFunnel, dailyRows, summaryByProduct, importFunnelRows } from '../services/mp-analytics/mp-analytics.service';
+import { syncWbFunnel, dailyRows, summaryByProduct, importFunnelRows, adReport } from '../services/mp-analytics/mp-analytics.service';
 
 const num = (v: unknown): number | null => (v == null ? null : Number(v));
 const NUM_FIELDS = [
   'views', 'cart', 'orders_count', 'orders_sum', 'buyouts_count', 'buyouts_sum',
   'cancels_count', 'returns_count', 'cart_conv', 'order_conv', 'buyout_percent',
   'avg_price', 'stock_end', 'share_pct', 'orders_sum_prev', 'orders_sum_delta',
+  'spend', 'clicks', 'impressions', 'carts_ad', 'drr_orders', 'drr_buyouts',
+  'cpc', 'cost_cart', 'cost_order',
 ];
 const mapNums = (r: any) => {
   const out = { ...r };
@@ -41,6 +43,17 @@ export const mpAnalyticsController = {
     } catch (e: any) {
       console.error('[mp-analytics.summary]', e?.message || e);
       res.status(500).json({ error: 'Ошибка загрузки сводки' });
+    }
+  },
+
+  /** Отчёт по рекламе по дням (ДРР, CPC, стоимость корзины/заказа). */
+  async ads(req: Request, res: Response) {
+    try {
+      const platform = (req.query.platform as string) || 'wb';
+      res.json((await adReport(platform, rangeFromQuery(req))).map(mapNums));
+    } catch (e: any) {
+      console.error('[mp-analytics.ads]', e?.message || e);
+      res.status(500).json({ error: 'Ошибка загрузки отчёта по рекламе' });
     }
   },
 

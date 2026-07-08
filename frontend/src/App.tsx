@@ -41,6 +41,7 @@ const PublicUnitEconomics = lazy(() => import('./pages/PublicUnitEconomics'))
 const PublicSpp = lazy(() => import('./pages/PublicSpp'))
 const Settings = lazy(() => import('./pages/Settings'))
 const MpAnalytics = lazy(() => import('./pages/MpAnalytics'))
+const MpAdsReport = lazy(() => import('./pages/MpAdsReport'))
 const RecurringTasks = lazy(() => import('./pages/RecurringTasks'))
 const RecurringTaskDetail = lazy(() => import('./pages/RecurringTaskDetail'))
 const ContentBank = lazy(() => import('./pages/ContentBank'))
@@ -159,6 +160,7 @@ function App() {
                                 <Route path="/wb-finance" element={<WbFinanceReports />} />
                                 <Route path="/marketplace/discount-tracker" element={<DiscountTracker />} />
                                 <Route path="/marketplace/analytics" element={<MpAnalytics />} />
+                                <Route path="/marketplace/ads-report" element={<MpAdsReport />} />
                                 {/* Продажи */}
                                 <Route path="/sales-report" element={<SalesReport />} />
                                 {/* Настройки */}
