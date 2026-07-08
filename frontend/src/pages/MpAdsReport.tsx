@@ -11,12 +11,13 @@ const x2 = (v: number | null): string => (v == null ? '—' : v.toFixed(2))
 const dayLabel = (iso: string) => new Date(iso).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })
 
 // ── ДРР-хитмап цвета: <7 зелёный, 7–9 светло-зелёный, 9–12 жёлтый, >12 красный ──
+// приглушённая палитра — мягче для восприятия
 const drrColor = (v: number | null): { bg: string; fg: string } => {
   if (v == null) return { bg: 'transparent', fg: 'inherit' }
-  if (v < 7) return { bg: '#16a34a', fg: '#fff' }
-  if (v < 9) return { bg: '#86efac', fg: '#14532d' }
-  if (v < 12) return { bg: '#facc15', fg: '#422006' }
-  return { bg: '#ef4444', fg: '#fff' }
+  if (v < 7) return { bg: '#a5d6a7', fg: '#1b5e20' }   // приглушённый зелёный
+  if (v < 9) return { bg: '#d0e8c4', fg: '#33691e' }   // светло-зелёный
+  if (v < 12) return { bg: '#ffe082', fg: '#5c4400' }  // мягкий жёлтый
+  return { bg: '#ef9a9a', fg: '#7f1d1d' }              // мягкий красный
 }
 const DrrCell = ({ v }: { v: number | null }) => {
   const c = drrColor(v)
@@ -199,7 +200,7 @@ const MpAdsReport = () => {
       {/* Легенда ДРР */}
       <div className="flex items-center gap-3 text-xs text-brand-text-secondary">
         <span>ДРР:</span>
-        {[{ c: '#16a34a', t: '<7%' }, { c: '#86efac', t: '7–9%' }, { c: '#facc15', t: '9–12%' }, { c: '#ef4444', t: '>12%' }].map((x) => (
+        {[{ c: '#a5d6a7', t: '<7%' }, { c: '#d0e8c4', t: '7–9%' }, { c: '#ffe082', t: '9–12%' }, { c: '#ef9a9a', t: '>12%' }].map((x) => (
           <span key={x.t} className="flex items-center gap-1"><span className="inline-block h-3.5 w-5 rounded ring-1 ring-inset ring-black/5" style={{ backgroundColor: x.c }} />{x.t}</span>
         ))}
       </div>
@@ -281,7 +282,7 @@ const MpAdsReport = () => {
                 <div className="w-44 shrink-0" />
                 <div className="flex gap-1">
                   {[...dates].reverse().map((d) => (
-                    <div key={d} className="w-10 shrink-0 text-center text-[10px] text-brand-text-secondary/80">{dayLabel(d)}</div>
+                    <div key={d} className="w-16 shrink-0 text-center text-[10px] text-brand-text-secondary/80">{dayLabel(d)}</div>
                   ))}
                 </div>
               </div>
@@ -295,17 +296,18 @@ const MpAdsReport = () => {
                         const v = sa ? drr(sa.spend, sa.orders_sum) : null
                         const c = drrColor(v)
                         return (
-                          <div key={d} className="flex h-7 w-10 shrink-0 items-center justify-center rounded-md text-[9px] font-semibold tabular-nums ring-1 ring-inset ring-black/5"
-                            style={{ backgroundColor: c.bg === 'transparent' ? '#f1eef6' : c.bg, color: c.bg === 'transparent' ? '#a9a2b8' : c.fg }}
-                            title={sa ? `${s.name} · ${dayLabel(d)} · ДРРз ${pct(v)} · расход ${money(sa.spend)}` : 'нет'}>
-                            {v == null ? '·' : v.toFixed(0)}
+                          <div key={d} className="flex h-9 w-16 shrink-0 flex-col items-center justify-center rounded-md tabular-nums ring-1 ring-inset ring-black/5"
+                            style={{ backgroundColor: c.bg === 'transparent' ? '#f4f2f8' : c.bg, color: c.bg === 'transparent' ? '#b3adc0' : c.fg }}
+                            title={sa ? `${s.name} · ${dayLabel(d)} · ДРРз ${pct(v)} · бюджет ${money(sa.spend)}` : 'нет'}>
+                            <span className="text-[10px] font-semibold">{v == null ? '·' : pct(v)}</span>
+                            {sa && sa.spend > 0 && <span className="text-[8px] opacity-70">{int(sa.spend)}</span>}
                           </div>
                         )
                       })}
                     </div>
                   </div>
                 ))}
-                {/* нижняя строка: средний ДРР по дню + бюджет-тег */}
+                {/* нижняя строка: средний ДРР по дню + дневной бюджет */}
                 <div className="flex items-center pt-1 border-t border-brand-border">
                   <div className="w-44 shrink-0 pr-2 text-xs font-semibold text-brand-text">Средний ДРР / бюджет</div>
                   <div className="flex gap-1">
@@ -314,11 +316,11 @@ const MpAdsReport = () => {
                       const v = drr(a.spend, a.orders_sum)
                       const c = drrColor(v)
                       return (
-                        <div key={d} className="flex h-9 w-10 shrink-0 flex-col items-center justify-center rounded-md text-[9px] font-semibold ring-1 ring-inset ring-black/5"
-                          style={{ backgroundColor: c.bg === 'transparent' ? '#f1eef6' : c.bg, color: c.bg === 'transparent' ? '#a9a2b8' : c.fg }}
+                        <div key={d} className="flex h-9 w-16 shrink-0 flex-col items-center justify-center rounded-md font-semibold ring-1 ring-inset ring-black/5"
+                          style={{ backgroundColor: c.bg === 'transparent' ? '#f4f2f8' : c.bg, color: c.bg === 'transparent' ? '#b3adc0' : c.fg }}
                           title={`${dayLabel(d)} · средний ДРРз ${pct(v)} · бюджет ${money(a.spend)}`}>
-                          <span>{v == null ? '·' : v.toFixed(0)}</span>
-                          <span className="opacity-80 text-[8px]">{Math.round(a.spend / 1000)}к</span>
+                          <span className="text-[10px]">{v == null ? '·' : pct(v)}</span>
+                          <span className="text-[8px] opacity-80">{int(a.spend)}</span>
                         </div>
                       )
                     })}
