@@ -76,6 +76,16 @@ export interface MpAdDetailRow {
   orders_sum: number | null
 }
 
+/** Строка плана продвижения по артикулу */
+export interface MpPlanRow {
+  sku: string
+  seller_article: string
+  product_name: string
+  orders_sum: number | null
+  drrz: number | null
+  margin: number | null
+}
+
 export const mpAnalyticsApi = {
   summary: async (platform: MpPlatform = 'wb', range: MpRange = { days: 30 }): Promise<MpSummaryRow[]> => {
     const r = await apiClient.get<MpSummaryRow[]>('/mp-analytics/summary', { params: { platform, ...range } })
@@ -92,6 +102,13 @@ export const mpAnalyticsApi = {
   adsDetail: async (platform: MpPlatform = 'wb', range: MpRange = { days: 30 }): Promise<MpAdDetailRow[]> => {
     const r = await apiClient.get<MpAdDetailRow[]>('/mp-analytics/ads-detail', { params: { platform, ...range } })
     return r.data
+  },
+  plan: async (platform: MpPlatform = 'wb', month: string): Promise<MpPlanRow[]> => {
+    const r = await apiClient.get<MpPlanRow[]>('/mp-analytics/plan', { params: { platform, month } })
+    return r.data
+  },
+  planSave: async (platform: MpPlatform, sku: string, month: string, orders_sum: number | null, drrz: number | null) => {
+    await apiClient.put('/mp-analytics/plan', { platform, sku, month, orders_sum, drrz })
   },
   sync: async (days = 30): Promise<{ ok: boolean; started: boolean }> => {
     const r = await apiClient.post('/mp-analytics/sync', { days })

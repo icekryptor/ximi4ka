@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { syncWbFunnel, dailyRows, summaryByProduct, importFunnelRows, adReport, importAdRows, adsDetail } from '../services/mp-analytics/mp-analytics.service';
+import { syncWbFunnel, dailyRows, summaryByProduct, importFunnelRows, adReport, importAdRows, adsDetail, getPromoPlan, upsertPromoPlan } from '../services/mp-analytics/mp-analytics.service';
 
 const num = (v: unknown): number | null => (v == null ? null : Number(v));
 const NUM_FIELDS = [
@@ -54,6 +54,36 @@ export const mpAnalyticsController = {
     } catch (e: any) {
       console.error('[mp-analytics.ads]', e?.message || e);
       res.status(500).json({ error: 'Ошибка загрузки отчёта по рекламе' });
+    }
+  },
+
+  /** План продвижения на месяц по артикулам (+ маржа из юнитки). */
+  async plan(req: Request, res: Response) {
+    try {
+      const platform = (req.query.platform as string) || 'wb';
+      const month = (req.query.month as string) || new Date().toISOString().slice(0, 7);
+      const rows = await getPromoPlan(platform, month);
+      res.json(rows.map((r: any) => ({
+        ...r,
+        orders_sum: num(r.orders_sum), drrz: num(r.drrz), margin: num(r.margin),
+      })));
+    } catch (e: any) {
+      console.error('[mp-analytics.plan]', e?.message || e);
+      res.status(500).json({ error: 'Ошибка загрузки плана' });
+    }
+  },
+
+  /** Сохранить план по артикулу. */
+  async planSave(req: Request, res: Response) {
+    try {
+      const { platform = 'wb', sku, month, orders_sum, drrz } = req.body as any;
+      if (!sku || !month) return res.status(400).json({ error: 'sku и month обязательны' });
+      await upsertPromoPlan(platform, String(sku), String(month),
+        orders_sum == null ? null : Number(orders_sum), drrz == null ? null : Number(drrz));
+      res.json({ ok: true });
+    } catch (e: any) {
+      console.error('[mp-analytics.planSave]', e?.message || e);
+      res.status(500).json({ error: 'Ошибка сохранения плана' });
     }
   },
 

@@ -343,3 +343,42 @@ export async function adsDetail(platform: string, opts: RangeOpts = {}): Promise
     [from, to],
   );
 }
+
+/** План продвижения на месяц по артикулам: сохранённый план + маржа из актуальной юнитки (канал ВБ). */
+export async function getPromoPlan(platform: string, month: string): Promise<any[]> {
+  const channel = platform === 'ozon' ? 'Озон' : 'ВБ';
+  return AppDataSource.query(
+    `SELECT s.sku,
+            s.seller_article,
+            COALESCE(nm.product_name, s.sku) AS product_name,
+            p.orders_sum, p.drrz,
+            ue.margin
+     FROM (SELECT sku, max(seller_article) AS seller_article FROM mp_ad_daily
+           WHERE platform=$1 AND seller_article IS NOT NULL GROUP BY sku) s
+     LEFT JOIN (SELECT sku, max(product_name) AS product_name FROM mp_funnel_daily
+                WHERE platform=$1 AND product_name IS NOT NULL GROUP BY sku) nm ON nm.sku = s.sku
+     LEFT JOIN promo_plan p ON p.platform=$1 AND p.sku=s.sku AND p.month=$2
+     LEFT JOIN LATERAL (
+       SELECT c.margin FROM sku_mappings m
+       JOIN unit_economics_calculations c ON c.kit_id = m.kit_id AND c.channel_name=$3
+       WHERE m.marketplace_sku = s.sku
+       ORDER BY c.is_current DESC, c.updated_at DESC LIMIT 1
+     ) ue ON true
+     ORDER BY s.seller_article`,
+    [platform, month, channel],
+  );
+}
+
+/** Сохранить план по (платформа, артикул, месяц). */
+export async function upsertPromoPlan(
+  platform: string, sku: string, month: string,
+  orders_sum: number | null, drrz: number | null,
+): Promise<void> {
+  await AppDataSource.query(
+    `INSERT INTO promo_plan (platform, sku, month, orders_sum, drrz)
+     VALUES ($1,$2,$3,$4,$5)
+     ON CONFLICT (platform, sku, month) DO UPDATE SET
+       orders_sum=EXCLUDED.orders_sum, drrz=EXCLUDED.drrz, updated_at=now()`,
+    [platform, sku, month, orders_sum, drrz],
+  );
+}
