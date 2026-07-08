@@ -319,3 +319,27 @@ export async function adReport(platform: string, opts: RangeOpts = {}): Promise<
     [from, to],
   );
 }
+
+/** Детальная реклама по (дата, артикул, источник au/apk/cpc) — для «Оцифровки продвижения». */
+export async function adsDetail(platform: string, opts: RangeOpts = {}): Promise<any[]> {
+  if (platform !== 'wb') return [];
+  const { from, to } = resolveRange(opts);
+  return AppDataSource.query(
+    `SELECT ad.date, ad.sku, ad.source,
+            COALESCE(ar.seller_article, ad.sku) AS seller_article,
+            COALESCE(nm.product_name, ad.sku)   AS product_name,
+            ad.impressions, ad.clicks, ad.spend, ad.carts, ad.orders, ad.orders_sum
+     FROM mp_ad_daily ad
+     LEFT JOIN (
+       SELECT sku, max(seller_article) AS seller_article FROM mp_ad_daily
+       WHERE platform='wb' AND seller_article IS NOT NULL GROUP BY sku
+     ) ar ON ar.sku = ad.sku
+     LEFT JOIN (
+       SELECT sku, max(product_name) AS product_name FROM mp_funnel_daily
+       WHERE platform='wb' AND product_name IS NOT NULL GROUP BY sku
+     ) nm ON nm.sku = ad.sku
+     WHERE ad.platform='wb' AND ad.date BETWEEN $1::date AND $2::date
+     ORDER BY ad.date DESC, ad.sku, ad.source`,
+    [from, to],
+  );
+}

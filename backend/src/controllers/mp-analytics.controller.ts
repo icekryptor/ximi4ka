@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { syncWbFunnel, dailyRows, summaryByProduct, importFunnelRows, adReport, importAdRows } from '../services/mp-analytics/mp-analytics.service';
+import { syncWbFunnel, dailyRows, summaryByProduct, importFunnelRows, adReport, importAdRows, adsDetail } from '../services/mp-analytics/mp-analytics.service';
 
 const num = (v: unknown): number | null => (v == null ? null : Number(v));
 const NUM_FIELDS = [
@@ -54,6 +54,24 @@ export const mpAnalyticsController = {
     } catch (e: any) {
       console.error('[mp-analytics.ads]', e?.message || e);
       res.status(500).json({ error: 'Ошибка загрузки отчёта по рекламе' });
+    }
+  },
+
+  /** Детальная реклама по источникам (для «Оцифровки продвижения»). */
+  async adsDetail(req: Request, res: Response) {
+    try {
+      const platform = (req.query.platform as string) || 'wb';
+      const rows = await adsDetail(platform, rangeFromQuery(req));
+      res.json(
+        rows.map((r: any) => ({
+          ...r,
+          impressions: num(r.impressions), clicks: num(r.clicks), spend: num(r.spend),
+          carts: num(r.carts), orders: num(r.orders), orders_sum: num(r.orders_sum),
+        })),
+      );
+    } catch (e: any) {
+      console.error('[mp-analytics.adsDetail]', e?.message || e);
+      res.status(500).json({ error: 'Ошибка загрузки детализации рекламы' });
     }
   },
 

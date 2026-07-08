@@ -1,6 +1,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
-import { Megaphone, Table2, Grid3x3, Plus, Minus } from 'lucide-react'
+import { Megaphone, Table2, Grid3x3, ListTree, Plus, Minus } from 'lucide-react'
 import { mpAnalyticsApi, MpAdRow, MpRange } from '../api/mpAnalytics'
+import { PromoDigits } from '../components/discount/PromoDigits'
 import { useToast } from '../contexts/ToastContext'
 
 // ── форматтеры ──
@@ -122,7 +123,7 @@ const MpAdsReport = () => {
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [month, setMonth] = useState('')
-  const [view, setView] = useState<'table' | 'heatmap'>('table')
+  const [view, setView] = useState<'table' | 'heatmap' | 'digits'>('table')
   const [gran, setGran] = useState<'day' | 'week'>('day')
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
@@ -196,6 +197,9 @@ const MpAdsReport = () => {
           </button>
           <button onClick={() => setView('heatmap')} className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm ${view === 'heatmap' ? 'bg-primary-500 text-white' : 'text-brand-text-secondary'}`}>
             <Grid3x3 className="h-4 w-4" /> Аналитика окупаемости
+          </button>
+          <button onClick={() => setView('digits')} className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm ${view === 'digits' ? 'bg-primary-500 text-white' : 'text-brand-text-secondary'}`}>
+            <ListTree className="h-4 w-4" /> Оцифровка продвижения
           </button>
         </div>
       </div>
@@ -302,6 +306,7 @@ const MpAdsReport = () => {
         </div>
       ) : (
         // ── Аналитика окупаемости: строки — артикулы, столбцы — даты/недели, низ — средний ДРР + бюджет ──
+        view === 'heatmap' ? (
         <div className="card">
           <h2 className="mb-3 text-sm font-semibold text-brand-text">Аналитика окупаемости — ДРРз по {gran === 'week' ? 'неделям' : 'дням'}</h2>
           <div className="overflow-x-auto">
@@ -358,6 +363,9 @@ const MpAdsReport = () => {
             </div>
           </div>
         </div>
+        ) : (
+          <PromoDigits range={from && to ? { from, to } : { days }} gran={gran} />
+        )
       )}
     </div>
   )

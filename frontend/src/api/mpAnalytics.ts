@@ -61,6 +61,21 @@ export interface MpAdRow {
   buyouts_sum: number | null
 }
 
+/** Строка детализации рекламы по источнику (au/apk/cpc) */
+export interface MpAdDetailRow {
+  date: string
+  sku: string
+  source: string
+  seller_article: string
+  product_name: string
+  impressions: number | null
+  clicks: number | null
+  spend: number | null
+  carts: number | null
+  orders: number | null
+  orders_sum: number | null
+}
+
 export const mpAnalyticsApi = {
   summary: async (platform: MpPlatform = 'wb', range: MpRange = { days: 30 }): Promise<MpSummaryRow[]> => {
     const r = await apiClient.get<MpSummaryRow[]>('/mp-analytics/summary', { params: { platform, ...range } })
@@ -72,6 +87,10 @@ export const mpAnalyticsApi = {
   },
   ads: async (platform: MpPlatform = 'wb', range: MpRange = { days: 30 }): Promise<MpAdRow[]> => {
     const r = await apiClient.get<MpAdRow[]>('/mp-analytics/ads', { params: { platform, ...range } })
+    return r.data
+  },
+  adsDetail: async (platform: MpPlatform = 'wb', range: MpRange = { days: 30 }): Promise<MpAdDetailRow[]> => {
+    const r = await apiClient.get<MpAdDetailRow[]>('/mp-analytics/ads-detail', { params: { platform, ...range } })
     return r.data
   },
   sync: async (days = 30): Promise<{ ok: boolean; started: boolean }> => {
