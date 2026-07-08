@@ -30,6 +30,7 @@ export interface UnitEconomicsCalculation {
   total_expenses: number;
   profit: number;
   margin: number;
+  is_current?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -181,6 +182,10 @@ export const unitEconomicsApi = {
   getById: async (id: string) => {
     const response = await apiClient.get<UnitEconomicsCalculation>(`/unit-economics/${id}`);
     return response.data;
+  },
+
+  setCurrent: async (id: string) => {
+    await apiClient.put(`/unit-economics/${id}/current`);
   },
 
   save: async (data: {

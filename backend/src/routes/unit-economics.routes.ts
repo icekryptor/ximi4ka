@@ -11,6 +11,7 @@ router.get('/', unitEconomicsController.getAll);
 router.get('/:id', unitEconomicsController.getById);
 router.post('/', unitEconomicsController.create);
 router.post('/:id/clone', unitEconomicsController.clone);
+router.put('/:id/current', unitEconomicsController.setCurrent);
 router.put('/:id', unitEconomicsController.update);
 router.delete('/:id', unitEconomicsController.delete);
 

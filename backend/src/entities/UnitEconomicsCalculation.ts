@@ -75,6 +75,9 @@ export class UnitEconomicsCalculation {
   @Column({ type: 'uuid', nullable: true, default: null })
   group_id: string | null;
 
+  @Column({ type: 'boolean', default: false })
+  is_current: boolean;
+
   @CreateDateColumn()
   created_at: Date;
 

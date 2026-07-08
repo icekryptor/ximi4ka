@@ -259,6 +259,24 @@ export const unitEconomicsController = {
     }
   },
 
+  /** Пометить расчёт как актуальный (источник истины для канала). Снимает флаг с остальных (kit+канал). */
+  async setCurrent(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const calc = await calcRepository.findOne({ where: { id } });
+      if (!calc) return res.status(404).json({ error: 'Расчёт не найден' });
+      await calcRepository.update(
+        { kit_id: calc.kit_id, channel_name: calc.channel_name },
+        { is_current: false },
+      );
+      await calcRepository.update({ id }, { is_current: true });
+      res.json({ ok: true });
+    } catch (error) {
+      console.error('Ошибка при установке актуального расчёта:', error);
+      res.status(500).json({ error: 'Ошибка при установке актуального расчёта' });
+    }
+  },
+
   // Удалить расчёт
   async delete(req: Request, res: Response) {
     try {

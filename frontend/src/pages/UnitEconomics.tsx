@@ -12,6 +12,7 @@ import UnitEconomicsChannel from '../components/UnitEconomicsChannel'
 import SaveCalculationModal from '../components/SaveCalculationModal'
 import LoadCalculationModal from '../components/LoadCalculationModal'
 import ChannelPresetsModal from '../components/ChannelPresetsModal'
+import { ActualCalcsPanel } from '../components/unit-economics/ActualCalcsPanel'
 
 const UnitEconomics = () => {
   // Data
@@ -403,6 +404,13 @@ const UnitEconomics = () => {
             onChange={updateChannel}
             presetBlocks={presets.find(p => p.channel_name === channels[activeChannelIdx]?.channel_name)?.variable_blocks}
           />
+        </div>
+      )}
+
+      {/* Актуальные расчёты — источник истины для планирования/аналитики */}
+      {selectedKitId && (
+        <div className="mt-4">
+          <ActualCalcsPanel kitId={selectedKitId} />
         </div>
       )}
 
