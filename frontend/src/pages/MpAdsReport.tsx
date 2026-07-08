@@ -21,21 +21,21 @@ const drrColor = (v: number | null): { bg: string; fg: string } => {
 const DrrCell = ({ v }: { v: number | null }) => {
   const c = drrColor(v)
   return (
-    <span className="inline-flex min-w-[3rem] items-center justify-center rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums ring-1 ring-inset ring-black/5"
+    <span className="inline-flex min-w-[2.4rem] items-center justify-center rounded px-1 py-0.5 text-[11px] font-semibold tabular-nums ring-1 ring-inset ring-black/5"
       style={{ backgroundColor: c.bg, color: c.fg }}>{pct(v)}</span>
   )
 }
 
 // сумма метрик
 type Agg = {
-  impressions: number; clicks: number; spend: number; carts_ad: number; orders_ad: number
+  impressions: number; clicks: number; spend: number; carts_ad: number; orders_ad: number; orders_sum_ad: number
   cart: number; orders_count: number; orders_sum: number; buyouts_count: number; buyouts_sum: number
 }
-const zero = (): Agg => ({ impressions: 0, clicks: 0, spend: 0, carts_ad: 0, orders_ad: 0, cart: 0, orders_count: 0, orders_sum: 0, buyouts_count: 0, buyouts_sum: 0 })
+const zero = (): Agg => ({ impressions: 0, clicks: 0, spend: 0, carts_ad: 0, orders_ad: 0, orders_sum_ad: 0, cart: 0, orders_count: 0, orders_sum: 0, buyouts_count: 0, buyouts_sum: 0 })
 const add = (a: Agg, r: MpAdRow) => {
   a.impressions += r.impressions ?? 0; a.clicks += r.clicks ?? 0; a.spend += r.spend ?? 0
-  a.carts_ad += r.carts_ad ?? 0; a.orders_ad += r.orders_ad ?? 0; a.cart += r.cart ?? 0
-  a.orders_count += r.orders_count ?? 0; a.orders_sum += r.orders_sum ?? 0
+  a.carts_ad += r.carts_ad ?? 0; a.orders_ad += r.orders_ad ?? 0; a.orders_sum_ad += r.orders_sum_ad ?? 0
+  a.cart += r.cart ?? 0; a.orders_count += r.orders_count ?? 0; a.orders_sum += r.orders_sum ?? 0
   a.buyouts_count += r.buyouts_count ?? 0; a.buyouts_sum += r.buyouts_sum ?? 0
 }
 const ratio = (a: number, b: number): number | null => (b ? (a / b) * 100 : null)
@@ -51,26 +51,34 @@ const monthRange = (ym: string) => {
   return { from: `${ym}-01`, to: `${ym}-${String(last).padStart(2, '0')}` }
 }
 
-// колонки метрик (день/артикул)
+// колонки метрик (день/артикул). group — для группировки/подсветки шапки
 const METRICS: Array<{ key: string; label: string }> = [
   { key: 'spend', label: 'Расход' },
   { key: 'impressions', label: 'Показы' },
   { key: 'clicks', label: 'Клики' },
   { key: 'ctr', label: 'CTR' },
-  { key: 'carts_ad', label: 'Корзины' },
-  { key: 'cart_conv', label: 'Конв.в корзину' },
-  { key: 'orders_ad', label: 'Заказы' },
-  { key: 'order_conv', label: 'Конв.в заказ' },
+  { key: 'carts_ad', label: 'Корз' },
+  { key: 'cart_conv', label: 'вКорз' },
   { key: 'cr', label: 'CR' },
-  { key: 'buyout_pct', label: '% выкупа' },
-  { key: 'orders_sum', label: 'Сумма заказов' },
-  { key: 'buyouts_sum', label: 'Сумма выкупов' },
+  { key: 'orders_total', label: 'Зак.всего' },
+  { key: 'orders_ad', label: 'Зак.РК' },
+  { key: 'orders_organic', label: 'Зак.орг' },
+  { key: 'ad_share', label: 'Доля РК' },
+  { key: 'buyout_pct', label: '%вык' },
+  { key: 'orders_sum', label: 'Выр.всего' },
+  { key: 'rev_ad', label: 'Выр.РК' },
+  { key: 'rev_organic', label: 'Выр.орг' },
+  { key: 'buyouts_sum', label: 'Выкупы₽' },
   { key: 'drrz', label: 'ДРРз' },
   { key: 'drrv', label: 'ДРРв' },
   { key: 'roas', label: 'ROAS' },
 ]
+// колонки-доли, которые красим (доля рекламы в заказах)
+const share = (ad: number, tot: number): number | null => (tot ? (ad / tot) * 100 : null)
 
 const cellFor = (key: string, a: Agg) => {
+  const orgOrders = Math.max(0, a.orders_count - a.orders_ad)
+  const orgRev = Math.max(0, a.orders_sum - a.orders_sum_ad)
   switch (key) {
     case 'spend': return money(a.spend)
     case 'impressions': return int(a.impressions)
@@ -78,15 +86,25 @@ const cellFor = (key: string, a: Agg) => {
     case 'ctr': return pct(ratio(a.clicks, a.impressions))
     case 'carts_ad': return int(a.carts_ad)
     case 'cart_conv': return pct(ratio(a.carts_ad, a.clicks))
-    case 'orders_ad': return int(a.orders_ad)
-    case 'order_conv': return pct(ratio(a.orders_ad, a.carts_ad))
     case 'cr': return pct(ratio(a.orders_ad, a.clicks))
+    case 'orders_total': return int(a.orders_count)
+    case 'orders_ad': return int(a.orders_ad)
+    case 'orders_organic': return int(orgOrders)
     case 'buyout_pct': return pct(ratio(a.buyouts_count, a.orders_count))
     case 'orders_sum': return money(a.orders_sum)
+    case 'rev_ad': return money(a.orders_sum_ad)
+    case 'rev_organic': return money(orgRev)
     case 'buyouts_sum': return money(a.buyouts_sum)
     case 'roas': return x2(a.spend ? a.orders_sum / a.spend : null)
     default: return ''
   }
+}
+
+const renderCell = (key: string, a: Agg) => {
+  if (key === 'drrz') return <DrrCell v={drr(a.spend, a.orders_sum)} />
+  if (key === 'drrv') return <DrrCell v={drr(a.spend, a.buyouts_sum)} />
+  if (key === 'ad_share') return <span className="font-semibold text-brand-text">{pct(share(a.orders_ad, a.orders_count))}</span>
+  return cellFor(key, a)
 }
 
 const MpAdsReport = () => {
@@ -194,11 +212,11 @@ const MpAdsReport = () => {
         <div className="card">
           <h2 className="mb-3 text-sm font-semibold text-brand-text">По дням ({periodLabel}) — жми [+] для разбивки по артикулам</h2>
           <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
+            <table className="min-w-full text-[11px]">
               <thead>
                 <tr className="border-b border-brand-border text-left text-brand-text-secondary">
-                  <th className="py-2 pr-3 font-semibold whitespace-nowrap sticky left-0 bg-card">Дата</th>
-                  {METRICS.map((m) => (<th key={m.key} className="py-2 px-2 font-semibold text-right whitespace-nowrap">{m.label}</th>))}
+                  <th className="py-1.5 pr-2 font-semibold whitespace-nowrap sticky left-0 bg-card">Дата</th>
+                  {METRICS.map((m) => (<th key={m.key} className="py-1.5 px-1.5 font-semibold text-right whitespace-nowrap">{m.label}</th>))}
                 </tr>
               </thead>
               <tbody>
@@ -209,7 +227,7 @@ const MpAdsReport = () => {
                   return (
                     <Fragment key={d}>
                       <tr className="border-b border-brand-border/60 hover:bg-muted/30 cursor-pointer" onClick={() => toggle(d)}>
-                        <td className="py-1.5 pr-3 font-medium text-brand-text whitespace-nowrap sticky left-0 bg-card">
+                        <td className="py-1 pr-2 font-medium text-brand-text whitespace-nowrap sticky left-0 bg-card">
                           <span className="inline-flex items-center gap-1">
                             <span className="inline-flex h-4 w-4 items-center justify-center rounded border border-brand-border text-brand-text-secondary">
                               {isOpen ? <Minus className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
@@ -218,23 +236,19 @@ const MpAdsReport = () => {
                           </span>
                         </td>
                         {METRICS.map((m) => (
-                          <td key={m.key} className="py-1.5 px-2 text-right tabular-nums text-brand-text">
-                            {m.key === 'drrz' ? <DrrCell v={drr(a.spend, a.orders_sum)} />
-                              : m.key === 'drrv' ? <DrrCell v={drr(a.spend, a.buyouts_sum)} />
-                              : cellFor(m.key, a)}
+                          <td key={m.key} className="py-1 px-1.5 text-right tabular-nums text-brand-text">
+                            {renderCell(m.key, a)}
                           </td>
                         ))}
                       </tr>
                       {isOpen && [...arts.entries()].sort((x, y) => x[0].localeCompare(y[0])).map(([sku, sa]) => (
                         <tr key={d + sku} className="border-b border-brand-border/30 bg-muted/20 text-brand-text-secondary">
-                          <td className="py-1 pr-3 pl-7 whitespace-nowrap sticky left-0 bg-muted/20 text-xs">
+                          <td className="py-0.5 pr-2 pl-7 whitespace-nowrap sticky left-0 bg-muted/20">
                             <span className="font-mono align-middle" title={skus.find(s => s.sku === sku)?.name}>{skus.find(s => s.sku === sku)?.article ?? sku}</span>
                           </td>
                           {METRICS.map((m) => (
-                            <td key={m.key} className="py-1 px-2 text-right tabular-nums text-xs">
-                              {m.key === 'drrz' ? <DrrCell v={drr(sa.spend, sa.orders_sum)} />
-                                : m.key === 'drrv' ? <DrrCell v={drr(sa.spend, sa.buyouts_sum)} />
-                                : cellFor(m.key, sa)}
+                            <td key={m.key} className="py-0.5 px-1.5 text-right tabular-nums">
+                              {renderCell(m.key, sa)}
                             </td>
                           ))}
                         </tr>
@@ -242,6 +256,17 @@ const MpAdsReport = () => {
                     </Fragment>
                   )
                 })}
+                {/* Всего за период */}
+                {(() => {
+                  const g = zero()
+                  for (const d of dates) { const a = byDay.get(d)!; (Object.keys(g) as (keyof Agg)[]).forEach((k) => { g[k] += a[k] }) }
+                  return (
+                    <tr className="border-t-2 border-brand-border font-semibold text-brand-text">
+                      <td className="py-1.5 pr-2 whitespace-nowrap sticky left-0 bg-card">Всего</td>
+                      {METRICS.map((m) => (<td key={m.key} className="py-1.5 px-1.5 text-right tabular-nums">{renderCell(m.key, g)}</td>))}
+                    </tr>
+                  )
+                })()}
               </tbody>
             </table>
           </div>

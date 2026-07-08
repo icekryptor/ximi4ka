@@ -6,8 +6,8 @@ const NUM_FIELDS = [
   'views', 'cart', 'orders_count', 'orders_sum', 'buyouts_count', 'buyouts_sum',
   'cancels_count', 'returns_count', 'cart_conv', 'order_conv', 'buyout_percent',
   'avg_price', 'stock_end', 'share_pct', 'orders_sum_prev', 'orders_sum_delta',
-  'spend', 'clicks', 'impressions', 'carts_ad', 'orders_ad', 'drr_orders', 'drr_buyouts',
-  'cpc', 'cost_cart', 'cost_order',
+  'spend', 'clicks', 'impressions', 'carts_ad', 'orders_ad', 'orders_sum_ad',
+  'drr_orders', 'drr_buyouts', 'cpc', 'cost_cart', 'cost_order',
 ];
 const mapNums = (r: any) => {
   const out = { ...r };

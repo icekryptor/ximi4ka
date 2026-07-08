@@ -51,6 +51,7 @@ export interface MpAdRow {
   spend: number | null
   carts_ad: number | null
   orders_ad: number | null
+  orders_sum_ad: number | null
   // продажи (mp_funnel_daily)
   views: number | null
   cart: number | null

@@ -247,7 +247,7 @@ export async function importAdRows(
   const clean = input.filter((r) => r.date && r.sku && r.source);
   for (let i = 0; i < clean.length; i += INSERT_CHUNK) {
     const chunk = clean.slice(i, i + INSERT_CHUNK);
-    const cols = 10;
+    const cols = 11;
     const values: string[] = [];
     const params: unknown[] = [];
     chunk.forEach((r, idx) => {
@@ -256,15 +256,15 @@ export async function importAdRows(
       params.push(
         platform, String(r.date).slice(0, 10), String(r.sku), String(r.source),
         r.impressions ?? null, r.clicks ?? null, r.spend ?? null, r.carts ?? null, r.orders ?? null,
-        (r as any).seller_article ?? null,
+        (r as any).orders_sum ?? null, (r as any).seller_article ?? null,
       );
     });
     await AppDataSource.query(
-      `INSERT INTO mp_ad_daily (platform, date, sku, source, impressions, clicks, spend, carts, orders, seller_article)
+      `INSERT INTO mp_ad_daily (platform, date, sku, source, impressions, clicks, spend, carts, orders, orders_sum, seller_article)
        VALUES ${values.join(',')}
        ON CONFLICT (platform, sku, date, source) DO UPDATE SET
          impressions=EXCLUDED.impressions, clicks=EXCLUDED.clicks, spend=EXCLUDED.spend,
-         carts=EXCLUDED.carts, orders=EXCLUDED.orders,
+         carts=EXCLUDED.carts, orders=EXCLUDED.orders, orders_sum=EXCLUDED.orders_sum,
          seller_article=COALESCE(EXCLUDED.seller_article, mp_ad_daily.seller_article), synced_at=now()`,
       params,
     );
@@ -284,7 +284,8 @@ export async function adReport(platform: string, opts: RangeOpts = {}): Promise<
     `WITH ad AS (
        SELECT date, sku,
               sum(impressions) AS impressions, sum(clicks) AS clicks,
-              sum(spend) AS spend, sum(carts) AS carts_ad, sum(orders) AS orders_ad
+              sum(spend) AS spend, sum(carts) AS carts_ad, sum(orders) AS orders_ad,
+              sum(orders_sum) AS orders_sum_ad
        FROM mp_ad_daily
        WHERE platform='wb' AND date BETWEEN $1::date AND $2::date
        GROUP BY date, sku
@@ -307,7 +308,7 @@ export async function adReport(platform: string, opts: RangeOpts = {}): Promise<
             COALESCE(a.sku, s.sku)   AS sku,
             COALESCE(ar.seller_article, COALESCE(a.sku, s.sku)) AS seller_article,
             COALESCE(nm.product_name, s.product_name, s.sku, a.sku) AS product_name,
-            a.impressions, a.clicks, a.spend, a.carts_ad, a.orders_ad,
+            a.impressions, a.clicks, a.spend, a.carts_ad, a.orders_ad, a.orders_sum_ad,
             s.views, s.cart, s.orders_count, s.orders_sum, s.buyouts_count, s.buyouts_sum
      FROM ad a
      FULL OUTER JOIN sales s ON a.date = s.date AND a.sku = s.sku
