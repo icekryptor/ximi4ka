@@ -123,7 +123,7 @@ const MpAdsReport = () => {
   const { dates, byDay, byDaySku, skus } = useMemo(() => {
     const byDay = new Map<string, Agg>()
     const byDaySku = new Map<string, Map<string, Agg>>()
-    const skuName = new Map<string, string>()
+    const skuMeta = new Map<string, { name: string; article: string }>()
     for (const r of rows) {
       const d = r.date.slice(0, 10)
       if (!byDay.has(d)) byDay.set(d, zero())
@@ -132,10 +132,12 @@ const MpAdsReport = () => {
       const m = byDaySku.get(d)!
       if (!m.has(r.sku)) m.set(r.sku, zero())
       add(m.get(r.sku)!, r)
-      if (!skuName.has(r.sku)) skuName.set(r.sku, r.product_name)
+      if (!skuMeta.has(r.sku)) skuMeta.set(r.sku, { name: r.product_name, article: r.seller_article || r.sku })
     }
     const dates = [...byDay.keys()].sort((a, b) => b.localeCompare(a))
-    const skus = [...skuName.entries()].map(([sku, name]) => ({ sku, name })).sort((a, b) => a.sku.localeCompare(b.sku))
+    const skus = [...skuMeta.entries()]
+      .map(([sku, meta]) => ({ sku, name: meta.name, article: meta.article }))
+      .sort((a, b) => a.article.localeCompare(b.article))
     return { dates, byDay, byDaySku, skus }
   }, [rows])
 
@@ -226,7 +228,7 @@ const MpAdsReport = () => {
                       {isOpen && [...arts.entries()].sort((x, y) => x[0].localeCompare(y[0])).map(([sku, sa]) => (
                         <tr key={d + sku} className="border-b border-brand-border/30 bg-muted/20 text-brand-text-secondary">
                           <td className="py-1 pr-3 pl-7 whitespace-nowrap sticky left-0 bg-muted/20 text-xs">
-                            <span className="font-mono align-middle" title={skus.find(s => s.sku === sku)?.name}>{sku}</span>
+                            <span className="font-mono align-middle" title={skus.find(s => s.sku === sku)?.name}>{skus.find(s => s.sku === sku)?.article ?? sku}</span>
                           </td>
                           {METRICS.map((m) => (
                             <td key={m.key} className="py-1 px-2 text-right tabular-nums text-xs">
@@ -261,7 +263,7 @@ const MpAdsReport = () => {
               <div className="mt-1 space-y-1">
                 {skus.map((s) => (
                   <div key={s.sku} className="flex items-center">
-                    <div className="w-44 shrink-0 pr-2 truncate font-mono text-xs text-brand-text" title={s.name}>{s.sku}</div>
+                    <div className="w-44 shrink-0 pr-2 truncate font-mono text-xs text-brand-text" title={s.name}>{s.article}</div>
                     <div className="flex gap-1">
                       {[...dates].reverse().map((d) => {
                         const sa = byDaySku.get(d)?.get(s.sku)

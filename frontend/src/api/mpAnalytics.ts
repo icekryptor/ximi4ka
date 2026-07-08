@@ -43,6 +43,7 @@ export interface MpRange {
 export interface MpAdRow {
   date: string
   sku: string
+  seller_article: string
   product_name: string
   // реклама (mp_ad_daily)
   impressions: number | null

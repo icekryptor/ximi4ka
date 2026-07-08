@@ -247,7 +247,7 @@ export async function importAdRows(
   const clean = input.filter((r) => r.date && r.sku && r.source);
   for (let i = 0; i < clean.length; i += INSERT_CHUNK) {
     const chunk = clean.slice(i, i + INSERT_CHUNK);
-    const cols = 9;
+    const cols = 10;
     const values: string[] = [];
     const params: unknown[] = [];
     chunk.forEach((r, idx) => {
@@ -256,14 +256,16 @@ export async function importAdRows(
       params.push(
         platform, String(r.date).slice(0, 10), String(r.sku), String(r.source),
         r.impressions ?? null, r.clicks ?? null, r.spend ?? null, r.carts ?? null, r.orders ?? null,
+        (r as any).seller_article ?? null,
       );
     });
     await AppDataSource.query(
-      `INSERT INTO mp_ad_daily (platform, date, sku, source, impressions, clicks, spend, carts, orders)
+      `INSERT INTO mp_ad_daily (platform, date, sku, source, impressions, clicks, spend, carts, orders, seller_article)
        VALUES ${values.join(',')}
        ON CONFLICT (platform, sku, date, source) DO UPDATE SET
          impressions=EXCLUDED.impressions, clicks=EXCLUDED.clicks, spend=EXCLUDED.spend,
-         carts=EXCLUDED.carts, orders=EXCLUDED.orders, synced_at=now()`,
+         carts=EXCLUDED.carts, orders=EXCLUDED.orders,
+         seller_article=COALESCE(EXCLUDED.seller_article, mp_ad_daily.seller_article), synced_at=now()`,
       params,
     );
   }
@@ -296,15 +298,21 @@ export async function adReport(platform: string, opts: RangeOpts = {}): Promise<
      names AS (
        SELECT sku, max(product_name) AS product_name FROM mp_funnel_daily
        WHERE platform='wb' AND product_name IS NOT NULL GROUP BY sku
+     ),
+     arts AS (
+       SELECT sku, max(seller_article) AS seller_article FROM mp_ad_daily
+       WHERE platform='wb' AND seller_article IS NOT NULL GROUP BY sku
      )
      SELECT COALESCE(a.date, s.date) AS date,
             COALESCE(a.sku, s.sku)   AS sku,
+            COALESCE(ar.seller_article, COALESCE(a.sku, s.sku)) AS seller_article,
             COALESCE(nm.product_name, s.product_name, s.sku, a.sku) AS product_name,
             a.impressions, a.clicks, a.spend, a.carts_ad, a.orders_ad,
             s.views, s.cart, s.orders_count, s.orders_sum, s.buyouts_count, s.buyouts_sum
      FROM ad a
      FULL OUTER JOIN sales s ON a.date = s.date AND a.sku = s.sku
      LEFT JOIN names nm ON nm.sku = COALESCE(a.sku, s.sku)
+     LEFT JOIN arts ar ON ar.sku = COALESCE(a.sku, s.sku)
      WHERE COALESCE(a.date, s.date) BETWEEN $1::date AND $2::date
      ORDER BY date DESC, sku`,
     [from, to],
