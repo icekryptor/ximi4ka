@@ -239,46 +239,69 @@ export async function summaryByProduct(platform: string, opts: RangeOpts = {}): 
   );
 }
 
+/** Импорт дневной рекламы по источникам (au/apk/cpc) в mp_ad_daily. */
+export async function importAdRows(
+  platform: 'wb' | 'ozon',
+  input: Array<{ date: string; sku: string; source: string } & Record<string, number | null>>,
+): Promise<number> {
+  const clean = input.filter((r) => r.date && r.sku && r.source);
+  for (let i = 0; i < clean.length; i += INSERT_CHUNK) {
+    const chunk = clean.slice(i, i + INSERT_CHUNK);
+    const cols = 9;
+    const values: string[] = [];
+    const params: unknown[] = [];
+    chunk.forEach((r, idx) => {
+      const b = idx * cols;
+      values.push('(' + Array.from({ length: cols }, (_, k) => `$${b + k + 1}`).join(',') + ')');
+      params.push(
+        platform, String(r.date).slice(0, 10), String(r.sku), String(r.source),
+        r.impressions ?? null, r.clicks ?? null, r.spend ?? null, r.carts ?? null, r.orders ?? null,
+      );
+    });
+    await AppDataSource.query(
+      `INSERT INTO mp_ad_daily (platform, date, sku, source, impressions, clicks, spend, carts, orders)
+       VALUES ${values.join(',')}
+       ON CONFLICT (platform, sku, date, source) DO UPDATE SET
+         impressions=EXCLUDED.impressions, clicks=EXCLUDED.clicks, spend=EXCLUDED.spend,
+         carts=EXCLUDED.carts, orders=EXCLUDED.orders, synced_at=now()`,
+      params,
+    );
+  }
+  return clean.length;
+}
+
 /**
- * Отчёт по рекламе по дням: расход/клики/показы из wb_ad_stats (WB ads API) +
- * знаменатели из аналитики продаж (mp_funnel_daily). ДРР, CPC, стоимость корзины/заказа.
- * Ozon-рекламы пока нет → только WB.
+ * Отчёт по рекламе — уровень (дата, артикул): сырьё рекламы (mp_ad_daily, источники
+ * au/apk/cpc суммарно) + продажи (mp_funnel_daily). Дневные строки и ДРР/CTR/ROAS
+ * фронт считает из сумм. Ozon-рекламы пока нет → только WB.
  */
 export async function adReport(platform: string, opts: RangeOpts = {}): Promise<any[]> {
   if (platform !== 'wb') return [];
   const { from, to } = resolveRange(opts);
   return AppDataSource.query(
     `WITH ad AS (
-       SELECT date,
-              sum(ad_spend) AS spend,
-              sum(clicks)   AS clicks,
-              sum(views)    AS impressions,
-              sum(atbs)     AS carts_ad
-       FROM wb_ad_stats
-       WHERE date BETWEEN $1::date AND $2::date
-       GROUP BY date
+       SELECT date, sku,
+              sum(impressions) AS impressions, sum(clicks) AS clicks,
+              sum(spend) AS spend, sum(carts) AS carts_ad, sum(orders) AS orders_ad
+       FROM mp_ad_daily
+       WHERE platform='wb' AND date BETWEEN $1::date AND $2::date
+       GROUP BY date, sku
      ),
      sales AS (
-       SELECT date,
-              sum(orders_sum)   AS orders_sum,
-              sum(buyouts_sum)  AS buyouts_sum,
-              sum(cart)         AS cart,
-              sum(orders_count) AS orders_count
+       SELECT date, sku, views, cart, orders_count, orders_sum,
+              buyouts_count, buyouts_sum, product_name
        FROM mp_funnel_daily
        WHERE platform='wb' AND date BETWEEN $1::date AND $2::date
-       GROUP BY date
      )
-     SELECT a.date,
-            a.spend, a.clicks, a.impressions, a.carts_ad,
-            s.orders_sum, s.buyouts_sum, s.cart, s.orders_count,
-            round((a.spend / NULLIF(s.orders_sum,0)  * 100)::numeric, 1) AS drr_orders,
-            round((a.spend / NULLIF(s.buyouts_sum,0) * 100)::numeric, 1) AS drr_buyouts,
-            round((a.spend / NULLIF(a.clicks,0))::numeric, 2)            AS cpc,
-            round((a.spend / NULLIF(s.cart,0))::numeric, 2)              AS cost_cart,
-            round((a.spend / NULLIF(s.orders_count,0))::numeric, 2)      AS cost_order
+     SELECT COALESCE(a.date, s.date) AS date,
+            COALESCE(a.sku, s.sku)   AS sku,
+            COALESCE(s.product_name, s.sku, a.sku) AS product_name,
+            a.impressions, a.clicks, a.spend, a.carts_ad, a.orders_ad,
+            s.views, s.cart, s.orders_count, s.orders_sum, s.buyouts_count, s.buyouts_sum
      FROM ad a
-     LEFT JOIN sales s ON s.date = a.date
-     ORDER BY a.date DESC`,
+     FULL OUTER JOIN sales s ON a.date = s.date AND a.sku = s.sku
+     WHERE COALESCE(a.date, s.date) BETWEEN $1::date AND $2::date
+     ORDER BY date DESC, sku`,
     [from, to],
   );
 }

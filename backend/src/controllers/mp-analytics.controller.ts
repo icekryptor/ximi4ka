@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
-import { syncWbFunnel, dailyRows, summaryByProduct, importFunnelRows, adReport } from '../services/mp-analytics/mp-analytics.service';
+import { syncWbFunnel, dailyRows, summaryByProduct, importFunnelRows, adReport, importAdRows } from '../services/mp-analytics/mp-analytics.service';
 
 const num = (v: unknown): number | null => (v == null ? null : Number(v));
 const NUM_FIELDS = [
   'views', 'cart', 'orders_count', 'orders_sum', 'buyouts_count', 'buyouts_sum',
   'cancels_count', 'returns_count', 'cart_conv', 'order_conv', 'buyout_percent',
   'avg_price', 'stock_end', 'share_pct', 'orders_sum_prev', 'orders_sum_delta',
-  'spend', 'clicks', 'impressions', 'carts_ad', 'drr_orders', 'drr_buyouts',
+  'spend', 'clicks', 'impressions', 'carts_ad', 'orders_ad', 'drr_orders', 'drr_buyouts',
   'cpc', 'cost_cart', 'cost_order',
 ];
 const mapNums = (r: any) => {
@@ -54,6 +54,20 @@ export const mpAnalyticsController = {
     } catch (e: any) {
       console.error('[mp-analytics.ads]', e?.message || e);
       res.status(500).json({ error: 'Ошибка загрузки отчёта по рекламе' });
+    }
+  },
+
+  /** Импорт дневной рекламы по источникам (au/apk/cpc) из РК-выгрузок. */
+  async adImport(req: Request, res: Response) {
+    try {
+      const { platform, rows } = req.body as { platform?: 'wb' | 'ozon'; rows?: any[] };
+      if ((platform !== 'wb' && platform !== 'ozon') || !Array.isArray(rows) || !rows.length) {
+        return res.status(400).json({ error: 'Нужны platform (wb|ozon) и непустой rows[]' });
+      }
+      res.json({ ok: true, upserted: await importAdRows(platform, rows) });
+    } catch (e: any) {
+      console.error('[mp-analytics.adImport]', e?.message || e);
+      res.status(500).json({ error: String(e?.message || 'Ошибка импорта рекламы') });
     }
   },
 
