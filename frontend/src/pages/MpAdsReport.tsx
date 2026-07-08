@@ -117,8 +117,12 @@ const renderCell = (key: string, a: Agg) => {
   return cellFor(key, a)
 }
 
+type Platform = 'wb' | 'ozon'
+const PLATFORMS: Array<{ key: Platform; label: string }> = [{ key: 'wb', label: 'ВБ' }, { key: 'ozon', label: 'Озон' }]
+
 const MpAdsReport = () => {
   const toast = useToast()
+  const [platform, setPlatform] = useState<Platform>('wb')
   const [days, setDays] = useState(30)
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
@@ -140,12 +144,12 @@ const MpAdsReport = () => {
     setLoading(true)
     try {
       const req: MpRange = from && to ? { from, to } : { days }
-      setRows(await mpAnalyticsApi.ads('wb', req))
+      setRows(await mpAnalyticsApi.ads(platform, req))
     } catch (err) {
       console.error('ads report load failed', err)
       toast.error('Не удалось загрузить отчёт по рекламе')
     } finally { setLoading(false) }
-  }, [days, from, to, toast])
+  }, [platform, days, from, to, toast])
   useEffect(() => { load() }, [load])
 
   // агрегаты по бакетам (день/неделя) + по (бакет, артикул). Текущий день скрываем.
@@ -190,6 +194,14 @@ const MpAdsReport = () => {
         <div className="flex items-center space-x-3">
           <Megaphone className="h-6 w-6 text-primary-500" />
           <h1 className="text-2xl font-bold text-brand-text">Реклама</h1>
+          <div className="ml-1 inline-flex rounded-xl border border-brand-border bg-card p-0.5">
+            {PLATFORMS.map((p) => (
+              <button key={p.key} onClick={() => setPlatform(p.key)}
+                className={`px-3 py-1 rounded-lg text-sm font-medium transition ${platform === p.key ? 'bg-primary-500 text-white' : 'text-brand-text-secondary hover:text-brand-text'}`}>
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="flex gap-1 rounded-xl border border-brand-border p-0.5">
           <button onClick={() => setView('table')} className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm ${view === 'table' ? 'bg-primary-500 text-white' : 'text-brand-text-secondary'}`}>
@@ -240,7 +252,11 @@ const MpAdsReport = () => {
       {loading ? (
         <div className="flex items-center justify-center py-20"><div className="animate-spin h-8 w-8 border-4 border-primary-500 border-t-transparent rounded-full" /></div>
       ) : dates.length === 0 ? (
-        <div className="card !p-10 text-center text-brand-text-secondary">Рекламных данных за период нет.</div>
+        <div className="card !p-10 text-center text-brand-text-secondary">
+          {platform === 'ozon'
+            ? 'Рекламных данных Ozon пока нет — подключите Ozon Performance API или загрузите выгрузку кампаний.'
+            : 'Рекламных данных за период нет.'}
+        </div>
       ) : view === 'table' ? (
         <div className="card">
           <h2 className="mb-3 text-sm font-semibold text-brand-text">По {gran === 'week' ? 'неделям' : 'дням'} ({periodLabel}) — жми [+] для разбивки по артикулам</h2>
@@ -364,7 +380,7 @@ const MpAdsReport = () => {
           </div>
         </div>
         ) : (
-          <PromoDigits range={from && to ? { from, to } : { days }} gran={gran} />
+          <PromoDigits range={from && to ? { from, to } : { days }} gran={gran} platform={platform} />
         )
       )}
     </div>

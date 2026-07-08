@@ -49,9 +49,10 @@ const dayLabel = (iso: string) => new Date(iso).toLocaleDateString('ru-RU', { da
 interface Props {
   range: MpRange
   gran: 'day' | 'week'
+  platform?: 'wb' | 'ozon'
 }
 
-export const PromoDigits = ({ range, gran }: Props) => {
+export const PromoDigits = ({ range, gran, platform = 'wb' }: Props) => {
   const [rows, setRows] = useState<MpAdDetailRow[]>([])
   const [adsRows, setAdsRows] = useState<MpAdRow[]>([]) // для общего % выкупа (из воронки)
   const [loading, setLoading] = useState(true)
@@ -60,11 +61,11 @@ export const PromoDigits = ({ range, gran }: Props) => {
   useEffect(() => {
     let alive = true
     setLoading(true)
-    Promise.all([mpAnalyticsApi.adsDetail('wb', range), mpAnalyticsApi.ads('wb', range)])
+    Promise.all([mpAnalyticsApi.adsDetail(platform, range), mpAnalyticsApi.ads(platform, range)])
       .then(([d, a]) => { if (alive) { setRows(d); setAdsRows(a) } })
       .finally(() => { if (alive) setLoading(false) })
     return () => { alive = false }
-  }, [range.days, range.from, range.to])
+  }, [platform, range.days, range.from, range.to])
 
   const today = new Date().toISOString().slice(0, 10)
 

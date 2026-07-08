@@ -13,9 +13,12 @@ const nextMonth = (): string => {
 }
 
 type Row = MpPlanRow & { _orders: string; _drrz: string }
+type Platform = 'wb' | 'ozon'
+const CHANNEL: Record<Platform, string> = { wb: 'ВБ', ozon: 'Озон' }
 
 const MpPlanning = () => {
   const toast = useToast()
+  const [platform, setPlatform] = useState<Platform>('wb')
   const [month, setMonth] = useState(nextMonth())
   const [loading, setLoading] = useState(true)
   const [rows, setRows] = useState<Row[]>([])
@@ -23,12 +26,12 @@ const MpPlanning = () => {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const data = await mpAnalyticsApi.plan('wb', month)
+      const data = await mpAnalyticsApi.plan(platform, month)
       setRows(data.map((r) => ({ ...r, _orders: r.orders_sum != null ? String(r.orders_sum) : '', _drrz: r.drrz != null ? String(r.drrz) : '' })))
     } catch {
       toast.error('Не удалось загрузить план')
     } finally { setLoading(false) }
-  }, [month, toast])
+  }, [platform, month, toast])
   useEffect(() => { load() }, [load])
 
   const setField = (sku: string, field: '_orders' | '_drrz', val: string) =>
@@ -38,7 +41,7 @@ const MpPlanning = () => {
     const orders = r._orders === '' ? null : Number(r._orders)
     const drrz = r._drrz === '' ? null : Number(r._drrz)
     try {
-      await mpAnalyticsApi.planSave('wb', r.sku, month, orders, drrz)
+      await mpAnalyticsApi.planSave(platform, r.sku, month, orders, drrz)
     } catch (e: any) {
       toast.error('Ошибка сохранения: ' + (e.response?.data?.error || e.message))
     }
@@ -73,13 +76,23 @@ const MpPlanning = () => {
           <CalendarRange className="h-6 w-6 text-primary-500" />
           <h1 className="text-2xl font-bold text-brand-text">Планирование продвижения</h1>
         </div>
-        <input type="month" value={month} onChange={(e) => setMonth(e.target.value)}
-          className="px-3 py-2 rounded-xl text-sm border border-brand-border bg-card text-brand-text-secondary" />
+        <div className="flex items-center gap-2">
+          <div className="inline-flex rounded-xl border border-brand-border bg-card p-0.5">
+            {(['wb', 'ozon'] as Platform[]).map((p) => (
+              <button key={p} onClick={() => setPlatform(p)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${platform === p ? 'bg-primary-500 text-white' : 'text-brand-text-secondary hover:text-brand-text'}`}>
+                {CHANNEL[p]}
+              </button>
+            ))}
+          </div>
+          <input type="month" value={month} onChange={(e) => setMonth(e.target.value)}
+            className="px-3 py-2 rounded-xl text-sm border border-brand-border bg-card text-brand-text-secondary" />
+        </div>
       </div>
 
       <div className="text-sm text-brand-text-secondary">
         Задай план на месяц по артикулам: <b>Сумма заказов</b> и <b>ДРРз</b>. Бюджет = сумма×ДРРз; маржа — из
-        актуальной юнитки (канал ВБ); чистая прибыль = сумма заказов × маржа.
+        актуальной юнитки (канал {CHANNEL[platform]}); чистая прибыль = сумма заказов × маржа.
       </div>
 
       {loading ? (
