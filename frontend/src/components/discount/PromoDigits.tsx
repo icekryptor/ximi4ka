@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
-import { mpAnalyticsApi, MpAdDetailRow, MpRange } from '../../api/mpAnalytics'
+import { mpAnalyticsApi, MpAdDetailRow, MpAdRow, MpRange } from '../../api/mpAnalytics'
 
 // Поиск = au+cpc, Полки = apk
 const SEARCH = new Set(['au', 'cpc'])
@@ -53,15 +53,15 @@ interface Props {
 
 export const PromoDigits = ({ range, gran }: Props) => {
   const [rows, setRows] = useState<MpAdDetailRow[]>([])
+  const [adsRows, setAdsRows] = useState<MpAdRow[]>([]) // для общего % выкупа (из воронки)
   const [loading, setLoading] = useState(true)
   const [activeSku, setActiveSku] = useState<string | null>(null)
 
   useEffect(() => {
     let alive = true
     setLoading(true)
-    mpAnalyticsApi
-      .adsDetail('wb', range)
-      .then((d) => { if (alive) setRows(d) })
+    Promise.all([mpAnalyticsApi.adsDetail('wb', range), mpAnalyticsApi.ads('wb', range)])
+      .then(([d, a]) => { if (alive) { setRows(d); setAdsRows(a) } })
       .finally(() => { if (alive) setLoading(false) })
     return () => { alive = false }
   }, [range.days, range.from, range.to])
@@ -90,6 +90,21 @@ export const PromoDigits = ({ range, gran }: Props) => {
     const buckets = [...grid.keys()].sort((a, b) => b.localeCompare(a))
     return { buckets, grid }
   }, [rows, curSku, gran, today])
+
+  // общий % выкупа по артикулу (из воронки, не по источникам)
+  const buyoutByBucket = useMemo(() => {
+    const m = new Map<string, { orders: number; buyouts: number }>()
+    for (const r of adsRows) {
+      const iso = r.date.slice(0, 10)
+      if (iso >= today || r.sku !== curSku) continue
+      const key = gran === 'week' ? weekStart(iso) : iso
+      if (!m.has(key)) m.set(key, { orders: 0, buyouts: 0 })
+      const c = m.get(key)!
+      c.orders += r.orders_count ?? 0
+      c.buyouts += r.buyouts_count ?? 0
+    }
+    return m
+  }, [adsRows, curSku, gran, today])
 
   const bucketLabel = (key: string) =>
     gran === 'week'
@@ -139,6 +154,14 @@ export const PromoDigits = ({ range, gran }: Props) => {
                 ))}
               </Fragment>
             ))}
+            {/* Конв. в выкуп — общий по артикулу (из воронки) */}
+            <tr className="border-t border-brand-border/70 border-b border-brand-border/40">
+              <td colSpan={2} className="py-1 pr-2 font-semibold text-brand-text whitespace-nowrap sticky left-0 bg-card">Конв. в выкуп (общий)</td>
+              {buckets.map((b) => {
+                const bo = buyoutByBucket.get(b)
+                return <td key={b} className="py-1 px-1.5 text-right tabular-nums font-medium text-brand-text">{bo ? pctr(bo.buyouts, bo.orders) : '—'}</td>
+              })}
+            </tr>
           </tbody>
         </table>
       </div>
