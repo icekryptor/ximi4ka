@@ -1,17 +1,16 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Megaphone } from 'lucide-react'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { Megaphone, Table2, Grid3x3, Plus, Minus } from 'lucide-react'
 import { mpAnalyticsApi, MpAdRow, MpRange } from '../api/mpAnalytics'
 import { useToast } from '../contexts/ToastContext'
 
-const money = (v: number | null): string =>
-  v == null ? '—' : `${Math.round(v).toLocaleString('ru-RU')} ₽`
-const rub2 = (v: number | null): string => (v == null ? '—' : `${v.toFixed(2)} ₽`)
-const int = (v: number | null): string => (v == null ? '—' : Math.round(v).toLocaleString('ru-RU'))
+// ── форматтеры ──
+const money = (v: number): string => `${Math.round(v).toLocaleString('ru-RU')} ₽`
+const int = (v: number): string => Math.round(v).toLocaleString('ru-RU')
 const pct = (v: number | null): string => (v == null ? '—' : `${v.toFixed(1)}%`)
-const dayLabel = (iso: string) =>
-  new Date(iso).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })
+const x2 = (v: number | null): string => (v == null ? '—' : v.toFixed(2))
+const dayLabel = (iso: string) => new Date(iso).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })
 
-// ДРР-хитмап: <7 зелёный, 7–9 светло-зелёный, 9–12 жёлтый, >12 красный
+// ── ДРР-хитмап цвета: <7 зелёный, 7–9 светло-зелёный, 9–12 жёлтый, >12 красный ──
 const drrColor = (v: number | null): { bg: string; fg: string } => {
   if (v == null) return { bg: 'transparent', fg: 'inherit' }
   if (v < 7) return { bg: '#16a34a', fg: '#fff' }
@@ -19,59 +18,93 @@ const drrColor = (v: number | null): { bg: string; fg: string } => {
   if (v < 12) return { bg: '#facc15', fg: '#422006' }
   return { bg: '#ef4444', fg: '#fff' }
 }
-
 const DrrCell = ({ v }: { v: number | null }) => {
   const c = drrColor(v)
   return (
-    <span
-      className="inline-flex min-w-[3.4rem] items-center justify-center rounded-md px-2 py-0.5 text-xs font-semibold tabular-nums ring-1 ring-inset ring-black/5"
-      style={{ backgroundColor: c.bg, color: c.fg }}
-    >
-      {pct(v)}
-    </span>
+    <span className="inline-flex min-w-[3rem] items-center justify-center rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums ring-1 ring-inset ring-black/5"
+      style={{ backgroundColor: c.bg, color: c.fg }}>{pct(v)}</span>
   )
 }
 
-const PERIODS = [
-  { days: 7, label: '7 дней' },
-  { days: 30, label: '30 дней' },
-  { days: 90, label: '90 дней' },
-  { days: 400, label: 'Весь период' },
-]
+// сумма метрик
+type Agg = {
+  impressions: number; clicks: number; spend: number; carts_ad: number; orders_ad: number
+  cart: number; orders_count: number; orders_sum: number; buyouts_count: number; buyouts_sum: number
+}
+const zero = (): Agg => ({ impressions: 0, clicks: 0, spend: 0, carts_ad: 0, orders_ad: 0, cart: 0, orders_count: 0, orders_sum: 0, buyouts_count: 0, buyouts_sum: 0 })
+const add = (a: Agg, r: MpAdRow) => {
+  a.impressions += r.impressions ?? 0; a.clicks += r.clicks ?? 0; a.spend += r.spend ?? 0
+  a.carts_ad += r.carts_ad ?? 0; a.orders_ad += r.orders_ad ?? 0; a.cart += r.cart ?? 0
+  a.orders_count += r.orders_count ?? 0; a.orders_sum += r.orders_sum ?? 0
+  a.buyouts_count += r.buyouts_count ?? 0; a.buyouts_sum += r.buyouts_sum ?? 0
+}
+const ratio = (a: number, b: number): number | null => (b ? (a / b) * 100 : null)
+const drr = (spend: number, rev: number): number | null => (rev ? (spend / rev) * 100 : null)
 
-const monthRange = (ym: string): { from: string; to: string } => {
+const PERIODS = [
+  { days: 7, label: '7 дней' }, { days: 30, label: '30 дней' },
+  { days: 90, label: '90 дней' }, { days: 400, label: 'Весь период' },
+]
+const monthRange = (ym: string) => {
   const [y, m] = ym.split('-').map(Number)
   const last = new Date(Date.UTC(y, m, 0)).getUTCDate()
   return { from: `${ym}-01`, to: `${ym}-${String(last).padStart(2, '0')}` }
 }
 
+// колонки метрик (день/артикул)
+const METRICS: Array<{ key: string; label: string }> = [
+  { key: 'spend', label: 'Расход' },
+  { key: 'impressions', label: 'Показы' },
+  { key: 'clicks', label: 'Клики' },
+  { key: 'ctr', label: 'CTR' },
+  { key: 'carts_ad', label: 'Корзины' },
+  { key: 'cart_conv', label: 'Конв.в корзину' },
+  { key: 'orders_ad', label: 'Заказы' },
+  { key: 'order_conv', label: 'Конв.в заказ' },
+  { key: 'cr', label: 'CR' },
+  { key: 'buyout_pct', label: '% выкупа' },
+  { key: 'orders_sum', label: 'Сумма заказов' },
+  { key: 'buyouts_sum', label: 'Сумма выкупов' },
+  { key: 'drrz', label: 'ДРРз' },
+  { key: 'drrv', label: 'ДРРв' },
+  { key: 'roas', label: 'ROAS' },
+]
+
+const cellFor = (key: string, a: Agg) => {
+  switch (key) {
+    case 'spend': return money(a.spend)
+    case 'impressions': return int(a.impressions)
+    case 'clicks': return int(a.clicks)
+    case 'ctr': return pct(ratio(a.clicks, a.impressions))
+    case 'carts_ad': return int(a.carts_ad)
+    case 'cart_conv': return pct(ratio(a.carts_ad, a.clicks))
+    case 'orders_ad': return int(a.orders_ad)
+    case 'order_conv': return pct(ratio(a.orders_ad, a.carts_ad))
+    case 'cr': return pct(ratio(a.orders_ad, a.clicks))
+    case 'buyout_pct': return pct(ratio(a.buyouts_count, a.orders_count))
+    case 'orders_sum': return money(a.orders_sum)
+    case 'buyouts_sum': return money(a.buyouts_sum)
+    case 'roas': return x2(a.spend ? a.orders_sum / a.spend : null)
+    default: return ''
+  }
+}
+
 const MpAdsReport = () => {
   const toast = useToast()
-  const [days, setDays] = useState(90)
+  const [days, setDays] = useState(30)
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [month, setMonth] = useState('')
-  const useRange = !!(from && to)
-  const periodLabel = useRange ? `${from} — ${to}` : `${days} дней`
+  const [view, setView] = useState<'table' | 'heatmap'>('table')
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
   const [rows, setRows] = useState<MpAdRow[]>([])
+  const useRange = !!(from && to)
 
-  const setPreset = (d: number) => {
-    setDays(d)
-    setFrom('')
-    setTo('')
-    setMonth('')
-  }
+  const setPreset = (d: number) => { setDays(d); setFrom(''); setTo(''); setMonth('') }
   const setMonthPeriod = (ym: string) => {
     setMonth(ym)
-    if (ym) {
-      const r = monthRange(ym)
-      setFrom(r.from)
-      setTo(r.to)
-    } else {
-      setFrom('')
-      setTo('')
-    }
+    if (ym) { const r = monthRange(ym); setFrom(r.from); setTo(r.to) } else { setFrom(''); setTo('') }
   }
 
   const load = useCallback(async () => {
@@ -82,135 +115,190 @@ const MpAdsReport = () => {
     } catch (err) {
       console.error('ads report load failed', err)
       toast.error('Не удалось загрузить отчёт по рекламе')
-    } finally {
-      setLoading(false)
-    }
+    } finally { setLoading(false) }
   }, [days, from, to, toast])
+  useEffect(() => { load() }, [load])
 
-  useEffect(() => {
-    load()
-  }, [load])
-
-  const totals = useMemo(() => {
-    const t = { spend: 0, clicks: 0, orders_sum: 0, buyouts_sum: 0, cart: 0, orders_count: 0 }
+  // агрегаты по дням + по (день, артикул)
+  const { dates, byDay, byDaySku, skus } = useMemo(() => {
+    const byDay = new Map<string, Agg>()
+    const byDaySku = new Map<string, Map<string, Agg>>()
+    const skuName = new Map<string, string>()
     for (const r of rows) {
-      t.spend += r.spend ?? 0
-      t.clicks += r.clicks ?? 0
-      t.orders_sum += r.orders_sum ?? 0
-      t.buyouts_sum += r.buyouts_sum ?? 0
-      t.cart += r.cart ?? 0
-      t.orders_count += r.orders_count ?? 0
+      const d = r.date.slice(0, 10)
+      if (!byDay.has(d)) byDay.set(d, zero())
+      add(byDay.get(d)!, r)
+      if (!byDaySku.has(d)) byDaySku.set(d, new Map())
+      const m = byDaySku.get(d)!
+      if (!m.has(r.sku)) m.set(r.sku, zero())
+      add(m.get(r.sku)!, r)
+      if (!skuName.has(r.sku)) skuName.set(r.sku, r.product_name)
     }
-    return t
+    const dates = [...byDay.keys()].sort((a, b) => b.localeCompare(a))
+    const skus = [...skuName.entries()].map(([sku, name]) => ({ sku, name })).sort((a, b) => a.sku.localeCompare(b.sku))
+    return { dates, byDay, byDaySku, skus }
   }, [rows])
 
-  const div = (a: number, b: number) => (b ? a / b : null)
+  const toggle = (d: string) =>
+    setExpanded((prev) => { const n = new Set(prev); n.has(d) ? n.delete(d) : n.add(d); return n })
+
+  const periodLabel = useRange ? `${from} — ${to}` : `${days} дней`
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center space-x-3">
-        <Megaphone className="h-6 w-6 text-primary-500" />
-        <h1 className="text-2xl font-bold text-brand-text">Реклама — ДРР</h1>
-      </div>
-
-      <div className="text-sm text-brand-text-secondary">
-        Расход и клики — из рекламы WB; заказы/выкупы/корзины — из аналитики продаж. ДРР ={' '}
-        расход ÷ выручка. Источник рекламы обновляется автосинком (сейчас данные за фев–март — WB API
-        временно ограничен, дорастёт).
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center space-x-3">
+          <Megaphone className="h-6 w-6 text-primary-500" />
+          <h1 className="text-2xl font-bold text-brand-text">Реклама</h1>
+        </div>
+        <div className="flex gap-1 rounded-xl border border-brand-border p-0.5">
+          <button onClick={() => setView('table')} className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm ${view === 'table' ? 'bg-primary-500 text-white' : 'text-brand-text-secondary'}`}>
+            <Table2 className="h-4 w-4" /> Таблица
+          </button>
+          <button onClick={() => setView('heatmap')} className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm ${view === 'heatmap' ? 'bg-primary-500 text-white' : 'text-brand-text-secondary'}`}>
+            <Grid3x3 className="h-4 w-4" /> Хитмап ДРР
+          </button>
+        </div>
       </div>
 
       {/* Период */}
       <div className="flex flex-wrap items-center gap-2">
         {PERIODS.map((p) => (
-          <button
-            key={p.days}
-            onClick={() => setPreset(p.days)}
-            className={`px-3 py-2 rounded-xl text-sm font-medium ${!useRange && days === p.days ? 'bg-primary-500 text-white' : 'bg-card border border-brand-border text-brand-text-secondary'}`}
-          >
-            {p.label}
-          </button>
+          <button key={p.days} onClick={() => setPreset(p.days)}
+            className={`px-3 py-2 rounded-xl text-sm font-medium ${!useRange && days === p.days ? 'bg-primary-500 text-white' : 'bg-card border border-brand-border text-brand-text-secondary'}`}>{p.label}</button>
         ))}
-        <input
-          type="month"
-          value={month}
-          onChange={(e) => setMonthPeriod(e.target.value)}
-          className="px-3 py-2 rounded-xl text-sm border border-brand-border bg-card text-brand-text-secondary"
-        />
+        <input type="month" value={month} onChange={(e) => setMonthPeriod(e.target.value)}
+          className="px-3 py-2 rounded-xl text-sm border border-brand-border bg-card text-brand-text-secondary" />
         <div className="flex items-center gap-1">
-          <input type="date" value={from} onChange={(e) => { setFrom(e.target.value); setMonth('') }}
-            className="px-2 py-2 rounded-xl text-sm border border-brand-border bg-card text-brand-text-secondary" />
+          <input type="date" value={from} onChange={(e) => { setFrom(e.target.value); setMonth('') }} className="px-2 py-2 rounded-xl text-sm border border-brand-border bg-card text-brand-text-secondary" />
           <span className="text-brand-text-secondary/60">—</span>
-          <input type="date" value={to} onChange={(e) => { setTo(e.target.value); setMonth('') }}
-            className="px-2 py-2 rounded-xl text-sm border border-brand-border bg-card text-brand-text-secondary" />
+          <input type="date" value={to} onChange={(e) => { setTo(e.target.value); setMonth('') }} className="px-2 py-2 rounded-xl text-sm border border-brand-border bg-card text-brand-text-secondary" />
         </div>
       </div>
 
       {/* Легенда ДРР */}
       <div className="flex items-center gap-3 text-xs text-brand-text-secondary">
         <span>ДРР:</span>
-        {[
-          { c: '#16a34a', t: '<7%' },
-          { c: '#86efac', t: '7–9%' },
-          { c: '#facc15', t: '9–12%' },
-          { c: '#ef4444', t: '>12%' },
-        ].map((x) => (
-          <span key={x.t} className="flex items-center gap-1">
-            <span className="inline-block h-3.5 w-5 rounded ring-1 ring-inset ring-black/5" style={{ backgroundColor: x.c }} />
-            {x.t}
-          </span>
+        {[{ c: '#16a34a', t: '<7%' }, { c: '#86efac', t: '7–9%' }, { c: '#facc15', t: '9–12%' }, { c: '#ef4444', t: '>12%' }].map((x) => (
+          <span key={x.t} className="flex items-center gap-1"><span className="inline-block h-3.5 w-5 rounded ring-1 ring-inset ring-black/5" style={{ backgroundColor: x.c }} />{x.t}</span>
         ))}
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="animate-spin h-8 w-8 border-4 border-primary-500 border-t-transparent rounded-full" />
-        </div>
-      ) : rows.length === 0 ? (
-        <div className="card !p-10 text-center text-brand-text-secondary">
-          Рекламных данных за период нет. Появятся, когда WB ads-синк догонит (сейчас есть фев–март 2026).
-        </div>
-      ) : (
+        <div className="flex items-center justify-center py-20"><div className="animate-spin h-8 w-8 border-4 border-primary-500 border-t-transparent rounded-full" /></div>
+      ) : dates.length === 0 ? (
+        <div className="card !p-10 text-center text-brand-text-secondary">Рекламных данных за период нет.</div>
+      ) : view === 'table' ? (
         <div className="card">
-          <h2 className="mb-3 text-sm font-semibold text-brand-text">По дням ({periodLabel})</h2>
+          <h2 className="mb-3 text-sm font-semibold text-brand-text">По дням ({periodLabel}) — жми [+] для разбивки по артикулам</h2>
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-brand-border text-left text-brand-text-secondary">
-                  <th className="py-2 pr-4 font-semibold whitespace-nowrap">Дата</th>
-                  <th className="py-2 pr-4 font-semibold text-right">Бюджет</th>
-                  <th className="py-2 pr-4 font-semibold text-right">ДРРз</th>
-                  <th className="py-2 pr-4 font-semibold text-right">ДРРв</th>
-                  <th className="py-2 pr-4 font-semibold text-right">CPC</th>
-                  <th className="py-2 pr-4 font-semibold text-right">Стоим. корзины</th>
-                  <th className="py-2 pr-4 font-semibold text-right">Стоим. заказа</th>
-                  <th className="py-2 font-semibold text-right">Клики</th>
+                  <th className="py-2 pr-3 font-semibold whitespace-nowrap sticky left-0 bg-card">Дата</th>
+                  {METRICS.map((m) => (<th key={m.key} className="py-2 px-2 font-semibold text-right whitespace-nowrap">{m.label}</th>))}
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-brand-border/70 font-semibold text-brand-text">
-                  <td className="py-2 pr-4">Всего / средн.</td>
-                  <td className="py-2 pr-4 text-right tabular-nums">{money(totals.spend)}</td>
-                  <td className="py-2 pr-4 text-right"><DrrCell v={div(totals.spend, totals.orders_sum) != null ? (totals.spend / totals.orders_sum) * 100 : null} /></td>
-                  <td className="py-2 pr-4 text-right"><DrrCell v={totals.buyouts_sum ? (totals.spend / totals.buyouts_sum) * 100 : null} /></td>
-                  <td className="py-2 pr-4 text-right tabular-nums">{rub2(div(totals.spend, totals.clicks))}</td>
-                  <td className="py-2 pr-4 text-right tabular-nums">{rub2(div(totals.spend, totals.cart))}</td>
-                  <td className="py-2 pr-4 text-right tabular-nums">{rub2(div(totals.spend, totals.orders_count))}</td>
-                  <td className="py-2 text-right tabular-nums">{int(totals.clicks)}</td>
-                </tr>
-                {rows.map((r) => (
-                  <tr key={r.date} className="border-b border-brand-border/50">
-                    <td className="py-1.5 pr-4 tabular-nums text-brand-text-secondary whitespace-nowrap">{dayLabel(r.date)}</td>
-                    <td className="py-1.5 pr-4 text-right tabular-nums text-brand-text">{money(r.spend)}</td>
-                    <td className="py-1.5 pr-4 text-right"><DrrCell v={r.drr_orders} /></td>
-                    <td className="py-1.5 pr-4 text-right"><DrrCell v={r.drr_buyouts} /></td>
-                    <td className="py-1.5 pr-4 text-right tabular-nums text-brand-text-secondary">{rub2(r.cpc)}</td>
-                    <td className="py-1.5 pr-4 text-right tabular-nums text-brand-text-secondary">{rub2(r.cost_cart)}</td>
-                    <td className="py-1.5 pr-4 text-right tabular-nums text-brand-text-secondary">{rub2(r.cost_order)}</td>
-                    <td className="py-1.5 text-right tabular-nums text-brand-text-secondary">{int(r.clicks)}</td>
-                  </tr>
-                ))}
+                {dates.map((d) => {
+                  const a = byDay.get(d)!
+                  const isOpen = expanded.has(d)
+                  const arts = byDaySku.get(d)!
+                  return (
+                    <Fragment key={d}>
+                      <tr className="border-b border-brand-border/60 hover:bg-muted/30 cursor-pointer" onClick={() => toggle(d)}>
+                        <td className="py-1.5 pr-3 font-medium text-brand-text whitespace-nowrap sticky left-0 bg-card">
+                          <span className="inline-flex items-center gap-1">
+                            <span className="inline-flex h-4 w-4 items-center justify-center rounded border border-brand-border text-brand-text-secondary">
+                              {isOpen ? <Minus className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+                            </span>
+                            {dayLabel(d)}
+                          </span>
+                        </td>
+                        {METRICS.map((m) => (
+                          <td key={m.key} className="py-1.5 px-2 text-right tabular-nums text-brand-text">
+                            {m.key === 'drrz' ? <DrrCell v={drr(a.spend, a.orders_sum)} />
+                              : m.key === 'drrv' ? <DrrCell v={drr(a.spend, a.buyouts_sum)} />
+                              : cellFor(m.key, a)}
+                          </td>
+                        ))}
+                      </tr>
+                      {isOpen && [...arts.entries()].sort((x, y) => x[0].localeCompare(y[0])).map(([sku, sa]) => (
+                        <tr key={d + sku} className="border-b border-brand-border/30 bg-muted/20 text-brand-text-secondary">
+                          <td className="py-1 pr-3 pl-7 whitespace-nowrap sticky left-0 bg-muted/20 text-xs">
+                            <span className="max-w-[160px] truncate inline-block align-middle" title={skus.find(s => s.sku === sku)?.name}>{skus.find(s => s.sku === sku)?.name ?? sku}</span>
+                          </td>
+                          {METRICS.map((m) => (
+                            <td key={m.key} className="py-1 px-2 text-right tabular-nums text-xs">
+                              {m.key === 'drrz' ? <DrrCell v={drr(sa.spend, sa.orders_sum)} />
+                                : m.key === 'drrv' ? <DrrCell v={drr(sa.spend, sa.buyouts_sum)} />
+                                : cellFor(m.key, sa)}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </Fragment>
+                  )
+                })}
               </tbody>
             </table>
+          </div>
+        </div>
+      ) : (
+        // ── Хитмап ДРР: строки — артикулы, столбцы — даты (свежие справа), низ — средний ДРР + бюджет ──
+        <div className="card">
+          <h2 className="mb-3 text-sm font-semibold text-brand-text">Хитмап ДРРз — артикулы × дни</h2>
+          <div className="overflow-x-auto">
+            <div className="inline-block">
+              <div className="flex">
+                <div className="w-44 shrink-0" />
+                <div className="flex gap-1">
+                  {[...dates].reverse().map((d) => (
+                    <div key={d} className="w-10 shrink-0 text-center text-[10px] text-brand-text-secondary/80">{dayLabel(d)}</div>
+                  ))}
+                </div>
+              </div>
+              <div className="mt-1 space-y-1">
+                {skus.map((s) => (
+                  <div key={s.sku} className="flex items-center">
+                    <div className="w-44 shrink-0 pr-2 truncate text-xs text-brand-text" title={s.name}>{s.name}</div>
+                    <div className="flex gap-1">
+                      {[...dates].reverse().map((d) => {
+                        const sa = byDaySku.get(d)?.get(s.sku)
+                        const v = sa ? drr(sa.spend, sa.orders_sum) : null
+                        const c = drrColor(v)
+                        return (
+                          <div key={d} className="flex h-7 w-10 shrink-0 items-center justify-center rounded-md text-[9px] font-semibold tabular-nums ring-1 ring-inset ring-black/5"
+                            style={{ backgroundColor: c.bg === 'transparent' ? '#f1eef6' : c.bg, color: c.bg === 'transparent' ? '#a9a2b8' : c.fg }}
+                            title={sa ? `${s.name} · ${dayLabel(d)} · ДРРз ${pct(v)} · расход ${money(sa.spend)}` : 'нет'}>
+                            {v == null ? '·' : v.toFixed(0)}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
+                {/* нижняя строка: средний ДРР по дню + бюджет-тег */}
+                <div className="flex items-center pt-1 border-t border-brand-border">
+                  <div className="w-44 shrink-0 pr-2 text-xs font-semibold text-brand-text">Средний ДРР / бюджет</div>
+                  <div className="flex gap-1">
+                    {[...dates].reverse().map((d) => {
+                      const a = byDay.get(d)!
+                      const v = drr(a.spend, a.orders_sum)
+                      const c = drrColor(v)
+                      return (
+                        <div key={d} className="flex h-9 w-10 shrink-0 flex-col items-center justify-center rounded-md text-[9px] font-semibold ring-1 ring-inset ring-black/5"
+                          style={{ backgroundColor: c.bg === 'transparent' ? '#f1eef6' : c.bg, color: c.bg === 'transparent' ? '#a9a2b8' : c.fg }}
+                          title={`${dayLabel(d)} · средний ДРРз ${pct(v)} · бюджет ${money(a.spend)}`}>
+                          <span>{v == null ? '·' : v.toFixed(0)}</span>
+                          <span className="opacity-80 text-[8px]">{Math.round(a.spend / 1000)}к</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

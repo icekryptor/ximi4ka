@@ -292,14 +292,19 @@ export async function adReport(platform: string, opts: RangeOpts = {}): Promise<
               buyouts_count, buyouts_sum, product_name
        FROM mp_funnel_daily
        WHERE platform='wb' AND date BETWEEN $1::date AND $2::date
+     ),
+     names AS (
+       SELECT sku, max(product_name) AS product_name FROM mp_funnel_daily
+       WHERE platform='wb' AND product_name IS NOT NULL GROUP BY sku
      )
      SELECT COALESCE(a.date, s.date) AS date,
             COALESCE(a.sku, s.sku)   AS sku,
-            COALESCE(s.product_name, s.sku, a.sku) AS product_name,
+            COALESCE(nm.product_name, s.product_name, s.sku, a.sku) AS product_name,
             a.impressions, a.clicks, a.spend, a.carts_ad, a.orders_ad,
             s.views, s.cart, s.orders_count, s.orders_sum, s.buyouts_count, s.buyouts_sum
      FROM ad a
      FULL OUTER JOIN sales s ON a.date = s.date AND a.sku = s.sku
+     LEFT JOIN names nm ON nm.sku = COALESCE(a.sku, s.sku)
      WHERE COALESCE(a.date, s.date) BETWEEN $1::date AND $2::date
      ORDER BY date DESC, sku`,
     [from, to],

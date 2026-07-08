@@ -39,22 +39,24 @@ export interface MpRange {
   to?: string
 }
 
-/** Строка отчёта по рекламе за день */
+/** Строка отчёта по рекламе — уровень (дата, артикул); фронт агрегирует и считает метрики */
 export interface MpAdRow {
   date: string
-  spend: number | null
-  clicks: number | null
+  sku: string
+  product_name: string
+  // реклама (mp_ad_daily)
   impressions: number | null
+  clicks: number | null
+  spend: number | null
   carts_ad: number | null
-  orders_sum: number | null
-  buyouts_sum: number | null
+  orders_ad: number | null
+  // продажи (mp_funnel_daily)
+  views: number | null
   cart: number | null
   orders_count: number | null
-  drr_orders: number | null
-  drr_buyouts: number | null
-  cpc: number | null
-  cost_cart: number | null
-  cost_order: number | null
+  orders_sum: number | null
+  buyouts_count: number | null
+  buyouts_sum: number | null
 }
 
 export const mpAnalyticsApi = {
