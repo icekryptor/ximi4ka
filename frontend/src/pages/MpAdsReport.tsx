@@ -9,6 +9,14 @@ const int = (v: number): string => Math.round(v).toLocaleString('ru-RU')
 const pct = (v: number | null): string => (v == null ? '—' : `${v.toFixed(1)}%`)
 const x2 = (v: number | null): string => (v == null ? '—' : v.toFixed(2))
 const dayLabel = (iso: string) => new Date(iso).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })
+// начало недели (пн) для группировки
+const weekStart = (iso: string): string => {
+  const d = new Date(iso + 'T00:00:00Z')
+  const dow = (d.getUTCDay() + 6) % 7 // пн=0
+  d.setUTCDate(d.getUTCDate() - dow)
+  return d.toISOString().slice(0, 10)
+}
+const todayIso = () => new Date().toISOString().slice(0, 10)
 
 // ── ДРР-хитмап цвета: <7 зелёный, 7–9 светло-зелёный, 9–12 жёлтый, >12 красный ──
 // приглушённая палитра — мягче для восприятия
@@ -115,6 +123,7 @@ const MpAdsReport = () => {
   const [to, setTo] = useState('')
   const [month, setMonth] = useState('')
   const [view, setView] = useState<'table' | 'heatmap'>('table')
+  const [gran, setGran] = useState<'day' | 'week'>('day')
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
   const [rows, setRows] = useState<MpAdRow[]>([])
@@ -138,17 +147,20 @@ const MpAdsReport = () => {
   }, [days, from, to, toast])
   useEffect(() => { load() }, [load])
 
-  // агрегаты по дням + по (день, артикул)
+  // агрегаты по бакетам (день/неделя) + по (бакет, артикул). Текущий день скрываем.
   const { dates, byDay, byDaySku, skus } = useMemo(() => {
     const byDay = new Map<string, Agg>()
     const byDaySku = new Map<string, Map<string, Agg>>()
     const skuMeta = new Map<string, { name: string; article: string }>()
+    const today = todayIso()
     for (const r of rows) {
-      const d = r.date.slice(0, 10)
-      if (!byDay.has(d)) byDay.set(d, zero())
-      add(byDay.get(d)!, r)
-      if (!byDaySku.has(d)) byDaySku.set(d, new Map())
-      const m = byDaySku.get(d)!
+      const iso = r.date.slice(0, 10)
+      if (iso >= today) continue // текущий день без данных — скрываем
+      const key = gran === 'week' ? weekStart(iso) : iso
+      if (!byDay.has(key)) byDay.set(key, zero())
+      add(byDay.get(key)!, r)
+      if (!byDaySku.has(key)) byDaySku.set(key, new Map())
+      const m = byDaySku.get(key)!
       if (!m.has(r.sku)) m.set(r.sku, zero())
       add(m.get(r.sku)!, r)
       if (!skuMeta.has(r.sku)) skuMeta.set(r.sku, { name: r.product_name, article: r.seller_article || r.sku })
@@ -158,7 +170,13 @@ const MpAdsReport = () => {
       .map(([sku, meta]) => ({ sku, name: meta.name, article: meta.article }))
       .sort((a, b) => a.article.localeCompare(b.article))
     return { dates, byDay, byDaySku, skus }
-  }, [rows])
+  }, [rows, gran])
+
+  // подпись бакета: день → DD.MM, неделя → DD.MM–DD.MM
+  const bucketLabel = (key: string) =>
+    gran === 'week'
+      ? `${dayLabel(key)}–${dayLabel(new Date(new Date(key + 'T00:00:00Z').getTime() + 6 * 864e5).toISOString().slice(0, 10))}`
+      : dayLabel(key)
 
   const toggle = (d: string) =>
     setExpanded((prev) => { const n = new Set(prev); n.has(d) ? n.delete(d) : n.add(d); return n })
@@ -177,9 +195,19 @@ const MpAdsReport = () => {
             <Table2 className="h-4 w-4" /> Таблица
           </button>
           <button onClick={() => setView('heatmap')} className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm ${view === 'heatmap' ? 'bg-primary-500 text-white' : 'text-brand-text-secondary'}`}>
-            <Grid3x3 className="h-4 w-4" /> Хитмап ДРР
+            <Grid3x3 className="h-4 w-4" /> Аналитика окупаемости
           </button>
         </div>
+      </div>
+
+      {/* Гранулярность день/неделя */}
+      <div className="flex items-center gap-1 rounded-xl border border-brand-border p-0.5 w-fit">
+        {(['day', 'week'] as const).map((g) => (
+          <button key={g} onClick={() => setGran(g)}
+            className={`rounded-lg px-3 py-1 text-xs font-medium ${gran === g ? 'bg-primary-500 text-white' : 'text-brand-text-secondary'}`}>
+            {g === 'day' ? 'Дни' : 'Недели'}
+          </button>
+        ))}
       </div>
 
       {/* Период */}
@@ -211,7 +239,7 @@ const MpAdsReport = () => {
         <div className="card !p-10 text-center text-brand-text-secondary">Рекламных данных за период нет.</div>
       ) : view === 'table' ? (
         <div className="card">
-          <h2 className="mb-3 text-sm font-semibold text-brand-text">По дням ({periodLabel}) — жми [+] для разбивки по артикулам</h2>
+          <h2 className="mb-3 text-sm font-semibold text-brand-text">По {gran === 'week' ? 'неделям' : 'дням'} ({periodLabel}) — жми [+] для разбивки по артикулам</h2>
           <div className="overflow-x-auto">
             <table className="min-w-full text-[11px]">
               <thead>
@@ -233,7 +261,7 @@ const MpAdsReport = () => {
                             <span className="inline-flex h-4 w-4 items-center justify-center rounded border border-brand-border text-brand-text-secondary">
                               {isOpen ? <Minus className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
                             </span>
-                            {dayLabel(d)}
+                            {bucketLabel(d)}
                           </span>
                         </td>
                         {METRICS.map((m) => (
@@ -273,16 +301,16 @@ const MpAdsReport = () => {
           </div>
         </div>
       ) : (
-        // ── Хитмап ДРР: строки — артикулы, столбцы — даты (свежие справа), низ — средний ДРР + бюджет ──
+        // ── Аналитика окупаемости: строки — артикулы, столбцы — даты/недели, низ — средний ДРР + бюджет ──
         <div className="card">
-          <h2 className="mb-3 text-sm font-semibold text-brand-text">Хитмап ДРРз — артикулы × дни</h2>
+          <h2 className="mb-3 text-sm font-semibold text-brand-text">Аналитика окупаемости — ДРРз по {gran === 'week' ? 'неделям' : 'дням'}</h2>
           <div className="overflow-x-auto">
             <div className="inline-block">
               <div className="flex">
                 <div className="w-44 shrink-0" />
                 <div className="flex gap-1">
                   {[...dates].reverse().map((d) => (
-                    <div key={d} className="w-16 shrink-0 text-center text-[10px] text-brand-text-secondary/80">{dayLabel(d)}</div>
+                    <div key={d} className="w-16 shrink-0 text-center text-[9px] text-brand-text-secondary/80">{bucketLabel(d)}</div>
                   ))}
                 </div>
               </div>
