@@ -11,6 +11,53 @@ import { wbApiService } from './wb-api.service';
 
 const repo = () => AppDataSource.getRepository(AppSetting);
 export const WB_API_TOKEN_KEY = 'wb_api_token';
+export const OZON_API_CREDS_KEY = 'ozon_api_creds';
+
+/** Креды Ozon: Performance API (реклама, OAuth) + Seller API (аналитика/воронка). */
+export interface OzonApiCreds {
+  perf_client_id?: string;
+  perf_client_secret?: string;
+  seller_client_id?: string;
+  seller_api_key?: string;
+}
+
+const maskValue = (v?: string): string | null => {
+  if (!v) return null;
+  const s = v.trim();
+  if (s.length <= 8) return '••••';
+  return `${s.slice(0, 4)}••••${s.slice(-4)}`;
+};
+
+export async function getOzonCreds(): Promise<OzonApiCreds> {
+  return (await getSetting<OzonApiCreds>(OZON_API_CREDS_KEY)) || {};
+}
+
+/** Сохранить креды Ozon: только непустые поля переписываются (частичное обновление). */
+export async function saveOzonCreds(patch: OzonApiCreds): Promise<void> {
+  const cur = await getOzonCreds();
+  const next: OzonApiCreds = { ...cur };
+  for (const k of ['perf_client_id', 'perf_client_secret', 'seller_client_id', 'seller_api_key'] as const) {
+    const v = patch[k];
+    if (typeof v === 'string' && v.trim()) next[k] = v.trim();
+  }
+  await setSetting(OZON_API_CREDS_KEY, next);
+}
+
+/** Статус кредов Ozon для UI (маскированный, без раскрытия секретов). */
+export async function getOzonCredsStatus(): Promise<{
+  perf_configured: boolean; seller_configured: boolean;
+  perf_client_id_masked: string | null; seller_client_id_masked: string | null;
+  updated_at: Date | null;
+}> {
+  const c = await getOzonCreds();
+  return {
+    perf_configured: !!(c.perf_client_id && c.perf_client_secret),
+    seller_configured: !!(c.seller_client_id && c.seller_api_key),
+    perf_client_id_masked: maskValue(c.perf_client_id),
+    seller_client_id_masked: maskValue(c.seller_client_id),
+    updated_at: await getSettingUpdatedAt(OZON_API_CREDS_KEY),
+  };
+}
 
 export async function getSetting<T = unknown>(key: string): Promise<T | null> {
   const row = await repo().findOne({ where: { key } });
