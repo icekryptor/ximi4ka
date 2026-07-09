@@ -13,5 +13,6 @@ router.post('/sync', mpAnalyticsController.sync);
 router.post('/import', mpAnalyticsController.import);
 router.post('/ad-import', mpAnalyticsController.adImport);
 router.post('/ad-sync', mpAnalyticsController.adSync);
+router.get('/wb-ad-diag', mpAnalyticsController.wbAdDiag);
 
 export default router;

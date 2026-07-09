@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { syncWbFunnel, dailyRows, summaryByProduct, importFunnelRows, adReport, importAdRows, adsDetail, getPromoPlan, upsertPromoPlan } from '../services/mp-analytics/mp-analytics.service';
 import { autoSyncWbAds, syncAdsFromWbStats } from '../services/mp-analytics/wb-ad-sync.service';
+import { wbApiService } from '../services/wb-api.service';
 
 const num = (v: unknown): number | null => (v == null ? null : Number(v));
 const NUM_FIELDS = [
@@ -167,5 +168,36 @@ export const mpAnalyticsController = {
       console.error('[mp-analytics.adSync]', e?.message || e);
       res.status(500).json({ error: String(e?.message || 'Ошибка автосинка рекламы') });
     }
+  },
+
+  /**
+   * Диагностика WB advert-api (read-only): синхронно дёргает getCampaigns и,
+   * если получилось, короткий fullstats за 2 дня — чтобы увидеть реальный ответ/ошибку
+   * WB (лимит 429 vs пусто vs 401), не полагаясь на логи Railway. Ничего не пишет.
+   */
+  async wbAdDiag(_req: Request, res: Response) {
+    const out: any = { token_present: wbApiService.hasToken(), campaigns: null, fullstats: null };
+    const t0 = Date.now();
+    try {
+      const campaigns = await wbApiService.getCampaigns();
+      out.campaigns = {
+        ok: true, count: campaigns.length,
+        by_type: campaigns.reduce((m: any, c) => { m[c.type] = (m[c.type] || 0) + 1; return m; }, {}),
+      };
+      if (campaigns.length) {
+        const end = new Date().toISOString().slice(0, 10);
+        const begin = new Date(Date.now() - 2 * 864e5).toISOString().slice(0, 10);
+        try {
+          const stats = await wbApiService.getFullStats(campaigns.slice(0, 50).map((c) => c.advertId), begin, end);
+          out.fullstats = { ok: true, items: stats.length, begin, end };
+        } catch (e: any) {
+          out.fullstats = { ok: false, error: String(e?.message || e) };
+        }
+      }
+    } catch (e: any) {
+      out.campaigns = { ok: false, error: String(e?.message || e) };
+    }
+    out.ms = Date.now() - t0;
+    res.json(out);
   },
 };
