@@ -176,7 +176,11 @@ export const mpAnalyticsController = {
    * WB (лимит 429 vs пусто vs 401), не полагаясь на логи Railway. Ничего не пишет.
    */
   async wbAdDiag(_req: Request, res: Response) {
-    const out: any = { token_present: wbApiService.hasToken(), campaigns: null, fullstats: null };
+    const out: any = {
+      token_present: wbApiService.hasToken(),
+      cooldown_s: Math.ceil(wbApiService.cooldownRemainingMs() / 1000),
+      campaigns: null, fullstats: null,
+    };
     const t0 = Date.now();
     try {
       const campaigns = await wbApiService.getCampaigns();

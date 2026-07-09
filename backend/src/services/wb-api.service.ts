@@ -185,8 +185,20 @@ export class WbApiService {
   private lastRequestTime = 0;
   private minInterval = 200; // 5 req/sec = 300/min
 
+  // ── Общий «предохранитель» на 429 ──────────────────────────────────────────
+  // Лимит WB — на аккаунт продавца (общий для advert/statistics/nm-report).
+  // Один 429 → приостанавливаем ВСЕ WB-запросы на COOLDOWN_MS, чтобы не долбить
+  // ретраями и не продлевать бан. Успешный ответ сбрасывает паузу.
+  private cooldownUntil = 0;
+  private static readonly COOLDOWN_MS = Number(process.env.WB_COOLDOWN_MS) || 30 * 60 * 1000; // 30 мин
+
   constructor() {
     this.token = process.env.WB_API_TOKEN || '';
+  }
+
+  /** Сколько ещё «остывать» после 429 (мс). 0 — можно слать запрос. */
+  cooldownRemainingMs(): number {
+    return Math.max(0, this.cooldownUntil - Date.now());
   }
 
   /** Update token at runtime (also persists to process.env) */
@@ -222,6 +234,12 @@ export class WbApiService {
     retries = 3,
     rate429Ms?: number,
   ): Promise<T> {
+    // Предохранитель: если недавно поймали 429 — не трогаем WB до конца паузы.
+    const rem = this.cooldownRemainingMs();
+    if (rem > 0) {
+      throw new Error(`WB API: пауза после лимита, ещё ${Math.ceil(rem / 1000)}с — запрос пропущен`);
+    }
+
     await this.throttle();
 
     if (!this.token) {
@@ -239,12 +257,13 @@ export class WbApiService {
         const response = await fetch(url, { ...options, headers });
 
         if (response.status === 429) {
-          // Rate limited — wait and retry. Некоторые эндпоинты (Statistics /orders)
-          // лимитированы 1 req/min → передаём rate429Ms=60000.
-          const waitMs = rate429Ms ?? Math.min(1000 * Math.pow(2, attempt), 10000);
-          console.warn(`WB API rate limited (429), waiting ${waitMs}ms (attempt ${attempt}/${retries})`);
-          await new Promise(resolve => setTimeout(resolve, waitMs));
-          continue;
+          // Лимит на аккаунт. НЕ ретраим (это только продлевает бан) — ставим общий
+          // кулдаун на все WB-запросы и выходим. Длина = max(дефолт, Retry-After, rate429Ms).
+          const retryAfterMs = (Number(response.headers.get('retry-after')) || 0) * 1000;
+          this.cooldownUntil = Date.now() + Math.max(WbApiService.COOLDOWN_MS, retryAfterMs, rate429Ms || 0);
+          const mins = Math.round(this.cooldownRemainingMs() / 60000);
+          console.warn(`WB API 429 — пауза ~${mins} мин, все WB-запросы приостановлены`);
+          throw new Error(`WB API error: 429 — лимит, пауза ~${mins} мин`);
         }
 
         if (response.status >= 500) {
@@ -263,11 +282,12 @@ export class WbApiService {
         }
 
         const text = await response.text();
+        this.cooldownUntil = 0; // успех — снимаем паузу
         if (!text) return {} as T;
         return JSON.parse(text) as T;
       } catch (error: any) {
         if (attempt === retries) throw error;
-        if (error.message?.includes('WB API error: 4')) throw error; // Don't retry 4xx (except 429)
+        if (error.message?.includes('WB API error: 4')) throw error; // 4xx (вкл. 429) — не ретраим
         const waitMs = 1000 * Math.pow(2, attempt);
         console.warn(`WB API request failed, retrying in ${waitMs}ms: ${error.message}`);
         await new Promise(resolve => setTimeout(resolve, waitMs));
