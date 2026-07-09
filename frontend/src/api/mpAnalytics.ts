@@ -114,4 +114,30 @@ export const mpAnalyticsApi = {
     const r = await apiClient.post('/mp-analytics/sync', { days })
     return r.data
   },
+  upload: async (
+    file: File, platform: MpPlatform, kind: 'funnel' | 'ads', dryRun: boolean,
+  ): Promise<MpUploadResult> => {
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('platform', platform)
+    fd.append('kind', kind)
+    const r = await apiClient.post<MpUploadResult>('/mp-analytics/upload', fd, {
+      params: dryRun ? { dryRun: '1' } : {},
+    })
+    return r.data
+  },
+}
+
+export interface MpUploadResult {
+  ok: boolean
+  dryRun?: boolean
+  platform: MpPlatform
+  kind: 'funnel' | 'ads'
+  headers: string[]
+  field_map: Record<string, string>
+  unmatched_headers: string[]
+  rows_parsed: number
+  rows_skipped: number
+  sample: Record<string, unknown>[]
+  imported?: number
 }

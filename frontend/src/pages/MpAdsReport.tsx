@@ -2,6 +2,7 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { Megaphone, Table2, Grid3x3, ListTree, Plus, Minus } from 'lucide-react'
 import { mpAnalyticsApi, MpAdRow, MpRange } from '../api/mpAnalytics'
 import { PromoDigits } from '../components/discount/PromoDigits'
+import { ManualImport } from '../components/mp/ManualImport'
 import { useToast } from '../contexts/ToastContext'
 
 // ── форматтеры ──
@@ -248,6 +249,8 @@ const MpAdsReport = () => {
           <span key={x.t} className="flex items-center gap-1"><span className="inline-block h-3.5 w-5 rounded ring-1 ring-inset ring-black/5" style={{ backgroundColor: x.c }} />{x.t}</span>
         ))}
       </div>
+
+      <ManualImport platform={platform} kind="ads" onImported={load} />
 
       {loading ? (
         <div className="flex items-center justify-center py-20"><div className="animate-spin h-8 w-8 border-4 border-primary-500 border-t-transparent rounded-full" /></div>

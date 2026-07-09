@@ -382,3 +382,95 @@ export async function upsertPromoPlan(
     [platform, sku, month, orders_sum, drrz],
   );
 }
+
+const r1 = (v: number | null): number | null => (v == null ? null : Math.round(v * 10) / 10);
+const pct = (a: number, b: number): number | null => (b > 0 ? r1((a / b) * 100) : null);
+
+/**
+ * Сводка по артикулам для АГЕНТА (одним запросом): воронка + реклама + маржа из
+ * актуальной юнитки + производные (ДРРз/ДРРв/ROAS/%выкупа/доля рекламы/чистая прибыль).
+ * Самоописываемый ответ (fields[]) — агент читает и даёт рекомендации.
+ */
+export async function agentDigest(platform: string, opts: RangeOpts = {}): Promise<any> {
+  const { from, to } = resolveRange(opts);
+  const channel = platform === 'ozon' ? 'Озон' : 'ВБ';
+  const rows: any[] = await AppDataSource.query(
+    `WITH f AS (
+       SELECT sku, sum(views) views, sum(cart) cart, sum(orders_count) orders_count,
+              sum(orders_sum) orders_sum, sum(buyouts_count) buyouts_count, sum(buyouts_sum) buyouts_sum,
+              max(product_name) product_name, sum(stock_end) stock_end
+       FROM mp_funnel_daily WHERE platform=$1 AND date BETWEEN $2::date AND $3::date GROUP BY sku
+     ),
+     a AS (
+       SELECT sku, sum(spend) spend, sum(impressions) impressions, sum(clicks) clicks,
+              sum(orders) orders_ad, sum(orders_sum) orders_sum_ad, max(seller_article) seller_article
+       FROM mp_ad_daily WHERE platform=$1 AND date BETWEEN $2::date AND $3::date GROUP BY sku
+     )
+     SELECT COALESCE(f.sku, a.sku) AS sku,
+            COALESCE(a.seller_article, COALESCE(f.sku, a.sku)) AS article,
+            f.product_name,
+            f.views, f.cart, f.orders_count, f.orders_sum, f.buyouts_count, f.buyouts_sum, f.stock_end,
+            a.spend, a.impressions, a.clicks, a.orders_ad, a.orders_sum_ad,
+            ue.margin
+     FROM f FULL OUTER JOIN a ON f.sku = a.sku
+     LEFT JOIN LATERAL (
+       SELECT c.margin FROM sku_mappings m
+       JOIN unit_economics_calculations c ON c.kit_id = m.kit_id AND c.channel_name=$4
+       WHERE m.marketplace_sku = COALESCE(f.sku, a.sku)
+       ORDER BY c.is_current DESC, c.updated_at DESC LIMIT 1
+     ) ue ON true
+     ORDER BY f.orders_sum DESC NULLS LAST`,
+    [platform, from, to, channel],
+  );
+
+  const items = rows.map((r) => {
+    const num = (v: any) => (v == null ? 0 : Number(v));
+    const orders_sum = num(r.orders_sum), buyouts_sum = num(r.buyouts_sum);
+    const orders_count = num(r.orders_count), buyouts_count = num(r.buyouts_count);
+    const spend = num(r.spend), orders_ad = num(r.orders_ad);
+    const margin = r.margin == null ? null : Number(r.margin);
+    return {
+      sku: r.sku, article: r.article, product_name: r.product_name,
+      views: num(r.views), cart: num(r.cart),
+      orders_count, orders_sum, buyouts_count, buyouts_sum, stock_end: num(r.stock_end),
+      cart_conv: pct(num(r.cart), num(r.views)),
+      order_conv: pct(orders_count, num(r.cart)),
+      buyout_pct: pct(buyouts_count, orders_count),
+      ad_spend: spend, impressions: num(r.impressions), clicks: num(r.clicks), orders_ad,
+      ad_share_orders: pct(orders_ad, orders_count),
+      drrz: pct(spend, orders_sum),
+      drrv: pct(spend, buyouts_sum),
+      roas: spend > 0 ? r1(orders_sum / spend) : null,
+      margin_pct: margin,
+      est_profit: margin == null ? null : Math.round((orders_sum * margin) / 100),
+    };
+  });
+
+  const sum = (k: string) => items.reduce((s, it: any) => s + (it[k] || 0), 0);
+  const totals = {
+    orders_sum: sum('orders_sum'), buyouts_sum: sum('buyouts_sum'),
+    orders_count: sum('orders_count'), buyouts_count: sum('buyouts_count'),
+    ad_spend: sum('ad_spend'), orders_ad: sum('orders_ad'),
+    drrz: pct(sum('ad_spend'), sum('orders_sum')),
+    drrv: pct(sum('ad_spend'), sum('buyouts_sum')),
+    roas: sum('ad_spend') > 0 ? r1(sum('orders_sum') / sum('ad_spend')) : null,
+    buyout_pct: pct(sum('buyouts_count'), sum('orders_count')),
+    ad_share_orders: pct(sum('orders_ad'), sum('orders_count')),
+    est_profit: items.reduce((s, it: any) => s + (it.est_profit || 0), 0),
+  };
+
+  return {
+    platform, channel, period: { from, to },
+    fields: {
+      orders_sum: 'сумма заказов, ₽', buyouts_sum: 'сумма выкупов, ₽',
+      buyout_pct: '% выкупа', cart_conv: 'конверсия показ→корзина, %',
+      order_conv: 'конверсия корзина→заказ, %', ad_spend: 'расход на рекламу, ₽',
+      ad_share_orders: 'доля заказов с рекламы, %', drrz: 'ДРР от заказов, %',
+      drrv: 'ДРР от выкупов, %', roas: 'ROAS (заказы/расход)',
+      margin_pct: 'маржинальность из актуальной юнитки, %',
+      est_profit: 'оценка чистой прибыли (заказы×маржа), ₽',
+    },
+    totals,
+    items,
+  };
+}

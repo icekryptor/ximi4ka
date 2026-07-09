@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
-import { syncWbFunnel, dailyRows, summaryByProduct, importFunnelRows, adReport, importAdRows, adsDetail, getPromoPlan, upsertPromoPlan } from '../services/mp-analytics/mp-analytics.service';
+import { syncWbFunnel, dailyRows, summaryByProduct, importFunnelRows, adReport, importAdRows, adsDetail, getPromoPlan, upsertPromoPlan, agentDigest } from '../services/mp-analytics/mp-analytics.service';
 import { autoSyncWbAds, syncAdsFromWbStats } from '../services/mp-analytics/wb-ad-sync.service';
+import { parseFunnelSheet, parseAdSheet } from '../services/mp-analytics/upload-parse.service';
 import { wbApiService } from '../services/wb-api.service';
 
 const num = (v: unknown): number | null => (v == null ? null : Number(v));
@@ -203,5 +204,57 @@ export const mpAnalyticsController = {
     }
     out.ms = Date.now() - t0;
     res.json(out);
+  },
+
+  /**
+   * Ручная заливка дневных показателей из файла (фоллбэк автосинка).
+   * multipart: file (xlsx/csv) + platform (wb|ozon) + kind (funnel|ads).
+   * ?dryRun=1 — только распарсить и показать предпросмотр (без записи).
+   */
+  async upload(req: Request, res: Response) {
+    try {
+      const file = (req as any).file as { buffer: Buffer } | undefined;
+      if (!file?.buffer) return res.status(400).json({ error: 'Файл не загружен' });
+      const platform = (req.body?.platform as string) === 'ozon' ? 'ozon' : 'wb';
+      const kind = (req.body?.kind as string) === 'ads' ? 'ads' : 'funnel';
+      const dryRun = req.query?.dryRun === '1' || req.body?.dryRun === '1' || req.body?.dryRun === true;
+
+      const parsed = kind === 'ads' ? parseAdSheet(file.buffer) : parseFunnelSheet(file.buffer);
+      const preview = {
+        platform, kind,
+        headers: parsed.headers,
+        field_map: parsed.fieldMap,
+        unmatched_headers: parsed.unmatched,
+        rows_parsed: parsed.rows.length,
+        rows_skipped: parsed.skipped,
+        sample: parsed.rows.slice(0, 8),
+      };
+      if (dryRun) return res.json({ ok: true, dryRun: true, ...preview });
+
+      if (!parsed.rows.length) {
+        return res.status(400).json({ error: 'Не удалось распознать ни одной строки (нет колонок Дата/SKU?)', ...preview });
+      }
+      const imported = kind === 'ads'
+        ? await importAdRows(platform, parsed.rows)
+        : await importFunnelRows(platform, parsed.rows);
+      res.json({ ok: true, imported, ...preview });
+    } catch (e: any) {
+      console.error('[mp-analytics.upload]', e?.message || e);
+      res.status(500).json({ error: String(e?.message || 'Ошибка загрузки файла') });
+    }
+  },
+
+  /**
+   * Сводка по артикулам для агента: воронка + реклама + маржа + производные.
+   * GET ?platform=wb|ozon&from&to (или days). Самоописываемый JSON.
+   */
+  async agentDigest(req: Request, res: Response) {
+    try {
+      const platform = (req.query.platform as string) || 'wb';
+      res.json(await agentDigest(platform, rangeFromQuery(req)));
+    } catch (e: any) {
+      console.error('[mp-analytics.agentDigest]', e?.message || e);
+      res.status(500).json({ error: 'Ошибка формирования сводки' });
+    }
   },
 };

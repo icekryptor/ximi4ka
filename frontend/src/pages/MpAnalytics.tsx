@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BarChart3, RefreshCw } from 'lucide-react'
 import { mpAnalyticsApi, MpPlatform, MpSummaryRow, MpDailyRow, MpRange } from '../api/mpAnalytics'
+import { ManualImport } from '../components/mp/ManualImport'
 import { useToast } from '../contexts/ToastContext'
 
 const money = (v: number | null): string =>
@@ -150,6 +151,8 @@ const MpAnalytics = () => {
           {syncing ? 'Синхронизирую...' : 'Собрать сейчас'}
         </button>
       </div>
+
+      <ManualImport platform={platform} kind="funnel" onImported={load} />
 
       {/* Площадка + период */}
       <div className="flex flex-wrap items-center gap-2">
