@@ -130,10 +130,14 @@ export async function importFunnelRows(
   return upsert(rows);
 }
 
-/** nmId'ы, по которым тянем аналитику (все известные из финстата). */
+/** nmId'ы, по которым тянем аналитику: все известные WB-SKU (финстат ∪ воронка ∪ реклама). */
 async function wbNmIds(): Promise<number[]> {
-  const rows = await AppDataSource.query(`SELECT DISTINCT nm_id FROM wb_financial_stats`);
-  return rows.map((r: any) => Number(r.nm_id)).filter(Boolean);
+  const rows = await AppDataSource.query(
+    `SELECT DISTINCT nm_id::text AS sku FROM wb_financial_stats
+     UNION SELECT DISTINCT sku FROM mp_funnel_daily WHERE platform='wb'
+     UNION SELECT DISTINCT sku FROM mp_ad_daily WHERE platform='wb'`,
+  );
+  return rows.map((r: any) => Number(r.sku)).filter(Boolean);
 }
 
 /** Синхронизировать WB-воронку за последние `days` дней. */
