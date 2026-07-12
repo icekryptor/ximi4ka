@@ -84,16 +84,18 @@ export async function syncAdsFromWbStats(days = 45): Promise<{ upserted: number 
 }
 
 /** Полный автосинк рекламы: фетч (best-effort) + маппер. */
-export async function autoSyncWbAds(days = 30): Promise<{ fetched: number; upserted: number }> {
+export async function autoSyncWbAds(days = 30): Promise<{ fetched: number; upserted: number; fetch_error?: string }> {
   const end = new Date().toISOString().slice(0, 10);
   const begin = new Date(Date.now() - days * 864e5).toISOString().slice(0, 10);
   let fetched = 0;
+  let fetchError: string | undefined;
   try {
     fetched = await refreshWbAdStats(begin, end);
   } catch (e: any) {
-    console.error('[wb-ad-sync] fetch fullstats failed (WB лимит?):', e?.message || e);
+    fetchError = String(e?.message || e);
+    console.error('[wb-ad-sync] fetch fullstats failed (WB лимит?):', fetchError);
   }
   const { upserted } = await syncAdsFromWbStats(days + 15);
   console.log(`[wb-ad-sync] fetched ${fetched} в wb_ad_stats, смаплено ${upserted} в mp_ad_daily`);
-  return { fetched, upserted };
+  return { fetched, upserted, ...(fetchError ? { fetch_error: fetchError } : {}) };
 }

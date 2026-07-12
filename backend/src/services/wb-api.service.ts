@@ -330,8 +330,8 @@ export class WbApiService {
   }
 
   /**
-   * GET /adv/v3/fullstats — campaign statistics (max 31 days per request)
-   * Automatically splits date ranges > 31 days
+   * GET /adv/v3/fullstats — campaign statistics (max 31 days per request,
+   * max 50 campaign ids per request). Splits both dimensions automatically.
    */
   async getFullStats(
     campaignIds: number[],
@@ -339,6 +339,13 @@ export class WbApiService {
     endDate: string
   ): Promise<WbFullStatsItem[]> {
     if (campaignIds.length === 0) return [];
+    if (campaignIds.length > 50) {
+      const out: WbFullStatsItem[] = [];
+      for (let i = 0; i < campaignIds.length; i += 50) {
+        out.push(...await this.getFullStats(campaignIds.slice(i, i + 50), beginDate, endDate));
+      }
+      return out;
+    }
 
     const windows = this.splitDateRange(beginDate, endDate, 31);
     const allResults: WbFullStatsItem[] = [];
