@@ -7,10 +7,12 @@ import type { SppDailyRow, SppOrderRow, DiscountPlatform } from '../../api/disco
  * ср. цена покупателя). Опциональный drill-down в распределение заказов за день.
  */
 
+// Пороги как в сводной матрице: <33% красный, 33–36% жёлтый, >36% зелёный
 const heatColor = (pctFraction: number): string => {
   const v = pctFraction * 100
-  const hue = Math.max(0, Math.min(120, (v / 40) * 120))
-  return `hsl(${hue}, 62%, 58%)`
+  if (v < 33) return '#ef9a9a'
+  if (v <= 36) return '#ffe082'
+  return '#a5d6a7'
 }
 
 const pct = (v: number | null): string => (v == null ? '—' : `${(v * 100).toFixed(1)}%`)
@@ -198,16 +200,15 @@ export const SppDailyView = ({ rows, platform = 'all', loadOrders }: Props) => {
         </table>
       </div>
 
-      <div className="flex items-center gap-2 text-xs text-brand-text-secondary">
-        <span>Ниже</span>
-        {[0, 0.2, 0.4].map((p) => (
-          <span
-            key={p}
-            className="inline-block h-4 w-6 rounded-md ring-1 ring-inset ring-black/5"
-            style={{ backgroundColor: heatColor(p) }}
-          />
+      <div className="flex items-center gap-3 text-xs text-brand-text-secondary">
+        <span>СПП:</span>
+        {[{ c: '#ef9a9a', t: '<33%' }, { c: '#ffe082', t: '33–36%' }, { c: '#a5d6a7', t: '>36%' }].map((x) => (
+          <span key={x.t} className="flex items-center gap-1">
+            <span className="inline-block h-4 w-6 rounded-md ring-1 ring-inset ring-black/5" style={{ backgroundColor: x.c }} />
+            {x.t}
+          </span>
         ))}
-        <span>Выше — СПП. Наведи на плитку заказа — цена покупателя/продавца и регион.</span>
+        <span>· Наведи на плитку заказа — цена покупателя/продавца и регион.</span>
       </div>
     </div>
   )
