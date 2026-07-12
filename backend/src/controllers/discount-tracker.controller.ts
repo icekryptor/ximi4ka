@@ -80,6 +80,49 @@ async function fetchHourlyRows(hours: number): Promise<any[]> {
   }));
 }
 
+
+/**
+ * Сводная матрица СПП: (артикул продавца × дата) → СПП%.
+ * WB — фактическая СПП по заказам (v_spp_daily, avg_spp_pct), артикул из mp_ad_daily.
+ * Ozon — скидка площадки из витринных снапшотов (price_snapshots, дневное avg platform_pct),
+ * sku там уже является артикулом продавца.
+ */
+async function fetchSppMatrix(platform: string, days: number): Promise<any[]> {
+  const d = Math.max(1, Math.min(days || 30, 120));
+  if (platform === 'ozon') {
+    const rows = await AppDataSource.query(
+      `SELECT sku, sku AS article, sku AS product_name,
+              captured_at::date::text AS date,
+              avg(platform_pct) AS spp_pct, count(*) AS samples
+       FROM price_snapshots
+       WHERE platform='ozon' AND captured_at > now() - make_interval(days => $1::int)
+       GROUP BY sku, captured_at::date
+       ORDER BY sku, date`,
+      [d],
+    );
+    return rows.map((r: any) => ({ ...r, spp_pct: num(r.spp_pct), samples: Number(r.samples) }));
+  }
+  const rows = await AppDataSource.query(
+    `SELECT v.nm_id::text AS sku,
+            COALESCE(a.seller_article, v.nm_id::text) AS article,
+            COALESCE(w.product_name, v.nm_id::text)   AS product_name,
+            v.order_date::text AS date,
+            v.avg_spp_pct AS spp_pct, v.orders_count AS samples
+     FROM v_spp_daily v
+     LEFT JOIN (SELECT sku, max(seller_article) AS seller_article FROM mp_ad_daily
+                WHERE platform='wb' AND seller_article IS NOT NULL GROUP BY sku) a ON a.sku = v.nm_id::text
+     LEFT JOIN LATERAL (
+       SELECT s.product_name FROM wb_financial_stats s
+       WHERE s.nm_id::text = v.nm_id::text AND s.product_name IS NOT NULL AND s.product_name <> ''
+       ORDER BY s.date DESC LIMIT 1
+     ) w ON true
+     WHERE v.platform='wb' AND v.order_date > (now() - make_interval(days => $1::int))::date
+     ORDER BY article, date`,
+    [d],
+  );
+  return rows.map((r: any) => ({ ...r, spp_pct: num(r.spp_pct), samples: Number(r.samples) }));
+}
+
 export const discountTrackerController = {
   /** Последний снапшот по каждому SKU + название товара (WB — из wb_financial_stats, Ozon — sku) */
   async latest(_req: Request, res: Response) {
@@ -222,6 +265,41 @@ export const discountTrackerController = {
       console.error('[discount-tracker.alerts]', e?.message || e);
       res.status(500).json({ error: 'Ошибка загрузки алертов' });
     }
+  },
+
+/** Сводная матрица СПП (артикул × дата) для страницы трекера. */
+  async sppMatrix(req: Request, res: Response) {
+    try {
+      const platform = (req.query.platform as string) === 'ozon' ? 'ozon' : 'wb';
+      const days = Number((req.query.days as string) || '30');
+      res.json({ platform, rows: await fetchSppMatrix(platform, days), generated_at: new Date().toISOString() });
+    } catch (e: any) {
+      console.error('[discount-tracker.sppMatrix]', e?.message || e);
+      res.status(500).json({ error: 'Ошибка загрузки матрицы СПП' });
+    }
+  },
+
+  /** Публичная (по токену) сводная матрица СПП — для share-ссылки. */
+  async publicSppMatrix(req: Request, res: Response) {
+    const expected = process.env.SPP_PUBLIC_TOKEN;
+    const got = req.params.token;
+    if (!expected) return res.status(503).json({ error: 'Публичный доступ не настроен' });
+    if (!got || got !== expected) return res.status(403).json({ error: 'Доступ запрещён' });
+    try {
+      const platform = (req.query.platform as string) === 'ozon' ? 'ozon' : 'wb';
+      const days = Number((req.query.days as string) || '30');
+      res.json({ platform, rows: await fetchSppMatrix(platform, days), generated_at: new Date().toISOString() });
+    } catch (e: any) {
+      console.error('[discount-tracker.publicSppMatrix]', e?.message || e);
+      res.status(500).json({ error: 'Ошибка загрузки данных' });
+    }
+  },
+
+  /** Инфо для кнопки «Поделиться» (только admin-зона): готовый публичный путь. */
+  async shareInfo(_req: Request, res: Response) {
+    const token = process.env.SPP_PUBLIC_TOKEN;
+    if (!token) return res.json({ configured: false, path: null });
+    res.json({ configured: true, path: `/p/spp/${token}` });
   },
 
 };

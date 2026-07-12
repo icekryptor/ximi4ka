@@ -5,6 +5,8 @@ const router = Router();
 
 // Фактическая СПП по заказам (основной источник)
 router.get('/spp/daily', discountTrackerController.sppDaily);
+router.get('/spp/matrix', discountTrackerController.sppMatrix);
+router.get('/spp/share-info', discountTrackerController.shareInfo);
 router.get('/spp/orders', discountTrackerController.sppOrders);
 router.post('/spp/sync', discountTrackerController.sppSync);
 

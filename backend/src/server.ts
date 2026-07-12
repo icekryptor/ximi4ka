@@ -117,6 +117,7 @@ app.use('/api/auth', authRoutes);
 app.get('/api/public/unit-economics/:token', unitEconomicsController.getPublicShare);
 app.use('/api/public/projects', publicProjectRoutes);
 app.get('/api/public/spp/:token', discountTrackerController.publicShare);
+app.get('/api/public/spp/:token/matrix', discountTrackerController.publicSppMatrix);
 
 // n8n API — API key auth (no JWT)
 app.use('/api/n8n', apiKeyAuth, n8nRoutes);

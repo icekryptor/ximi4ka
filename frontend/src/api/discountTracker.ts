@@ -75,6 +75,23 @@ export interface SppOrderRow {
   is_cancel: boolean
 }
 
+
+/** Строка сводной матрицы СПП (артикул × дата) */
+export interface SppMatrixRow {
+  sku: string
+  article: string
+  product_name: string
+  date: string
+  spp_pct: number | null
+  samples: number
+}
+
+export interface SppMatrixData {
+  platform: DiscountPlatform
+  rows: SppMatrixRow[]
+  generated_at: string
+}
+
 /** Ответ GET /public/spp/:token — дневная фактическая СПП, только WB */
 export interface PublicSppData {
   daily: SppDailyRow[]
@@ -130,6 +147,16 @@ export const discountTrackerApi = {
     const r = await apiClient.post('/discount-tracker/spp/sync', { days })
     return r.data
   },
+
+  sppMatrix: async (platform: DiscountPlatform, days = 30): Promise<SppMatrixData> => {
+    const r = await apiClient.get<SppMatrixData>('/discount-tracker/spp/matrix', { params: { platform, days } })
+    return r.data
+  },
+
+  shareInfo: async (): Promise<{ configured: boolean; path: string | null }> => {
+    const r = await apiClient.get('/discount-tracker/spp/share-info')
+    return r.data
+  },
 }
 
 /**
@@ -145,6 +172,18 @@ export async function fetchPublicSpp(token: string, days = 30): Promise<PublicSp
   if (!r.ok) {
     const msg = r.status === 403 ? 'Ссылка недействительна' : `Ошибка загрузки (${r.status})`
     throw new Error(msg)
+  }
+  return r.json()
+}
+
+/** Публичная сводная матрица СПП (bare fetch — см. fetchPublicSpp). */
+export async function fetchPublicSppMatrix(token: string, platform: DiscountPlatform, days = 30): Promise<SppMatrixData> {
+  const base = import.meta.env.VITE_API_URL || '/api'
+  const r = await fetch(`${base}/public/spp/${encodeURIComponent(token)}/matrix?platform=${platform}&days=${days}`, {
+    headers: { Accept: 'application/json' },
+  })
+  if (!r.ok) {
+    throw new Error(r.status === 403 ? 'Ссылка недействительна' : `Ошибка загрузки (${r.status})`)
   }
   return r.json()
 }
