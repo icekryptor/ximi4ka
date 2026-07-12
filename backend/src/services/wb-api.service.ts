@@ -422,27 +422,41 @@ export class WbApiService {
   }
 
   /**
-   * POST /api/v2/nm-report/detail/history — дневная воронка+продажи по артикулам
-   * (seller-analytics-api, лимит ~3 req/min). Макс 20 nmID на запрос → чанкуем.
+   * Дневная воронка+продажи по артикулам.
+   * WB удалил /api/v2/nm-report/detail/history (~08.07.2026, 404 «path not found») —
+   * новый метод: POST /api/analytics/v3/sales-funnel/products/history
+   * (selectedPeriod{start,end}, nmIds ≤20, aggregationLevel day; данные МАКС за
+   * последнюю неделю — глубже только CSV c подпиской Джем). Лимит ~3 req/min.
+   * Ответ: [{product:{...}, history:[...]}] — адаптируем к старой форме WbNmHistoryItem.
    */
   async getNmReportHistory(nmIds: number[], begin: string, end: string): Promise<WbNmHistoryItem[]> {
+    // новый метод отдаёт максимум последнюю неделю — клампим начало
+    const weekAgo = new Date(Date.now() - 6 * 864e5).toISOString().slice(0, 10);
+    const start = begin < weekAgo ? weekAgo : begin;
     const out: WbNmHistoryItem[] = [];
     for (let i = 0; i < nmIds.length; i += 20) {
       const chunk = nmIds.slice(i, i + 20);
       const body = JSON.stringify({
-        nmIDs: chunk,
-        period: { begin, end },
-        timezone: 'Europe/Moscow',
+        selectedPeriod: { start, end },
+        nmIds: chunk,
         aggregationLevel: 'day',
       });
-      const url = `${WB_ANALYTICS_BASE_URL}/api/v2/nm-report/detail/history`;
-      const resp = await this.request<{ data?: WbNmHistoryItem[] }>(
-        url,
-        { method: 'POST', body },
-        4,
-        25_000,
-      );
-      if (resp?.data?.length) out.push(...resp.data);
+      const url = `${WB_ANALYTICS_BASE_URL}/api/analytics/v3/sales-funnel/products/history`;
+      const resp = await this.request<any>(url, { method: 'POST', body }, 4, 25_000);
+      // толерантный разбор: массив может лежать в корне или в data
+      const items: any[] = Array.isArray(resp) ? resp : (Array.isArray(resp?.data) ? resp.data : []);
+      for (const it of items) {
+        const prod = it.product ?? it;
+        out.push({
+          nmID: Number(prod.nmId ?? prod.nmID ?? prod.id) || 0,
+          vendorCode: prod.vendorCode ?? prod.article ?? undefined,
+          imtName: prod.title ?? prod.imtName ?? prod.name ?? undefined,
+          history: (it.history ?? []).map((p: any) => ({
+            ...p,
+            dt: p.dt ?? p.date ?? p.day,
+          })),
+        });
+      }
     }
     return out;
   }

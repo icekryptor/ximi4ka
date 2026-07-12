@@ -271,7 +271,11 @@ export const mpAnalyticsController = {
       const end = new Date().toISOString().slice(0, 10);
       const begin = new Date(Date.now() - 3 * 864e5).toISOString().slice(0, 10);
       const items = await wbApiService.getNmReportHistory(out.nm_ids, begin, end);
-      out.nm_report = { ok: true, items: items.length, begin, end, sample: items[0] ? { nmID: items[0].nmID, points: items[0].history?.length } : null };
+      out.nm_report = {
+        ok: true, items: items.length, begin, end,
+        sample: items[0] ? { nmID: items[0].nmID, vendorCode: items[0].vendorCode, points: items[0].history?.length } : null,
+        raw_point: items[0]?.history?.[0] ?? null, // реальные имена полей точки — для сверки маппера
+      };
     } catch (e: any) {
       out.nm_report = { ok: false, error: String(e?.message || e) };
     }
