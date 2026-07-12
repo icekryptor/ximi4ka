@@ -87,9 +87,15 @@ export function startWbFinanceScheduler(): void {
   cron.schedule(CRON_SCHEDULE, async () => {
     try {
       const end = new Date().toISOString().slice(0, 10);
-      const start = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
+      // самозалечивание: если данные старше 30 дней — тянем от последней даты
+      // (с перехлёстом 3 дня), иначе обычное окно 30 дней
+      const defStart = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
+      const row = await AppDataSource.query(`SELECT max(date)::text AS maxd FROM wb_financial_stats`);
+      const maxd: string | null = row?.[0]?.maxd || null;
+      const gapStart = maxd ? new Date(new Date(maxd + 'T00:00:00Z').getTime() - 3 * 864e5).toISOString().slice(0, 10) : defStart;
+      const start = gapStart < defStart ? gapStart : defStart;
       const r = await syncWbFinance(start, end);
-      console.log(`[wb-finance] cron tick: raw ${r.rawRows}, synced ${r.synced}`);
+      console.log(`[wb-finance] cron tick (${start}→${end}): raw ${r.rawRows}, synced ${r.synced}`);
     } catch (e: any) {
       console.error('[wb-finance] cron tick failed:', e?.message || e);
     }
