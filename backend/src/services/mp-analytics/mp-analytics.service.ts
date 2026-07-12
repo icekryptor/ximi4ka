@@ -32,22 +32,27 @@ type FunnelRow = {
 const n = (v: unknown): number | null => (v == null || v === '' ? null : Number(v));
 
 function mapWbPoint(sku: string, name: string | null, p: WbNmHistoryPoint): FunnelRow {
+  // v3 sales-funnel переименовал поля (openCount/cartCount/orderCount/orderSum/
+  // buyoutCount/buyoutSum) — старые имена v2 оставлены фолбэком для raw-переливок.
+  const q = p as any;
+  const ordersSum = n(q.orderSum ?? q.ordersSumRub);
+  const ordersCount = n(q.orderCount ?? q.ordersCount);
   return {
     platform: 'wb',
-    date: (p.dt || '').slice(0, 10),
+    date: (p.dt || q.date || '').slice(0, 10),
     sku,
-    views: n(p.openCardCount),
-    cart: n(p.addToCartCount),
-    orders_count: n(p.ordersCount),
-    orders_sum: n(p.ordersSumRub),
-    buyouts_count: n(p.buyoutsCount),
-    buyouts_sum: n(p.buyoutsSumRub),
-    cancels_count: n(p.cancelCount),
+    views: n(q.openCount ?? q.openCardCount),
+    cart: n(q.cartCount ?? q.addToCartCount),
+    orders_count: ordersCount,
+    orders_sum: ordersSum,
+    buyouts_count: n(q.buyoutCount ?? q.buyoutsCount),
+    buyouts_sum: n(q.buyoutSum ?? q.buyoutsSumRub),
+    cancels_count: n(q.cancelCount),
     returns_count: null,
-    cart_conv: n(p.addToCartConversion),
-    order_conv: n(p.cartToOrderConversion),
-    buyout_percent: n(p.buyoutPercent),
-    avg_price: n(p.avgPriceRub),
+    cart_conv: n(q.addToCartConversion),
+    order_conv: n(q.cartToOrderConversion),
+    buyout_percent: n(q.buyoutPercent),
+    avg_price: n(q.avgPriceRub) ?? (ordersSum && ordersCount ? Math.round(ordersSum / ordersCount) : null),
     stock_end: null,
     product_name: name,
     raw: p,
