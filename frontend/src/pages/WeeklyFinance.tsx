@@ -235,7 +235,7 @@ const WeeklyFinance = () => {
                 <tbody>
                   {p.cogs_detail.map((d) => (
                     <tr key={d.sku} className="border-b border-brand-border/40">
-                      <td className="py-1.5 pr-4 font-mono text-brand-text">{d.kit || d.sku}{!d.kit && <span className="ml-1.5 text-xs text-amber-600">нет маппинга на набор</span>}</td>
+                      <td className="py-1.5 pr-4 font-mono text-brand-text">{d.kit || d.sku}{d.unit_cost == null && <span className="ml-1.5 text-xs text-amber-600">нет маппинга на набор</span>}</td>
                       <td className="py-1.5 pr-4 text-right tabular-nums">{d.qty}</td>
                       <td className="py-1.5 pr-4 text-right tabular-nums">{d.unit_cost == null ? '—' : money(d.unit_cost)}</td>
                       <td className="py-1.5 text-right tabular-nums font-medium">{d.total == null ? '—' : money(d.total)}</td>
