@@ -257,10 +257,18 @@ export class WbApiService {
         const response = await fetch(url, { ...options, headers });
 
         if (response.status === 429) {
-          // Лимит на аккаунт. НЕ ретраим (это только продлевает бан) — ставим общий
-          // кулдаун на все WB-запросы и выходим. Длина = max(дефолт, Retry-After, rate429Ms).
+          // Эндпоинты с известным тесным лимитом (nm-report 3/min, statistics 1/min)
+          // передают rate429Ms: их 429 — штатный пейсинг, пережидаем и повторяем,
+          // глобальную паузу не включаем.
+          if (rate429Ms && attempt < retries) {
+            console.warn(`WB API 429 (пейсинг), жду ${rate429Ms}ms (attempt ${attempt}/${retries})`);
+            await new Promise(resolve => setTimeout(resolve, rate429Ms));
+            continue;
+          }
+          // Неожиданный 429 (или ретраи исчерпаны) — глобальный кулдаун на все
+          // WB-запросы, чтобы не продлевать бан долбёжкой.
           const retryAfterMs = (Number(response.headers.get('retry-after')) || 0) * 1000;
-          this.cooldownUntil = Date.now() + Math.max(WbApiService.COOLDOWN_MS, retryAfterMs, rate429Ms || 0);
+          this.cooldownUntil = Date.now() + Math.max(WbApiService.COOLDOWN_MS, retryAfterMs);
           const mins = Math.round(this.cooldownRemainingMs() / 60000);
           console.warn(`WB API 429 — пауза ~${mins} мин, все WB-запросы приостановлены`);
           throw new Error(`WB API error: 429 — лимит, пауза ~${mins} мин`);
