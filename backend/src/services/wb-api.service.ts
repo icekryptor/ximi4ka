@@ -386,7 +386,7 @@ export class WbApiService {
 
       while (hasMore) {
         const url = `${WB_STATS_BASE_URL}/api/v5/supplier/reportDetailByPeriod?dateFrom=${window.begin}&dateTo=${window.end}&rrdid=${rrdid}&limit=100000`;
-        const data = await this.request<WbReportDetailRow[]>(url, {}, 3);
+        const data = await this.request<WbReportDetailRow[]>(url, {}, 3, 65_000); // statistics 1 req/min
 
         if (Array.isArray(data) && data.length > 0) {
           allRows.push(...data);

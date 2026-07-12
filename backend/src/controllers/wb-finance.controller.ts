@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { AppDataSource } from '../config/database';
 import { WbFinancialStat } from '../entities/WbFinancialStat';
 import { wbApiService } from '../services/wb-api.service';
+import { syncWbFinance } from '../services/wb-finance-sync.service';
 import { saveWbApiToken } from '../services/settings.service';
 import { round } from '../utils/math';
 
@@ -18,111 +19,9 @@ export const syncStats = async (req: Request, res: Response) => {
     if (!startDate || !endDate) {
       return res.status(400).json({ error: 'startDate и endDate обязательны' });
     }
-
-    const rows = await wbApiService.getReportDetailByPeriod(startDate, endDate);
-    if (rows.length === 0) {
-      return res.json({ synced: 0, message: 'Нет данных за период' });
-    }
-
-    // Aggregate per (date, nm_id)
-    const map = new Map<string, {
-      date: string;
-      nm_id: number;
-      product_name: string;
-      buyouts_sum: number;
-      transfer_amount: number;
-      logistics_cost: number;
-      storage_cost: number;
-      other_costs: number;
-      acceptance_cost: number;
-      returns_count: number;
-      returns_sum: number;
-      sales_count: number;
-    }>();
-
-    for (const row of rows) {
-      // Use sale_dt (sale date) for aggregation; fall back to rr_dt
-      const dateStr = (row.sale_dt || row.rr_dt || '').split('T')[0];
-      if (!dateStr || !row.nm_id) continue;
-
-      const key = `${dateStr}_${row.nm_id}`;
-      let agg = map.get(key);
-
-      if (!agg) {
-        agg = {
-          date: dateStr,
-          nm_id: row.nm_id,
-          product_name: row.subject_name || '',
-          buyouts_sum: 0,
-          transfer_amount: 0,
-          logistics_cost: 0,
-          storage_cost: 0,
-          other_costs: 0,
-          acceptance_cost: 0,
-          returns_count: 0,
-          returns_sum: 0,
-          sales_count: 0,
-        };
-        map.set(key, agg);
-      }
-
-      // Accumulate
-      if (row.doc_type_name === 'Продажа') {
-        agg.buyouts_sum += row.retail_amount || 0;
-        agg.sales_count += row.quantity || 0;
-      } else if (row.doc_type_name === 'Возврат') {
-        agg.returns_count += Math.abs(row.quantity || 0);
-        agg.returns_sum += Math.abs(row.retail_amount || 0);
-      }
-
-      agg.transfer_amount += row.ppvz_for_pay || 0;
-      agg.logistics_cost += row.delivery_rub || 0;
-      agg.storage_cost += row.storage_fee || 0;
-      agg.acceptance_cost += row.acceptance || 0;
-      agg.other_costs += (row.penalty || 0) + (row.additional_payment || 0)
-        + (row.rebill_logistic_cost || 0) + (row.deduction || 0);
-
-      if (!agg.product_name && row.subject_name) {
-        agg.product_name = row.subject_name;
-      }
-    }
-
-    const records = Array.from(map.values()).map(r => ({
-      ...r,
-      date: new Date(r.date),
-      buyouts_sum: round(r.buyouts_sum),
-      transfer_amount: round(r.transfer_amount),
-      logistics_cost: round(r.logistics_cost),
-      storage_cost: round(r.storage_cost),
-      other_costs: round(r.other_costs),
-      acceptance_cost: round(r.acceptance_cost),
-      returns_sum: round(r.returns_sum),
-    }));
-
-    // Batch upsert
-    let synced = 0;
-    const batchSize = 500;
-    for (let i = 0; i < records.length; i += batchSize) {
-      const batch = records.slice(i, i + batchSize);
-      await repo()
-        .createQueryBuilder()
-        .insert()
-        .into(WbFinancialStat)
-        .values(batch)
-        .orUpdate(
-          [
-            'product_name', 'buyouts_sum', 'transfer_amount',
-            'logistics_cost', 'storage_cost', 'other_costs',
-            'acceptance_cost', 'returns_count', 'returns_sum',
-            'sales_count', 'updated_at',
-          ],
-          ['date', 'nm_id']
-        )
-        .execute();
-      synced += batch.length;
-    }
-
-    res.json({ synced, rawRows: rows.length, message: `Синхронизировано ${synced} записей` });
+    const { synced, rawRows } = await syncWbFinance(startDate, endDate);
+    if (rawRows === 0) return res.json({ synced: 0, message: 'Нет данных за период' });
+    res.json({ synced, rawRows, message: `Синхронизировано ${synced} записей` });
   } catch (error: any) {
     console.error('WB Finance sync error:', error);
     res.status(500).json({ error: error.message || 'Ошибка синхронизации' });

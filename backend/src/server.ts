@@ -71,6 +71,7 @@ import settingsRoutes from './routes/settings.routes';
 import { loadWbApiTokenFromDb } from './services/settings.service';
 import mpAnalyticsRoutes from './routes/mp-analytics.routes';
 import { startMpAnalyticsScheduler } from './services/mp-analytics/scheduler';
+import { startWbFinanceScheduler } from './services/wb-finance-sync.service';
 import { recipeEngine } from './services/recipe-engine';
 
 // Middleware
@@ -248,6 +249,7 @@ async function bootstrap() {
     startBankSyncScheduler();
     startDiscountTrackerScheduler();
     startMpAnalyticsScheduler();
+    startWbFinanceScheduler();
   });
 }
 
