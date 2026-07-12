@@ -380,13 +380,18 @@ export class WbApiService {
     const windows = this.splitDateRange(dateFrom, dateTo, 90);
     const allRows: WbReportDetailRow[] = [];
 
+    let firstRequest = true;
     for (const window of windows) {
       let rrdid = 0;
       let hasMore = true;
 
       while (hasMore) {
+        // statistics 1 req/min — проактивная пауза между КАЖДЫМ запросом (окна и страницы),
+        // а не только на 429: иначе пагинация бёрстит и взводит предохранитель
+        if (!firstRequest) await new Promise(resolve => setTimeout(resolve, 62_000));
+        firstRequest = false;
         const url = `${WB_STATS_BASE_URL}/api/v5/supplier/reportDetailByPeriod?dateFrom=${window.begin}&dateTo=${window.end}&rrdid=${rrdid}&limit=100000`;
-        const data = await this.request<WbReportDetailRow[]>(url, {}, 3, 65_000); // statistics 1 req/min
+        const data = await this.request<WbReportDetailRow[]>(url, {}, 3, 65_000);
 
         if (Array.isArray(data) && data.length > 0) {
           allRows.push(...data);
