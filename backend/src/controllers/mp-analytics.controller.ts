@@ -3,6 +3,7 @@ import { syncWbFunnel, dailyRows, summaryByProduct, importFunnelRows, adReport, 
 import { autoSyncWbAds, syncAdsFromWbStats } from '../services/mp-analytics/wb-ad-sync.service';
 import { parseFunnelSheet, parseAdSheet } from '../services/mp-analytics/upload-parse.service';
 import { wbApiService } from '../services/wb-api.service';
+import { AppDataSource } from '../config/database';
 
 const num = (v: unknown): number | null => (v == null ? null : Number(v));
 const NUM_FIELDS = [
@@ -256,5 +257,25 @@ export const mpAnalyticsController = {
       console.error('[mp-analytics.agentDigest]', e?.message || e);
       res.status(500).json({ error: 'Ошибка формирования сводки' });
     }
+  },
+/**
+   * Диагностика WB nm-report (воронка, read-only): синхронно дёргает
+   * getNmReportHistory по одному nmId за 3 дня — возвращает реальный ответ/ошибку.
+   */
+  async wbFunnelDiag(_req: Request, res: Response) {
+    const out: any = { token_present: wbApiService.hasToken(), cooldown_s: Math.ceil(wbApiService.cooldownRemainingMs() / 1000) };
+    const t0 = Date.now();
+    try {
+      const ids = await AppDataSource.query(`SELECT DISTINCT nm_id FROM wb_financial_stats LIMIT 3`);
+      out.nm_ids = ids.map((r: any) => Number(r.nm_id));
+      const end = new Date().toISOString().slice(0, 10);
+      const begin = new Date(Date.now() - 3 * 864e5).toISOString().slice(0, 10);
+      const items = await wbApiService.getNmReportHistory(out.nm_ids, begin, end);
+      out.nm_report = { ok: true, items: items.length, begin, end, sample: items[0] ? { nmID: items[0].nmID, points: items[0].history?.length } : null };
+    } catch (e: any) {
+      out.nm_report = { ok: false, error: String(e?.message || e) };
+    }
+    out.ms = Date.now() - t0;
+    res.json(out);
   },
 };

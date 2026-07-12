@@ -18,5 +18,6 @@ router.post('/ad-import', mpAnalyticsController.adImport);
 router.post('/ad-sync', mpAnalyticsController.adSync);
 router.post('/upload', upload.single('file'), mpAnalyticsController.upload);
 router.get('/wb-ad-diag', mpAnalyticsController.wbAdDiag);
+router.get('/wb-funnel-diag', mpAnalyticsController.wbFunnelDiag);
 
 export default router;
