@@ -93,7 +93,7 @@ async function fetchSppMatrix(platform: string, days: number): Promise<any[]> {
     const rows = await AppDataSource.query(
       `SELECT sku, sku AS article, sku AS product_name,
               captured_at::date::text AS date,
-              avg(platform_pct) AS spp_pct, count(*) AS samples
+              avg(platform_pct) * 100 AS spp_pct, count(*) AS samples
        FROM price_snapshots
        WHERE platform='ozon' AND captured_at > now() - make_interval(days => $1::int)
        GROUP BY sku, captured_at::date
@@ -107,7 +107,7 @@ async function fetchSppMatrix(platform: string, days: number): Promise<any[]> {
             COALESCE(a.seller_article, v.nm_id::text) AS article,
             COALESCE(w.product_name, v.nm_id::text)   AS product_name,
             v.order_date::text AS date,
-            v.avg_spp_pct AS spp_pct, v.orders_count AS samples
+            v.avg_spp_pct * 100 AS spp_pct, v.orders_count AS samples
      FROM v_spp_daily v
      LEFT JOIN (SELECT sku, max(seller_article) AS seller_article FROM mp_ad_daily
                 WHERE platform='wb' AND seller_article IS NOT NULL GROUP BY sku) a ON a.sku = v.nm_id::text
