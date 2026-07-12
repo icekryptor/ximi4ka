@@ -350,11 +350,15 @@ export class WbApiService {
     const windows = this.splitDateRange(beginDate, endDate, 31);
     const allResults: WbFullStatsItem[] = [];
 
+    let first = true;
     for (const window of windows) {
+      // fullstats лимитирован ~1 req/min — пауза между окнами + пейсинг-ретрай на 429
+      if (!first) await new Promise(resolve => setTimeout(resolve, 62_000));
+      first = false;
       const idsParam = campaignIds.join(',');
       const url = `${WB_ADV_BASE_URL}/adv/v3/fullstats?ids=${idsParam}&beginDate=${window.begin}&endDate=${window.end}`;
 
-      const data = await this.request<WbFullStatsItem[]>(url);
+      const data = await this.request<WbFullStatsItem[]>(url, {}, 3, 65_000);
       if (Array.isArray(data)) {
         allResults.push(...data);
       }
