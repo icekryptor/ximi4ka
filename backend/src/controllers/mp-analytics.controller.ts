@@ -262,7 +262,16 @@ export const mpAnalyticsController = {
    * Диагностика WB nm-report (воронка, read-only): синхронно дёргает
    * getNmReportHistory по одному nmId за 3 дня — возвращает реальный ответ/ошибку.
    */
-  async wbFunnelDiag(_req: Request, res: Response) {
+  async wbFunnelDiag(req: Request, res: Response) {
+    // ?full=1 — синхронно прогнать весь syncWbFunnel(7) и вернуть результат/ошибку
+    if (req.query.full === '1') {
+      try {
+        const r = await syncWbFunnel(7);
+        return res.json({ full: true, ok: true, ...r });
+      } catch (e: any) {
+        return res.json({ full: true, ok: false, error: String(e?.stack || e?.message || e) });
+      }
+    }
     const out: any = { token_present: wbApiService.hasToken(), cooldown_s: Math.ceil(wbApiService.cooldownRemainingMs() / 1000) };
     const t0 = Date.now();
     try {
