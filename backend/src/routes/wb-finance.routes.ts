@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   syncStats,
+  getWeekly,
   getSyncStatus,
   getAnalytics,
   getArticles,
@@ -20,6 +21,7 @@ router.get('/sync-status', getSyncStatus);
 
 // Analytics
 router.get('/analytics', getAnalytics);
+router.get('/weekly', getWeekly);
 router.get('/articles', getArticles);
 
 export default router;

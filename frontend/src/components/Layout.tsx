@@ -397,6 +397,7 @@ const NAV_GROUPS: NavGroup[] = [
       { type: 'link', name: 'Реклама', href: '/marketplace/ads-report', icon: IconWbAds },
       { type: 'link', name: 'Планирование', href: '/marketplace/planning', icon: IconMarketplace },
       { type: 'link', name: 'Финансы WB', href: '/wb-finance', icon: IconWbFinance },
+      { type: 'link', name: 'Финансы недели', href: '/marketplace/weekly-finance', icon: IconWbFinance },
       { type: 'link', name: 'Трекер скидок', href: '/marketplace/discount-tracker', icon: IconDiscountTracker },
     ],
   },

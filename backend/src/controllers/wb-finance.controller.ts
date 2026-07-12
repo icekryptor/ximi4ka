@@ -3,6 +3,7 @@ import { AppDataSource } from '../config/database';
 import { WbFinancialStat } from '../entities/WbFinancialStat';
 import { wbApiService } from '../services/wb-api.service';
 import { syncWbFinance } from '../services/wb-finance-sync.service';
+import { weeklyFinance } from '../services/wb-weekly-finance.service';
 import { saveWbApiToken } from '../services/settings.service';
 import { round } from '../utils/math';
 
@@ -25,6 +26,26 @@ export const syncStats = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error('WB Finance sync error:', error);
     res.status(500).json({ error: error.message || 'Ошибка синхронизации' });
+  }
+};
+
+/**
+ * GET /api/wb-finance/weekly?start=YYYY-MM-DD — «Финансовые показатели недели»
+ * (start = понедельник; по умолчанию — текущая неделя).
+ */
+export const getWeekly = async (req: Request, res: Response) => {
+  try {
+    let start = String(req.query.start || '');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(start)) {
+      const d = new Date();
+      const dow = (d.getUTCDay() + 6) % 7; // пн=0
+      d.setUTCDate(d.getUTCDate() - dow);
+      start = d.toISOString().slice(0, 10);
+    }
+    res.json(await weeklyFinance(start));
+  } catch (error: any) {
+    console.error('WB weekly finance error:', error);
+    res.status(500).json({ error: error.message || 'Ошибка недельной сводки' });
   }
 };
 
