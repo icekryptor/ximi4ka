@@ -177,7 +177,16 @@ export const mpAnalyticsController = {
    * если получилось, короткий fullstats за 2 дня — чтобы увидеть реальный ответ/ошибку
    * WB (лимит 429 vs пусто vs 401), не полагаясь на логи Railway. Ничего не пишет.
    */
-  async wbAdDiag(_req: Request, res: Response) {
+  async wbAdDiag(req: Request, res: Response) {
+    // ?full=1 — синхронно прогнать весь autoSyncWbAds(30) и вернуть результат/ошибку
+    if (req.query.full === '1') {
+      try {
+        const r = await autoSyncWbAds(30);
+        return res.json({ full: true, ok: true, ...r });
+      } catch (e: any) {
+        return res.json({ full: true, ok: false, error: String(e?.stack || e?.message || e) });
+      }
+    }
     const out: any = {
       token_present: wbApiService.hasToken(),
       cooldown_s: Math.ceil(wbApiService.cooldownRemainingMs() / 1000),
