@@ -23,12 +23,17 @@ export async function syncWbFinance(startDate: string, endDate: string): Promise
 
   for (const row of rows) {
     const dateStr = (row.sale_dt || row.rr_dt || '').split('T')[0];
-    if (!dateStr || !row.nm_id) continue;
-    const key = `${dateStr}_${row.nm_id}`;
+    if (!dateStr) continue;
+    // Услуги без привязки к товару (хранение, штрафы, удержания) приходят
+    // строками с пустым nm_id — агрегируем их в nm_id=0 «Прочее (без артикула)»,
+    // иначе хранение теряется целиком.
+    const nmId = row.nm_id || 0;
+    const key = `${dateStr}_${nmId}`;
     let agg = map.get(key);
     if (!agg) {
       agg = {
-        date: dateStr, nm_id: row.nm_id, product_name: row.subject_name || '',
+        date: dateStr, nm_id: nmId,
+        product_name: nmId === 0 ? 'Прочее (без артикула)' : (row.subject_name || ''),
         buyouts_sum: 0, transfer_amount: 0, logistics_cost: 0, storage_cost: 0,
         other_costs: 0, acceptance_cost: 0, returns_count: 0, returns_sum: 0, sales_count: 0,
       };
