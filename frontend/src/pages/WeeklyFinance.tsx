@@ -11,7 +11,8 @@ interface WeeklyData {
   metrics: {
     orders_sum: number; buyouts_sum: number; transfer_amount: number
     logistics_cost: number; storage_cost: number; other_costs: number
-    ad_spend: number; commission: number; payout_total: number
+    ad_spend: number; commission: number; commission_rate: number
+    payout_total: number; transfer_estimated: boolean
   }
   profit: {
     cogs: number; tax_rate: number; tax: number; net_profit: number
@@ -148,13 +149,13 @@ const WeeklyFinance = () => {
   const rows: Array<{ label: string; value: number; strong?: boolean; pct?: string }> = m ? [
     { label: 'Сумма заказов за неделю', value: m.orders_sum },
     { label: 'Сумма выкупов за неделю', value: m.buyouts_sum },
-    { label: 'К перечислению за товар', value: m.transfer_amount, pct: pctOf(m.transfer_amount, m.buyouts_sum) },
-    { label: 'Комиссия ВБ', value: m.commission, pct: pctOf(m.commission, m.buyouts_sum) },
+    { label: m.transfer_estimated ? 'К перечислению за товар (оценка)' : 'К перечислению за товар', value: m.transfer_amount, pct: pctOf(m.transfer_amount, m.buyouts_sum) },
+    { label: `Комиссия ВБ (${(m.commission_rate * 100).toFixed(1).replace('.', ',')}%)`, value: m.commission, pct: pctOf(m.commission, m.buyouts_sum) },
     { label: 'Логистика', value: m.logistics_cost, pct: pctOf(m.logistics_cost, m.buyouts_sum) },
     { label: 'Хранение', value: m.storage_cost, pct: pctOf(m.storage_cost, m.buyouts_sum) },
     { label: 'Прочие удержания', value: m.other_costs, pct: pctOf(m.other_costs, m.buyouts_sum) },
     { label: 'Рекламный бюджет', value: m.ad_spend, pct: pctOf(m.ad_spend, m.buyouts_sum) },
-    { label: 'Итого к оплате', value: m.payout_total, strong: true, pct: pctOf(m.payout_total, m.buyouts_sum) },
+    { label: m.transfer_estimated ? 'Итого к оплате (оценка)' : 'Итого к оплате', value: m.payout_total, strong: true, pct: pctOf(m.payout_total, m.buyouts_sum) },
   ] : []
 
   return (
@@ -178,7 +179,7 @@ const WeeklyFinance = () => {
       {data && !data.sources.finance && (
         <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>Финотчёта WB за эту неделю ещё нет (подтягивается автосинком) — комиссия, перечисление и «итого к оплате» появятся после загрузки; выкупы пока из воронки.</span>
+          <span>Финотчёта WB за эту неделю ещё нет (подтягивается автосинком) — выкупы из воронки, «к перечислению» и «итого к оплате» посчитаны оценкой через комиссию-константу; логистика и хранение появятся с финотчётом.</span>
         </div>
       )}
 

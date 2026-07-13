@@ -5,7 +5,8 @@
  */
 import { AppDataSource } from '../config/database';
 
-const TAX_RATE = 0.08; // УСН доходы 8% — база: сумма выкупов
+const TAX_RATE = 0.08;          // УСН доходы 8% — база: сумма выкупов
+const COMMISSION_RATE = 0.355;  // комиссия ВБ — константа 35,5% от выкупов (по бизнес-правилу)
 
 const num = (v: unknown): number => (v == null ? 0 : Number(v)) || 0;
 const r2 = (v: number): number => Math.round(v * 100) / 100;
@@ -21,8 +22,10 @@ export interface WeeklyFinance {
     storage_cost: number;
     other_costs: number;       // приёмка + штрафы + прочие удержания
     ad_spend: number;          // рекламный бюджет
-    commission: number;        // комиссия ВБ = выкупы − к перечислению
+    commission: number;        // комиссия ВБ = 35,5% × выкупы (константа)
+    commission_rate: number;
     payout_total: number;      // итого к оплате = к перечислению − логистика − хранение − прочие − реклама
+    transfer_estimated: boolean; // нет финотчёта: перечисление/итого — оценка через константу комиссии
   };
   profit: {
     cogs: number;              // Σ себестоимость набора × продано шт
@@ -79,13 +82,16 @@ export async function weeklyFinance(weekStart: string): Promise<WeeklyFinance> {
   );
 
   const buyouts = hasFinance ? num(fin.buyouts) : num(fun?.buyouts);
-  const transfer = num(fin?.transfer);
   const logistics = num(fin?.logistics);
   const storage = num(fin?.storage);
   const other = num(fin?.other);
   const adSpend = num(ads?.spend);
-  const commission = hasFinance ? r2(buyouts - transfer) : 0;
-  const payoutTotal = hasFinance ? r2(transfer - logistics - storage - other - adSpend) : 0;
+  // Комиссия — бизнес-константа 35,5% от выкупов (факт «выкупы − перечисление»
+  // прыгает из-за компенсаций WB, вплоть до отрицательных значений).
+  const commission = r2(buyouts * COMMISSION_RATE);
+  // Перечисление: факт из финотчёта; без него — оценка через константу комиссии.
+  const transfer = hasFinance ? num(fin.transfer) : r2(buyouts - commission);
+  const payoutTotal = r2(transfer - logistics - storage - other - adSpend);
 
   const cogsDetail = cogsRows.map((r) => ({
     sku: String(r.sku),
@@ -110,7 +116,9 @@ export async function weeklyFinance(weekStart: string): Promise<WeeklyFinance> {
       other_costs: r2(other),
       ad_spend: r2(adSpend),
       commission,
+      commission_rate: COMMISSION_RATE,
       payout_total: payoutTotal,
+      transfer_estimated: !hasFinance,
     },
     profit: { cogs, tax_rate: TAX_RATE, tax, net_profit: netProfit, cogs_detail: cogsDetail },
   };

@@ -77,29 +77,40 @@ export async function syncWbFinance(startDate: string, endDate: string): Promise
   return { synced, rawRows: rows.length };
 }
 
-// Финотчёты обновляются WB еженедельно + детализация с лагом — тянем окно 30 дней
-// раз в день, 06:40 UTC (после воронки/рекламы 06:00, чтобы не толкаться в WB).
-const CRON_SCHEDULE = '40 6 * * *';
+// Догоняющий почасовой тик: WB-лимиты на наш токен ~2 запроса/час на семейство API,
+// поэтому за тик делаем максимум ОДНО 90-дневное окно (=1 запрос reportDetailByPeriod).
+// Если данные свежее 3 дней — тик бесплатный (только SQL-проверка, WB не трогаем).
+// Разрыв любого размера закрывается серией тиков; :20 — в стороне от крона 06:00
+// (воронка+реклама), чтобы их возможный 30-мин предохранитель не накрывал нас.
+const CRON_SCHEDULE = '20 * * * *';
+const FRESH_DAYS = 3;   // насколько отставание считаем нормой (отчёты WB недельные)
+const WINDOW_DAYS = 90; // максимум одного запроса reportDetailByPeriod
 let started = false;
 
 export function startWbFinanceScheduler(): void {
   if (started) return;
   cron.schedule(CRON_SCHEDULE, async () => {
     try {
-      const end = new Date().toISOString().slice(0, 10);
-      // самозалечивание: если данные старше 30 дней — тянем от последней даты
-      // (с перехлёстом 3 дня), иначе обычное окно 30 дней
-      const defStart = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
+      const today = new Date().toISOString().slice(0, 10);
       const row = await AppDataSource.query(`SELECT max(date)::text AS maxd FROM wb_financial_stats`);
       const maxd: string | null = row?.[0]?.maxd || null;
-      const gapStart = maxd ? new Date(new Date(maxd + 'T00:00:00Z').getTime() - 3 * 864e5).toISOString().slice(0, 10) : defStart;
-      const start = gapStart < defStart ? gapStart : defStart;
+      const freshEdge = new Date(Date.now() - FRESH_DAYS * 864e5).toISOString().slice(0, 10);
+      if (maxd && maxd >= freshEdge) return; // свежо — WB не трогаем
+
+      const startD = maxd
+        ? new Date(new Date(maxd + 'T00:00:00Z').getTime() - 3 * 864e5)
+        : new Date(Date.now() - 30 * 864e5);
+      const start = startD.toISOString().slice(0, 10);
+      const endD = new Date(startD.getTime() + (WINDOW_DAYS - 1) * 864e5);
+      let end = endD.toISOString().slice(0, 10);
+      if (end > today) end = today;
+
       const r = await syncWbFinance(start, end);
-      console.log(`[wb-finance] cron tick (${start}→${end}): raw ${r.rawRows}, synced ${r.synced}`);
+      console.log(`[wb-finance] tick (${start}→${end}): raw ${r.rawRows}, synced ${r.synced}`);
     } catch (e: any) {
-      console.error('[wb-finance] cron tick failed:', e?.message || e);
+      console.error('[wb-finance] tick failed (повторим через час):', e?.message || e);
     }
   });
   started = true;
-  console.log(`[wb-finance] scheduler started (cron: ${CRON_SCHEDULE})`);
+  console.log(`[wb-finance] scheduler started (cron: ${CRON_SCHEDULE}, догоняющий)`);
 }
