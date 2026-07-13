@@ -183,6 +183,33 @@ export const assemblyController = {
   },
 
   // POST /api/assembly/operations
+  /** Все операции списком (для массового ввода нормативов): этап, узел, норматив, регламент. */
+  async listOperations(_req: Request, res: Response) {
+    try {
+      const rate = await getLaborRateValue();
+      const rows = await AppDataSource.query(
+        `SELECT o.id, o.name, o.stage, o.time_seconds, o.instruction_slug, o.sort_order,
+                o.composite_id, c.name AS composite_name
+         FROM assembly_operations o
+         JOIN components c ON c.id = o.composite_id
+         ORDER BY o.stage, c.name, o.sort_order, o.name`,
+      );
+      res.json({
+        laborRate: rate,
+        operations: rows.map((r: any) => ({
+          id: r.id, name: r.name, stage: r.stage,
+          timeSeconds: r.time_seconds == null ? null : Number(r.time_seconds),
+          laborCost: r.time_seconds ? round2((Number(r.time_seconds) / 3600) * rate) : 0,
+          instructionSlug: r.instruction_slug,
+          compositeId: r.composite_id, compositeName: r.composite_name,
+        })),
+      });
+    } catch (e: any) {
+      console.error('[assembly.listOperations]', e?.message || e);
+      res.status(500).json({ error: 'Ошибка загрузки операций' });
+    }
+  },
+
   async createOperation(req: Request, res: Response) {
     try {
       const { composite_id, name, stage, time_seconds, instruction_slug, sort_order } = req.body as {

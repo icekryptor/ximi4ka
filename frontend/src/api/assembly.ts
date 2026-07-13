@@ -64,7 +64,28 @@ export type OperationUpdatePayload = Partial<Omit<OperationCreatePayload, 'compo
 
 // ─── API ─────────────────────────────────────────────────────────────────────
 
+export interface AssemblyOpListItem {
+  id: string
+  name: string
+  stage: number
+  timeSeconds: number | null
+  laborCost: number
+  instructionSlug: string | null
+  compositeId: string
+  compositeName: string
+}
+
+export interface AssemblyOpsListResponse {
+  laborRate: number
+  operations: AssemblyOpListItem[]
+}
+
 export const assemblyApi = {
+  listOperations: async (): Promise<AssemblyOpsListResponse> => {
+    const res = await apiClient.get<AssemblyOpsListResponse>('/assembly/operations')
+    return res.data
+  },
+
   roots: async (): Promise<AssemblyRoot[]> => {
     const res = await apiClient.get<AssemblyRoot[]>('/assembly/roots')
     return res.data

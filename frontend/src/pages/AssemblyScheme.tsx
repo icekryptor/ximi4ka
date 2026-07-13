@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, GitMerge } from 'lucide-react'
+import { AlertTriangle, GitMerge, ListChecks } from 'lucide-react'
 import {
   AssemblyNode,
   AssemblyRoot,
@@ -11,6 +11,7 @@ import { brandDocsApi } from '../api/brandDocs'
 import { BrandDoc } from '../api/types'
 import { AssemblyTree } from '../components/assembly/AssemblyTree'
 import { AssemblyNodeCard } from '../components/assembly/AssemblyNodeCard'
+import { AssemblyOpsTable } from '../components/assembly/AssemblyOpsTable'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 
@@ -38,6 +39,7 @@ const AssemblyScheme = () => {
   const [treeLoading, setTreeLoading] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [laborRate, setLaborRate] = useState(500)
+  const [view, setView] = useState<'tree' | 'ops'>('tree')
   const [rateDraft, setRateDraft] = useState('500')
 
   useEffect(() => {
@@ -140,6 +142,16 @@ const AssemblyScheme = () => {
           </p>
         </div>
         <div className="flex flex-wrap items-end gap-4">
+          <div className="flex gap-1 rounded-xl border border-brand-border p-0.5">
+            <button onClick={() => setView('tree')}
+              className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm ${view === 'tree' ? 'bg-primary-500 text-white' : 'text-brand-text-secondary'}`}>
+              <GitMerge className="h-4 w-4" /> Дерево
+            </button>
+            <button onClick={() => setView('ops')}
+              className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm ${view === 'ops' ? 'bg-primary-500 text-white' : 'text-brand-text-secondary'}`}>
+              <ListChecks className="h-4 w-4" /> Все операции
+            </button>
+          </div>
           <div>
             <label className="label">Набор</label>
             <select
@@ -186,6 +198,11 @@ const AssemblyScheme = () => {
         </div>
       )}
 
+      {view === 'ops' ? (
+        <div className="card p-4">
+          <AssemblyOpsTable laborRate={laborRate} kbDocs={kbDocs} onChanged={refetchTree} />
+        </div>
+      ) : (
       <div className="flex items-start gap-6">
         {/* Дерево */}
         <div className="card min-w-0 flex-1 p-4">
@@ -221,6 +238,7 @@ const AssemblyScheme = () => {
           </div>
         )}
       </div>
+      )}
     </div>
   )
 }
