@@ -163,9 +163,17 @@ export const AssemblyNodeCard = ({ node, laborRate, kbDocs, onChanged, onSelectN
           <span className="font-medium text-brand-text">{fmtRub(materialTotal)} ₽</span>
         </div>
         <div className="mt-1 flex items-center justify-between text-sm">
-          <span className="text-brand-text-secondary">Работа</span>
+          <span className="text-brand-text-secondary">Работа (узел)</span>
           <span className="font-medium text-brand-text">{fmtRub(laborTotal)} ₽</span>
         </div>
+        {node.laborCumulative > laborTotal + 0.001 && (
+          <div className="mt-1 flex items-center justify-between text-sm">
+            <span className="text-brand-text-secondary" title="Работа этого узла плюс вся работа вложенных узлов">
+              Суммарная работа
+            </span>
+            <span className="font-medium text-primary-700">{fmtRub(node.laborCumulative)} ₽</span>
+          </div>
+        )}
         <div className="mt-2 flex items-center justify-between border-t border-brand-border pt-2">
           <span className="text-sm font-semibold text-brand-text">Итого</span>
           <span className="font-bold text-brand-text">{fmtRub(materialTotal + laborTotal)} ₽</span>

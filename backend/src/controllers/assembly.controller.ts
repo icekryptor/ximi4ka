@@ -42,7 +42,8 @@ interface TreeNode {
   isComposite: boolean;
   stageMax: number;
   materialCost: number;
-  laborCost: number;
+  laborCost: number;         // работа ТОЛЬКО этого узла (его операции)
+  laborCumulative: number;   // работа этого узла + вся работа вложенных узлов
   totalCost: number;
   quantity: number;
   operations: TreeOperation[];
@@ -107,7 +108,7 @@ export const assemblyController = {
         componentId: string,
         quantity: number,
         path: Set<string>
-      ): { node: TreeNode; exactTotal: number } | null => {
+      ): { node: TreeNode; exactTotal: number; exactLaborCumulative: number } | null => {
         const comp = componentsById.get(componentId);
         if (!comp) {
           warnings.push(`Компонент ${componentId} не найден — ветка пропущена`);
@@ -131,6 +132,7 @@ export const assemblyController = {
 
         const children: TreeNode[] = [];
         let materialPerUnit = 0;
+        let childLaborPerUnit = 0; // накопленная работа вложенных узлов на 1 ед. этого узла
         if (comp.is_composite) {
           path.add(componentId);
           for (const part of partsByComposite.get(componentId) || []) {
@@ -138,6 +140,7 @@ export const assemblyController = {
             if (child) {
               children.push(child.node);
               materialPerUnit += child.exactTotal;
+              childLaborPerUnit += child.exactLaborCumulative;
             }
           }
           path.delete(componentId);
@@ -156,9 +159,12 @@ export const assemblyController = {
         const exactMaterial = materialPerUnit * quantity;
         const exactLabor = laborPerUnit * quantity;
         const exactTotal = exactMaterial + exactLabor;
+        // Суммарная работа = собственная работа + вся работа вложенных узлов, масштаб по quantity
+        const exactLaborCumulative = (laborPerUnit + childLaborPerUnit) * quantity;
 
         return {
           exactTotal,
+          exactLaborCumulative,
           node: {
             id: comp.id,
             name: comp.name,
@@ -166,6 +172,7 @@ export const assemblyController = {
             stageMax,
             materialCost: round2(exactMaterial),
             laborCost: round2(exactLabor),
+            laborCumulative: round2(exactLaborCumulative),
             totalCost: round2(exactTotal),
             quantity,
             operations: opShapes,

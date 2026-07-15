@@ -37,6 +37,7 @@ export interface AssemblyNode {
   stageMax: number
   materialCost: number
   laborCost: number
+  laborCumulative: number
   totalCost: number
   quantity: number
   operations: AssemblyNodeOperation[]

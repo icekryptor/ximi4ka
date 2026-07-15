@@ -224,9 +224,9 @@ const AssemblyScheme = () => {
           )}
         </div>
 
-        {/* Правая панель */}
+        {/* Правая панель — липкая, едет со скроллом; при высоком дереве скроллится сама */}
         {selectedNode && (
-          <div className="w-[380px] shrink-0">
+          <div className="w-[380px] shrink-0 sticky top-6 self-start max-h-[calc(100vh-3rem)] overflow-y-auto">
             <AssemblyNodeCard
               key={selectedNode.id}
               node={selectedNode}
