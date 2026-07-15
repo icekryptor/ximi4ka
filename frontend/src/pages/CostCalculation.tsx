@@ -1,11 +1,10 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
-import { Plus, RefreshCw, Pencil, Trash2, ImageIcon, ExternalLink, ChevronRight, GitBranch, Table2, AlertTriangle } from 'lucide-react'
+import { Plus, RefreshCw, Pencil, Trash2, ImageIcon, ExternalLink, ChevronRight, AlertTriangle } from 'lucide-react'
 import { Component, ComponentPart, componentsApi } from '../api/components'
 import { kitsApi, Kit, KitComponent } from '../api/kits'
 import ComponentModal from '../components/ComponentModal'
 import ComponentPicker from '../components/ComponentPicker'
 import KitModal from '../components/KitModal'
-import AssemblyTree from '../components/AssemblyTree'
 import { useConfirmDialog } from '../contexts/ConfirmDialogContext'
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -77,7 +76,6 @@ export default function CostCalculation() {
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [kitModalOpen, setKitModalOpen] = useState(false)
   const [editingKit, setEditingKit] = useState<Kit | null>(null)
-  const [viewMode, setViewMode] = useState<'table' | 'tree'>('table')
 
   const [editingEstimated, setEditingEstimated] = useState(false)
   const [estimatedVal, setEstimatedVal] = useState('')
@@ -338,27 +336,6 @@ export default function CostCalculation() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {/* Переключатель Таблица / Схема */}
-          <div className="flex rounded-lg border border-brand-border p-0.5 bg-subtle">
-            {([
-              { mode: 'table', icon: Table2, label: 'Таблица' },
-              { mode: 'tree',  icon: GitBranch, label: 'Схема сборки' },
-            ] as const).map(({ mode, icon: Icon, label }) => (
-              <button
-                key={mode}
-                onClick={() => setViewMode(mode)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  viewMode === mode
-                    ? 'bg-card shadow-sm text-brand-text'
-                    : 'text-brand-text-secondary hover:text-brand-text'
-                }`}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {label}
-              </button>
-            ))}
-          </div>
-
           <button
             onClick={() => activeKitId && loadKitDetails(activeKitId)}
             className="btn btn-secondary flex items-center gap-2"
@@ -505,16 +482,8 @@ export default function CostCalculation() {
             </div>
           </div>
 
-          {/* Схема сборки */}
-          {viewMode === 'tree' && (
-            <AssemblyTree
-              kitComponents={allItems}
-              onOpenComponent={handleEdit}
-            />
-          )}
-
           {/* Единая таблица компонентов */}
-          {viewMode === 'table' && allItems.length > 0 && (
+          {allItems.length > 0 && (
             <div className="overflow-x-auto mb-8">
             <table className="table-minimal ml-5 min-w-max">
                   <thead>
@@ -663,7 +632,7 @@ export default function CostCalculation() {
             </div>
           )}
 
-          {viewMode === 'table' && allItems.length === 0 && (
+          {allItems.length === 0 && (
             <div className="text-center py-16 border border-dashed border-brand-border rounded-lg">
               <p className="text-brand-text-secondary mb-4">В этом наборе пока нет компонентов</p>
               <button onClick={() => setPickerOpen(true)} className="btn btn-primary">
