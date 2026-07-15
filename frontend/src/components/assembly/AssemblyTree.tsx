@@ -1,6 +1,24 @@
 import { useEffect, useRef, useState } from 'react'
-import { AlertTriangle, Minus, Plus } from 'lucide-react'
+import { AlertTriangle, Minus, Plus, ChevronsRight, ChevronsLeft } from 'lucide-react'
 import { AssemblyNode, fmtRub } from '../../api/assembly'
+
+/** id всех узлов с детьми до глубины `maxDepth` (0 = только корень). */
+const idsToDepth = (node: AssemblyNode, maxDepth: number, depth = 0, acc: Set<string> = new Set()): Set<string> => {
+  if (node.children.length > 0 && depth < maxDepth) {
+    acc.add(node.id)
+    for (const ch of node.children) idsToDepth(ch, maxDepth, depth + 1, acc)
+  }
+  return acc
+}
+
+/** id ВСЕХ узлов, у которых есть дети (полное раскрытие). */
+const allExpandableIds = (node: AssemblyNode, acc: Set<string> = new Set()): Set<string> => {
+  if (node.children.length > 0) {
+    acc.add(node.id)
+    for (const ch of node.children) allExpandableIds(ch, acc)
+  }
+  return acc
+}
 
 /**
  * Дерево сборки справа-налево: корень (готовый набор) справа,
@@ -166,12 +184,12 @@ const TreeBranch = ({ node, expanded, selectedId, onToggle, onSelect }: TreeBran
 }
 
 export const AssemblyTree = ({ root, selectedId, onSelect }: AssemblyTreeProps) => {
-  // Дефолт: раскрыт 1 уровень от корня
-  const [expanded, setExpanded] = useState<Set<string>>(() => new Set([root.id]))
+  // Дефолт: раскрыты 2 уровня от корня — схема видна сразу, не «пусто»
+  const [expanded, setExpanded] = useState<Set<string>>(() => idsToDepth(root, 2))
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    setExpanded(new Set([root.id]))
+    setExpanded(idsToDepth(root, 2))
   }, [root.id])
 
   // Корень справа — при смене дерева прокручиваем вправо
@@ -189,10 +207,25 @@ export const AssemblyTree = ({ root, selectedId, onSelect }: AssemblyTreeProps) 
     })
   }
 
+  const expandAll = () => setExpanded(allExpandableIds(root))
+  const collapseAll = () => setExpanded(new Set([root.id]))
+
   return (
-    <div ref={scrollRef} className="overflow-x-auto pb-2">
-      <div className="flex min-w-max justify-end pr-1">
-        <TreeBranch node={root} expanded={expanded} selectedId={selectedId} onToggle={toggle} onSelect={onSelect} />
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <button onClick={expandAll}
+          className="inline-flex items-center gap-1 rounded-lg border border-brand-border bg-card px-2.5 py-1 text-xs text-brand-text-secondary transition-colors hover:border-primary-300 hover:text-primary-700">
+          <ChevronsLeft className="h-3.5 w-3.5" /> Развернуть всё
+        </button>
+        <button onClick={collapseAll}
+          className="inline-flex items-center gap-1 rounded-lg border border-brand-border bg-card px-2.5 py-1 text-xs text-brand-text-secondary transition-colors hover:border-primary-300 hover:text-primary-700">
+          <ChevronsRight className="h-3.5 w-3.5" /> Свернуть
+        </button>
+      </div>
+      <div ref={scrollRef} className="overflow-x-auto pb-2">
+        <div className="flex min-w-max justify-end pr-1">
+          <TreeBranch node={root} expanded={expanded} selectedId={selectedId} onToggle={toggle} onSelect={onSelect} />
+        </div>
       </div>
     </div>
   )
