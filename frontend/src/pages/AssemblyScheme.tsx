@@ -203,9 +203,9 @@ const AssemblyScheme = () => {
           <AssemblyOpsTable laborRate={laborRate} kbDocs={kbDocs} onChanged={refetchTree} />
         </div>
       ) : (
-      <div className="flex items-start gap-6">
-        {/* Дерево */}
-        <div className="card min-w-0 flex-1 p-4">
+      <div className="flex items-stretch gap-6 h-[calc(100vh-14rem)] min-h-[420px]">
+        {/* Дерево — скроллится внутри своей области, панель остаётся на месте */}
+        <div className="card min-w-0 flex-1 p-4 overflow-y-auto">
           {treeLoading ? (
             <div className="space-y-3">
               <div className="skeleton h-10 w-2/3 ml-auto" />
@@ -224,9 +224,9 @@ const AssemblyScheme = () => {
           )}
         </div>
 
-        {/* Правая панель — липкая, едет со скроллом; при высоком дереве скроллится сама */}
+        {/* Правая панель — фиксирована рядом с деревом; при высокой карточке скроллится сама */}
         {selectedNode && (
-          <div className="w-[380px] shrink-0 sticky top-6 self-start max-h-[calc(100vh-3rem)] overflow-y-auto">
+          <div className="w-[380px] shrink-0 overflow-y-auto">
             <AssemblyNodeCard
               key={selectedNode.id}
               node={selectedNode}
