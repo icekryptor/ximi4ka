@@ -8,6 +8,7 @@
 const WB_ADV_BASE_URL = 'https://advert-api.wildberries.ru';
 const WB_STATS_BASE_URL = 'https://statistics-api.wildberries.ru';
 const WB_ANALYTICS_BASE_URL = 'https://seller-analytics-api.wildberries.ru';
+const WB_FINANCE_BASE_URL = 'https://finance-api.wildberries.ru';
 
 interface WbCampaign {
   advertId: number;
@@ -178,6 +179,39 @@ interface WbFullStatsItem {
   atbs: number;
   canceled: number;
   days: WbDayStats[];
+}
+
+/** Строка нового отчёта реализации finance-api v1 (camelCase; деньги — строки). */
+export interface WbSalesReportV1Row {
+  rrdId?: number;
+  nmId?: number;
+  subjectName?: string;
+  docTypeName?: string;   // «Продажа» | «Возврат» | услуги
+  quantity?: number;
+  saleDt?: string;
+  rrDate?: string;
+  retailAmount?: string;        // реализовано (₽, строкой)
+  forPay?: string;              // к перечислению
+  deliveryService?: string;     // логистика
+  paidStorage?: string;         // хранение
+  paidAcceptance?: string;      // платная приёмка
+  acquiringFee?: string;        // эквайринг
+  ppvzSalesCommission?: string; // вознаграждение ВБ до вычета услуг (факт-комиссия)
+  penalty?: string;
+  deduction?: string;
+  additionalPayment?: string;
+  rebillLogisticCost?: string;
+}
+
+/** Строка остатков stocks-report (1 размер × 1 склад). */
+export interface WbStockItem {
+  nmId: number;
+  chrtId?: number;
+  warehouseId?: number;
+  warehouseName?: string;
+  quantity: number;
+  inWayToClient?: number;
+  inWayFromClient?: number;
 }
 
 export class WbApiService {
@@ -483,6 +517,56 @@ export class WbApiService {
       }
     }
     return out;
+  }
+
+  /**
+   * POST /api/finance/v1/sales-reports/detailed — отчёт реализации (замена v5,
+   * который WB удаляет 15.07.2026). finance-api, лимит 1 req/min, camelCase,
+   * ДЕНЬГИ ПРИХОДЯТ СТРОКАМИ. Пагинация rrdId до пустого ответа.
+   */
+  async getSalesReportDetailedV1(dateFrom: string, dateTo: string): Promise<WbSalesReportV1Row[]> {
+    const all: WbSalesReportV1Row[] = [];
+    let rrdId = 0;
+    let firstRequest = true;
+    for (let guard = 0; guard < 40; guard++) {
+      // finance-api 1 req/min — проактивная пауза между страницами
+      if (!firstRequest) await new Promise(resolve => setTimeout(resolve, 62_000));
+      firstRequest = false;
+      const body = JSON.stringify({
+        dateFrom: `${dateFrom}T00:00:00Z`,
+        dateTo: `${dateTo}T23:59:59Z`,
+        period: 'daily',
+        limit: 100000,
+        rrdId,
+      });
+      const data = await this.request<WbSalesReportV1Row[] | { data?: WbSalesReportV1Row[] }>(
+        `${WB_FINANCE_BASE_URL}/api/finance/v1/sales-reports/detailed`,
+        { method: 'POST', body }, 3, 65_000,
+      );
+      const rows: WbSalesReportV1Row[] = Array.isArray(data) ? data : (Array.isArray((data as any)?.data) ? (data as any).data : []);
+      if (!rows.length) break;
+      all.push(...rows);
+      const last = rows[rows.length - 1]?.rrdId;
+      if (!last || last === rrdId || rows.length < 100000) {
+        if (rows.length < 100000) break;
+        if (!last || last === rrdId) break;
+      }
+      rrdId = last;
+    }
+    return all;
+  }
+
+  /**
+   * POST /api/analytics/v1/stocks-report/wb-warehouses — текущие остатки на складах WB
+   * (обновление раз в 30 мин, лимит 3 req/min). 1 строка = 1 размер × 1 склад.
+   */
+  async getStocksReport(): Promise<WbStockItem[]> {
+    const data = await this.request<{ data?: { items?: WbStockItem[] } }>(
+      `${WB_ANALYTICS_BASE_URL}/api/analytics/v1/stocks-report/wb-warehouses`,
+      { method: 'POST', body: JSON.stringify({ nmIds: [], limit: 250000, offset: 0 }) },
+      3, 25_000,
+    );
+    return data?.data?.items ?? [];
   }
 
   /**

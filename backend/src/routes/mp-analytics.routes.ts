@@ -16,6 +16,7 @@ router.post('/sync', mpAnalyticsController.sync);
 router.post('/import', mpAnalyticsController.import);
 router.post('/ad-import', mpAnalyticsController.adImport);
 router.post('/ad-sync', mpAnalyticsController.adSync);
+router.post('/stock-sync', mpAnalyticsController.stockSync);
 router.post('/upload', upload.single('file'), mpAnalyticsController.upload);
 router.get('/wb-ad-diag', mpAnalyticsController.wbAdDiag);
 router.get('/wb-funnel-diag', mpAnalyticsController.wbFunnelDiag);

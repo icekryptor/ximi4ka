@@ -1,215 +1,246 @@
-import { useEffect, useState } from 'react'
-import { reportsApi } from '../api/reports'
-import { transactionsApi } from '../api/transactions'
-import { FinancialSummary, Transaction } from '../api/types'
-import { formatCurrency } from '../utils/format'
-import { TrendingUp, TrendingDown, Wallet, Activity } from 'lucide-react'
-import { format } from 'date-fns'
-import { ru } from 'date-fns/locale/ru'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend,
+} from 'recharts'
+import { LayoutDashboard, ArrowUpRight, ArrowDownRight, X, BookOpen, Info, AlertTriangle } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { wbDashboardApi, WbDashboardData, DashMetric } from '../api/wbDashboard'
 
-// Animated count-up hook
-const useCountUp = (target: number, duration = 800) => {
-  const [value, setValue] = useState(0)
-  useEffect(() => {
-    if (target === 0) { setValue(0); return }
-    const start = performance.now()
-    let rafId: number
-    const step = (now: number) => {
-      const progress = Math.min((now - start) / duration, 1)
-      const eased = 1 - Math.pow(1 - progress, 3) // ease-out cubic
-      setValue(Math.round(target * eased))
-      if (progress < 1) rafId = requestAnimationFrame(step)
-    }
-    rafId = requestAnimationFrame(step)
-    return () => cancelAnimationFrame(rafId)
-  }, [target, duration])
-  return value
+/**
+ * Главная: график выручки по дням + компактные чипы-метрики с дельтой к прошлому
+ * периоду (клик — детализация: формула, источники, мини-график) + регламенты БЗ.
+ */
+
+const fmtRub = (v: number): string => `${Math.round(v).toLocaleString('ru-RU')} ₽`
+const fmtVal = (v: number | null, unit: DashMetric['unit']): string => {
+  if (v == null) return '—'
+  if (unit === 'rub') return fmtRub(v)
+  if (unit === 'pct') return `${v.toFixed(2).replace(/\.?0+$/, '')}%`
+  if (unit === 'pcs') return `${Math.round(v).toLocaleString('ru-RU')} шт`
+  return String(v)
+}
+const dayLabel = (iso: string) => new Date(iso + 'T00:00:00Z').toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })
+
+const PERIODS = [
+  { days: 7, label: '7 дней' },
+  { days: 14, label: '14 дней' },
+  { days: 30, label: '30 дней' },
+  { days: 90, label: '90 дней' },
+]
+
+/** Дельта хорошая/плохая → зелёный/красный (как в референсе TrueStats). */
+const deltaTone = (m: DashMetric): 'good' | 'bad' | 'flat' => {
+  if (m.deltaPct == null || m.deltaPct === 0) return 'flat'
+  const up = m.deltaPct > 0
+  return (up && m.goodWhen === 'up') || (!up && m.goodWhen === 'down') ? 'good' : 'bad'
 }
 
-const Dashboard = () => {
-  const [summary, setSummary] = useState<FinancialSummary | null>(null)
-  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  const loadData = async () => {
-    try {
-      setLoading(true)
-      const endDate = new Date()
-      const startDate = new Date()
-      startDate.setDate(startDate.getDate() - 30)
-
-      const [summaryData, transactionsResult] = await Promise.all([
-        reportsApi.getSummary({
-          startDate: startDate.toISOString().split('T')[0],
-          endDate: endDate.toISOString().split('T')[0]
-        }),
-        transactionsApi.getAll({ page: 1, limit: 5 })
-      ])
-
-      setSummary(summaryData)
-      setRecentTransactions(transactionsResult.data)
-    } catch (error) {
-      console.error('Ошибка загрузки данных:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const animatedIncome = useCountUp(summary?.income || 0)
-  const animatedExpense = useCountUp(summary?.expense || 0)
-  const animatedBalance = useCountUp(summary?.balance || 0)
-  const animatedCount = useCountUp(summary?.transactionCount || 0)
-
-  if (loading) {
-    return (
-      <div className="p-8">
-        <div className="space-y-4">
-          <div className="skeleton h-8 w-1/4"></div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="skeleton h-32 rounded-2xl"></div>
-            ))}
-          </div>
-          <div className="skeleton h-64 rounded-2xl mt-6"></div>
-        </div>
-      </div>
-    )
-  }
-
+const MetricChip = ({ m, onClick }: { m: DashMetric; onClick: () => void }) => {
+  const tone = deltaTone(m)
+  const toneCls = tone === 'good'
+    ? 'border-green-200 bg-green-50/70 hover:border-green-300'
+    : tone === 'bad'
+      ? 'border-red-200 bg-red-50/70 hover:border-red-300'
+      : 'border-brand-border bg-card hover:border-primary-300'
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-brand-text">Главная панель</h1>
-        <p className="text-brand-text-secondary mt-1">Обзор финансов за последние 30 дней</p>
+    <button onClick={onClick}
+      className={`group rounded-xl border px-3 py-2 text-left shadow-soft transition-all hover:shadow-card ${toneCls}`}>
+      <div className="flex items-center gap-1 text-[11px] text-brand-text-secondary">
+        <span className="truncate">{m.label}</span>
+        <Info className="h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-60" />
       </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div
-          className="card-hover bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800 stagger-item"
-          style={{ animationDelay: '0ms' }}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-green-600 dark:text-green-400">Доходы</p>
-              <p className="text-2xl font-bold text-green-900 dark:text-green-100 mt-1">
-                {formatCurrency(animatedIncome)}
-              </p>
-            </div>
-            <div className="bg-green-200 dark:bg-green-800 p-3 rounded-full">
-              <TrendingUp className="h-6 w-6 text-green-700 dark:text-green-300" />
-            </div>
-          </div>
-        </div>
-
-        <div
-          className="card-hover bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 border-red-200 dark:border-red-800 stagger-item"
-          style={{ animationDelay: '80ms' }}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-red-600 dark:text-red-400">Расходы</p>
-              <p className="text-2xl font-bold text-red-900 dark:text-red-100 mt-1">
-                {formatCurrency(animatedExpense)}
-              </p>
-            </div>
-            <div className="bg-red-200 dark:bg-red-800 p-3 rounded-full">
-              <TrendingDown className="h-6 w-6 text-red-700 dark:text-red-300" />
-            </div>
-          </div>
-        </div>
-
-        <div
-          className="card-hover bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-950 dark:to-primary-900 border-primary-200 dark:border-primary-800 stagger-item"
-          style={{ animationDelay: '160ms' }}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-primary-600 dark:text-primary-400">Баланс</p>
-              <p className="text-2xl font-bold text-primary-900 dark:text-primary-100 mt-1">
-                {formatCurrency(animatedBalance)}
-              </p>
-            </div>
-            <div className="bg-primary-200 dark:bg-primary-800 p-3 rounded-full">
-              <Wallet className="h-6 w-6 text-primary-700 dark:text-primary-300" />
-            </div>
-          </div>
-        </div>
-
-        <div
-          className="card-hover bg-gradient-to-br from-primary-50/50 to-primary-100/50 dark:from-primary-950/50 dark:to-primary-900/50 border-primary-200 dark:border-primary-800 stagger-item"
-          style={{ animationDelay: '240ms' }}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-primary-500 dark:text-primary-400">Транзакций</p>
-              <p className="text-2xl font-bold text-primary-900 dark:text-primary-100 mt-1">
-                {animatedCount}
-              </p>
-            </div>
-            <div className="bg-primary-100 dark:bg-primary-800 p-3 rounded-full">
-              <Activity className="h-6 w-6 text-primary-500 dark:text-primary-400" />
-            </div>
-          </div>
-        </div>
+      <div className="mt-0.5 flex items-baseline gap-1.5">
+        <span className="text-base font-bold leading-tight text-brand-text">{fmtVal(m.value, m.unit)}</span>
+        {m.sub && <span className="text-xs text-brand-text-secondary">/ {fmtVal(m.sub.value, m.sub.unit)}</span>}
       </div>
-
-      {/* Recent Transactions */}
-      <div className="card stagger-item" style={{ animationDelay: '320ms' }}>
-        <h2 className="text-xl font-bold text-brand-text mb-4">Последние транзакции</h2>
-        {recentTransactions.length === 0 ? (
-          <p className="text-brand-text-secondary text-center py-8">Нет транзакций</p>
-        ) : (
-          <div className="space-y-3">
-            {recentTransactions.map((transaction, index) => (
-              <div
-                key={transaction.id}
-                className="flex items-center justify-between p-4 bg-subtle rounded-lg hover:bg-muted transition-all duration-200 hover:shadow-soft stagger-item"
-                style={{ animationDelay: `${380 + index * 60}ms` }}
-              >
-                <div className="flex items-center space-x-4">
-                  <div
-                    className={`p-2 rounded-full ${
-                      transaction.type === 'income'
-                        ? 'bg-green-100 dark:bg-green-900'
-                        : 'bg-red-100 dark:bg-red-900'
-                    }`}
-                  >
-                    {transaction.type === 'income' ? (
-                      <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    ) : (
-                      <TrendingDown className="h-5 w-5 text-red-600 dark:text-red-400" />
-                    )}
-                  </div>
-                  <div>
-                    <p className="font-medium text-brand-text">{transaction.description}</p>
-                    <p className="text-sm text-brand-text-secondary">
-                      {format(new Date(transaction.date), 'd MMMM yyyy', { locale: ru })}
-                      {transaction.category && ` • ${transaction.category.name}`}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p
-                    className={`font-semibold ${
-                      transaction.type === 'income'
-                        ? 'text-green-600 dark:text-green-400'
-                        : 'text-red-600 dark:text-red-400'
-                    }`}
-                  >
-                    {transaction.type === 'income' ? '+' : '-'}
-                    {formatCurrency(transaction.amount)}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
+      <div className="mt-0.5 flex items-center gap-1 text-[11px] tabular-nums">
+        <span className="text-brand-text-secondary/70">{m.prev == null ? '' : fmtVal(m.prev, m.unit)}</span>
+        {m.deltaPct != null && (
+          <span className={`flex items-center gap-0.5 rounded px-1 font-semibold ${
+            tone === 'good' ? 'bg-green-100 text-green-700' : tone === 'bad' ? 'bg-red-100 text-red-700' : 'bg-muted text-brand-text-secondary'
+          }`}>
+            {m.deltaPct > 0 ? <ArrowUpRight className="h-3 w-3" /> : m.deltaPct < 0 ? <ArrowDownRight className="h-3 w-3" /> : null}
+            {Math.abs(m.deltaPct).toFixed(1)}%
+          </span>
         )}
       </div>
+    </button>
+  )
+}
+
+const MetricModal = ({ m, onClose }: { m: DashMetric; onClose: () => void }) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" onClick={onClose}>
+    <div className="w-full max-w-lg rounded-2xl border border-brand-border bg-card p-5 shadow-card" onClick={(e) => e.stopPropagation()}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-lg font-bold text-brand-text">{m.label}</h3>
+          <div className="mt-1 flex items-baseline gap-2">
+            <span className="text-2xl font-bold text-brand-text">{fmtVal(m.value, m.unit)}</span>
+            {m.sub && <span className="text-sm text-brand-text-secondary">/ {fmtVal(m.sub.value, m.sub.unit)}</span>}
+          </div>
+          <div className="mt-0.5 text-sm text-brand-text-secondary">
+            Прошлый период: {fmtVal(m.prev, m.unit)}
+            {m.deltaPct != null && <> · Δ {m.deltaPct > 0 ? '+' : ''}{m.deltaPct.toFixed(1)}%</>}
+          </div>
+        </div>
+        <button onClick={onClose} className="rounded-lg p-1 text-brand-text-secondary hover:bg-muted"><X className="h-5 w-5" /></button>
+      </div>
+
+      {m.series && m.series.length > 1 && (
+        <div className="mt-3 h-32">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={m.series}>
+              <XAxis dataKey="date" tickFormatter={dayLabel} tick={{ fontSize: 10 }} />
+              <YAxis hide />
+              <Tooltip labelFormatter={(v) => dayLabel(String(v))}
+                formatter={(v: unknown) => [fmtVal(Number(v), m.unit), m.label]} />
+              <Bar dataKey="value" fill="#836efe" radius={[3, 3, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      <div className="mt-4 space-y-3 text-sm">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-brand-text-secondary">Как считается</div>
+          <div className="mt-1 rounded-lg bg-muted/50 px-3 py-2 text-brand-text">{m.formula}</div>
+        </div>
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-brand-text-secondary">Источники</div>
+          <ul className="mt-1 space-y-1">
+            {m.sources.map((s) => (
+              <li key={s} className="flex items-start gap-1.5 text-brand-text-secondary">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary-400" />{s}
+              </li>
+            ))}
+          </ul>
+        </div>
+        {m.note && <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">{m.note}</div>}
+      </div>
+    </div>
+  </div>
+)
+
+const Dashboard = () => {
+  const [days, setDays] = useState(7)
+  const [data, setData] = useState<WbDashboardData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [openKey, setOpenKey] = useState<string | null>(null)
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      setData(await wbDashboardApi.overview({ days }))
+    } catch (e) {
+      console.error('dashboard load failed', e)
+      setData(null)
+    } finally { setLoading(false) }
+  }, [days])
+  useEffect(() => { load() }, [load])
+
+  const openMetric = useMemo(
+    () => (openKey && data ? data.metrics.find((m) => m.key === openKey) ?? null : null),
+    [openKey, data],
+  )
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center space-x-3">
+          <LayoutDashboard className="h-6 w-6 text-primary-500" />
+          <div>
+            <h1 className="text-2xl font-bold text-brand-text">Оцифровка WB</h1>
+            <p className="text-sm text-brand-text-secondary">
+              {data ? `${dayLabel(data.range.from)} – ${dayLabel(data.range.to)} · сравнение с ${dayLabel(data.prevRange.from)} – ${dayLabel(data.prevRange.to)}` : 'Показатели за период и динамика'}
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-1 rounded-xl border border-brand-border bg-card p-0.5">
+          {PERIODS.map((p) => (
+            <button key={p.days} onClick={() => setDays(p.days)}
+              className={`rounded-lg px-3 py-1.5 text-sm font-medium ${days === p.days ? 'bg-primary-500 text-white' : 'text-brand-text-secondary hover:text-brand-text'}`}>
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="space-y-4">
+          <div className="skeleton h-64 w-full" />
+          <div className="skeleton h-40 w-full" />
+        </div>
+      ) : !data ? (
+        <div className="card !p-10 text-center text-brand-text-secondary">Не удалось загрузить дашборд.</div>
+      ) : (
+        <>
+          {data.warnings.length > 0 && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+              {data.warnings.map((w) => (
+                <p key={w} className="flex items-start gap-1.5">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /> {w}
+                </p>
+              ))}
+            </div>
+          )}
+
+          {/* График выручки */}
+          <div className="card">
+            <h2 className="mb-2 text-sm font-semibold text-brand-text">Выручка по дням</h2>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={data.chart}>
+                  <defs>
+                    <linearGradient id="gOrders" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#836efe" stopOpacity={0.35} />
+                      <stop offset="100%" stopColor="#836efe" stopOpacity={0.03} />
+                    </linearGradient>
+                    <linearGradient id="gBuyouts" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#34a853" stopOpacity={0.3} />
+                      <stop offset="100%" stopColor="#34a853" stopOpacity={0.03} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
+                  <XAxis dataKey="date" tickFormatter={dayLabel} tick={{ fontSize: 11 }} />
+                  <YAxis tickFormatter={(v) => `${Math.round(Number(v) / 1000)}к`} tick={{ fontSize: 11 }} width={40} />
+                  <Tooltip labelFormatter={(v) => dayLabel(String(v))}
+                    formatter={(v: unknown, name: unknown) => [fmtRub(Number(v)), name === 'orders_sum' ? 'Заказы' : 'Выкупы']} />
+                  <Legend formatter={(v) => (v === 'orders_sum' ? 'Заказы' : 'Выкупы')} />
+                  <Area type="monotone" dataKey="orders_sum" stroke="#836efe" strokeWidth={2} fill="url(#gOrders)" />
+                  <Area type="monotone" dataKey="buyouts_sum" stroke="#34a853" strokeWidth={2} fill="url(#gBuyouts)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Чипы метрик */}
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {data.metrics.map((m) => (
+              <MetricChip key={m.key} m={m} onClick={() => setOpenKey(m.key)} />
+            ))}
+          </div>
+
+          {/* Регламенты */}
+          {data.kb.length > 0 && (
+            <div className="card">
+              <div className="mb-2 flex items-center gap-2">
+                <BookOpen className="h-4 w-4 text-primary-500" />
+                <h2 className="text-sm font-semibold text-brand-text">Регламенты · База знаний</h2>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {data.kb.map((d) => (
+                  <Link key={d.slug} to={`/production/knowledge-base?doc=${d.slug}`}
+                    className="rounded-lg border border-brand-border bg-card px-2.5 py-1 text-xs text-brand-text-secondary transition-colors hover:border-primary-300 hover:text-primary-700">
+                    {d.title}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {openMetric && <MetricModal m={openMetric} onClose={() => setOpenKey(null)} />}
     </div>
   )
 }

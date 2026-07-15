@@ -70,6 +70,7 @@ import { startDiscountTrackerScheduler } from './services/discount-tracker/sched
 import settingsRoutes from './routes/settings.routes';
 import { loadWbApiTokenFromDb } from './services/settings.service';
 import mpAnalyticsRoutes from './routes/mp-analytics.routes';
+import wbDashboardRoutes from './routes/wb-dashboard.routes';
 import { startMpAnalyticsScheduler } from './services/mp-analytics/scheduler';
 import { startWbFinanceScheduler } from './services/wb-finance-sync.service';
 import { recipeEngine } from './services/recipe-engine';
@@ -173,6 +174,7 @@ app.use('/api/bank-sync', authMiddleware, bankSyncRoutes);
 app.use('/api/discount-tracker', authMiddleware, discountTrackerRoutes);
 app.use('/api/settings', authMiddleware, settingsRoutes);
 app.use('/api/mp-analytics', authMiddleware, mpAnalyticsRoutes);
+app.use('/api/dashboard', authMiddleware, wbDashboardRoutes);
 app.use('/api/import-rules', authMiddleware, importRuleRoutes);
 app.use('/api/cashflow', authMiddleware, cashflowRoutes);
 app.use('/api/voiceover', authMiddleware, voiceoverRoutes);

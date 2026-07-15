@@ -49,6 +49,12 @@ export class WbFinancialStat {
   @Column('decimal', { precision: 12, scale: 2, default: 0, comment: 'Сумма возвратов' })
   returns_sum: number;
 
+  @Column('decimal', { precision: 12, scale: 2, nullable: true, comment: 'Эквайринг (acquiringFee); NULL = строка не перечитана новым парсером' })
+  acquiring_cost: number | null;
+
+  @Column('decimal', { precision: 12, scale: 2, nullable: true, comment: 'Факт-комиссия ВБ (ppvzSalesCommission)' })
+  commission_fact: number | null;
+
   @Column({ type: 'int', default: 0, comment: 'Количество продаж' })
   sales_count: number;
 

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { syncWbFunnel, dailyRows, summaryByProduct, importFunnelRows, adReport, importAdRows, adsDetail, getPromoPlan, upsertPromoPlan, agentDigest } from '../services/mp-analytics/mp-analytics.service';
 import { autoSyncWbAds, syncAdsFromWbStats } from '../services/mp-analytics/wb-ad-sync.service';
 import { parseFunnelSheet, parseAdSheet } from '../services/mp-analytics/upload-parse.service';
+import { syncWbStocks } from '../services/mp-analytics/wb-stock-sync.service';
 import { wbApiService } from '../services/wb-api.service';
 import { AppDataSource } from '../config/database';
 
@@ -299,5 +300,14 @@ export const mpAnalyticsController = {
     }
     out.ms = Date.now() - t0;
     res.json(out);
+  },
+  /** Ручной синк остатков WB (stocks-report, ~секунды). */
+  async stockSync(_req: Request, res: Response) {
+    try {
+      res.json({ ok: true, ...(await syncWbStocks()) });
+    } catch (e: any) {
+      console.error('[mp-analytics.stockSync]', e?.message || e);
+      res.status(500).json({ error: String(e?.message || 'Ошибка синка остатков') });
+    }
   },
 };
