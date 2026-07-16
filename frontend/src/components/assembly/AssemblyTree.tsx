@@ -87,7 +87,7 @@ const NodeChip = ({ node, isOpen, selected, onToggle, onSelect }: NodeChipProps)
   return (
     <div
       onClick={() => onSelect(node.id)}
-      className={`my-1 w-60 shrink-0 cursor-pointer rounded-xl border bg-card px-3 py-2 shadow-soft transition-all ${
+      className={`my-1 w-72 shrink-0 cursor-pointer rounded-xl border bg-card px-3 py-2 shadow-soft transition-all ${
         selected
           ? 'border-primary-500 ring-2 ring-primary-400/40'
           : 'border-brand-border hover:border-primary-300 hover:shadow-card'
@@ -106,7 +106,7 @@ const NodeChip = ({ node, isOpen, selected, onToggle, onSelect }: NodeChipProps)
             {isOpen ? <Minus className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
           </button>
         )}
-        <span className="min-w-0 flex-1 truncate text-sm font-medium text-brand-text" title={node.name}>
+        <span className="min-w-0 flex-1 line-clamp-2 break-words text-sm font-medium leading-snug text-brand-text" title={node.name}>
           {node.name}
         </span>
         {node.quantity !== 1 && (
