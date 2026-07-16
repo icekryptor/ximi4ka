@@ -123,20 +123,26 @@ const MetricModal = ({ m, onClose }: { m: DashMetric; onClose: () => void }) => 
 
 const Dashboard = () => {
   const [days, setDays] = useState(7)
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
   const [data, setData] = useState<WbDashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [openKey, setOpenKey] = useState<string | null>(null)
 
+  const useRange = !!(from && to)
+
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      setData(await wbDashboardApi.overview({ days }))
+      setData(await wbDashboardApi.overview(from && to ? { from, to } : { days }))
     } catch (e) {
       console.error('dashboard load failed', e)
       setData(null)
     } finally { setLoading(false) }
-  }, [days])
+  }, [days, from, to])
   useEffect(() => { load() }, [load])
+
+  const setPreset = (d: number) => { setDays(d); setFrom(''); setTo('') }
 
   const openMetric = useMemo(
     () => (openKey && data ? data.metrics.find((m) => m.key === openKey) ?? null : null),
@@ -155,13 +161,26 @@ const Dashboard = () => {
             </p>
           </div>
         </div>
-        <div className="flex gap-1 rounded-xl border border-brand-border bg-card p-0.5">
-          {PERIODS.map((p) => (
-            <button key={p.days} onClick={() => setDays(p.days)}
-              className={`rounded-lg px-3 py-1.5 text-sm font-medium ${days === p.days ? 'bg-primary-500 text-white' : 'text-brand-text-secondary hover:text-brand-text'}`}>
-              {p.label}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex gap-1 rounded-xl border border-brand-border bg-card p-0.5">
+            {PERIODS.map((p) => (
+              <button key={p.days} onClick={() => setPreset(p.days)}
+                className={`rounded-lg px-3 py-1.5 text-sm font-medium ${!useRange && days === p.days ? 'bg-primary-500 text-white' : 'text-brand-text-secondary hover:text-brand-text'}`}>
+                {p.label}
+              </button>
+            ))}
+          </div>
+          <div className={`flex items-center gap-1 rounded-xl border p-1 ${useRange ? 'border-primary-400 bg-primary-50/50' : 'border-brand-border bg-card'}`}>
+            <input type="date" value={from} max={to || undefined} onChange={(e) => setFrom(e.target.value)}
+              className="rounded-lg bg-transparent px-2 py-1 text-sm text-brand-text-secondary focus:text-brand-text focus:outline-none" />
+            <span className="text-brand-text-secondary">–</span>
+            <input type="date" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)}
+              className="rounded-lg bg-transparent px-2 py-1 text-sm text-brand-text-secondary focus:text-brand-text focus:outline-none" />
+            {useRange && (
+              <button onClick={() => { setFrom(''); setTo('') }} title="Сбросить диапазон"
+                className="rounded-md px-1.5 text-brand-text-secondary hover:text-brand-text">×</button>
+            )}
+          </div>
         </div>
       </div>
 
